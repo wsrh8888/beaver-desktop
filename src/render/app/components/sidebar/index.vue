@@ -29,7 +29,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from "vue";
+import { computed, defineComponent, nextTick } from "vue";
 import { useRouter, useRoute } from 'vue-router';
 import { outsideList } from './data'
 import { useUserStore } from "renderModule/app/pinia/user/user";
@@ -44,7 +44,10 @@ export default defineComponent({
 
     const handleClick = (path: string) => {
       console.error(path)
-      router.push({ path });
+      nextTick(() => {
+        router.push({ path });
+      });
+     
     };
 
     return {
