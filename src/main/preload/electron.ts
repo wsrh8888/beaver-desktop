@@ -1,65 +1,93 @@
-import { WinHook, RenderCommand, ElectronCommand } from "commonModule/type/ipc/command";
-import { ElectronAPP } from "commonModule/type/preload/window";
+import { WinHook, RenderCommand } from "commonModule/type/ipc/command";
 import { IEvent } from "commonModule/type/ipc/event";
 import ipcRenderManager from "mainModule/utils/preload/ipcRender";
+import { ILogger } from "commonModule/type/logger";
+import type { ElectronAPP } from "commonModule/type/preload/window";
 
 function parseAdditionalArguments() {
   const args = process.argv.slice(1);
-  let params  = {
+  let params = {
     appRootPath: "",
-    env: "prod",
-  }; 
-  console.error('111111111111111', args);
+    env: "prod" as "prod" | "test",
+    token: undefined as string | undefined,
+    devicedId: undefined as string | undefined,
+  };
   args.forEach(arg => {
-    if (arg.startsWith('--custom=')) {
+    const paramsPrefix = '--custom=';
+    if (arg.startsWith(paramsPrefix)) {
       try {
-        params = JSON.parse(arg.substring('--params='.length));
+        const customParams = JSON.parse(arg.substring(paramsPrefix.length));
+        params = { ...params, ...customParams };
       } catch (e) {
-        console.error('Failed to parse params:', e);
+        console.error('Failed to parse custom params from process arguments:', e);
       }
     }
   });
-
   return params;
 }
 
+const appParsedArgs = parseAdditionalArguments();
 
-const { contextBridge, ipcRenderer} = require('electron')
+const { contextBridge } = require('electron');
 
-const electron: ElectronAPP = {
-  closeWindow(name?: string) {
-    ipcRenderManager.send(IEvent.RenderToMainMsg, WinHook.CLOSE, { name: name })
+// --- Logger Module ---
+const loggerModule = {
+  info: (data: ILogger, moduleName: string = "") => {
+    ipcRenderManager.send(IEvent.RenderToMain, RenderCommand.LOG, { level: "info", message: data, moduleName: moduleName });
   },
-  openWindow (name: string) {
-    console.error('bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb')
-    ipcRenderManager.send(IEvent.RenderToMainMsg, WinHook.OPEN, { name: name })
+  error: (data: ILogger, moduleName: string = "") => {
+    ipcRenderManager.send(IEvent.RenderToMain, RenderCommand.LOG, { level: "error", message: data, moduleName: moduleName });
   },
-  getAppVersion: process.versions,
-  log(level, data) {
-    ipcRenderManager.send(IEvent.RenderToMainMsg, RenderCommand.LOG, { level:level, data: data })
-  },
-  getAppRootPath: parseAdditionalArguments().appRootPath,
-  closeApp() {
-    ipcRenderManager.send(IEvent.RenderToMainMsg, WinHook.CLOSE);
-  },
-  minimizeApp() {
-    ipcRenderManager.send(IEvent.RenderToMainMsg, WinHook.MINIMIZE);
-  },
-  storeData(key, value) {
-    ipcRenderManager.send(IEvent.RenderToMainMsg, RenderCommand.STORE, { key: key, value: value });
-  },
-  token: parseAdditionalArguments().token,
-  env: parseAdditionalArguments().env,
-  page: {
-    setTitle(title: string) {
-      ipcRenderer.sendToHost('set-title', title);
-    },
-  },
+  warn: (data: ILogger, moduleName: string = "") => {
+    ipcRenderManager.send(IEvent.RenderToMain, RenderCommand.LOG, { level: "warn", message: data, moduleName: moduleName });
+  }
 };
 
+// --- Window Management Module ---
+const windowModule = {
+  close: (name?: string) => {
+    ipcRenderManager.send(IEvent.RenderToMain, WinHook.CLOSE, { name: name });
+  },
+  open: (name: string) => {
+    ipcRenderManager.send(IEvent.RenderToMain, WinHook.OPEN, { name: name });
+  },
+  openWindow: (name: string) => {
+    ipcRenderManager.send(IEvent.RenderToMain, WinHook.OPEN, { name: name });
+  },
+  minimize: () => {
+    ipcRenderManager.send(IEvent.RenderToMain, WinHook.MINIMIZE);
+  }
+};
 
-contextBridge.exposeInMainWorld('electron', electron);
-globalThis.electron = window.electron;
+// --- Application Info Module ---
+const appModule = {
+  versions: process.versions,
+  rootPath: appParsedArgs.appRootPath,
+  token: appParsedArgs.token,
+  env: appParsedArgs.env,
+  devicedId: appParsedArgs.devicedId,
+};
+
+// --- Storage Module ---
+const storageModule = {
+  setData: (key: string, value: any) => {
+    ipcRenderManager.send(IEvent.RenderToMain, RenderCommand.STORE, { key: key, value: value });
+  },
+  saveStore: (name: string, data: {}) => {
+    return ipcRenderManager.invoke(IEvent.RenderToMain, RenderCommand.SAVESTORE, { name, data });
+  }
+};
+
+// Define the new electron API structure
+const electronAPI: ElectronAPP = {
+  logger: loggerModule,
+  window: windowModule,
+  app: appModule,
+  storage: storageModule,
+};
+
+// Expose the new API structure to the main world
+contextBridge.exposeInMainWorld('electron', electronAPI);
 
 
 

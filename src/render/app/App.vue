@@ -1,8 +1,6 @@
 <template>
   <div class="app__container">
-    <header class="app__header app__drag">
-      
-    </header>
+    <HeaderComponent></HeaderComponent>
     <Sidebar class="app__sidebar app__drag"></Sidebar>
 
     <div class="app__content">
@@ -17,10 +15,11 @@ import { defineComponent, onMounted} from 'vue'
 // import Sidebar from './components/sidebar/index.vue'
 import Sidebar from 'renderModule/app/components/sidebar/index.vue'
 import { useInitStore } from 'renderModule/app/pinia/init/init'
-
+import HeaderComponent from 'renderModule/app/components/header/header.vue'
 export default defineComponent({
   components: {
-    Sidebar
+    Sidebar,
+    HeaderComponent
   },
   setup() {
     const initStore = useInitStore();
@@ -48,16 +47,7 @@ export default defineComponent({
     height: 100%;
     top: 0;
   }
-  .app__header {
-    height: 30px;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    margin-left: 66px;
-    border-bottom: 1px solid #e8e8e8;
-    
-  }
+  
   .app__content {
     flex: 1;
     margin-left: 66px;

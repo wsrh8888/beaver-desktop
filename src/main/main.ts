@@ -4,7 +4,7 @@ import ipcBase from 'mainModule/ipc';
 import LoginApplication from "mainModule/application/login";
 import AppApplication from "mainModule/application/app";
 
-import { initCustom, loadConfigs } from "./config";
+import { initCustom, loadConfigs, setupMiniAppDirectory } from "./config";
 import { getStore } from "mainModule/utils/store/store";
 
 // 屏蔽安全警告
@@ -20,6 +20,7 @@ class Main {
     this.setupEventListeners();
     this.beforeAppReady();
     this.onAppReady();
+    logger.info('初始化完成111111111111111111111');
   }
 
   async onAppReady() {
@@ -45,6 +46,7 @@ class Main {
   beforeAppReady() {
     initCustom();
     loadConfigs();
+    setupMiniAppDirectory();
     logger.info('beforeReady');
   }
 

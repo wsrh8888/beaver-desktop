@@ -23,8 +23,8 @@ class Login extends ApplicationBase implements Application {
     const scaledWidth = idealWidth / scaleFactor;
     const scaledHeight = idealHeight / scaleFactor;
     this.win = new BrowserWindow({
-      width: scaledWidth,
-      height: scaledHeight,
+      width: 800,
+      height: 500,
       frame: false,
       resizable: false,
       webPreferences: {
@@ -34,6 +34,8 @@ class Login extends ApplicationBase implements Application {
         contextIsolation: true, // 启用上下文隔离
         webSecurity: false, // false禁用同源策略
         devTools: true, // 是否开启 DevTools
+        additionalArguments: [`--custom=${JSON.stringify({ ...this.getPreloadParams() })}`],
+
       },
     });
     this.win.setFullScreenable(false);

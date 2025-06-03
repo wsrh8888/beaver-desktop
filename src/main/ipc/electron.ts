@@ -19,7 +19,7 @@ class IpcManager {
 
   private initIpcListeners() {
     ipcMainManager.on(
-      IEvent.RenderToMainMsg,
+      IEvent.RenderToMain,
       (event: Electron.IpcMainEvent, command: WinHook | RenderCommand | ElectronCommand , data: any = {}): void => {
         console.error('bbbbbbbbbbbbbbbbxcccccccccccccccccccccccccc', command)
         switch (command) {
@@ -32,14 +32,28 @@ class IpcManager {
           case WinHook.MINIMIZE:
             this.minimizeRender(event);
             break;
-          case RenderCommand.STORE:
+          case RenderCommand.SAVESTORE:
             this.storeInfo(event, data);
             break;
           case WinHook.OPEN:
             this.openMiniApp(data);
             break;
           default:
-            logger.error(`IEvent.RenderToMainMsg 未知命令: ${command}`);
+            logger.error(`IEvent.RenderToMain 未知命令: ${command}`);
+        }
+      }
+    );
+
+    ipcMainManager.handle(
+      IEvent.RenderToMain,
+      async (event: Electron.IpcMainInvokeEvent, command: WinHook | RenderCommand | ElectronCommand, data: any = {}): Promise<unknown> => {
+        console.log(`[main] 收到同步消息, command: ${command}, data: ${JSON.stringify(data)}`);
+        switch (command) {
+          case RenderCommand.SAVESTORE:
+            return this.handleSaveStore(data);
+          default:
+            logger.error(`IEvent.RenderToMain handle 未知命令: ${command}`);
+            return null;
         }
       }
     );
@@ -55,9 +69,29 @@ class IpcManager {
     );
   }
 
+  private handleSaveStore(data: any): Promise<boolean> {
+    try {
+      console.log('saveStore data:', data);
+      if (data.name && data.data) {
+        saveStore(data.name, data.data);
+        return Promise.resolve(true);
+      } else {
+        logger.error('saveStore 参数不正确:', data);
+        return Promise.resolve(false);
+      }
+    } catch (error) {
+      logger.error('saveStore 错误:', error);
+      return Promise.resolve(false);
+    }
+  }
+
   private storeInfo(event: Electron.IpcMainEvent, data: any) {
     console.log('111111111111111111111', data)
-    saveStore(data.key, data.value);
+    if (data.name && data.data) {
+      saveStore(data.name, data.data);
+    } else {
+      saveStore(data.key, data.value);
+    }
   }
 
    /**

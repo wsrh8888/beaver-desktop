@@ -1,24 +1,22 @@
-# 海狸IM 桌面端
 
-### 项目介绍
-+ 本项目是利用工作之余做的一个聊天IM。
-+ 如果喜欢可以点一个star
-+ 加入QQ群：[![加入QQ群](https://img.shields.io/badge/加入QQ群-1013328597-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)（1013328597）
+# 常用命令
+  1、解压 asar 
+    npm install -g @electron/asar
+     asar extract ./app.asar ./app
+
+ /DVERSION=1.0.0 /DRESOURCEDIR="D:\mine\beaver-im\beaver-im-client\release\win-unpacked" /DOUTPUTDIR="D:\mine\beaver-im\beaver-im-client\output" "D:\mine\beaver-im\beaver-im-client\build\installer.nsi"
+
+  "C:\Program Files (x86)\nsis\makensis.exe"  "D:\mine\beaver-im\beaver-im-client\build\installer.nsi"
 
 
-### 启动命令
-```
-node版本: 18
-npn install
-npm run dev
-```
+webview监听主进程消息
+  window.miniApp.onMainMessage(message => {
+    console.log('Received message from Main Process:', message);
+  });
 
-### 项目列表
-| [GitHub仓库]    |   [Gitee仓库]    |说明                                                                                      
-| ------------------------------------------------------------ | --------------------------------------------------------------------------|--------------------------------------------------------------------------|
-| [beaver-server](https://github.com/wsrh8888/beaver-server)               |[beaver-server](https://gitee.com/dawwdadfrf/beaver-server)               | 后端服务  |
-| [beaver-mobile](https://github.com/wsrh8888/beaver-mobile)        | [beaver-mobile](https://gitee.com/dawwdadfrf/beaver-mobile)               |手机端 |
-| [beaver-desktop](https://github.com/wsrh8888/beaver-desktop)        | [beaver-desktop](https://gitee.com/dawwdadfrf/beaver-desktop)               |桌面端 |
-
+主进程监听render进程消息
+window.miniApp.onRendererMessage(message => {
+  console.log('Received message from Main Renderer:', message);
+});
 
 

@@ -30,3 +30,4 @@ config.ini
 mini-app
 plugins/*
 output/*.exe
+config.json

@@ -3,6 +3,9 @@
 //   padding: 0;
 //   margin: 0;
   box-sizing: border-box;
+  -webkit-user-select: none;
+  user-select: none;
+
 }
 
 .app__drag {
@@ -11,6 +14,12 @@
 
 .app__no_drag {
   -webkit-app-region: no-drag; /* 设置为不可拖动区域 */
+}
+
+/* 禁止文字选中 */
+.no-select {
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 #app {

@@ -1,42 +1,93 @@
 import { IUserInfo } from 'commonModule/type/store/userInfo';
 import { defineStore } from 'pinia';
-import { getUserInfoApi } from 'renderModule/api/user';
+import { getUserInfoApi, updateInfoApi } from 'renderModule/api//user';
+import { processAvatarUrl } from 'renderModule/app/utils/avatar';
 
+/**
+ * @description: 用户状态管理
+ */
 export const useUserStore = defineStore('useUserStore', {
-  state: (): { userInfo: IUserInfo } => ({
+  /**
+   * @description: 用户状态
+   */
+  state: (): {
+    /** 当前登录用户信息 */
+    userInfo: IUserInfo;
+  } => ({
     userInfo: {
       userId: '',
       phone: '',
       nickName: '',
-      avatar:'',
-    },
+      avatar: '',
+    }
   }),
+
+  /**
+   * @description: 状态计算属性
+   */
   getters: {
-    gUserInfo: (state) => state.userInfo,
   },
+
   actions: {
-    reset () {
+    /**
+     * @description: 初始化用户信息
+     * @return {Promise<void>}
+     * @throws {Error} 获取用户信息失败时抛出错误
+     */
+    async initUserInfoApi() {
+      try {
+        const res = await getUserInfoApi();
+        if (res.code === 0 && res.result) {
+          const userInfo = {
+            userId: res.result.userId,
+            phone: res.result.phone || '',
+            nickName: res.result.nickName,
+            avatar: processAvatarUrl(res.result.avatar),
+          };
+          this.userInfo = userInfo;
+        }
+      } catch (error) {
+        console.error('获取用户信息失败:', error);
+        throw error;
+      }
+    },
+
+    /**
+     * @description: 更新自己的个人信息
+     * @param {Partial<IUserInfo>} updates - 需要更新的用户信息字段
+     * @return {Promise<boolean>} 更新是否成功
+     */
+    async updateUserInfo(updates: Partial<IUserInfo>) {
+      try {
+        const res = await updateInfoApi(updates);
+        if (res.code === 0) {
+          const updatedUser = {
+            ...this.userInfo,
+            ...updates,
+          };
+          this.userInfo = updatedUser;
+          return true;
+        }
+        return false;
+      } catch (error) {
+        console.error('更新用户信息失败:', error);
+        return false;
+      }
+    },
+
+  
+
+    /**
+     * @description: 重置用户状态
+     * @return {void}
+     */
+    reset() {
       this.userInfo = {
         userId: '',
         phone: '',
         nickName: '',
         avatar: '',
-      }
-    },
-    async initUserInfoApi() {
-      try {
-        const userInfo = await getUserInfoApi();
-        this.userInfo = {
-          userId: userInfo.result?.userId,
-          phone: userInfo.result?.phone,
-          nickName: userInfo.result?.nickName,
-          avatar: userInfo.result?.avatar,
-        };
-      } catch (error) {
-        console.error('Failed to fetch user info:', error);
-      }
-    },
-    clearUserInfo() {
+      };
     },
   },
 });

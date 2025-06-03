@@ -1,15 +1,18 @@
-
 export interface ILoginReq {
   phone: string;
   password: string;
 }
 
 export interface ILoginRes {
-  token: string;
   userId: string;
+  token: string;
 }
 export interface IUpdateInfoReq {
   nick_name?: string;
-   avatar?: string;
+  avatar?: string;
+  bio?: string;
+  gender?: string;
+  birthday?: string;
+  phone?: string;
 }
 

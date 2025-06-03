@@ -23,7 +23,7 @@ export enum WinHook {
 export enum RenderCommand {
   LOG = 'log',
   STORE = 'store',
-
+  SAVESTORE = 'saveStore',
 }
 
 /**

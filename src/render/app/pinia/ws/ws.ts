@@ -1,62 +1,47 @@
-import type { IWsContent, IWsStore } from '@/types/ws/ws';
 import { defineStore } from 'pinia';
-import { useChatStore } from '../chat/chat';
-import { useFriendStore } from '../friend/friend';
 
+/**
+ * @description: WebSocket消息管理
+ */
 export const useWsStore = defineStore('useWsStore', {
-  state: () => ({
-    
-  }),
-  getters: {
-  },
   actions: {
-    parseWsMessage(data: IWsStore) {
-      switch (data.command) {
-        case 'COMMON_CHAT_MESSAGE':
-        this.parseCommonChatMessage(data.content);
-        case 'COMMON_UPDATE_MESSAGE':
-          this.parseCommonUpdateMessage(data.content);
-          break;
-        default:
-          console.log('default', data);
-          break;
+    /**
+     * @description: 解析WebSocket消息
+     */
+    parseWsMessage(data: any) {
+      console.log('收到WebSocket消息:', data);
+      
+      // 只处理聊天消息
+      if (data.command === 'CHAT_MESSAGE') {
+        this.handleChatMessage(data.content);
       }
     },
-    async parseCommonUpdateMessage(content: IWsContent) {
-      const friendStore = useFriendStore();
-      const chatStore = useChatStore();
 
-      switch (content.data.type) {
-        case "user_update_info":
-           const userInfo = await friendStore.updateFriendInfo(content.data.body.userId);
-           chatStore.updateBaseInfo({
-              conversationId: userInfo.conversationId,
-              avatar: userInfo.avatar,
-              nickname: userInfo.nickname,
-           })
-          break;
-        case "user_valid_type_update":
-          friendStore.updateFriendInfo(content.data.body.userId);
-          // 更新最近聊天列表
-          chatStore.initRecentChatApi();
-          break;
-      }
-    },
-    parseCommonChatMessage(content: IWsContent) {
-      const chatStore = useChatStore();
-      switch (content.data.type) {
-        case "private_message_send":
-          chatStore.updateRecentChatList(
-            {
-              conversationId: content.data.body.conversationId,
-              avatar: content.data.body.sender.avatar,
-              create_at: content.data.body.create_at,
-              is_top: false,
-              msg_preview: content.data.body.msgPreview,
-              nickname: content.data.body.sender.nickname,
-            }
-          );
-          break;
+    /**
+     * @description: 处理聊天消息
+     */
+    handleChatMessage(content: any) {
+      const messageData = content.data;
+      
+      // 处理发送消息、接收消息和同步消息
+      if (messageData.type === 'private_message_send' || 
+          messageData.type === 'group_message_send' ||
+          messageData.type === 'private_message_sync' ||
+          messageData.type === 'group_message_sync' ||
+          messageData.type === 'private_message_receive' ||
+          messageData.type === 'group_message_receive') {
+        
+        // 使用消息管理器处理服务端消息（自动去重）
+        import('renderModule/app/message-manager').then(({ messageManager }) => {
+          messageManager.handleServerMessage({
+            messageId: content.messageId,
+            conversationId: messageData.body.conversationId,
+            id: messageData.body.id,
+            msg: messageData.body.msg,
+            sender: messageData.body.sender,
+            create_at: messageData.body.create_at
+          });
+        });
       }
     }
   },

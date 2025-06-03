@@ -25,18 +25,15 @@ const request = axios.create({
 
 request.interceptors.request.use(
   (config) => {
-    let headers = Object.assign({
-      token: window?.electron?.token,
-    })
-    console.error(window.electron, 'vvvvvvvvvvvvvvvvvvvvvvvvvvvvv')
-    config.headers = {
-      ...headers,
-      ...config.headers
-    }
+    let headers = Object.assign({}, {
+      token: (window?.electron?.app.token ?? ""),
+      deviceId: (window?.electron?.app.devicedId ?? ""),
+    });
+    config.headers = Object.assign({}, config.headers, headers);
     return config
   },
   (error: Error) => {
-    Promise.reject(error)
+    return Promise.reject(error)
   }
 )
 
@@ -46,7 +43,7 @@ request.interceptors.response.use(
     return response.data
   },
   (error: Error) => {
-    return error
+    return Promise.reject(error)
   }
 )
 
@@ -57,7 +54,7 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
       return _response
     })
     .catch((err: AxiosError) => {
-      return err
+      return Promise.reject(err)
     }) as Promise<IResponseSuccessData<T>>
 }
 export { ajax }
