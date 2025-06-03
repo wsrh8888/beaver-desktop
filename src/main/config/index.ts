@@ -4,6 +4,7 @@ import ini from "ini";
 import logger from 'mainModule/utils/log';
 import { fileURLToPath } from "url";
 import { getStore } from "mainModule/utils/store/store";
+import { machineIdSync } from "node-machine-id";
 
 export const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
@@ -16,11 +17,14 @@ export const getRootPath = () => {
 
 
 export function initCustom() {
-  console.error('11111111111', getStore("loginInfo"))
+  // 使用 node-machine-id 获取真正的机器唯一标识
+  // 这会返回一个 SHA-256 哈希值，确保每台机器的唯一性
+  const deviceId = machineIdSync();
   process.custom = {
     ENV: "prod",
     TOOLS: false,
     TOKEN: getStore("loginInfo")?.token,
+    DEVICE_ID: deviceId
   };
 }
 
@@ -48,4 +52,10 @@ function loadConfigFile(configPath: string) {
   }
 }
 
+export function setupMiniAppDirectory() {
+  const rootPath = path.resolve(getRootPath(), 'mini-app');
+  if (!fs.existsSync(rootPath)) {
+    fs.mkdirSync(rootPath);
+  }
+}
 

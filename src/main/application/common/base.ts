@@ -121,6 +121,7 @@ export default class ApplicationBase {
     return {
       env: process.custom.ENV,
       token: getStore('loginInfo')?.token,
+      devicedId: process.custom.DEVICE_ID,
     }
   }
 }

@@ -1,11 +1,11 @@
 import { baseUrl } from "commonModule/config"
-import { IFriendListRes, IFriendInfo } from "commonModule/type/ajax/friend"
+import { IFriendListRes, IFriendInfo, IFriendListReq, IAddFriendReq, IAddFriendRes, IResSearchUserInfo, ISearchUser } from "commonModule/type/ajax/friend"
 import { ajax } from "commonModule/utils/axios/request"
 
 /**
  * @description: 获取好友列表
  */
-export const getFriendListApi = (data) => {
+export const getFriendListApi = (data: IFriendListReq) => {
   return ajax<IFriendListRes>({
     method: 'GET',
     data: data,
@@ -24,22 +24,22 @@ export const getFriendInfoApi = (data) => {
   })
 }
 
-
 /**
  * @description: 搜索好友
  */
-export const getSearchFriendApi = (data:ISearchUser) => {
+export const getSearchFriendApi = (data: ISearchUser) => {
   return ajax<IResSearchUserInfo>({
     method: 'GET',
     data: data,
     url: `${baseUrl}/api/friend/search`
   })
 }
+
 /**
  * @description: 申请添加好友
  */
-export const applyAddFriendApi = (data:IAddFriend) => {
-  return ajax<{}>({
+export const applyAddFriendApi = (data: IAddFriendReq) => {
+  return ajax<IAddFriendRes>({
     data: data,
     method: 'POST',
     url: `${baseUrl}/api/friend/add_friend`
@@ -49,7 +49,7 @@ export const applyAddFriendApi = (data:IAddFriend) => {
 /**
  * @description: 校验好友通过
  */
-export const valiFrienddAPi = (data:any) => {
+export const valiFrienddAPi = (data: any) => {
   return ajax<{}>({
     data: data,
     method: 'POST',
@@ -57,11 +57,26 @@ export const valiFrienddAPi = (data:any) => {
   })
 }
 
-
 /**
  * @description: 删除好友
  */
-export const deleteFriendAPi = (data:any) => {
+export const deleteFriendAPi = (data: any) => {
+  return ajax<{}>({
+    data: data,
+    method: 'DELETE',
+    url: `${baseUrl}/api/friend/delete`
+  })
+}
+
+export const updateRemarkNameApi = (data: any) => {
+  return ajax<{}>({
+    data: data,
+    method: 'POST',
+    url: `${baseUrl}/api/friend/update_remark_name`
+  })
+}
+
+export const deleteFriendApi = (data: any) => {
   return ajax<{}>({
     data: data,
     method: 'DELETE',

@@ -3,7 +3,7 @@ export enum IEvent {
   /**
    * @description: 发送消息到主进程
    */  
-  RenderToMainMsg = 'render-to-main-msg', 
+  RenderToMain = 'render-to-main-msg', 
 
   /**
    * @description: 发送同步消息到主进程

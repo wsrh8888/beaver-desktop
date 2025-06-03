@@ -1,3 +1,4 @@
+import { ILogger } from "commonModule/type/logger"
 
 class Logger {
   logName: string
@@ -5,26 +6,22 @@ class Logger {
     this.logName = name
   }
 
-  info = (msg: string) => {
+  info = (msg: ILogger) => {
     this.sendLog('info', msg)
   }
 
-  warn = (msg: string) => {
+  warn = (msg: ILogger) => {
     this.sendLog('warn', msg)
   }
 
-  error = (msg: string) => {
+  error = (msg: ILogger) => {
     this.sendLog('error', msg)
   }
 
-  sendLog = (level: string, msg: string) => {
-    const data = this.logName
-      ? `[${this.logName}] ${msg}`
-      : `${msg}`
+  sendLog = (level: "info" | "warn" | "error", msg: ILogger) => {
     const conmmonLog = console[level]
-    conmmonLog(level, data)
-    window.electron?.log(level, data)
-    window.miniApp?.log(level, data)
+    conmmonLog(level, msg)
+    window.electron.logger[level](msg, this.logName)
 
   }
 }

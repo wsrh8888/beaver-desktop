@@ -15,7 +15,9 @@ export default defineConfig(({ command }) => {
   return {
     plugins: [
       vue(),
-      svgLoader(),
+      svgLoader({
+        defaultImport: 'url', // or 'raw'
+      }),
       electron([
         {
           entry: path.resolve(__dirname, "src/main/main.ts"),

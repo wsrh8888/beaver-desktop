@@ -1,7 +1,6 @@
 import { baseUrl } from "commonModule/config"
-import { IRecentChatRes, IChatHistoryRes } from "commonModule/type/ajax/chat"
+import { IRecentChatRes, IConversationInfoRes, IChatHistoryRes } from "commonModule/type/ajax/chat"
 import { ajax } from "commonModule/utils/axios/request"
-
 /**
  * @description: 获取最新的聊天列表
  */
@@ -19,6 +18,17 @@ export const getcreateConversationApi = (data:object) => {
     method: 'POST',
     data:data,
     url: `${baseUrl}/api/chat/createConversation`
+  })
+}
+
+/**
+ * @description: 通过会话id获取最新的会话信息
+ */
+export const getRecentChatInfoApi = (data) => {
+  return ajax<IConversationInfoRes>({
+    method: 'POST',
+    data: data,
+    url: `${baseUrl}/api/chat/getConversationInfo`
   })
 }
 /**
@@ -39,3 +49,4 @@ export const getuploadQiniuApi = (filePath:string) => {
     
   });
 };
+
