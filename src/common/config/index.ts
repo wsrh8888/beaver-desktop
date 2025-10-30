@@ -1,40 +1,73 @@
-type config = {
-  baseUrl: string
-  wsUrl: string
-}
-interface configs {
-  [key: string]: config
-}
-const config: configs = {
-  test: {
-    baseUrl: 'http://127.0.0.1:8888',
-    wsUrl: "ws://127.0.0.1:8888/api/ws/ws"
+import type { IConfig, IConfigs } from '../type/config'
 
+const config: IConfigs = {
+  dev: {
+    baseUrl: 'http://127.0.0.1:20800',
+    wsUrl: 'http://127.0.0.1:20800/api/ws/ws',
+    database: {
+      path: './data/beaver-dev.db',
+      pragmas: {
+        journal_mode: 'WAL',
+        synchronous: 'NORMAL',
+        busy_timeout: '30000',
+        cache_size: '5000',
+      },
+    },
+  },
+  test: {
+    baseUrl: 'https://server-test.wsrh8888.com/beaver',
+    wsUrl: 'https://serverr-test.wsrh8888.com/beaver/api/ws/ws',
+    database: {
+      path: './data/beaver-test.db',
+      pragmas: {
+        journal_mode: 'WAL',
+        synchronous: 'NORMAL',
+        busy_timeout: '30000',
+        cache_size: '10000',
+      },
+    },
   },
   prod: {
-    baseUrl: 'http://127.0.0.1:8888',
-    wsUrl: "ws://127.0.0.1:8888/api/ws/ws"
-   },
+    baseUrl: 'https://server.wsrh8888.com/beaver',
+    wsUrl: 'https://server.wsrh8888.com/beaver/api/ws/ws',
+    database: {
+      path: './data/beaver-prod.db',
+      pragmas: {
+        journal_mode: 'WAL',
+        synchronous: 'NORMAL',
+        busy_timeout: '30000',
+        cache_size: '10000',
+      },
+    },
+  },
 }
 
-function getEnvConfig(): config {
-  // 检查是否在 Electron 环境中
-  if (typeof window !== 'undefined' && window.electron && window.electron.app && window.electron.app.env === 'test') {
-    return config.test;
+// 获取当前配置
+function getCurrentConfig(): IConfig {
+  // 主进程：从环境变量获取
+  if (typeof process !== 'undefined' && process.custom?.ENV) {
+    const targetEnv = process.custom.ENV || 'test'
+    return config[targetEnv] || config.test
   }
-  
-  // 检查是否在 miniApp 环境中
-  if (typeof window !== 'undefined' && (window as any).miniApp && (window as any).miniApp.env === 'test') {
-    return config.test;
+
+  // 渲染进程：从 window.electron.app.env 获取
+  if (typeof window !== 'undefined' && window.electron?.app?.env) {
+    return config[electron.app.env]
   }
-  
-  return config.prod;
+
+  // 兜底：返回测试环境配置
+  return config.test
 }
 
-
-
-
-export const {
+// 解构配置
+const {
   baseUrl,
   wsUrl,
-} = getEnvConfig()
+} = getCurrentConfig()
+export const getBaseUrl = () => getCurrentConfig().baseUrl
+
+export {
+  baseUrl,
+  getCurrentConfig,
+  wsUrl,
+}

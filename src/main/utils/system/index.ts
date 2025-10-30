@@ -1,5 +1,5 @@
-import si from 'systeminformation'
 import { app, screen } from 'electron'
+import si from 'systeminformation'
 
 // 类型别名
 type GraphicsData = si.Systeminformation.GraphicsData
@@ -30,7 +30,8 @@ const handleError = (error: any, defaultValue: any) => {
 export const getGraphicsControllers = async (): Promise<GraphicsData | null> => {
   try {
     return await si.graphics()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -42,7 +43,8 @@ export const getGraphicsDisplays = async (): Promise<GraphicsControllerData[]> =
   try {
     const info = await si.graphics()
     return info.controllers
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, [])
   }
 }
@@ -54,7 +56,8 @@ export const getPrimaryDisplay = async (): Promise<Electron.Display | null> => {
   try {
     await app.whenReady()
     return screen.getPrimaryDisplay()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -65,7 +68,8 @@ export const getPrimaryDisplay = async (): Promise<Electron.Display | null> => {
 export const getSystemOsInfo = async (): Promise<OsData | null> => {
   try {
     return await si.osInfo()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -76,7 +80,8 @@ export const getSystemOsInfo = async (): Promise<OsData | null> => {
 export const getSystemUserInfo = async (): Promise<UserData[]> => {
   try {
     return await si.users()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, [])
   }
 }
@@ -87,7 +92,8 @@ export const getSystemUserInfo = async (): Promise<UserData[]> => {
 export const getCpuInfo = async (): Promise<CpuData | null> => {
   try {
     return await si.cpu()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -98,7 +104,8 @@ export const getCpuInfo = async (): Promise<CpuData | null> => {
 export const getMemoryInfo = async (): Promise<MemData | null> => {
   try {
     return await si.mem()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -108,8 +115,9 @@ export const getMemoryInfo = async (): Promise<MemData | null> => {
  */
 export const getDiskInfo = async (): Promise<FsSizeData[] | null> => {
   try {
-    return await si.fsSize() 
-  } catch (error) {
+    return await si.fsSize()
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -120,7 +128,8 @@ export const getDiskInfo = async (): Promise<FsSizeData[] | null> => {
 export const getNetworkInterfaces = async (): Promise<NetworkInterfacesData[] | null> => {
   try {
     return await si.networkInterfaces() as NetworkInterfacesData[]
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -131,7 +140,8 @@ export const getNetworkInterfaces = async (): Promise<NetworkInterfacesData[] | 
 export const getBatteryInfo = async (): Promise<BatteryData | null> => {
   try {
     return await si.battery()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -142,7 +152,8 @@ export const getBatteryInfo = async (): Promise<BatteryData | null> => {
 export const getBiosInfo = async (): Promise<BiosData | null> => {
   try {
     return await si.bios()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -153,7 +164,8 @@ export const getBiosInfo = async (): Promise<BiosData | null> => {
 export const getBaseboardInfo = async (): Promise<BaseboardData | null> => {
   try {
     return await si.baseboard()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -164,7 +176,8 @@ export const getBaseboardInfo = async (): Promise<BaseboardData | null> => {
 export const getProcessInfo = async (): Promise<ProcessData | null> => {
   try {
     return await si.processes()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -175,7 +188,8 @@ export const getProcessInfo = async (): Promise<ProcessData | null> => {
 export const getLoadInfo = async (): Promise<LoadData | null> => {
   try {
     return await si.currentLoad()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -186,7 +200,8 @@ export const getLoadInfo = async (): Promise<LoadData | null> => {
 export const getNetworkStats = async (): Promise<NetworkStatsData[] | null> => {
   try {
     return await si.networkStats()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -197,7 +212,8 @@ export const getNetworkStats = async (): Promise<NetworkStatsData[] | null> => {
 export const getUsbInfo = async (): Promise<UsbData[] | null> => {
   try {
     return await si.usb()
-  } catch (error) {
+  }
+  catch (error) {
     return handleError(error, null)
   }
 }
@@ -207,8 +223,22 @@ export const getUsbInfo = async (): Promise<UsbData[] | null> => {
  */
 export const getAllSystemInfo = async () => {
   const [
-    graphics, displays, primaryDisplay, osInfo, users, cpu, memory, disk, network,
-    battery, bios, baseboard, processes, load, networkStats, usb
+    graphics,
+    displays,
+    primaryDisplay,
+    osInfo,
+    users,
+    cpu,
+    memory,
+    disk,
+    network,
+    battery,
+    bios,
+    baseboard,
+    processes,
+    load,
+    networkStats,
+    usb,
   ] = await Promise.all([
     getGraphicsControllers(),
     getGraphicsDisplays(),
@@ -225,7 +255,7 @@ export const getAllSystemInfo = async () => {
     getProcessInfo(),
     getLoadInfo(),
     getNetworkStats(),
-    getUsbInfo()
+    getUsbInfo(),
   ])
 
   return {
@@ -244,6 +274,6 @@ export const getAllSystemInfo = async () => {
     processes,
     load,
     networkStats,
-    usb
+    usb,
   }
 }

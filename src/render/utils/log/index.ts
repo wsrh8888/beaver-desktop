@@ -1,4 +1,4 @@
-import { ILogger } from "commonModule/type/logger"
+import type { ILogger } from 'commonModule/type/logger'
 
 class Logger {
   logName: string
@@ -18,11 +18,10 @@ class Logger {
     this.sendLog('error', msg)
   }
 
-  sendLog = (level: "info" | "warn" | "error", msg: ILogger) => {
+  sendLog = (level: 'info' | 'warn' | 'error', msg: ILogger) => {
     const conmmonLog = console[level]
     conmmonLog(level, msg)
     window.electron.logger[level](msg, this.logName)
-
   }
 }
 

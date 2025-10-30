@@ -1,27 +1,15 @@
-import { BrowserWindow, screen } from 'electron';
-import path from 'node:path';
-import { __dirname } from 'mainModule/utils/config';
-import { Application } from 'commonModule/type/app/application';
-import ApplicationBase from './common/base';
-import logger from 'mainModule/utils/log';
+import type { Application } from 'commonModule/type/app/application'
+import path from 'node:path'
+import { BrowserWindow } from 'electron'
+import { __dirname } from 'mainModule/config'
+import ApplicationBase from './common/base'
 
 class Login extends ApplicationBase implements Application {
   constructor() {
-    super('login');
+    super('login')
   }
 
   public createBrowserWindow(): void {
-    const primaryDisplay = screen.getPrimaryDisplay();
-
-    // 获取缩放因子
-    const scaleFactor = primaryDisplay.scaleFactor;
-
-    const idealWidth = 1364;
-    const idealHeight = 1036;
-    
-    // 按比例缩放理想尺寸，使其适应不同DPI显示设备
-    const scaledWidth = idealWidth / scaleFactor;
-    const scaledHeight = idealHeight / scaleFactor;
     this.win = new BrowserWindow({
       width: 800,
       height: 500,
@@ -37,14 +25,14 @@ class Login extends ApplicationBase implements Application {
         additionalArguments: [`--custom=${JSON.stringify({ ...this.getPreloadParams() })}`],
 
       },
-    });
-    this.win.setFullScreenable(false);
+    })
+    this.win.setFullScreenable(false)
 
     // 加载渲染器
-    this.loadRender();
-    this.init();
-    this.initEvents();
+    this.loadRender()
+    this.init()
+    this.initEvents()
   }
 }
 
-export default new Login();
+export default new Login()

@@ -1,4 +1,4 @@
-import { previewOnlineFileApi } from 'renderModule/api/file';
+import { previewOnlineFileApi } from 'renderModule/api/file'
 
 /**
  * @description: 处理头像路径，将 fileId 转换为完整的 URL
@@ -6,15 +6,16 @@ import { previewOnlineFileApi } from 'renderModule/api/file';
  * @return {string} 完整的头像 URL
  */
 export function processAvatarUrl(avatar: string): string {
-  if (!avatar) return '';
-  
+  if (!avatar)
+    return ''
+
   // 如果已经是完整的 URL，直接返回
   if (avatar.startsWith('http://') || avatar.startsWith('https://')) {
-    return avatar;
+    return avatar
   }
-  
+
   // 如果是 fileId，使用 API 转换为完整 URL
-  return previewOnlineFileApi(avatar);
+  return previewOnlineFileApi(avatar)
 }
 
 /**
@@ -24,15 +25,16 @@ export function processAvatarUrl(avatar: string): string {
  * @return {T} 处理后的对象
  */
 export function processObjectAvatar<T extends Record<string, any>>(
-  obj: T, 
-  avatarField: string = 'avatar'
+  obj: T,
+  avatarField: string = 'avatar',
 ): T {
-  if (!obj || !obj[avatarField]) return obj;
-  
+  if (!obj || !obj[avatarField])
+    return obj
+
   return {
     ...obj,
-    [avatarField]: processAvatarUrl(obj[avatarField])
-  };
+    [avatarField]: processAvatarUrl(obj[avatarField]),
+  }
 }
 
 /**
@@ -42,10 +44,10 @@ export function processObjectAvatar<T extends Record<string, any>>(
  * @return {T[]} 处理后的数组
  */
 export function processArrayAvatars<T extends Record<string, any>>(
-  array: T[], 
-  avatarField: string = 'avatar'
+  array: T[],
+  avatarField: string = 'avatar',
 ): T[] {
-  return array.map(item => processObjectAvatar(item, avatarField));
+  return array?.map(item => processObjectAvatar(item, avatarField))
 }
 
 /**
@@ -54,10 +56,11 @@ export function processArrayAvatars<T extends Record<string, any>>(
  * @return {any} 处理后的发送者信息
  */
 export function processSenderAvatar(sender: any): any {
-  if (!sender) return sender;
-  
+  if (!sender)
+    return sender
+
   return {
     ...sender,
-    avatar: processAvatarUrl(sender.avatar)
-  };
-} 
+    avatar: processAvatarUrl(sender.avatar),
+  }
+}

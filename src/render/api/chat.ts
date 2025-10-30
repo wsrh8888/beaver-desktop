@@ -1,52 +1,128 @@
-import { baseUrl } from "commonModule/config"
-import { IRecentChatRes, IConversationInfoRes, IChatHistoryRes } from "commonModule/type/ajax/chat"
-import { ajax } from "commonModule/utils/axios/request"
+import type {
+  IChatHistoryReq,
+  IChatHistoryRes,
+  IConversationInfoReq,
+  IConversationInfoRes,
+  ICreateConversationReq,
+  IDeleteRecentReq,
+  IDeleteRecentRes,
+  IEditMessageReq,
+  IEditMessageRes,
+  IForwardMessageReq,
+  IForwardMessageRes,
+  IPinnedChatReq,
+  IPinnedChatRes,
+  IRecallMessageReq,
+  IRecallMessageRes,
+  IRecentChatRes,
+  ISendMsgReq,
+  ISendMsgRes,
+} from 'commonModule/type/ajax/chat'
+import { baseUrl } from 'commonModule/config'
+import ajax from 'renderModule/utils/request/ajax'
 /**
  * @description: 获取最新的聊天列表
  */
 export const getRecentChatListApi = () => {
   return ajax<IRecentChatRes>({
     method: 'GET',
-    url: `${baseUrl}/api/chat/getRecentChatList`
+    url: `${baseUrl}/api/chat/getRecentChatList`,
   })
 }
 /**
  * @description: 创建会话
  */
-export const getcreateConversationApi = (data:object) => {
+export const getcreateConversationApi = (data: ICreateConversationReq) => {
   return ajax<IRecentChatRes>({
     method: 'POST',
-    data:data,
-    url: `${baseUrl}/api/chat/createConversation`
+    data,
+    url: `${baseUrl}/api/chat/createConversation`,
   })
 }
 
 /**
  * @description: 通过会话id获取最新的会话信息
  */
-export const getRecentChatInfoApi = (data) => {
+export const getRecentChatInfoApi = (data: IConversationInfoReq) => {
   return ajax<IConversationInfoRes>({
     method: 'POST',
-    data: data,
-    url: `${baseUrl}/api/chat/getConversationInfo`
+    data,
+    url: `${baseUrl}/api/chat/getConversationInfo`,
   })
 }
 /**
  * @description: 获取与好友聊天记录
  */
-export const getChatHistoryApi = (data) => {
+export const getChatHistoryApi = (data: IChatHistoryReq) => {
   return ajax<IChatHistoryRes>({
     method: 'POST',
-    data:data,
-    url: `${baseUrl}/api/chat/getChatHistory`
+    data,
+    url: `${baseUrl}/api/chat/getChatHistory`,
   })
 }
-/**
- * @description: 上传文件到七牛云  file
- */
-export const getuploadQiniuApi = (filePath:string) => {
-  return new Promise((resolve, reject) => {
-    
-  });
-};
 
+/**
+ * @description: 发送消息
+ */
+export const sendMsgApi = (data: ISendMsgReq) => {
+  return ajax<ISendMsgRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/sendMsg`,
+  })
+}
+
+/**
+ * @description: 删除最近会话
+ */
+export const deleteRecentApi = (data: IDeleteRecentReq) => {
+  return ajax<IDeleteRecentRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/deleteRecentChat`,
+  })
+}
+
+/**
+ * @description: 置顶会话
+ */
+export const pinnedChatApi = (data: IPinnedChatReq) => {
+  return ajax<IPinnedChatRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/pinnedChat`,
+  })
+}
+
+/**
+ * @description: 编辑消息
+ */
+export const editMessageApi = (data: IEditMessageReq) => {
+  return ajax<IEditMessageRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/edit`,
+  })
+}
+
+/**
+ * @description: 撤回消息
+ */
+export const recallMessageApi = (data: IRecallMessageReq) => {
+  return ajax<IRecallMessageRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/recall`,
+  })
+}
+
+/**
+ * @description: 转发消息
+ */
+export const forwardMessageApi = (data: IForwardMessageReq) => {
+  return ajax<IForwardMessageRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/forward`,
+  })
+}

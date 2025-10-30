@@ -24,118 +24,88 @@ import emoji_24Png from 'renderModule/assets/emoji/emoji_24.png'
 import emoji_25Png from 'renderModule/assets/emoji/emoji_25.png'
 import emoji_26Png from 'renderModule/assets/emoji/emoji_26.png'
 
-
-
 export const emojiList = [{
   name: '[微笑]',
-  icon: '/static/emoji/emoji_01.png'  // APP中使用绝对路径
+  icon: '/static/emoji/emoji_01.png', // APP中使用绝对路径
 
 }, {
   name: '[亲亲]',
-  icon: emoji_02Png
-},
-{
+  icon: emoji_02Png,
+}, {
   name: '[发呆]',
-  icon: emoji_03Png
-},
-{
+  icon: emoji_03Png,
+}, {
   name: '[得意]',
-  icon: emoji_04Png
-},
-{
+  icon: emoji_04Png,
+}, {
   name: '[流泪]',
-  icon: emoji_05Png
-},
-{
+  icon: emoji_05Png,
+}, {
   name: '[奋斗]',
-  icon: emoji_06Png
-},
-{
+  icon: emoji_06Png,
+}, {
   name: '[敲打]',
-  icon: emoji_07Png
-},
-{
+  icon: emoji_07Png,
+}, {
   name: '[可爱]',
-  icon: emoji_08Png
-},
-{
+  icon: emoji_08Png,
+}, {
   name: '[抓狂]',
-  icon: emoji_09Png
-},
-{
+  icon: emoji_09Png,
+}, {
   name: '[大笑]',
-  icon: emoji_10Png
-},
-{
+  icon: emoji_10Png,
+}, {
   name: '[偷笑]',
-  icon: emoji_11Png
-},
-{
+  icon: emoji_11Png,
+}, {
   name: '[快哭了]',
-  icon: emoji_12Png
-},
-{
+  icon: emoji_12Png,
+}, {
   name: '[抠鼻]',
-  icon: emoji_13Png
-},
-{
+  icon: emoji_13Png,
+}, {
   name: '[感冒]',
-  icon: emoji_14Png
-},
-{
+  icon: emoji_14Png,
+}, {
   name: '[拜托]',
-  icon: emoji_15Png
-},
-{
+  icon: emoji_15Png,
+}, {
   name: '[天使]',
-  icon: emoji_16Png
-},
-{
+  icon: emoji_16Png,
+}, {
   name: '[衰]',
-  icon: emoji_17Png
-},
-{
+  icon: emoji_17Png,
+}, {
   name: '[笑哭]',
-  icon: emoji_18Png
-},
-{
+  icon: emoji_18Png,
+}, {
   name: '[捂脸哭]',
-  icon: emoji_19Png
-},
-{
+  icon: emoji_19Png,
+}, {
   name: '[睡]',
-  icon: emoji_20Png
-},
-{
+  icon: emoji_20Png,
+}, {
   name: '[吃瓜]',
-  icon: emoji_21Png
-},
-{
+  icon: emoji_21Png,
+}, {
   name: '[害羞]',
-  icon: emoji_22Png
-},
-{
+  icon: emoji_22Png,
+}, {
   name: '[闭嘴]',
-  icon: emoji_23Png
-},
-{
+  icon: emoji_23Png,
+}, {
   name: '[流鼻血]',
-  icon: emoji_24Png
-},
-{
+  icon: emoji_24Png,
+}, {
   name: '[推眼镜]',
-  icon: emoji_25Png
-},
-{
+  icon: emoji_25Png,
+}, {
   name: '[暗中观察]',
-  icon: emoji_26Png
-},
+  icon: emoji_26Png,
+}]
 
-]
-
-
-
-export const emojiMap = (name: string) =>{
+export const emojiMap = (name: string) => {
   const emoji = emojiList.find(item => item.name === name)
   return emoji?.icon
 }

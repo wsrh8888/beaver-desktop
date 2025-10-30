@@ -1,14 +1,14 @@
-import { BrowserWindow, screen } from 'electron';
-import path from 'node:path';
-import { Application } from 'commonModule/type/app/application';
-import { __dirname } from 'mainModule/utils/config';
-import ApplicationBase from './common/base';
+import type { Application } from 'commonModule/type/app/application'
+import path from 'node:path'
+import { BrowserWindow } from 'electron'
+import { __dirname } from 'mainModule/config'
+import ApplicationBase from './common/base'
 
 class App extends ApplicationBase implements Application {
-  declare mainWin: BrowserWindow;
+  declare mainWin: BrowserWindow
 
   constructor() {
-    super('app');
+    super('app')
   }
 
   public createBrowserWindow(): void {
@@ -27,14 +27,13 @@ class App extends ApplicationBase implements Application {
         devTools: true, // 是否开启 DevTools
         additionalArguments: [`--custom=${JSON.stringify({ ...this.getPreloadParams() })}`],
       },
-    });
-    this.win.setFullScreenable(false);
+    })
+    this.win.setFullScreenable(false)
     // 加载渲染器
-    this.loadRender();
-    this.init();
-    this.initEvents();
+    this.loadRender()
+    this.init()
+    this.initEvents()
   }
-
 }
 
-export default new App();
+export default new App()

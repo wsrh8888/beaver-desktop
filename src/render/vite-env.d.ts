@@ -1,11 +1,9 @@
 /// <reference types="vite/client" />
 
-import {ElectronAPP} from 'commonModule/type/preload/window'
-
-
+import type { ElectronAPP } from 'commonModule/type/preload'
 
 declare global {
-  interface Window  {
-    electron: ElectronAPP;    
+  interface Window {
+    electron: ElectronAPP
   }
 }

@@ -1,12 +1,12 @@
-import { BrowserWindow } from 'electron';
-import { Application } from 'commonModule/type/app/application';
-import ApplicationBase from './common/base';
+import type { Application } from 'commonModule/type/app/application'
+import { BrowserWindow } from 'electron'
+import ApplicationBase from './common/base'
 
 class WebView extends ApplicationBase implements Application {
-  declare mainWin: BrowserWindow;
+  declare mainWin: BrowserWindow
 
   constructor() {
-    super('app');
+    super('app')
   }
 
   public createBrowserWindow(url: string): void {
@@ -18,9 +18,9 @@ class WebView extends ApplicationBase implements Application {
         contextIsolation: true, // 启用上下文隔离
         webSecurity: false,
       },
-    });
-    this.loadUrlRender(url);
+    })
+    this.loadUrlRender(url)
   }
 }
 
-export default new WebView();
+export default new WebView()
