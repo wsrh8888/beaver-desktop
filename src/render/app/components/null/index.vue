@@ -1,18 +1,16 @@
 <template>
-  <view class="content">
-
-  </view>
+  <view class="content" />
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   setup() {
     return {
-    };
-  }
-});
+    }
+  },
+})
 </script>
 
 <style lang="scss" scoped>

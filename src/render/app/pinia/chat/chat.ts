@@ -1,8 +1,8 @@
-import { defineStore } from 'pinia';
-import { getChatHistoryApi } from 'renderModule/api/chat';
-import { previewOnlineFileApi } from 'renderModule/api/file';
-import { MessageStatus, MessageType, type IChatHistory, type IChatInfo } from 'commonModule/type/ajax/chat';
-import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation';
+import type { IChatHistory } from 'commonModule/type/ajax/chat'
+import { defineStore } from 'pinia'
+
+import { getChatHistoryApi } from 'renderModule/api/chat'
+import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 
 /**
  * @description: 聊天消息管理
@@ -20,27 +20,27 @@ export const useChatStore = defineStore('useChatStore', {
      * @param messages - 缓存的消息列表
      */
     messageCache: new Map<string, {
-      timestamp: number;
-      messages: IChatHistory[];
+      timestamp: number
+      messages: IChatHistory[]
     }>(),
-    
+
     /**
      * @description: 消息加载状态，用于控制加载动画
      */
     loadingStates: new Map<string, boolean>(),
-    
+
     /**
      * @description: 是否还有更多消息，用于控制加载更多
      */
     hasMoreMessages: new Map<string, boolean>(),
-    
+
   }),
 
   getters: {
     /**
      * @description: 获取会话的聊天记录
      */
-    getChatHistory: (state) => (conversationId: string) => 
+    getChatHistory: state => (conversationId: string) =>
       state.chatHistory.get(conversationId) || [],
   },
 
@@ -49,10 +49,10 @@ export const useChatStore = defineStore('useChatStore', {
      * @description: 重置store状态
      */
     reset() {
-      this.chatHistory.clear();
-      this.messageCache.clear();
-      this.loadingStates.clear();
-      this.hasMoreMessages.clear();
+      this.chatHistory.clear()
+      this.messageCache.clear()
+      this.loadingStates.clear()
+      this.hasMoreMessages.clear()
     },
 
     /**
@@ -61,55 +61,41 @@ export const useChatStore = defineStore('useChatStore', {
      * @param {boolean} useCache - 是否使用缓存
      */
     async loadChatHistory(conversationId: string, useCache: boolean = true) {
-      const CACHE_DURATION = 5 * 60 * 1000; // 5分钟缓存
-      
+      const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
+
       if (useCache) {
-        const cached = this.messageCache.get(conversationId);
+        const cached = this.messageCache.get(conversationId)
         if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-          this.chatHistory.set(conversationId, cached.messages);
-          return;
+          this.chatHistory.set(conversationId, cached.messages)
+          return
         }
       }
 
       try {
-        this.loadingStates.set(conversationId, true);
-        const res = await getChatHistoryApi({ conversationId });
-        
+        this.loadingStates.set(conversationId, true)
+        const res = await getChatHistoryApi({ conversationId })
+
         if (res.code === 0) {
-          const messages = res.result.list || [];
-          console.error('聊天记录:', messages);
-          // 处理消息中的图片URL
-          messages.forEach(message => {
-            // 处理发送者头像（如果存在）
-            if (message.sender && message.sender.avatar) {
-              message.sender.avatar = previewOnlineFileApi(message.sender.avatar);
-            }
-            
-            // 处理消息中的图片（如果是图片消息）
-            if (message.msg.imageMsg && (message.msg.imageMsg as any).fileId) {
-              (message.msg.imageMsg as any).src = previewOnlineFileApi((message.msg.imageMsg as any).fileId);
-            }
-            
-            // 处理消息中的文件（如果是文件消息）
-            // if (message.msg.fileMsg && message.msg.fileMsg.url) {
-            //   message.msg.fileMsg.url = previewOnlineFileApi(message.msg.fileMsg.url);
-            // }
-          });
-          
+          const messages = res.result.list || []
+          console.error('聊天记录:', messages)
+          // 直接使用原始数据，不需要特殊处理
+
           // 消息按时间倒序排列，最新的在前面
-          this.chatHistory.set(conversationId, messages.reverse());
-          console.error(messages.reverse(),'messages.reverse()');
+          this.chatHistory.set(conversationId, messages.reverse())
+          console.error(messages.reverse(), 'messages.reverse()')
           this.messageCache.set(conversationId, {
             timestamp: Date.now(),
-            messages: messages.reverse()
-          });
-          this.hasMoreMessages.set(conversationId, messages.length >= 20);
+            messages: messages.reverse(),
+          })
+          this.hasMoreMessages.set(conversationId, messages.length >= 20)
         }
-      } catch (error) {
-        console.error('Failed to load chat history:', error);
-        throw error;
-      } finally {
-        this.loadingStates.set(conversationId, false);
+      }
+      catch (error) {
+        console.error('Failed to load chat history:', error)
+        throw error
+      }
+      finally {
+        this.loadingStates.set(conversationId, false)
       }
     },
 
@@ -119,19 +105,19 @@ export const useChatStore = defineStore('useChatStore', {
      * @param {IChatHistory} message - 消息内容
      */
     addMessage(conversationId: string, message: IChatHistory) {
-      console.error('添加新消息:',conversationId,  message);
-      
-      const history = this.chatHistory.get(conversationId) || [];
+      console.error('添加新消息:', conversationId, message)
+
+      const history = this.chatHistory.get(conversationId) || []
       // 新消息添加到开头
-      history.push(message);
-      this.chatHistory.set(conversationId, history);
+      history.push(message)
+      this.chatHistory.set(conversationId, history)
 
       // 更新会话列表的最新消息
-      const conversationStore = useConversationStore();
+      const conversationStore = useConversationStore()
       conversationStore.updateLastMessage(conversationId, {
         content: message.msg.textMsg?.content || '',
-        timestamp: message.create_at
-      });
+        timestamp: message.create_at,
+      })
     },
   },
-});
+})

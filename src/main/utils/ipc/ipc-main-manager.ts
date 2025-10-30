@@ -1,4 +1,4 @@
-import { ipcMain } from "electron";
+import { ipcMain } from 'electron'
 
 class IpcMainManager {
   /**
@@ -8,10 +8,11 @@ class IpcMainManager {
    */
   on(
     command: any,
-    listener: (event: Electron.IpcMainEvent,  command: any, data: any) => void
+    listener: (event: Electron.IpcMainEvent, command: any, data: any) => void,
   ) {
-    if (!command) return;
-    ipcMain.on(command, listener);
+    if (!command)
+      return
+    ipcMain.on(command, listener)
   }
 
   /**
@@ -21,10 +22,11 @@ class IpcMainManager {
    */
   public off(
     command: string,
-    listener: (event: Electron.IpcMainEvent, data: any) => void
+    listener: (event: Electron.IpcMainEvent, data: any) => void,
   ) {
-    if (!command) return;
-    ipcMain.removeListener(command, listener);
+    if (!command)
+      return
+    ipcMain.removeListener(command, listener)
   }
 
   /**
@@ -34,10 +36,11 @@ class IpcMainManager {
    */
   handle(
     command: string,
-    listener: (event: Electron.IpcMainInvokeEvent,  command: any, data: any) => Promise<unknown>
+    listener: (event: Electron.IpcMainInvokeEvent, command: any, data: any) => Promise<unknown>,
   ) {
-    if (!command) return;
-    ipcMain.handle(command, listener);
+    if (!command)
+      return
+    ipcMain.handle(command, listener)
   }
 
   /**
@@ -45,9 +48,10 @@ class IpcMainManager {
    * @param command - 要移除处理程序的 IPC 命令。
    */
   removeHandler(command: string) {
-    if (!command) return;
-    ipcMain.removeHandler(command);
+    if (!command)
+      return
+    ipcMain.removeHandler(command)
   }
 }
 
-export default new IpcMainManager();
+export default new IpcMainManager()

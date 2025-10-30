@@ -3,39 +3,39 @@
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
     "target": "ES2020",
-    "useDefineForClassFields": true,
-    "module": "ESNext",
+    "jsx": "preserve",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
-    "skipLibCheck": true,
-    
+    "moduleDetection": "force",
+    "useDefineForClassFields": true,
+
+    "baseUrl": "./",
+    "module": "ESNext",
+
     /* Bundler mode */
     "moduleResolution": "bundler",
-    "allowImportingTsExtensions": true,
-    "resolveJsonModule": true,
-    "isolatedModules": true,
-    "moduleDetection": "force",
-    "noEmit": true,
-    "jsx": "preserve",
-
-    /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "baseUrl": "./",
     "paths": {
       "commonModule/*": ["src/common/*"],
       "renderModule/*": ["src/render/*"],
-      "mainModule/*": ["src/main/*"],
+      "mainModule/*": ["src/main/*"]
     },
-    "types": ["vite/client"]
+    "resolveJsonModule": true,
+    "types": ["vite/client"],
+    "allowImportingTsExtensions": true,
+    /* Linting */
+    "strict": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noEmit": true,
+    "isolatedModules": true,
+    "skipLibCheck": true
   },
+  "include": ["src/**/*.ts", "src/render/**/*.vue", "src/**/*.vue", "src/**/*.d.ts"],
   "exclude": [
     "node_modules",
     "logs",
     "dist",
     "dist-electron",
     "release"
-  ],
-  "include": ["src/**/*.ts", "src/render/**/*.vue", "src/**/*.vue", "src/**/*.d.ts"],
+  ]
 }

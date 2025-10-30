@@ -1,31 +1,36 @@
 <template>
   <div class="friend__container">
     <div class="friend__left">
-      <FriendLeftComponent></FriendLeftComponent>
+      <FriendLeftComponent />
     </div>
-    <div class="friend__right"></div>
+    <div class="friend__right">
+      <FriendRightComponent />
+    </div>
+    <div>
+      <FriendDialogComponent />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted } from 'vue';
-import dayjs from 'dayjs';
-import relativeTime from 'dayjs/plugin/relativeTime';
-import FriendLeftComponent from './component/FriendLeft.vue';
-dayjs.extend(relativeTime);
+import { defineComponent, onMounted } from 'vue'
+import FriendDialogComponent from './dialog-component/index.vue'
+import FriendLeftComponent from './left-component/FriendLeft.vue'
+import FriendRightComponent from './right-component/index.vue'
 
 export default defineComponent({
   components: {
-    FriendLeftComponent
+    FriendLeftComponent,
+    FriendRightComponent,
+    FriendDialogComponent,
   },
   setup() {
- 
     onMounted(() => {
-    });
+    })
 
     return {}
   },
-});
+})
 </script>
 
 <style lang="less" scoped>

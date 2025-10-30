@@ -1,20 +1,18 @@
 <template>
-  <div class="app__content">
+  <div class="login__content">
     <router-view />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, computed } from "vue";
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   setup() {
-   
-
     return {
-    };
+    }
   },
-});
+})
 </script>
 
 <style lang="less" scoped>

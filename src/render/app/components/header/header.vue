@@ -1,9 +1,7 @@
 <template>
   <header class="title-bar">
-    <div class="title-bar-left">
-      
-    </div>
-    
+    <div class="title-bar-left" />
+
     <div class="window-controls">
       <div class="window-control-button minimize" @click="handleMinimize">
         <img src="renderModule/assets/image/header/minimize.svg" alt="minimize">
@@ -19,27 +17,36 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { defineComponent } from 'vue'
 // import { ipcRenderer } from 'electron';
+
+declare global {
+  interface Window {
+    electron: any
+  }
+}
 
 export default defineComponent({
   setup() {
     const handleMinimize = () => {
-    };
+      window.electron.window.minimize()
+    }
 
     const handleMaximize = () => {
-    };
+      window.electron.window.toggleMaximize()
+    }
 
     const handleClose = () => {
-    };
+      window.electron.window.close()
+    }
 
     return {
       handleMinimize,
       handleMaximize,
-      handleClose
-    };
-  }
-});
+      handleClose,
+    }
+  },
+})
 </script>
 
 <style lang="less" scoped>
@@ -57,8 +64,6 @@ export default defineComponent({
     display: flex;
     align-items: center;
   }
-
-
 
   .app-title {
     font-size: 13px;

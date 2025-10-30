@@ -1,12 +1,11 @@
-import Electron from './electron'
+import RenderToMainHandler from './render-to-main'
 
-class MainMessage{
-  constructor() {
-  }
+class IpcManager {
+  constructor() {}
+
   init() {
-    new Electron()
+    RenderToMainHandler.init()
   }
- 
 }
 
-export default new MainMessage();
+export default new IpcManager()

@@ -1,7 +1,8 @@
-import log4js from 'log4js'
-import moment from 'moment'
-import { getRootPath } from 'mainModule/utils/config'
+import type { ILogger } from 'commonModule/type/logger'
 import path from 'node:path'
+import log4js from 'log4js'
+import { getRootPath } from 'mainModule/config'
+import moment from 'moment'
 
 class Logger {
   private filePath: string
@@ -16,39 +17,42 @@ class Logger {
       appenders: {
         out: { type: 'stdout' }, // 设置是否在控制台打印日志
         info: { type: 'file', filename: `${path.resolve(this.filePath)}/logs/${dateStr}.log` },
-        error: { type: 'file', filename: `${path.resolve(this.filePath)}logs/${dateStr}.log` }
+        error: { type: 'file', filename: `${path.resolve(this.filePath)}logs/${dateStr}.log` },
       },
       categories: {
-        default: { appenders: ['out', 'info'], level: 'info' } // 去掉'out'。控制台不打印日志
-      }
+        default: { appenders: ['out', 'info'], level: 'info' }, // 去掉'out'。控制台不打印日志
+      },
     })
   }
-
 
   formatLog(level: string, msg: string) {
     return {
       contents: {
-        level: level,
-        message: `${msg}`
+        level,
+        message: `${msg}`,
       },
-      time: new Date().getTime()
+      time: new Date().getTime(),
     }
   }
+
   transformName(source: string, name = '') {
-   return `[${source}${name ? `-${name}` : ''}] `
-  }
-  info(msg: string, source = 'main', name = '') {
-    return log4js.getLogger('info').info(this.transformName(source, name) + msg)
+    return `[${source}${name ? `-${name}` : ''}] `
   }
 
-  warn(msg: string, source = 'main', name = '') {
-    return log4js.getLogger('warn').warn(this.transformName(source, name) + msg)
+  info(msg: ILogger, moduleName = '', source = 'main') {
+    const message = JSON.stringify(msg)
+    return log4js.getLogger('info').info(this.transformName(source, moduleName) + message)
   }
 
-  error(msg: string, source = 'main', name = '') {
-    return log4js.getLogger('error').error(this.transformName(source, name) + msg)
+  warn(msg: ILogger, moduleName = '', source = 'main') {
+    const message = JSON.stringify(msg)
+    return log4js.getLogger('warn').warn(this.transformName(source, moduleName) + message)
   }
-  
+
+  error(msg: ILogger, moduleName = '', source = 'main') {
+    const message = JSON.stringify(msg)
+    return log4js.getLogger('error').error(this.transformName(source, moduleName) + message)
+  }
 }
 
 export default new Logger()

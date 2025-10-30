@@ -1,0 +1,267 @@
+import type { IFriendInfo, IFriendListRes } from 'commonModule/type/ajax/friend'
+
+import { and, eq, gte, lte, or } from 'drizzle-orm'
+import dbManager from 'mainModule/database/db'
+import { friends } from 'mainModule/database/tables/friend/friend'
+import { users } from 'mainModule/database/tables/user/user'
+
+// 生成会话ID的辅助函数
+function generateConversationId(userId1: string, userId2: string): string {
+  // 确保 userId1 < userId2，保证唯一性
+  const sortedIds = [userId1, userId2].sort()
+  return `friend_${sortedIds[0]}_${sortedIds[1]}`
+}
+
+interface UserInfo {
+  uuid: string
+  nickName: string
+  avatar: string | null
+  abstract: string | null
+  email: string | null
+}
+
+// 好友服务
+export class FriendService {
+  static get db() {
+    return dbManager.db
+  }
+
+  // 创建好友关系
+  static async create(friendData: any) {
+    return await this.db.insert(friends).values(friendData).run()
+  }
+
+  // 创建或更新好友关系（upsert操作）
+  static async upsert(friendData: any) {
+    return await this.db.insert(friends)
+      .values(friendData)
+      .onConflictDoUpdate({
+        target: friends.uuid,
+        set: {
+          sendUserId: friendData.sendUserId,
+          revUserId: friendData.revUserId,
+          sendUserNotice: friendData.sendUserNotice,
+          revUserNotice: friendData.revUserNotice,
+          source: friendData.source,
+          isDeleted: friendData.isDeleted,
+          version: friendData.version,
+          updatedAt: friendData.updatedAt,
+        },
+      })
+      .run()
+  }
+
+  // 批量创建好友关系（调用upsert方法，避免重复数据错误）
+  static async batchCreate(friendsData: any[]) {
+    if (friendsData.length === 0)
+      return
+
+    for (const friend of friendsData) {
+      await this.upsert(friend)
+    }
+  }
+
+  /**
+   * @description: 获取好友列表
+   */
+  static async getFriends(header: any, params: any): Promise<IFriendListRes> {
+    try {
+      // 从header中获取当前用户ID
+      const userId = header?.userId
+
+      if (!userId) {
+        console.error('用户ID不能为空')
+        return { list: [] }
+      }
+
+      // 设置默认分页参数
+      const page = params.page || 1
+      const limit = params.limit || 20
+      const offset = (page - 1) * limit
+
+      // 步骤1: 查询好友关系记录
+      const friendRelations = await this.db
+        .select()
+        .from(friends)
+        .where(and(
+          or(eq(friends.sendUserId, userId), eq(friends.revUserId, userId)),
+          eq(friends.isDeleted, 0),
+        ))
+        .limit(limit)
+        .offset(offset)
+        .all()
+
+      if (friendRelations.length === 0) {
+        return { list: [] }
+      }
+
+      // 步骤2: 收集所有需要查询的用户ID
+      const userIds = new Set<string>()
+      friendRelations.forEach((relation: any) => {
+        if (relation.sendUserId === userId) {
+          userIds.add(relation.revUserId)
+        }
+        else {
+          userIds.add(relation.sendUserId)
+        }
+      })
+
+      // 步骤3: 查询所有好友的用户信息
+      const userIdsArray = Array.from(userIds)
+      let userInfos: UserInfo[] = []
+      if (userIdsArray.length > 0) {
+        // 构建查询条件
+        const conditions = userIdsArray.map(id => eq(users.uuid, id))
+        userInfos = await this.db
+          .select({
+            uuid: users.uuid,
+            nickName: users.nickName,
+            avatar: users.avatar,
+            abstract: users.abstract,
+            email: users.email,
+          })
+          .from(users)
+          .where(or(...conditions))
+          .all() as UserInfo[]
+      }
+
+      // 步骤4: 构建用户ID到用户信息的映射
+      const userMap = new Map<string, UserInfo>()
+      userInfos.forEach((user: any) => {
+        userMap.set(user.uuid, user)
+      })
+
+      // 步骤5: 构建好友列表
+      const friendList: IFriendInfo[] = friendRelations.map((relation: any) => {
+        // 确定好友的用户ID
+        const friendUserId = relation.sendUserId === userId
+          ? relation.revUserId
+          : relation.sendUserId
+
+        // 获取好友用户信息
+        const friendUser = userMap.get(friendUserId)
+
+        // 确定备注信息
+        const notice = relation.sendUserId === userId
+          ? relation.sendUserNotice
+          : relation.revUserNotice
+
+        return {
+          userId: friendUserId,
+          nickname: friendUser?.nickName || '',
+          fileName: friendUser?.avatar || '',
+          abstract: friendUser?.abstract || '',
+          notice: notice || '',
+          isFriend: true,
+          conversationId: generateConversationId(userId, friendUserId),
+          email: friendUser?.email || '',
+          source: relation.source || '',
+        }
+      })
+
+      return {
+        list: friendList,
+      }
+    }
+    catch (error) {
+      console.error('获取好友列表失败:', error)
+      return { list: [] }
+    }
+  }
+
+  static async getFriendsByVerRange(header: any, params: any): Promise<{ list: IFriendInfo[] }> {
+    try {
+      const userId = header?.userId
+
+      if (!userId) {
+        console.error('用户ID不能为空')
+        return { list: [] }
+      }
+
+      const startVersion = params?.startVersion || 0
+      const endVersion = params?.endVersion || Number.MAX_SAFE_INTEGER
+
+      // 查询指定版本范围内的好友关系记录
+      const friendRelations = await this.db
+        .select()
+        .from(friends)
+        .where(and(
+          or(eq(friends.sendUserId, userId), eq(friends.revUserId, userId)),
+          eq(friends.isDeleted, 0),
+          gte(friends.version, startVersion),
+          lte(friends.version, endVersion),
+        ))
+        .all()
+
+      if (friendRelations.length === 0) {
+        return { list: [] }
+      }
+
+      // 收集需要查询的用户ID
+      const userIds = new Set<string>()
+      friendRelations.forEach((relation: any) => {
+        if (relation.sendUserId === userId) {
+          userIds.add(relation.revUserId)
+        }
+        else {
+          userIds.add(relation.sendUserId)
+        }
+      })
+
+      // 查询用户信息
+      const userIdsArray = Array.from(userIds)
+      if (userIdsArray.length > 0) {
+        const conditions = userIdsArray.map(id => eq(users.uuid, id))
+        const userInfos = await this.db
+          .select({
+            uuid: users.uuid,
+            nickName: users.nickName,
+            avatar: users.avatar,
+            abstract: users.abstract,
+            email: users.email,
+          })
+          .from(users)
+          .where(or(...conditions))
+          .all()
+
+        // 构建用户映射
+        const userMap = new Map<string, any>()
+        userInfos.forEach((user: any) => {
+          userMap.set(user.uuid, user)
+        })
+
+        // 构建好友列表
+        const friendList: IFriendInfo[] = friendRelations.map((relation: any) => {
+          const friendUserId = relation.sendUserId === userId
+            ? relation.revUserId
+            : relation.sendUserId
+
+          const friendUser = userMap.get(friendUserId)
+          const notice = relation.sendUserId === userId
+            ? relation.sendUserNotice
+            : relation.revUserNotice
+
+          return {
+            userId: friendUserId,
+            nickname: friendUser?.nickName || '',
+            fileName: friendUser?.avatar || '',
+            abstract: friendUser?.abstract || '',
+            notice: notice || '',
+            isFriend: true,
+            conversationId: generateConversationId(userId, friendUserId),
+            email: friendUser?.email || '',
+            source: relation.source || '',
+          }
+        })
+
+        return { list: friendList }
+      }
+
+      return { list: [] }
+    }
+    catch (error) {
+      console.error('根据版本范围获取好友列表失败:', error)
+      return { list: [] }
+    }
+  }
+}

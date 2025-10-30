@@ -1,24 +1,24 @@
-import {  Size, desktopCapturer } from 'electron'
+import type { Size } from 'electron'
+import { desktopCapturer } from 'electron'
 
-
-export const captureScreen = (option: Size) =>{
+export const captureScreen = (option: Size) => {
   const thumbSize = {
     width: option.width,
-    height: option.height
+    height: option.height,
   }
-  let options:Electron.SourcesOptions = { types: ['screen'], thumbnailSize: thumbSize }
+  let options: Electron.SourcesOptions = { types: ['screen'], thumbnailSize: thumbSize }
   return new Promise((resolve, reject) => {
     desktopCapturer
       .getSources(options)
-      .then(sources => {
+      .then((sources) => {
         const sourcesLen = sources.length
         for (let i = 0; i < sourcesLen; i++) {
           const source = sources[i]
           if (
-            source.name.toLowerCase() === 'entire screen' ||
-            source.name.toLowerCase() === 'screen 1' ||
-            source.name === '屏幕 1' ||
-            source.name === '整个屏幕' // 对应 "Entire Screen" 的中文
+            source.name.toLowerCase() === 'entire screen'
+            || source.name.toLowerCase() === 'screen 1'
+            || source.name === '屏幕 1'
+            || source.name === '整个屏幕' // 对应 "Entire Screen" 的中文
           ) {
             resolve(source.thumbnail.toJPEG(90))
             return
@@ -30,7 +30,7 @@ export const captureScreen = (option: Size) =>{
         }
         resolve(`截屏异常 sources: ${JSON.stringify(sources)}`)
       })
-      .catch(e => {
+      .catch((e) => {
         reject(e)
       })
   })

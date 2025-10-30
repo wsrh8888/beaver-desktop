@@ -1,14 +1,12 @@
 <template>
   <div class="nav-sidebar">
     <div class="main-logo">
-      <svg viewBox="0 0 24 24">
-        <path d="M12 3L4.5 15 8 21h8l3.5-6L12 3z" fill="#FFFFFF"/>
-      </svg>
+      <img src="commonModule/assets/img/logo/logo.png" alt="Beaver Logo">
     </div>
-    
+
     <div class="nav-icons">
-      <div 
-        v-for="item in outsideList" 
+      <div
+        v-for="item in outsideList"
         :key="item.id"
         class="nav-item app__no_drag"
         :class="{ active: item.router === route.path }"
@@ -18,46 +16,57 @@
           <img :src="item.router === route.path ? item.activeIcon : item.defaultIcon" :alt="item.title">
           <span v-if="item.id === 'chat'" class="badge">3</span>
         </div>
-        <div class="nav-label">{{ item.title }}</div>
+        <div class="nav-label">
+          {{ item.title }}
+        </div>
       </div>
     </div>
-    
+    <!-- <div class="app__no_drag" style="height: 200px;width: 100%; background-color: red;" @click="loginOut()">loginOut</div> -->
     <div class="user-avatar-nav">
-      <img :src="userInfo.avatar" :alt="userInfo.name">
+      <BeaverImage :file-name="userInfo.avatar" file :cache-type="CacheType.AVATAR" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, nextTick } from "vue";
-import { useRouter, useRoute } from 'vue-router';
+import { CacheType } from 'commonModule/type/cache/cache'
+import { useUserStore } from 'renderModule/app/pinia/user/user'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { computed, nextTick } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import { outsideList } from './data'
-import { useUserStore } from "renderModule/app/pinia/user/user";
 
-export default defineComponent({
+export default {
+  components: {
+    BeaverImage,
+  },
   setup() {
-    const router = useRouter();
-    const route = useRoute();
-    const userStore = useUserStore();
+    const router = useRouter()
+    const route = useRoute()
+    const userStore = useUserStore()
 
-    const userInfo = computed(() => userStore.userInfo);
+    const userInfo = computed(() => userStore.userInfo)
 
     const handleClick = (path: string) => {
       console.error(path)
       nextTick(() => {
-        router.push({ path });
-      });
-     
-    };
+        router.push({ path })
+      })
+    }
 
+    const loginOut = () => {
+      window.electron.window.loginOut()
+    }
     return {
+      CacheType,
       userInfo,
       route,
       handleClick,
-      outsideList
-    };
+      outsideList,
+      loginOut,
+    }
   },
-});
+}
 </script>
 
 <style lang="less" scoped>
@@ -75,27 +84,16 @@ export default defineComponent({
     width: 40px;
     height: 40px;
     border-radius: 10px;
-    background: linear-gradient(135deg, #FF7D45 0%, #E86835 100%);
-    margin-bottom: 32px;
+    margin-bottom: 16px;
     position: relative;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
 
-    &::after {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      right: 0;
-      height: 50%;
-      background: linear-gradient(180deg, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 100%);
-    }
-
-    svg {
-      width: 24px;
-      height: 24px;
+    img {
+      width: 40px;
+      height: 40px;
       position: relative;
       z-index: 1;
     }

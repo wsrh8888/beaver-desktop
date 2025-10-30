@@ -5,17 +5,17 @@ import friendActive from 'renderModule/assets/image/leftBar/friend_active.svg'
 
 export const outsideList = [
   {
-    id: "message",
-    title: "聊天",
+    id: 'message',
+    title: '聊天',
     defaultIcon: chatSvg,
     activeIcon: chatActive,
-    router: "/message",
+    router: '/message',
   },
   {
-    id: "friend",
-    router: "/friend",
-    title: "好友",
+    id: 'friend',
+    router: '/friend',
+    title: '好友',
     defaultIcon: friendSvg,
     activeIcon: friendActive,
-  }
-];
+  },
+]

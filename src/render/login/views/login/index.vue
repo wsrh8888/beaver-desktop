@@ -1,87 +1,82 @@
 <template>
   <div class="login-container">
     <WindowControls />
-    
+
     <BrandSection />
-    
+
     <div class="login-form">
       <div class="form-header">
-        <h2 class="form-title">欢迎回来</h2>
-        <p class="form-subtitle">请登录您的 Beaver 账号</p>
+        <h2 class="form-title">
+          欢迎回来
+        </h2>
+        <p class="form-subtitle">
+          请登录您的 海狸 账号
+        </p>
       </div>
-      
+
       <div class="form-group">
-        <label for="phone" class="form-label">手机号码</label>
+        <label for="email" class="form-label">{{ LOGIN_CONFIG.email.label }}</label>
         <div class="input-container">
-          <span class="input-prefix">+86</span>
-          <input 
-            type="tel" 
-            id="phone" 
-            v-model="form.phone"
-            class="form-input phone-input" 
-            placeholder="请输入手机号码" 
-            maxlength="11"
-            @input="handlePhoneInput"
-            @blur="validatePhone"
+          <input
+            id="email" v-model.trim="form.email" :type="LOGIN_CONFIG.email.type" class="form-input" :placeholder="LOGIN_CONFIG.email.placeholder"
+            @blur="validateFormField('email')"
           >
         </div>
-        <div class="error-message" v-show="errors.phone">{{ errors.phone }}</div>
+        <div v-show="errors.email" class="error-message">
+          {{ errors.email }}
+        </div>
       </div>
-      
+
       <div class="form-group">
-        <label for="password" class="form-label">密码</label>
+        <label for="password" class="form-label">{{ LOGIN_CONFIG.password.label }}</label>
         <div class="input-container">
-          <input 
-            :type="showPassword ? 'text' : 'password'" 
-            id="password" 
-            v-model="form.password"
-            class="form-input" 
-            placeholder="请输入密码"
-            @blur="validatePassword"
+          <input
+            id="password" v-model.trim="form.password" :type="showPassword ? 'text' : 'password'"
+            class="form-input" :placeholder="LOGIN_CONFIG.password.placeholder" @blur="validateFormField('password')"
           >
-          <div class="input-icon" @click="togglePassword">
+          <div class="input-icon" @click="toggle('password')">
             <img :src="showPassword ? eyeOffIcon : eyeIcon" alt="toggle password">
           </div>
         </div>
-        <div class="error-message" v-show="errors.password">{{ errors.password }}</div>
+        <div v-show="errors.password" class="error-message">
+          {{ errors.password }}
+        </div>
       </div>
-      
+
       <div class="form-options">
         <div class="checkbox-container">
-          <div 
-            class="custom-checkbox" 
-            :class="{ checked: rememberMe }"
-            @click="toggleRememberMe"
-          ></div>
-          <span class="checkbox-label" @click="toggleRememberMe">记住登录</span>
+          <div class="custom-checkbox" :class="{ checked: rememberMe }" @click="toggle('rememberMe')" />
+          <span class="checkbox-label" @click="toggle('rememberMe')">记住登录</span>
         </div>
-        <a href="#" class="forgot-link">忘记密码？</a>
+        <a href="#" class="forgot-link" @click="handleNavigation('/forgot')">忘记密码？</a>
       </div>
-      
-      <button 
-        class="login-button" 
-        :disabled="!isFormValid"
-        @click="handleLogin"
-      >登 录</button>
-      
+
+      <BeaverButton type="primary" size="large" class="login-button" :disabled="!isFormValid" @click="handleLogin">
+        登
+        录
+      </BeaverButton>
+
       <div class="form-footer">
         <span>还没有账号？</span>
-        <a href="#" class="register-link" @click="handleRegister">立即注册</a>
+        <a href="#" class="register-link" @click="handleNavigation('/register')">立即注册</a>
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue';
-import { MD5 } from 'crypto-js';
-import { loginApi } from 'renderModule/api/user';
-import { ElMessage } from 'element-plus';
-import WindowControls from './components/WindowControls.vue';
-import BrandSection from './components/BrandSection.vue';
-import eyeIcon from 'renderModule/assets/image/login/eye.svg';
-import eyeOffIcon from 'renderModule/assets/image/login/eye-off.svg';
-import { useRouter, useRoute } from 'vue-router';
+import { MD5 } from 'crypto-js'
+import { emailPasswordLoginApi } from 'renderModule/api/auth'
+import eyeOffIcon from 'renderModule/assets/image/login/eye-off.svg'
+import eyeIcon from 'renderModule/assets/image/login/eye.svg'
+import BeaverButton from 'renderModule/components/ui/button/index.vue'
+import Message from 'renderModule/components/ui/message'
+import { validateField } from 'renderModule/login/utils/validation'
+import { useRouterHelper } from 'renderModule/utils/router'
+import { computed, defineComponent, ref } from 'vue'
+import BrandSection from '../../components/BrandSection.vue'
+import WindowControls from '../../components/WindowControls.vue'
+import { LOGIN_CONFIG } from '../../config'
 
 // import eyeIcon from 'renderM';
 
@@ -89,103 +84,79 @@ export default defineComponent({
   name: 'LoginView',
   components: {
     WindowControls,
-    BrandSection
+    BrandSection,
+    BeaverButton,
   },
   setup() {
-    const route = useRoute();
-    const router = useRouter();
+    const routerHelper = useRouterHelper()
 
     const form = ref({
-      phone: '',
-      password: ''
-    });
+      email: '',
+      password: '',
+    })
 
     const errors = ref({
-      phone: '',
-      password: ''
-    });
+      email: '',
+      password: '',
+    })
 
-    const showPassword = ref(false);
-    const rememberMe = ref(false);
+    const showPassword = ref(false)
+    const rememberMe = ref(false)
 
     const isFormValid = computed(() => {
-      return !errors.value.phone && 
-             !errors.value.password && 
-             form.value.phone && 
-             form.value.password;
-    });
+      return !errors.value.email
+        && !errors.value.password
+        && form.value.email
+        && form.value.password
+    })
 
+    const validateFormField = (fieldName: 'email' | 'password') => {
+      errors.value[fieldName] = validateField(form.value[fieldName], fieldName)
+    }
 
-    const handlePhoneInput = (e: Event) => {
-      const target = e.target as HTMLInputElement;
-      target.value = target.value.replace(/\D/g, '');
-    };
-
-    const validatePhone = () => {
-      if (!form.value.phone) {
-        errors.value.phone = '请输入手机号码';
-      } else if (!/^1\d{10}$/.test(form.value.phone)) {
-        errors.value.phone = '请输入有效的手机号码';
-      } else {
-        errors.value.phone = '';
+    const toggle = (type: 'password' | 'rememberMe') => {
+      if (type === 'password') {
+        showPassword.value = !showPassword.value
       }
-    };
-
-    const validatePassword = () => {
-      if (!form.value.password) {
-        errors.value.password = '请输入密码';
-      } else {
-        errors.value.password = '';
+      else if (type === 'rememberMe') {
+        rememberMe.value = !rememberMe.value
       }
-    };
-
-    const togglePassword = () => {
-      showPassword.value = !showPassword.value;
-    };
-
-    const toggleRememberMe = () => {
-      rememberMe.value = !rememberMe.value;
-    };
+    }
 
     const handleLogin = async () => {
-      validatePhone();
-      validatePassword();
-      
+      validateFormField('email')
+      validateFormField('password')
+
       if (!isFormValid.value) {
-        ElMessage.error('请填写正确的手机号和密码');
-        return;
+        Message.error('请填写正确的邮箱和密码')
+        return
       }
 
       try {
-        const res = await loginApi({
-          phone: form.value.phone,
-          password: MD5(form.value.password).toString()
-        });
+        const res = await emailPasswordLoginApi({
+          email: form.value.email,
+          password: MD5(form.value.password).toString(),
+        })
 
         if (res.code === 0) {
-          electron.storage.saveStore('loginInfo', {
+          electron.storage.setAsync('userInfo', {
             userId: res.result.userId,
-            token: res.result.token
-          });
-          // electron.storeData('loginInfo', {
-          //   userId: res.result.userId,
-          //   token: res.result.token
-          // });
-          electron.window.openWindow('app');
-        } else {
-          ElMessage.error('登录失败');
+            token: res.result.token,
+          }, { persist: true })
+          electron.auth.login()
         }
-      } catch (error) {
-        ElMessage.error('登录失败');
+        else {
+          Message.error(res.msg || '登录失败')
+        }
       }
-    };
+      catch {
+        Message.error('登录失败')
+      }
+    }
 
-    const handleRegister = () => {
-      
-      setTimeout(() => {
-        router.push({ path: '/register' });
-      }, 0);
-    };
+    const handleNavigation = (path: string) => {
+      routerHelper.push(path)
+    }
 
     return {
       form,
@@ -195,160 +166,185 @@ export default defineComponent({
       isFormValid,
       eyeIcon,
       eyeOffIcon,
-      handlePhoneInput,
-      validatePhone,
-      validatePassword,
-      togglePassword,
-      toggleRememberMe,
+      validateFormField,
+      toggle,
       handleLogin,
-      handleRegister
-    };
-  }
-});
+      handleNavigation,
+      LOGIN_CONFIG,
+    }
+  },
+})
 </script>
 
 <style lang="less" scoped>
 .login-container {
   width: 800px;
   height: 500px;
-  background-color: var(--color-bg);
-  border-radius: var(--border-radius-md);
-  box-shadow: var(--shadow-window);
+  background-color: #FFFFFF;
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   display: flex;
   overflow: hidden;
   position: relative;
+  flex-shrink: 0;
+
+  /* 确保子元素不会影响布局 */
+  >* {
+    flex-shrink: 0;
+  }
 }
 
 .login-form {
   width: 400px;
-  padding: var(--spacing-5);
+  min-width: 400px;
+  max-width: 400px;
+  padding: 40px;
   display: flex;
   flex-direction: column;
-  animation: fadeIn 0.5s var(--transition-bezier);
+  animation: fadeIn 0.5s cubic-bezier(0.33, 1, 0.68, 1);
+  flex-shrink: 0;
 
   .form-header {
     text-align: center;
-    margin-bottom: var(--spacing-4);
+    margin-bottom: 32px;
+
     .form-title {
-      font-size: var(--font-size-large-title);
-      font-weight: var(--font-weight-bold);
-      color: var(--color-text-title);
-      margin-bottom: var(--spacing-1);
+      font-size: 22px;
+      font-weight: 600;
+      color: #2D3436;
+      margin-bottom: 8px;
     }
+
     .form-subtitle {
-      color: var(--color-text-body);
-      font-size: var(--font-size-subtitle);
+      color: #636E72;
+      font-size: 14px;
     }
   }
 
   .form-group {
-    margin-bottom: var(--spacing-3);
+    margin-bottom: 24px;
     position: relative;
+
     .form-label {
       display: block;
-      margin-bottom: var(--spacing-1);
-      color: var(--color-text-title);
-      font-size: var(--font-size-subtitle);
-      font-weight: var(--font-weight-medium);
+      margin-bottom: 8px;
+      color: #2D3436;
+      font-size: 14px;
+      font-weight: 500;
     }
+
     .input-container {
       position: relative;
+
       .input-prefix {
         position: absolute;
-        left: var(--spacing-2);
+        left: 16px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--color-text-title);
-        font-weight: var(--font-weight-medium);
-        font-size: var(--font-size-subtitle);
+        color: #2D3436;
+        font-weight: 500;
+        font-size: 14px;
       }
+
       .form-input {
         width: 100%;
-        height: var(--height-input);
-        background-color: var(--color-bg-secondary);
+        height: 48px;
+        background-color: #F9FAFB;
         border: 1px solid transparent;
-        border-radius: var(--border-radius-md);
-        padding: 0 var(--spacing-2);
-        font-size: var(--font-size-body);
-        color: var(--color-text-title);
-        transition: all var(--transition-normal) var(--transition-bezier);
+        border-radius: 8px;
+        padding: 0 16px;
+        font-size: 13px;
+        color: #2D3436;
+        transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+
         &::placeholder {
-          color: var(--color-text-secondary);
+          color: #B2BEC3;
         }
+
         &:focus {
           outline: none;
-          border-color: var(--color-primary);
-          background-color: var(--color-bg);
-          box-shadow: 0 0 0 3px var(--color-primary-light);
+          border-color: #FF7D45;
+          background-color: #FFFFFF;
+          box-shadow: 0 0 0 3px #FFE6D9;
         }
       }
+
       .phone-input {
-        padding-left: var(--spacing-6);
+        padding-left: 48px;
       }
+
       .input-icon {
         position: absolute;
-        right: var(--spacing-2);
+        right: 16px;
         top: 50%;
         transform: translateY(-50%);
-        color: var(--color-text-secondary);
+        color: #B2BEC3;
         cursor: pointer;
+
         img {
-          width: var(--size-icon-md);
-          height: var(--size-icon-md);
+          width: 18px;
+          height: 18px;
         }
       }
     }
+
     .error-message {
       position: absolute;
       left: 0;
       bottom: -20px;
-      color: var(--color-error);
-      font-size: var(--font-size-small);
-      line-height: var(--line-height-compact);
-      transition: opacity var(--transition-fast);
+      color: #FF5252;
+      font-size: 12px;
+      line-height: 1.2;
+      transition: opacity 100ms;
       opacity: 1;
       pointer-events: none;
     }
   }
 
   .form-options {
-    margin-top: var(--spacing-4);
+    margin-top: 32px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+
     .checkbox-container {
       display: flex;
       align-items: center;
+
       .custom-checkbox {
-        width: var(--size-icon-md);
-        height: var(--size-icon-md);
-        border: 1px solid var(--color-border);
-        border-radius: var(--border-radius-sm);
-        margin-right: var(--spacing-1);
+        width: 18px;
+        height: 18px;
+        border: 1px solid #EBEEF5;
+        border-radius: 6px;
+        margin-right: 8px;
         position: relative;
-        background: var(--color-bg);
+        background: #FFFFFF;
         cursor: pointer;
+
         &.checked::after {
           content: "✓";
           position: absolute;
           top: 50%;
           left: 50%;
           transform: translate(-50%, -50%);
-          color: var(--color-primary);
-          font-size: var(--font-size-small);
-          font-weight: var(--font-weight-bold);
+          color: #FF7D45;
+          font-size: 12px;
+          font-weight: 600;
         }
       }
+
       .checkbox-label {
-        font-size: var(--font-size-body);
-        color: var(--color-text-body);
+        font-size: 13px;
+        color: #636E72;
         cursor: pointer;
       }
     }
+
     .forgot-link {
-      color: var(--color-primary);
-      font-size: var(--font-size-body);
+      color: #FF7D45;
+      font-size: 13px;
       text-decoration: none;
+
       &:hover {
         text-decoration: underline;
       }
@@ -356,41 +352,22 @@ export default defineComponent({
   }
 
   .login-button {
-    height: var(--height-input);
-    background: var(--gradient-primary);
-    color: var(--color-text-white);
-    border: none;
-    border-radius: var(--border-radius-md);
-    font-size: var(--font-size-title);
-    font-weight: var(--font-weight-medium);
-    cursor: pointer;
-    transition: all var(--transition-normal) var(--transition-bezier);
-    box-shadow: var(--shadow-button);
-    margin-top: var(--spacing-2);
-    &:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-button-hover);
-    }
-    &:active {
-      transform: translateY(0);
-      box-shadow: var(--shadow-button-active);
-    }
-    &:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+    margin-top: 16px;
+    width: 100%;
   }
 
   .form-footer {
     margin-top: auto;
     text-align: center;
-    font-size: var(--font-size-body);
-    color: var(--color-text-body);
+    font-size: 13px;
+    color: #636E72;
+
     .register-link {
-      color: var(--color-primary);
-      font-weight: var(--font-weight-medium);
+      color: #FF7D45;
+      font-weight: 500;
       text-decoration: none;
-      margin-left: var(--spacing-1);
+      margin-left: 8px;
+
       &:hover {
         text-decoration: underline;
       }
@@ -403,6 +380,7 @@ export default defineComponent({
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);

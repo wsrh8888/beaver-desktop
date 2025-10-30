@@ -1,10 +1,9 @@
-import { IUserInfo } from 'commonModule/type/store/userInfo';
-import { defineStore } from 'pinia';
-import { getUserInfoApi, updateInfoApi } from 'renderModule/api//user';
-import { processAvatarUrl } from 'renderModule/app/utils/avatar';
+import type { IUserInfoRes } from 'commonModule/type/ajax/user'
+import { defineStore } from 'pinia'
+import { updateInfoApi } from 'renderModule/api//user'
 
 /**
- * @description: 用户状态管理
+ * @description: 用户自己的信息
  */
 export const useUserStore = defineStore('useUserStore', {
   /**
@@ -12,14 +11,15 @@ export const useUserStore = defineStore('useUserStore', {
    */
   state: (): {
     /** 当前登录用户信息 */
-    userInfo: IUserInfo;
+    userInfo: IUserInfoRes
   } => ({
     userInfo: {
       userId: '',
-      phone: '',
       nickName: '',
       avatar: '',
-    }
+      abstract: '',
+      gender: 0,
+    },
   }),
 
   /**
@@ -34,21 +34,10 @@ export const useUserStore = defineStore('useUserStore', {
      * @return {Promise<void>}
      * @throws {Error} 获取用户信息失败时抛出错误
      */
-    async initUserInfoApi() {
-      try {
-        const res = await getUserInfoApi();
-        if (res.code === 0 && res.result) {
-          const userInfo = {
-            userId: res.result.userId,
-            phone: res.result.phone || '',
-            nickName: res.result.nickName,
-            avatar: processAvatarUrl(res.result.avatar),
-          };
-          this.userInfo = userInfo;
-        }
-      } catch (error) {
-        console.error('获取用户信息失败:', error);
-        throw error;
+    async init() {
+      const userInfo = await electron.database.user.getUserInfo()
+      if (userInfo) {
+        this.userInfo = userInfo
       }
     },
 
@@ -57,25 +46,17 @@ export const useUserStore = defineStore('useUserStore', {
      * @param {Partial<IUserInfo>} updates - 需要更新的用户信息字段
      * @return {Promise<boolean>} 更新是否成功
      */
-    async updateUserInfo(updates: Partial<IUserInfo>) {
-      try {
-        const res = await updateInfoApi(updates);
-        if (res.code === 0) {
-          const updatedUser = {
-            ...this.userInfo,
-            ...updates,
-          };
-          this.userInfo = updatedUser;
-          return true;
+    async updateUserInfo(updates: Partial<IUserInfoRes>) {
+      const res = await updateInfoApi(updates)
+      if (res.code === 0) {
+        const updatedUser = {
+          ...this.userInfo,
+          ...updates,
         }
-        return false;
-      } catch (error) {
-        console.error('更新用户信息失败:', error);
-        return false;
+        this.userInfo = updatedUser
+        return true
       }
     },
-
-  
 
     /**
      * @description: 重置用户状态
@@ -86,8 +67,10 @@ export const useUserStore = defineStore('useUserStore', {
         userId: '',
         phone: '',
         nickName: '',
-        avatar: '',
-      };
+        fileName: '',
+        abstract: '',
+        gender: 0,
+      }
     },
   },
-});
+})
