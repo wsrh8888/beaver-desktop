@@ -33,7 +33,6 @@ export default defineComponent({
 
     const handleClose = async () => {
       // 清除缓存中的数据
-      await electron.storage.removeAsync('searchResults')
       // 隐藏窗口
       electron.window.closeWindow('verify', { hideOnly: true, isSelf: true })
     }

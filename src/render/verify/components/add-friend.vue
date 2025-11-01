@@ -74,9 +74,6 @@ export default defineComponent({
 
     // 处理发送
     const handleSend = async () => {
-      if (!verifyMessage.value.trim()) {
-        return
-      }
       const result = await applyAddFriendApi({
         friendId: props.targetValue.id,
         verify: verifyMessage.value.trim(),

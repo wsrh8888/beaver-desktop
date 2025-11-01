@@ -2,6 +2,7 @@
 function ensureChatsFields(sqlite: any) {
   const fields: string[] = [
     'seq INTEGER DEFAULT 0',
+    'target_message_id TEXT',
     // 如果以后添加新字段，在这里添加：
     // 'new_field TEXT',
   ]
@@ -21,6 +22,8 @@ function ensureChatsFields(sqlite: any) {
 // 聊天会话表(ChatConversationMeta)字段补齐 - 确保老用户的数据库结构与新版本兼容
 function ensureChatConversationsFields(sqlite: any) {
   const fields: string[] = [
+    'max_seq INTEGER DEFAULT 0',
+    'last_message TEXT',
     // 如果以后添加新字段，在这里添加：
     // 'new_field TEXT',
   ]
@@ -39,7 +42,11 @@ function ensureChatConversationsFields(sqlite: any) {
 // 用户会话表(ChatUserConversation)字段补齐 - 确保老用户的数据库结构与新版本兼容
 function ensureChatUserConversationsFields(sqlite: any) {
   const fields: string[] = [
-    'last_read_seq INTEGER DEFAULT 0',
+    'joined_at INTEGER DEFAULT 0',
+    'is_hidden INTEGER DEFAULT 0',
+    'is_muted INTEGER DEFAULT 0',
+    'user_read_seq INTEGER DEFAULT 0',
+    // last_message 已移至 chat_conversation_metas 表，不再需要
     // 如果以后添加新字段，在这里添加：
     // 'new_field TEXT',
   ]
@@ -70,12 +77,12 @@ export const initChatTables = (db: any) => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       message_id TEXT NOT NULL UNIQUE,
       conversation_id TEXT NOT NULL,
-      send_user_id TEXT NOT NULL,
-      msg_type INTEGER NOT NULL,
-      msg_preview TEXT,
-      msg TEXT NOT NULL,
-      is_deleted INTEGER DEFAULT 0,
       seq INTEGER DEFAULT 0,
+      send_user_id TEXT,
+      msg_type INTEGER NOT NULL,
+      target_message_id TEXT,
+      msg_preview TEXT,
+      msg TEXT,
       created_at INTEGER DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER DEFAULT (strftime('%s', 'now'))
     )
@@ -87,7 +94,8 @@ export const initChatTables = (db: any) => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       conversation_id TEXT NOT NULL UNIQUE,
       type INTEGER NOT NULL,
-      last_read_seq INTEGER DEFAULT 0,
+      max_seq INTEGER DEFAULT 0,
+      last_message TEXT,
       version INTEGER DEFAULT 0,
       created_at INTEGER DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER DEFAULT (strftime('%s', 'now'))
@@ -100,10 +108,11 @@ export const initChatTables = (db: any) => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL,
       conversation_id TEXT NOT NULL,
-      last_message TEXT,
-      is_deleted INTEGER DEFAULT 0,
+      joined_at INTEGER DEFAULT 0,
+      is_hidden INTEGER DEFAULT 0,
       is_pinned INTEGER DEFAULT 0,
-      last_read_seq INTEGER DEFAULT 0,
+      is_muted INTEGER DEFAULT 0,
+      user_read_seq INTEGER DEFAULT 0,
       version INTEGER DEFAULT 0,
       created_at INTEGER DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER DEFAULT (strftime('%s', 'now')),

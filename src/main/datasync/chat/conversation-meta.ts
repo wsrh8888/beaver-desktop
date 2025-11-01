@@ -60,7 +60,8 @@ class DatasyncSyncModule implements IDatasyncBase {
         const conversations = response.result.conversations.map(conv => ({
           conversationId: conv.conversationId,
           type: conv.type,
-          lastReadSeq: conv.lastReadSeq,
+          maxSeq: conv.maxSeq,
+          lastMessage: conv.lastMessage,
           version: conv.version,
           createdAt: conv.createAt,
           updatedAt: conv.updateAt,

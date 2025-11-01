@@ -15,13 +15,30 @@ export class FriendVerifyService {
     return await this.db.insert(friendVerifies).values(verifyData).run()
   }
 
-  // 批量创建好友验证记录（调用create方法）
+  // 批量创建好友验证记录（支持插入或更新）
   static async batchCreate(verifiesData: any[]) {
     if (verifiesData.length === 0)
       return
 
+    // 使用插入或更新的方式来避免唯一约束冲突
     for (const verify of verifiesData) {
-      await this.create(verify)
+      await this.db
+        .insert(friendVerifies)
+        .values(verify)
+        .onConflictDoUpdate({
+          target: friendVerifies.uuid,
+          set: {
+            sendUserId: verify.sendUserId,
+            revUserId: verify.revUserId,
+            sendStatus: verify.sendStatus,
+            revStatus: verify.revStatus,
+            message: verify.message,
+            source: verify.source,
+            version: verify.version,
+            updatedAt: verify.updatedAt,
+          },
+        })
+        .run()
     }
   }
 
@@ -97,7 +114,7 @@ export class FriendVerifyService {
           avatar: otherUser?.avatar || '',
           message: record.message || '',
           flag: record.sendUserId === userId ? 'send' : 'receive', // 发送或接收标识
-          status: record.sendUserId === userId ? record.sendStatus : record.revStatus,
+          status: record.sendUserId === userId ? record.revStatus : record.sendStatus,
           createdAt: new Date(record.createdAt * 1000).toISOString(),
         }
       })
