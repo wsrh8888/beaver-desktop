@@ -14,7 +14,7 @@ export class ChatHandler {
     }
     switch (command) {
       case DataChatCommand.GET_RECENT_CHAT_LIST:
-        return await ChatUserConversationService.getUserConversations(header, data)
+        return await ChatUserConversationService.getAggregatedRecentChatList(header, data)
       case DataChatCommand.GET_CONVERSATION_INFO:
         return await ChatUserConversationService.getConversationInfo(header, data)
       case DataChatCommand.GET_CHAT_HISTORY:

@@ -1,5 +1,8 @@
+import { and, eq, gte, lte } from 'drizzle-orm'
 import dbManager from '../../db'
 import { chatUserConversations } from '../../tables/chat/chat'
+import { FriendService } from '../friend/friend'
+import { ChatConversationService } from './conversation'
 
 // 用户会话服务
 export class ChatUserConversationService {
@@ -12,45 +15,154 @@ export class ChatUserConversationService {
     return await this.db.insert(chatUserConversations).values(userConversationData).run()
   }
 
-  // 批量创建用户会话关系（调用create方法）
+  // 批量创建用户会话关系（支持插入或更新）
   static async batchCreate(userConversations: any[]) {
     if (userConversations.length === 0)
       return
 
+    // 使用插入或更新的方式来避免唯一约束冲突
     for (const userConversation of userConversations) {
-      await this.create(userConversation)
+      await this.db
+        .insert(chatUserConversations)
+        .values(userConversation)
+        .onConflictDoUpdate({
+          target: [chatUserConversations.userId, chatUserConversations.conversationId],
+          set: {
+            joinedAt: userConversation.joinedAt,
+            // lastMessage 已移至 ChatConversationMeta 表
+            isHidden: userConversation.isHidden,
+            isPinned: userConversation.isPinned,
+            isMuted: userConversation.isMuted,
+            userReadSeq: userConversation.userReadSeq,
+            version: userConversation.version,
+            updatedAt: userConversation.updatedAt,
+          },
+        })
+        .run()
     }
   }
 
-  // 获取用户的所有未删除会话
-  static async getUserConversations(header: any, _params: any) {
-    const userId = header.userId
-    return await this.db.select().from(chatUserConversations).where('userId', userId).where('isDeleted', 0).orderBy('updatedAt', 'desc').all()
+  // 获取聚合后的最近聊天列表（包含会话元数据）
+  static async getAggregatedRecentChatList(header: any, _params: any) {
+    const userId = String(header.userId) // 确保userId是字符串类型
+
+    // 获取用户的未隐藏会话列表
+    const conversations = await this.db.select().from(chatUserConversations).where(and(eq(chatUserConversations.userId, userId), eq(chatUserConversations.isHidden, 0))).orderBy(chatUserConversations.updatedAt, 'desc').all()
+
+    if (conversations.length === 0) {
+      return {
+        count: 0,
+        list: [],
+      }
+    }
+
+    // 获取对应的会话元数据
+    const conversationIds = conversations.map((conv: any) => conv.conversationId)
+    console.log('[DEBUG] Conversation IDs to query:', conversationIds)
+
+    const conversationMetas = await ChatConversationService.getConversationsByIds(conversationIds)
+    console.log('[DEBUG] Conversation metas returned:', conversationMetas.length, conversationMetas)
+
+    // 创建会话元数据的映射
+    const metaMap = new Map()
+    conversationMetas.forEach((meta: any) => {
+      console.log('[DEBUG] Meta object:', meta)
+      console.log('[DEBUG] Meta lastMessage:', meta?.lastMessage)
+      metaMap.set(meta.conversationId, meta)
+    })
+
+    // 提取私聊会话中的好友ID列表
+    const privateChatFriendIds: string[] = []
+    conversations.forEach((conv: any) => {
+      if (conv.conversationId.startsWith('private_')) {
+        const parts = conv.conversationId.split('_')
+        if (parts.length >= 3) {
+          // 找出对方用户ID（排除当前用户ID）
+          const userId1 = parts[1]
+          const userId2 = parts[2]
+          if (userId1 === userId) {
+            privateChatFriendIds.push(userId2)
+          }
+          else if (userId2 === userId) {
+            privateChatFriendIds.push(userId1)
+          }
+        }
+      }
+    })
+
+    // 获取好友详细信息（包含用户信息和备注）
+    const friendDetailsMap = await FriendService.getFriendDetails(userId, privateChatFriendIds)
+
+    // 聚合数据 - 使用蛇形命名法以匹配后端API格式
+    const list = conversations.map((conv: any) => {
+      const meta = metaMap.get(conv.conversationId)
+      let avatar = ''
+      let nickname = '未知用户'
+      let notice = ''
+
+      // 只有私聊会话才有好友详细信息
+      if (conv.conversationId.startsWith('private_')) {
+        const parts = conv.conversationId.split('_')
+        if (parts.length >= 3) {
+          const userId1 = parts[1]
+          const userId2 = parts[2]
+          const friendId = (userId1 === userId) ? userId2 : userId1
+
+          // 从好友详细信息中获取数据
+          const friendDetail = friendDetailsMap.get(friendId)
+          if (friendDetail) {
+            avatar = friendDetail.avatar
+            nickname = friendDetail.nickname
+            notice = friendDetail.notice
+          }
+        }
+      }
+
+      const msgPreview = meta?.lastMessage || ''
+      console.log('[DEBUG] For conversation', conv.conversationId, 'meta:', meta, 'msgPreview:', msgPreview)
+
+      return {
+        conversationId: conv.conversationId,
+        avatar,
+        nickname,
+        msg_preview: msgPreview,
+        update_at: conv.updatedAt.toString(), // 数据库中已经是格式化的字符串
+        is_top: conv.isPinned === 1,
+        chatType: meta?.type || 1,
+        notice,
+      }
+    })
+
+    return {
+      count: conversations.length,
+      list,
+    }
   }
 
   // 根据会话ID获取会话信息
   static async getConversationInfo(header: any, params: any) {
-    const userId = header.userId
+    const userId = String(header.userId)
     const conversationId = params.conversationId
-    return await this.db.select().from(chatUserConversations).where('userId', userId).where('conversationId', conversationId).where('isDeleted', 0).get()
+    return await this.db.select().from(chatUserConversations).where(and(
+      eq(chatUserConversations.userId, userId),
+      eq(chatUserConversations.conversationId, conversationId),
+      eq(chatUserConversations.isHidden, 0),
+    )).get()
   }
 
   // 按版本范围获取会话设置（用于数据同步）
   static async getChatConversationsByVerRange(header: any, params: any) {
-    const userId = header.userId
+    const userId = String(header.userId)
     const { startVersion, endVersion } = params
-    return await this.db.select().from(chatUserConversations).where('userId', userId).where('version', '>=', startVersion).where('version', '<=', endVersion).orderBy('version', 'asc').all()
+    return await this.db.select().from(chatUserConversations).where(and(
+      eq(chatUserConversations.userId, userId),
+      and(
+        gte(chatUserConversations.version, startVersion),
+        lte(chatUserConversations.version, endVersion),
+      ),
+    )).orderBy(chatUserConversations.version, 'asc').all()
   }
 
-  // 更新会话的最后一条消息
-  static async updateConversationLastMessage(userId: string, conversationId: string, lastMessage: string) {
-    return await this.db.update(chatUserConversations)
-      .set({
-        lastMessage,
-        updatedAt: new Date().toISOString(),
-      })
-      .where('userId', userId)
-      .where('conversationId', conversationId)
-      .run()
-  }
+  // LastMessage 相关方法已移至 ChatConversationService
+  // 如需更新最后消息，请使用 ChatConversationService.updateLastMessage
 }

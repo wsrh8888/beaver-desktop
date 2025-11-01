@@ -1,6 +1,6 @@
 import type { IFriendInfo, IFriendListRes } from 'commonModule/type/ajax/friend'
 
-import { and, eq, gte, lte, or } from 'drizzle-orm'
+import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
 import dbManager from 'mainModule/database/db'
 import { friends } from 'mainModule/database/tables/friend/friend'
 import { users } from 'mainModule/database/tables/user/user'
@@ -49,6 +49,98 @@ export class FriendService {
         },
       })
       .run()
+  }
+
+  // 批量获取好友详细信息（包含用户信息和备注）
+  static async getFriendDetails(userId: string, friendIds: string[]): Promise<Map<string, any>> {
+    if (friendIds.length === 0) {
+      return new Map()
+    }
+
+    // 查询当前用户与指定好友的好友关系
+    const friendRelations = await dbManager.db
+      .select()
+      .from(friends)
+      .where(
+        or(
+          and(eq(friends.sendUserId, userId), inArray(friends.revUserId, friendIds)),
+          and(eq(friends.revUserId, userId), inArray(friends.sendUserId, friendIds)),
+        ),
+      )
+      .all()
+
+    if (friendRelations.length === 0) {
+      return new Map()
+    }
+
+    // 收集需要查询的用户ID
+    const userIdsToQuery = new Set<string>()
+    friendRelations.forEach((relation: any) => {
+      if (relation.sendUserId === userId) {
+        userIdsToQuery.add(relation.revUserId)
+      }
+      else {
+        userIdsToQuery.add(relation.sendUserId)
+      }
+    })
+
+    // 查询用户信息
+    const userIdsArray = Array.from(userIdsToQuery)
+    const userInfos = await dbManager.db
+      .select({
+        uuid: users.uuid,
+        nickName: users.nickName,
+        avatar: users.avatar,
+        abstract: users.abstract,
+        email: users.email,
+      })
+      .from(users)
+      .where(inArray(users.uuid, userIdsArray))
+      .all()
+
+    // 构建用户信息的映射
+    const userInfoMap = new Map<string, any>()
+    userInfos.forEach((user: any) => {
+      userInfoMap.set(user.uuid, user)
+    })
+
+    // 构建好友关系的映射
+    const friendRelationMap = new Map<string, any>()
+    friendRelations.forEach((relation: any) => {
+      if (relation.sendUserId === userId) {
+        friendRelationMap.set(relation.revUserId, relation)
+      }
+      else {
+        friendRelationMap.set(relation.sendUserId, relation)
+      }
+    })
+
+    // 构建完整的返回值
+    const friendDetailsMap = new Map<string, any>()
+
+    for (const friendId of friendIds) {
+      const userInfo = userInfoMap.get(friendId)
+      const friendRelation = friendRelationMap.get(friendId)
+
+      if (userInfo && friendRelation) {
+        // 确定备注信息
+        const notice = friendRelation.sendUserId === userId
+          ? friendRelation.revUserNotice || ''
+          : friendRelation.sendUserNotice || ''
+
+        friendDetailsMap.set(friendId, {
+          userId: userInfo.uuid,
+          nickname: userInfo.nickName || '',
+          avatar: userInfo.avatar || '',
+          abstract: userInfo.abstract || '',
+          email: userInfo.email || '',
+          notice,
+          friendAt: friendRelation.createdAt,
+        })
+      }
+    }
+
+    return friendDetailsMap
   }
 
   // 批量创建好友关系（调用upsert方法，避免重复数据错误）

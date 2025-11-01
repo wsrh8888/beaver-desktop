@@ -1,3 +1,5 @@
+import type { WsType } from '../ws/command'
+
 // 消息类型枚举
 export enum MessageType {
   TEXT = 1,
@@ -21,19 +23,7 @@ export enum MessageStatus {
   FAILED = 'failed',
 }
 
-// 新的会话信息接口
-export interface IConversationInfoRes {
-  fileName: string // 头像
-  nickname: string // 昵称
-  msgPreview: string // 消息预览
-  updateAt: string // 消息时间
-  isTop: boolean // 是否置顶
-  conversationId: string // 会话ID
-  chatType: number // 会话类型 1:好友 2:群聊 3:AI机器人
-  notice: string // 备注
-}
-
-// 最近聊天列表响应（使用新接口）
+// 最近聊天列表响应
 export interface IRecentChatRes {
   count: number
   list: IConversationInfoRes[]
@@ -123,11 +113,11 @@ export interface IConversationInfoReq {
 
 // 会话信息响应
 export interface IConversationInfoRes {
-  fileName: string // 头像
+  avatar: string // 头像
   nickname: string // 昵称
-  msgPreview: string // 消息预览
-  updateAt: string // 消息时间
-  isTop: boolean // 是否置顶
+  msg_preview: string // 消息预览
+  update_at: string // 消息时间
+  is_top: boolean // 是否置顶
   conversationId: string // 会话ID
   chatType: number // 会话类型 1:好友 2:群聊 3:AI机器人
   notice: string // 备注
@@ -143,12 +133,6 @@ export interface IRecentChatListReq {
 export interface ICreateConversationReq {
   targetId: string // 目标用户ID或群组ID
   type: number // 会话类型 1:好友 2:群聊 3:AI机器人
-}
-
-// 最近聊天列表响应
-export interface IRecentChatRes {
-  count: number
-  list: IConversationInfoRes[]
 }
 
 // 聊天历史请求
@@ -304,7 +288,8 @@ export interface IConversationSyncReq {
 export interface IConversationSyncItem {
   conversationId: string // 会话ID
   type: number // 会话类型 1=私聊 2=群聊 3=系统会话
-  lastReadSeq: number // 会话消息的最大Seq
+  maxSeq: number // 会话消息的最大Seq
+  lastMessage: string // 会话最后一条消息预览
   version: number // 版本号
   createAt: number // 创建时间戳
   updateAt: number // 更新时间戳

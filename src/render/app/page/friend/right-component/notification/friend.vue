@@ -39,6 +39,7 @@ export default defineComponent({
 
     onMounted(() => {
       loadNotifications()
+      console.error(friendVerifyList.value, '111')
     })
 
     const loadNotifications = async () => {

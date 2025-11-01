@@ -28,18 +28,18 @@ export class MessageService {
     const page = params.page || 1
     const limit = params.limit || 20
     const offset = (page - 1) * limit
-    return await this.db.select().from(chats).where('conversationId', conversationId).where('isDeleted', 0).orderBy('seq', 'desc').limit(limit).offset(offset).all()
+    return await this.db.select().from(chats).where('conversationId', conversationId).orderBy('seq', 'desc').limit(limit).offset(offset).all()
   }
 
   // 获取会话消息总数
   static async getChatHistoryCount(conversationId: string) {
-    return await this.db.select().from(chats).where('conversationId', conversationId).where('isDeleted', 0).count()
+    return await this.db.select().from(chats).where('conversationId', conversationId).count()
   }
 
   // 按序列号范围获取消息（用于数据同步）
   static async getChatMessagesBySeqRange(header: any, params: any) {
     const { startSeq, endSeq, conversationId } = params
-    let query = this.db.select().from(chats).where('seq', '>=', startSeq).where('seq', '<=', endSeq).where('isDeleted', 0).orderBy('seq', 'asc')
+    let query = this.db.select().from(chats).where('seq', '>=', startSeq).where('seq', '<=', endSeq).orderBy('seq', 'asc')
 
     if (conversationId) {
       query = query.where('conversationId', conversationId)

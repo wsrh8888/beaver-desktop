@@ -58,9 +58,12 @@ class ConversationSettingSyncModule implements IDatasyncBase {
         const userConversations = response.result.userConversations.map(uc => ({
           userId: uc.userId,
           conversationId: uc.conversationId,
+          joinedAt: uc.joinedAt,
           lastMessage: uc.lastMessage,
-          isDeleted: uc.isDeleted ? 1 : 0,
+          isHidden: uc.isHidden ? 1 : 0,
           isPinned: uc.isPinned ? 1 : 0,
+          isMuted: uc.isMuted ? 1 : 0,
+          userReadSeq: uc.userReadSeq,
           version: uc.version,
           createdAt: uc.createAt,
           updatedAt: uc.updateAt,
