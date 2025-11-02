@@ -1,5 +1,4 @@
-import type { IMessage } from 'commonModule/type/ajax/chat'
-import type { WsType } from 'commonModule/type/ws/command'
+import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { MessageType } from 'commonModule/type/ajax/chat'
 
 /**
@@ -18,10 +17,21 @@ class ChatSender {
     conversationId: string,
     content: any,
     messageType: MessageType,
-    wsType: WsType,
+    chatType: string,
   ) {
-    console.log('sendMessage', conversationId, content, messageType, wsType)
-    // await electron.websocket.sendChatMessage(conversationId, this.buildMessageContent(content, messageType), wsType)
+    console.error('sendMessage', conversationId, content, messageType)
+    if (chatType === 'private') {
+      await electron.websocket.chat.privateMessageSend(conversationId, {
+        conversationId,
+        msg: this.buildMessageContent(content, messageType),
+      })
+    }
+    else if (chatType === 'group') {
+      // await electron.websocket.chat.groupMessageSend(conversationId, this.buildMessageContent(content, messageType))
+    }
+    else {
+      throw new Error('Invalid chat type')
+    }
   }
 
   /**
@@ -30,7 +40,7 @@ class ChatSender {
    * @param {MessageType} type - 消息类型
    * @return {IMessage} 消息内容对象
    */
-  private buildMessageContent(content: any, type: MessageType): IMessage {
+  private buildMessageContent(content: any, type: MessageType): IMessageMsg {
     switch (type) {
       case MessageType.TEXT:
         return {

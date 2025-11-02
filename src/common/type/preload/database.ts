@@ -1,4 +1,4 @@
-import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatRes } from '../ajax/chat'
+import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from '../ajax/chat'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
 import type { IUserInfoRes } from '../ajax/user'
 
@@ -42,7 +42,7 @@ export interface IDatabaseModule {
     /**
      * 获取最近会话列表
      */
-    getRecentChatList(): Promise<IRecentChatRes>
+    getRecentChatList(params: IRecentChatReq): Promise<IRecentChatRes>
     /**
      * 获取会话详细信息
      */

@@ -42,8 +42,8 @@
 
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
-import { useChatStore } from 'renderModule/app/pinia/chat/chat'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
+import { useMessageStore } from 'renderModule/app/pinia/message/message'
 import { useUserStore } from 'renderModule/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import { emojiMap } from 'renderModule/app/utils/emoji'
@@ -66,8 +66,9 @@ export default defineComponent({
       },
       friendId: 0,
     })
-    const chatStore = useChatStore()
     const userStore = useUserStore()
+    const messageStore = useMessageStore()
+
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
     const messageContainer = ref<HTMLElement | null>(null)
@@ -78,8 +79,8 @@ export default defineComponent({
 
     const messages = computed(() => {
       const currentId = messageViewStore.currentChatId
-      console.error(chatStore.getChatHistory(currentId || ''), 'cur11111111111111rentId')
-      return currentId ? chatStore.getChatHistory(currentId) : []
+      // console.error(chatStore.getChatHistory(currentId || ''), 'cur11111111111111rentId')
+      return currentId ? messageStore.getChatHistory(currentId) : []
     })
 
     const menuList = ref([

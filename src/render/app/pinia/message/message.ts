@@ -1,7 +1,5 @@
 import type { IChatHistory } from 'commonModule/type/ajax/chat'
-import { MessageStatus } from 'commonModule/type/ajax/chat'
 import { defineStore } from 'pinia'
-import { getChatHistoryApi } from 'renderModule/api/chat'
 
 import { useConversationStore } from '../conversation/conversation'
 
@@ -11,63 +9,50 @@ import { useConversationStore } from '../conversation/conversation'
 export const useMessageStore = defineStore('useMessageStore', {
   state: () => ({
     /**
-     * @description: 聊天记录缓存，key为会话ID
+     * @description: 聊天记录，key为会话ID，value为消息数组（时间倒序，最新的在最后）
      */
     chatHistory: new Map<string, IChatHistory[]>(),
 
     /**
-     * @description: 消息发送状态缓存，key为消息ID
+     * @description: 消息分页状态，key为会话ID
      */
-    messageSendingStatus: new Map<string, MessageStatus>(),
-
-    /**
-     * @description: 消息草稿缓存，key为会话ID
-     */
-    draftMessages: new Map<string, string>(),
-
-    /**
-     * @description: 消息缓存，用于优化加载性能
-     * @param timestamp - 缓存时间戳
-     * @param messages - 缓存的消息列表
-     */
-    messageCache: new Map<string, {
-      timestamp: number
-      messages: IChatHistory[]
+    messagePagination: new Map<string, {
+      hasMore: boolean
+      isLoadingMore: boolean
+      currentPage: number
+      currentMaxSeq: number // 当前加载的最大消息序列号
     }>(),
-
-    /**
-     * @description: 消息加载状态，用于控制加载动画
-     */
-    loadingStates: new Map<string, boolean>(),
-
-    /**
-     * @description: 消息重发次数记录，用于控制重发次数
-     */
-    retryCount: new Map<string, number>(),
   }),
 
   getters: {
     /**
-     * @description: 获取会话的聊天记录
+     * @description: 获取会话的聊天记录（时间正序，最旧的在前面）
      */
-    getChatHistory: state => (conversationId: string) =>
-      state.chatHistory.get(conversationId) || [],
+    getChatHistory: state => (conversationId: string) => {
+      const messages = state.chatHistory.get(conversationId) || []
+      // 返回时间正序的副本（最旧的在前面）
+      return [...messages].reverse()
+    },
 
     /**
-     * @description: 获取会话的待发送消息
+     * @description: 获取会话的消息分页状态
      */
-    getPendingMessages: state => (conversationId: string) =>
-      state.chatHistory.get(conversationId)?.filter(
-        msg => state.messageSendingStatus.get(msg.messageId.toString()) === MessageStatus.SENDING,
-      ) || [],
+    getMessagePagination: state => (conversationId: string) => {
+      return state.messagePagination.get(conversationId) || {
+        hasMore: true,
+        isLoadingMore: false,
+        currentPage: 1,
+        currentMaxSeq: 0,
+      }
+    },
 
     /**
-     * @description: 获取会话的失败消息
+     * @description: 获取会话的最新消息
      */
-    getFailedMessages: state => (conversationId: string) =>
-      state.chatHistory.get(conversationId)?.filter(
-        msg => state.messageSendingStatus.get(msg.messageId.toString()) === MessageStatus.FAILED,
-      ) || [],
+    getLatestMessage: state => (conversationId: string) => {
+      const messages = state.chatHistory.get(conversationId) || []
+      return messages.length > 0 ? messages[messages.length - 1] : null
+    },
   },
 
   actions: {
@@ -76,180 +61,141 @@ export const useMessageStore = defineStore('useMessageStore', {
      */
     reset() {
       this.chatHistory.clear()
-      this.messageSendingStatus.clear()
-      this.draftMessages.clear()
-      this.messageCache.clear()
-      this.loadingStates.clear()
-      this.retryCount.clear()
+      this.messagePagination.clear()
     },
 
     /**
-     * @description: 加载聊天记录
-     * @param {string} conversationId - 会话ID
-     * @param {boolean} useCache - 是否使用缓存
+     * @description: 初始化会话的消息历史（第一页）
      */
-    async loadChatHistory(conversationId: string, useCache: boolean = true) {
-      const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
-
-      if (useCache) {
-        const cached = this.messageCache.get(conversationId)
-        if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
-          this.chatHistory.set(conversationId, cached.messages)
-          return
-        }
-      }
-
-      try {
-        this.loadingStates.set(conversationId, true)
-        const res = await getChatHistoryApi({ conversationId, size: 100 })
-
-        if (res.code === 0) {
-          const messages = res.result.list || []
-          this.chatHistory.set(conversationId, messages.reverse())
-          this.messageCache.set(conversationId, {
-            timestamp: Date.now(),
-            messages: messages.reverse(),
-          })
-          console.error('234234', messages.reverse())
-        }
-      }
-      catch (error) {
-        console.error('Failed to load chat history:', error)
-        throw error
-      }
-      finally {
-        this.loadingStates.set(conversationId, false)
-      }
-    },
-
-    /**
-     * @description: 添加新消息
-     * @param {string} conversationId - 会话ID
-     * @param {IChatHistory} message - 消息内容
-     */
-    addMessage(conversationId: string, message: IChatHistory) {
-      const history = this.chatHistory.get(conversationId) || []
-      history.push(message)
-      this.chatHistory.set(conversationId, history)
-
-      // 更新会话列表的最新消息
-      const conversationStore = useConversationStore()
-      conversationStore.updateLastMessage(conversationId, {
-        content: message.msg.textMsg?.content || '',
-        timestamp: message.create_at,
+    async init(conversationId: string) {
+      // 初始化分页状态
+      this.messagePagination.set(conversationId, {
+        hasMore: true,
+        isLoadingMore: false,
+        currentPage: 1,
+        currentMaxSeq: 0,
       })
-      console.error('收到新的消息', this.chatHistory)
-    },
 
-    /**
-     * @description: 更新消息状态
-     * @param {number} messageId - 消息ID
-     * @param {MessageStatus} status - 消息状态
-     */
-    updateMessageStatus(messageId: number, status: MessageStatus) {
-      this.messageSendingStatus.set(messageId.toString(), status)
-    },
+      const pagination = this.messagePagination.get(conversationId)!
 
-    /**
-     * @description: 保存消息草稿
-     * @param {string} conversationId - 会话ID
-     * @param {string} content - 草稿内容
-     */
-    saveDraft(conversationId: string, content: string) {
-      if (content) {
-        this.draftMessages.set(conversationId, content)
+      const result = await electron.database.chat.getChatHistory({
+        conversationId,
+        page: pagination.currentPage,
+        limit: 50, // 每次加载50条消息
+      })
+
+      if (result.list && result.list.length > 0) {
+        // 存储消息（时间倒序，最新的在数组末尾）
+        this.chatHistory.set(conversationId, result.list)
+
+        // 更新最大序列号，用于增量同步
+        pagination.currentMaxSeq = Math.max(...result.list.map(m => m.seq))
+
+        // 判断是否还有更多数据
+        pagination.hasMore = result.list.length >= 50
       }
       else {
-        this.draftMessages.delete(conversationId)
+        pagination.hasMore = false
       }
     },
 
     /**
-     * @description: 获取消息草稿
-     * @param {string} conversationId - 会话ID
+     * @description: 加载更多消息历史（分页）
      */
-    getDraft(conversationId: string): string {
-      return this.draftMessages.get(conversationId) || ''
-    },
-
-    /**
-     * @description: 重发消息
-     * @param {string} conversationId - 会话ID
-     * @param {number} messageId - 消息ID
-     */
-    async resendMessage(conversationId: string, messageId: number) {
-      const MAX_RETRY = 3
-      const currentRetry = this.retryCount.get(messageId.toString()) || 0
-
-      if (currentRetry >= MAX_RETRY) {
-        throw new Error('超过最大重试次数')
-      }
-
-      const history = this.chatHistory.get(conversationId) || []
-      const message = history.find(msg => msg.messageId === messageId)
-
-      if (message) {
-        this.updateMessageStatus(messageId, MessageStatus.SENDING)
-        try {
-          // 调用发送消息 API
-          // const res = await sendMessageApi(conversationId, message);
-          this.updateMessageStatus(messageId, MessageStatus.SENT)
-          this.retryCount.delete(messageId.toString())
-        }
-        catch (error) {
-          this.updateMessageStatus(messageId, MessageStatus.FAILED)
-          this.retryCount.set(messageId.toString(), currentRetry + 1)
-          throw error
-        }
-      }
-    },
-
-    /**
-     * @description: 加载更多消息
-     * @param {string} conversationId - 会话ID
-     */
-    async loadMoreMessages(conversationId: string) {
-      if (this.loadingStates.get(conversationId)) {
+    async loadMoreChatHistory(conversationId: string) {
+      const pagination = this.messagePagination.get(conversationId)
+      if (!pagination || !pagination.hasMore || pagination.isLoadingMore) {
         return
       }
 
-      this.loadingStates.set(conversationId, true)
-      try {
-        const currentMessages = this.chatHistory.get(conversationId) || []
-        const oldestMessageId = currentMessages[0]?.messageId
+      pagination.isLoadingMore = true
 
-        const res = await getChatHistoryApi({
+      try {
+        pagination.currentPage += 1
+
+        const result = await electron.database.chat.getChatHistory({
           conversationId,
-          beforeId: oldestMessageId,
-          limit: 20,
+          page: pagination.currentPage,
+          limit: 50,
         })
 
-        if (res.code === 0) {
-          console.error('23423423', res)
-          const newMessages = res.result.list || []
-          this.chatHistory.set(conversationId, [...newMessages, ...currentMessages].reverse())
+        if (result.list && result.list.length > 0) {
+          // 将新消息添加到现有消息的开头（因为是更早的消息）
+          const existingMessages = this.chatHistory.get(conversationId) || []
+          this.chatHistory.set(conversationId, [...result.list, ...existingMessages])
+
+          // 更新最大序列号（虽然加载的是更早的消息，但可能有更新的序列号）
+          const newMaxSeq = Math.max(...result.list.map(m => m.seq))
+          pagination.currentMaxSeq = Math.max(pagination.currentMaxSeq, newMaxSeq)
+
+          // 判断是否还有更多数据
+          pagination.hasMore = result.list.length >= 50
+        }
+        else {
+          pagination.hasMore = false
         }
       }
-      catch (error) {
-        console.error('Failed to load more messages:', error)
-      }
       finally {
-        this.loadingStates.set(conversationId, false)
+        pagination.isLoadingMore = false
       }
     },
 
     /**
-     * @description: 清理过期缓存
+     * @description: 添加新消息（实时接收或发送成功）
      */
-    cleanExpiredCache() {
-      const CACHE_DURATION = 5 * 60 * 1000 // 5分钟缓存
-      const now = Date.now()
+    addMessage(conversationId: string, message: IChatHistory) {
+      const history = this.chatHistory.get(conversationId) || []
 
-      for (const [conversationId, cache] of this.messageCache.entries()) {
-        if (now - cache.timestamp > CACHE_DURATION) {
-          this.messageCache.delete(conversationId)
-        }
+      // 检查消息是否已存在（通过 messageId 去重）
+      const existingIndex = history.findIndex(m => m.messageId === message.messageId)
+      if (existingIndex !== -1) {
+        // 更新现有消息
+        history[existingIndex] = message
       }
+      else {
+        // 添加新消息到末尾（最新的在最后）
+        history.push(message)
+      }
+
+      this.chatHistory.set(conversationId, history)
+
+      // 更新消息分页状态的最大序列号
+      const pagination = this.messagePagination.get(conversationId)
+      if (pagination) {
+        pagination.currentMaxSeq = Math.max(pagination.currentMaxSeq, message.seq)
+      }
+
+      // 更新会话列表的最新消息预览
+      this.updateConversationPreview(conversationId, message)
+    },
+
+    /**
+     * @description: 更新会话的最新消息预览
+     */
+    updateConversationPreview(conversationId: string, message: IChatHistory) {
+      const conversationStore = useConversationStore()
+
+      // 查找现有会话
+      const existingConversation = conversationStore.getConversationInfo(conversationId)
+      if (existingConversation) {
+        // 创建更新的会话对象，包含新的消息预览和时间
+        const updatedConversation = {
+          ...existingConversation,
+          msg_preview: message.msg?.textMsg?.content || `${message.sender?.nickname} 发来新消息`,
+          update_at: message.create_at, // 使用消息的创建时间
+        }
+
+        // 更新会话
+        conversationStore.upsertConversation(updatedConversation)
+      }
+    },
+
+    /**
+     * @description: 清理指定会话的消息缓存
+     */
+    clearChatHistory(conversationId: string) {
+      this.chatHistory.delete(conversationId)
+      this.messagePagination.delete(conversationId)
     },
   },
 })

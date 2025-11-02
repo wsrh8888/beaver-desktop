@@ -1,5 +1,3 @@
-import type { WsType } from '../ws/command'
-
 // 消息类型枚举
 export enum MessageType {
   TEXT = 1,
@@ -21,6 +19,11 @@ export enum MessageStatus {
   SENDING = 'sending',
   SENT = 'sent',
   FAILED = 'failed',
+}
+
+export interface IRecentChatReq {
+  page?: number
+  limit?: number
 }
 
 // 最近聊天列表响应
@@ -102,7 +105,7 @@ export interface ISendMsgRes {
 // 发送者信息
 export interface ISender {
   userId: string
-  fileName: string
+  avatar: string
   nickname: string
 }
 
@@ -121,6 +124,7 @@ export interface IConversationInfoRes {
   conversationId: string // 会话ID
   chatType: number // 会话类型 1:好友 2:群聊 3:AI机器人
   notice: string // 备注
+  version: number // 会话配置版本号
 }
 
 // 最近聊天列表请求
@@ -243,10 +247,16 @@ export interface IForwardMessageRes {
   forwardTime: string
 }
 
+// 聊天历史消息类型（数据库记录）
 export interface IChatHistory {
-  type: WsType
-  conversationId?: string
-  body: any // 使用 any 类型，因为不同消息类型的 body 结构不同
+  id: number // 数据库自增ID
+  messageId: string // 客户端消息ID
+  conversationId: string // 会话ID
+  seq: number // 消息序列号
+  msg: IMessage // 消息内容对象
+  sender: ISender // 发送者信息
+  create_at: string // 创建时间
+  status: number // 消息状态
 }
 
 // 聊天数据同步请求

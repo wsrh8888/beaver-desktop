@@ -1,26 +1,39 @@
-import type { IContactUserInfo } from 'commonModule/type/pinia/contact'
+import type { IUserInfoRes } from 'commonModule/type/ajax/user'
 import { defineStore } from 'pinia'
 
-interface IContactState {
-  contacts: Record<string, IContactUserInfo>
-}
-
 /**
- * @description: 全局用户信息
+ * @description: 联系人信息管理
  */
-export const useContactStore = defineStore('contactStore', {
-  state: (): IContactState => ({
-    contacts: {},
+export const useContactStore = defineStore('useContactStore', {
+  state: (): {
+    user: Map<string, IUserInfoRes>
+  } => ({
+    user: new Map(),
   }),
 
   getters: {
-
+    getContact: state => (userId: string) => {
+      return state.user.get(userId) || null
+    },
   },
 
   actions: {
+    updateContact(userId: string, contactInfo: Partial<IUserInfoRes>) {
+      const existing = this.user.get(userId)
+      if (existing) {
+        this.user.set(userId, {
+          ...existing,
+          ...contactInfo,
+        })
+      }
+      else {
+        // 如果不存在，创建新的（需要完整的用户信息）
+        this.user.set(userId, contactInfo as IUserInfoRes)
+      }
+    },
 
-    upsertContact(contact: IContactUserInfo) {
-      this.contacts[contact.userId] = contact
+    reset() {
+      this.user.clear()
     },
   },
 })

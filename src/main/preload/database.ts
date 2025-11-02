@@ -1,6 +1,6 @@
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from 'commonModule/type/ajax/friend'
 import type { IUserInfoRes } from 'commonModule/type/ajax/user'
-import type { IConversationInfoReq, IConversationInfoRes, IChatHistoryReq, IChatHistoryRes, IRecentChatRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IChatConversationVerRangeReq, IChatConversationVerRangeRes } from 'commonModule/type/ajax/chat'
+import type { IConversationInfoReq, IConversationInfoRes, IChatHistoryReq, IChatHistoryRes, IRecentChatRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IChatConversationVerRangeReq, IChatConversationVerRangeRes, IRecentChatReq } from 'commonModule/type/ajax/chat'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
 import { DataFriendCommand, DataUserCommand, DataChatCommand } from 'commonModule/type/ipc/database'
@@ -43,9 +43,10 @@ export const databaseModule: IDatabaseModule = {
     },
   },
   chat: {
-    getRecentChatList: async (): Promise<IRecentChatRes> => {
+    getRecentChatList: async (params: IRecentChatReq): Promise<IRecentChatRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.CHAT, {
         command: DataChatCommand.GET_RECENT_CHAT_LIST,
+        data: params,
       })
     },
     getConversationInfo: async (params: IConversationInfoReq): Promise<IConversationInfoRes> => {

@@ -1,3 +1,4 @@
+import type { IRecentChatReq } from 'commonModule/type/ajax/chat'
 import { and, eq, gte, lte } from 'drizzle-orm'
 import dbManager from '../../db'
 import { chatUserConversations } from '../../tables/chat/chat'
@@ -43,11 +44,15 @@ export class ChatUserConversationService {
   }
 
   // 获取聚合后的最近聊天列表（包含会话元数据）
-  static async getAggregatedRecentChatList(header: any, _params: any) {
+  static async getAggregatedRecentChatList(header: any, params: IRecentChatReq) {
     const userId = String(header.userId) // 确保userId是字符串类型
+    const { page = 1, limit = 50 } = params
 
-    // 获取用户的未隐藏会话列表
-    const conversations = await this.db.select().from(chatUserConversations).where(and(eq(chatUserConversations.userId, userId), eq(chatUserConversations.isHidden, 0))).orderBy(chatUserConversations.updatedAt, 'desc').all()
+    // 计算分页偏移量
+    const offset = (page - 1) * limit
+
+    // 获取用户的未隐藏会话列表（支持分页）
+    const conversations = await this.db.select().from(chatUserConversations).where(and(eq(chatUserConversations.userId, userId), eq(chatUserConversations.isHidden, 0))).orderBy(chatUserConversations.updatedAt, 'desc').limit(limit).offset(offset).all()
 
     if (conversations.length === 0) {
       return {
@@ -130,6 +135,7 @@ export class ChatUserConversationService {
         is_top: conv.isPinned === 1,
         chatType: meta?.type || 1,
         notice,
+        version: conv.version, // 会话配置版本号
       }
     })
 

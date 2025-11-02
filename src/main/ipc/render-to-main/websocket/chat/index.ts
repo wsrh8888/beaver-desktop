@@ -13,7 +13,7 @@ export class ChatHandler {
     }
     switch (command) {
       case WsType.PRIVATE_MESSAGE_SEND:
-        return await messageManager.chatSender.sendMessage(data.conversationId, data.content, data.type)
+        return await messageManager.chatSender.sendMessage(data.conversationId, data.content, WsType.PRIVATE_MESSAGE_SEND)
       default:
         throw new Error('好友数据库命令处理失败')
     }
