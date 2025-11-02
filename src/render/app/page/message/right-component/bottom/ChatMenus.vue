@@ -39,7 +39,6 @@
 
 <script lang="ts">
 import { MessageType } from 'commonModule/type/ajax/chat'
-import { WsType } from 'commonModule/type/ws/command'
 import { uploadFileApi } from 'renderModule/api/file'
 import chatSender from 'renderModule/app/message-manager/senders/chat-sender'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
@@ -93,8 +92,9 @@ export default defineComponent({
       }
 
       try {
+        console.error('1231232')
         // 通过Main进程发送消息
-        await chatSender.sendMessage(conversationId, content, MessageType.TEXT, WsType.PRIVATE_MESSAGE_SEND)
+        await chatSender.sendMessage(conversationId, content, MessageType.TEXT, 'private')
       }
       catch (error) {
         console.error('发送消息失败:', error)

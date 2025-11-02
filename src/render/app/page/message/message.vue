@@ -41,11 +41,8 @@
 </template>
 
 <script lang="ts">
-import { useChatStore } from 'renderModule/app/pinia/chat/chat'
-import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
-import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
-import { defineComponent, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import GroupDetailsComponent from './detail-components/GroupDetails.vue'
+import { defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+// import GroupDetailsComponent from './detail-components/GroupDetails.vue'
 import PrivateDetailsComponent from './detail-components/PrivateDetails.vue'
 import MessageLeftComponent from './left-components/MessageLeft.vue'
 import ChatMenusComponent from './right-component/bottom/ChatMenus.vue'
@@ -59,14 +56,11 @@ export default defineComponent({
     ChatHeaderComponent,
     ChatContentComponent,
     ChatMenusComponent,
-    GroupDetailsComponent,
+    // GroupDetailsComponent,
     PrivateDetailsComponent,
   },
   setup() {
     const chatMenus = ref<InstanceType<typeof ChatMenusComponent> | null>(null)
-    const conversationStore = useConversationStore()
-    const chatStore = useChatStore()
-    const messageViewStore = useMessageViewStore()
 
     // 各种详情面板的可见状态
     const groupDetailsVisible = ref(false)
@@ -177,15 +171,6 @@ export default defineComponent({
       document.addEventListener('click', handleClickOutside)
 
       // 确保有默认选中的聊天
-      nextTick(() => {
-        const chatList = conversationStore.getRecentChatList()
-        if (!messageViewStore.currentChatId && chatList.length > 0) {
-          console.log('页面加载时自动选择第一个聊天')
-          messageViewStore.setCurrentChat(chatList[0].conversationId)
-          // 同时加载聊天记录
-          chatStore.loadChatHistory(chatList[0].conversationId, true)
-        }
-      })
     })
 
     // 在beforeUnmount钩子中移除事件监听

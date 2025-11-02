@@ -149,7 +149,7 @@ import { quitGroupApi, updateGroupInfoApi } from 'renderModule/api/group'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useGroupStore } from 'renderModule/app/pinia/group/group'
 import { useUserStore } from 'renderModule/app/pinia/user/user'
-import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
+// import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue'
 

@@ -1,6 +1,6 @@
 import type { IUserInfoRes } from 'commonModule/type/ajax/user'
 import type { IDataBaseUserModel } from 'commonModule/type/database'
-import { eq } from 'drizzle-orm'
+import { eq, inArray } from 'drizzle-orm'
 import dbManager from '../../db'
 import { users } from '../../tables/user/user'
 
@@ -83,6 +83,34 @@ export class UserService {
     catch (error) {
       console.error('根据ID获取用户信息失败:', error)
       return null
+    }
+  }
+
+  // 批量获取用户基本信息（用于消息发送者信息）
+  static async getUsersBasicInfo(userIds: string[]): Promise<Array<{ userId: string, nickName: string, avatar: string }>> {
+    if (userIds.length === 0) {
+      return []
+    }
+
+    try {
+      const userData = await this.db
+        .select({
+          userId: users.uuid,
+          nickName: users.nickName,
+          avatar: users.avatar,
+        })
+        .from(users)
+        .where(inArray(users.uuid, userIds))
+
+      return userData.map((user: any) => ({
+        userId: user.userId,
+        nickName: user.nickName,
+        avatar: user.avatar || '',
+      }))
+    }
+    catch (error) {
+      console.error('批量获取用户基本信息失败:', error)
+      return []
     }
   }
 }

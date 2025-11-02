@@ -112,7 +112,7 @@
 <script lang="ts">
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/app/pinia/friend/friend'
-import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
+// import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, defineComponent, ref, watch } from 'vue'
 

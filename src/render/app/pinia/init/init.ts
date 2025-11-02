@@ -1,9 +1,10 @@
 import { defineStore } from 'pinia'
 import { authenticationApi } from 'renderModule/api/auth'
-import { useChatStore } from 'renderModule/app/pinia/chat/chat'
+import { useContactStore } from 'renderModule/app/pinia/contact/contact'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/app/pinia/group/group'
+import { useMessageStore } from 'renderModule/app/pinia/message/message'
 import { useUserStore } from 'renderModule/app/pinia/user/user'
 import { useFriendVerifyStore } from '../friend/friend_verify'
 
@@ -82,9 +83,10 @@ export const useInitStore = defineStore('useInitStore', {
     resetApp() {
       const stores = {
         user: useUserStore(),
+        contact: useContactStore(),
         friend: useFriendStore(),
         conversation: useConversationStore(),
-        chat: useChatStore(),
+        message: useMessageStore(),
         group: useGroupStore(),
       }
 
@@ -126,25 +128,55 @@ export const useInitStore = defineStore('useInitStore', {
     },
 
     /**
-     * @description: 初始化应用
-     * @return {Promise<void>}
-     * @throws {Error} 当初始化失败时抛出错误
+     * @description: 启动应用初始化（应用启动时调用，不阻塞UI渲染）
      */
-    async initApp() {
-      // 获取所有需要初始化的 store
-      const stores = {
-        user: useUserStore(),
-        friend: useFriendStore(),
-        friendVerify: useFriendVerifyStore(),
+    initApp() {
+      if (this.isInitialized) {
+        return
       }
 
-      // 并行初始化用户信息和好友列表
-      // 这两个初始化优先级最高，其他功能依赖于这些基础信息
-      await Promise.all([
-        stores.user.init(),
-        stores.friend.init(),
-        stores.friendVerify.init(),
-      ])
+      // 异步初始化所有数据，不阻塞UI渲染
+      this.initAllData()
     },
+
+    /**
+     * @description: 初始化所有应用数据
+     */
+    async initAllData() {
+      const userStore = useUserStore()
+      const friendStore = useFriendStore()
+      const friendVerifyStore = useFriendVerifyStore()
+      const conversationStore = useConversationStore()
+
+      try {
+        this.isInitializing = true
+
+        // 1. 初始化用户信息
+        await userStore.init()
+
+        // 2. 并行初始化好友和会话数据
+        const promises = [
+          friendStore.init(),
+          conversationStore.init(),
+          friendVerifyStore.init(),
+        ]
+
+        await Promise.all(promises)
+
+        this.isInitialized = true
+        console.log('应用数据初始化完成')
+
+        // 启动认证轮询
+        this.startAuthPolling()
+      }
+      catch (error) {
+        console.error('应用初始化失败:', error)
+        // 初始化失败不阻断应用使用
+      }
+      finally {
+        this.isInitializing = false
+      }
+    },
+
   },
 })

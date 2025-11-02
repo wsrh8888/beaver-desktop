@@ -18,8 +18,8 @@
       >
         <div class="chat-avatar">
           <BeaverImage
-            :file-name="chat.fileName"
-            :cache-type="CacheType.AVATAR"
+            :file-name="chat.avatar"
+            :cache-type="CacheType.USER_AVATAR"
             :alt="chat.nickname"
           />
         </div>
@@ -30,7 +30,7 @@
               {{ chat.nickname }}
             </div>
             <div class="chat-time">
-              {{ chat.create_at }}
+              {{ chat.update_at }}
             </div>
           </div>
           <div class="chat-preview">
@@ -48,7 +48,6 @@
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
 import selectGroup from 'renderModule/app/components/selectGroup/selectGroup.vue'
-import { useChatStore } from 'renderModule/app/pinia/chat/chat'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -61,15 +60,14 @@ export default defineComponent({
   },
   setup() {
     const conversationStore = useConversationStore()
-    const chatStore = useChatStore()
     const messageViewStore = useMessageViewStore()
     const searchText = ref('')
 
     // 获取排序后的聊天列表
-    const chatList = computed(() => conversationStore.getRecentChatList())
+    const chatList = computed(() => conversationStore.getConversations)
 
     // 获取当前会话ID
-    const currentConversationId = computed(() => messageViewStore.currentChatId)
+    // const currentConversationId = computed(() => messageViewStore.currentChatId)
 
     // 处理搜索
     const handleSearch = () => {
@@ -79,7 +77,6 @@ export default defineComponent({
     // 处理聊天项点击
     const handleChatClick = (chat: any) => {
       messageViewStore.setCurrentChat(chat.conversationId)
-      chatStore.loadChatHistory(chat.conversationId, true)
       // conversationStore.setCurrentConversationId(chat.conversationId);
     }
 
@@ -91,7 +88,7 @@ export default defineComponent({
     return {
       searchText,
       chatList,
-      currentConversationId,
+      currentConversationId: '',
       handleSearch,
       handleChatClick,
       isOnline,

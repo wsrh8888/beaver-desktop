@@ -51,7 +51,7 @@
 <script lang="ts">
 import { useGroupStore } from 'renderModule/app/pinia/group/group'
 import { useFriendViewStore } from 'renderModule/app/pinia/view/friend'
-import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
+// import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useRouterHelper } from 'renderModule/utils/router/index'
 import { computed } from 'vue'
