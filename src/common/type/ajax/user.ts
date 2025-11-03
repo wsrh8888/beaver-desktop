@@ -90,6 +90,16 @@ export interface IUserSyncRes {
   nextVersion: number
 }
 
+// 通过用户ID列表同步用户信息（大厂方式）
+export interface IUserSyncByIdsReq {
+  userIds: string[]
+  limit?: number
+}
+
+export interface IUserSyncByIdsRes {
+  users: IUserSyncItem[]
+}
+
 export interface IUserSyncItem {
   userId: string
   nickname: string

@@ -104,7 +104,6 @@ export interface IDataBaseUserModel {
   abstract: string
   gender: number
   status: number
-  lastLoginIp: string
   version: number
   createdAt: number
   updatedAt: number

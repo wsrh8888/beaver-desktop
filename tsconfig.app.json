@@ -19,7 +19,7 @@
       "mainModule/*": ["src/main/*"]
     },
     "resolveJsonModule": true,
-    "types": ["vite/client"],
+    "types": ["vite/client", "@types/node"],
     "allowImportingTsExtensions": true,
     /* Linting */
     "strict": true,
