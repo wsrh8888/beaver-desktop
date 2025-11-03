@@ -1,12 +1,15 @@
 import type { IDatasyncBase } from 'commonModule/type/database'
 import { EDataType } from 'commonModule/type/ajax/datasync'
 import { SyncStatus } from 'commonModule/type/datasync'
+import { eq } from 'drizzle-orm'
 import { conversationSyncApi } from 'mainModule/api/chat'
 import { getSyncCursorApi, updateSyncCursorApi } from 'mainModule/api/datasync'
 import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
+import { chatConversations } from 'mainModule/database/tables/chat/chat'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
+import messageSyncModule from './chat-message'
 
 // 数据同步表同步模块
 class DatasyncSyncModule implements IDatasyncBase {
@@ -57,18 +60,10 @@ class DatasyncSyncModule implements IDatasyncBase {
       })
 
       if (response.result.conversations.length > 0) {
-        const conversations = response.result.conversations.map(conv => ({
-          conversationId: conv.conversationId,
-          type: conv.type,
-          maxSeq: conv.maxSeq,
-          lastMessage: conv.lastMessage,
-          version: conv.version,
-          createdAt: conv.createAt,
-          updatedAt: conv.updateAt,
-        }))
-
-        // 批量插入会话数据
-        await ChatConversationService.batchCreate(conversations)
+        // 对每个会话，先同步会话元数据，再同步消息
+        for (const conv of response.result.conversations) {
+          await this.syncConversationWithMessages(conv)
+        }
 
         // 更新到服务器返回的nextVersion
         currentVersion = response.result.nextVersion
@@ -79,6 +74,49 @@ class DatasyncSyncModule implements IDatasyncBase {
     }
 
     logger.info({ text: '数据同步表数据同步完成', data: { fromVersion, toVersion } }, 'DatasyncSyncModule')
+  }
+
+  // 同步单个会话及其消息
+  private async syncConversationWithMessages(conv: any) {
+    // 获取本地已存储的会话信息，检查是否需要同步消息
+    const localConversation = await ChatConversationService.db
+      .select({ maxSeq: chatConversations.maxSeq })
+      .from(chatConversations)
+      .where(eq(chatConversations.conversationId, conv.conversationId))
+      .get()
+
+    const localMaxSeq = localConversation?.maxSeq || 0
+
+    // 先插入/更新会话元数据
+    const conversationData = {
+      conversationId: conv.conversationId,
+      type: conv.type,
+      maxSeq: conv.maxSeq,
+      lastMessage: conv.lastMessage,
+      version: conv.version,
+      createdAt: conv.createAt,
+      updatedAt: conv.updateAt,
+    }
+    await ChatConversationService.batchCreate([conversationData])
+
+    // 如果服务器maxSeq大于本地maxSeq，需要同步消息
+    if (conv.maxSeq > localMaxSeq) {
+      logger.info({
+        text: '会话需要同步消息',
+        data: {
+          conversationId: conv.conversationId,
+          localMaxSeq,
+          serverMaxSeq: conv.maxSeq,
+        },
+      }, 'DatasyncSyncModule')
+
+      // 同步该会话的消息（通过消息同步模块）
+      await messageSyncModule.syncConversationMessages(
+        conv.conversationId,
+        localMaxSeq + 1, // 从本地最大seq+1开始
+        conv.maxSeq, // 到服务器最大seq
+      )
+    }
   }
 
   // 更新游标
