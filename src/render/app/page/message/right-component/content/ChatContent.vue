@@ -2,12 +2,15 @@
   <div ref="messageContainer" class="chat-messages">
     <div
       v-for="message in messages" :key="message.messageId" class="message"
-      :class="{ sent: message.sender.userId === userStore.userInfo.userId }"
+      :class="{
+        send: message.sender.userId === userStore.userInfo.userId,
+        system: message.sender.userId === '',
+      }"
     >
-      <div class="message-avatar">
+      <div v-if="message.sender.userId" class="message-avatar">
         <BeaverImage
-          :cache-type="CacheType.AVATAR"
-          :file-name="message.sender.fileName" :alt="message.sender.nickname"
+          :cache-type="CacheType.USER_AVATAR"
+          :file-name="message.sender.avatar" :alt="message.sender.nickname"
           image-class="avatar-image" @click.stop="showUserInfo($event, message)"
         />
       </div>
@@ -79,8 +82,14 @@ export default defineComponent({
 
     const messages = computed(() => {
       const currentId = messageViewStore.currentChatId
-      // console.error(chatStore.getChatHistory(currentId || ''), 'cur11111111111111rentId')
       return currentId ? messageStore.getChatHistory(currentId) : []
+    })
+
+    // 判断messageViewStore.currentChatId的值是否发生变化
+    watch(() => messageViewStore.currentChatId, () => {
+      if (messageViewStore.currentChatId) {
+        messageStore.init(messageViewStore.currentChatId)
+      }
     })
 
     const menuList = ref([
@@ -244,6 +253,36 @@ export default defineComponent({
       console.log('图片预览功能开发中')
     }
 
+    // 处理滚动事件，检测是否需要加载更多历史消息
+    const handleScroll = async () => {
+      if (!messageContainer.value)
+        return
+
+      const { scrollTop, scrollHeight } = messageContainer.value
+      const isNearTop = scrollTop <= 50 // 距离顶部50px以内
+      const currentId = messageViewStore.currentChatId
+
+      if (isNearTop && currentId) {
+        const pagination = messageStore.getMessagePagination(currentId)
+        if (pagination.hasMore && !pagination.isLoadingMore) {
+          console.log('触发加载更多历史消息')
+
+          // 记录加载前的滚动高度，用于保持滚动位置
+          const prevScrollHeight = scrollHeight
+
+          await messageStore.loadMoreChatHistory(currentId)
+
+          // 等待DOM更新后调整滚动位置
+          await nextTick()
+          if (messageContainer.value) {
+            const newScrollHeight = messageContainer.value.scrollHeight
+            const heightDiff = newScrollHeight - prevScrollHeight
+            messageContainer.value.scrollTop = scrollTop + heightDiff
+          }
+        }
+      }
+    }
+
     watch(messages, () => {
       scrollToBottom()
     }, { deep: true })
@@ -258,6 +297,10 @@ export default defineComponent({
           showMenu.value = false
         }
       })
+      // 添加滚动监听器
+      if (messageContainer.value) {
+        messageContainer.value.addEventListener('scroll', handleScroll)
+      }
     })
     const showUserInfo = (event: MouseEvent, message: any) => {
       if (message.sender.userId === userStore.userInfo.userId) {
@@ -276,7 +319,11 @@ export default defineComponent({
     onBeforeUnmount(() => {
       // 清理事件监听
       document.removeEventListener('click', hideDialog)
+      if (messageContainer.value) {
+        messageContainer.value.removeEventListener('scroll', handleScroll)
+      }
     })
+
     // 移除 previewOnlineFile 函数，因为现在使用 BeaverImage 组件
     return {
       CacheType,
@@ -380,7 +427,7 @@ export default defineComponent({
       align-self: flex-start;
     }
 
-    &.sent {
+    &.send {
       align-self: flex-end;
       flex-direction: row-reverse;
 
@@ -393,6 +440,13 @@ export default defineComponent({
         .message-text {
           color: white;
         }
+      }
+    }
+    &.system {
+      align-self: center;
+      .message-content {
+        padding: 0;
+        background: none;
       }
     }
 

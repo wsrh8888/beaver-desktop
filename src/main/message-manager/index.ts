@@ -75,8 +75,6 @@ class MessageManager {
    * @param wsMessage WebSocket 消息
    */
   private handleWsMessage(wsMessage: any) {
-    logger.info({ text: '消息管理器收到 WebSocket 消息', data: { command: wsMessage.command } }, 'MessageManager')
-
     // 如果正在数据同步，加入消息队列
     if (this.isDataSyncing) {
       this.messageQueue.push(wsMessage)
@@ -84,7 +82,7 @@ class MessageManager {
     }
 
     // 正常处理消息
-    this.processMessage(wsMessage)
+    this.processMessage(wsMessage, 'ws')
   }
 
   /**
@@ -96,7 +94,7 @@ class MessageManager {
     while (this.messageQueue.length > 0) {
       const message = this.messageQueue.shift()
       try {
-        this.processMessage(message)
+        this.processMessage(message, 'queue')
         logger.info({ text: '队列消息处理完成', data: { command: message.command } }, 'MessageManager')
       }
       catch (error) {
@@ -117,10 +115,11 @@ class MessageManager {
    * @description: 处理单个消息
    * @param wsMessage WebSocket 消息
    */
-  private processMessage(wsMessage: any) {
+  private processMessage(wsMessage: any, source: 'ws' | 'queue') {
+    console.log('处理消息', wsMessage, source)
     switch (wsMessage.command) {
       case 'CHAT_MESSAGE':
-        this.chatReceiver.handle(wsMessage)
+        this.chatReceiver.handle(wsMessage.content)
         break
       case 'FRIEND_OPERATION':
         this.friendReceiver.handleFriendOperation(wsMessage)

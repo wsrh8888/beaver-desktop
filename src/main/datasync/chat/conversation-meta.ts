@@ -97,7 +97,17 @@ class DatasyncSyncModule implements IDatasyncBase {
       createdAt: conv.createAt,
       updatedAt: conv.updateAt,
     }
-    await ChatConversationService.batchCreate([conversationData])
+
+    logger.info({
+      text: '会话元数据',
+      data: {
+        conversationId: conv.conversationId,
+        type: conv.type,
+        maxSeq: conv.maxSeq,
+        lastMessage: conv.lastMessage,
+        localMaxSeq,
+      },
+    }, 'DatasyncSyncModule')
 
     // 如果服务器maxSeq大于本地maxSeq，需要同步消息
     if (conv.maxSeq > localMaxSeq) {
@@ -113,10 +123,14 @@ class DatasyncSyncModule implements IDatasyncBase {
       // 同步该会话的消息（通过消息同步模块）
       await messageSyncModule.syncConversationMessages(
         conv.conversationId,
-        localMaxSeq + 1, // 从本地最大seq+1开始
+        localMaxSeq, // 从本地最大seq+1开始
         conv.maxSeq, // 到服务器最大seq
       )
     }
+    else {
+      return
+    }
+    await ChatConversationService.batchCreate([conversationData])
   }
 
   // 更新游标

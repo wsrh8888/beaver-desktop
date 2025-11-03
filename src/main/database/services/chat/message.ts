@@ -1,4 +1,4 @@
-import { eq, gte, lte } from 'drizzle-orm'
+import { desc, eq, gte, lte } from 'drizzle-orm'
 import dbManager from '../../db'
 import { chats } from '../../tables/chat/chat'
 import { UserService } from '../user/user'
@@ -35,10 +35,12 @@ export class MessageService {
 
     console.log('[DEBUG] getChatHistory params:', { conversationId, page, limit, offset, currentUserId })
 
-    // 获取消息列表
-    const messages = await this.db.select().from(chats).where(eq(chats.conversationId, conversationId)).orderBy(chats.seq, 'desc').limit(limit + 1).offset(offset).all()
+    // 获取消息列表 - 按seq降序排列，确保最新的消息在前
+    const messages = await this.db.select().from(chats).where(eq(chats.conversationId, conversationId)).orderBy(desc(chats.seq)).limit(limit + 1).offset(offset).all()
 
     console.log('[DEBUG] Found messages:', messages.length, 'for conversationId:', conversationId)
+    console.log('[DEBUG] First few messages seq:', messages.slice(0, 5).map((m: any) => ({ seq: m.seq, messageId: m.messageId })))
+    console.log('[DEBUG] Last few messages seq:', messages.slice(-5).map((m: any) => ({ seq: m.seq, messageId: m.messageId })))
 
     // 判断是否还有更多数据（返回 limit+1 条，如果超过 limit 条说明有更多数据）
     const hasMore = messages.length > limit
@@ -92,7 +94,7 @@ export class MessageService {
   }
 
   // 按序列号范围获取消息（用于数据同步）
-  static async getChatMessagesBySeqRange(header: any, params: any) {
+  static async getChatMessagesBySeqRange(_header: any, params: any) {
     const { startSeq, endSeq, conversationId } = params
     let query = this.db.select().from(chats).where(gte(chats.seq, startSeq)).where(lte(chats.seq, endSeq)).orderBy(chats.seq, 'asc')
 
