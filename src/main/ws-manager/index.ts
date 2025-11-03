@@ -153,13 +153,18 @@ class WsManager {
     try {
       const message = JSON.parse(data)
 
-      // 心跳响应直接忽略
+      // 处理心跳响应，清除心跳超时定时器
       if (message.command === 'HEARTBEAT') {
+        this.clearHeartbeatTimeout()
         return
       }
 
       // 通过事件回调传递给业务层处理
       if (this.eventCallbacks.onMessage) {
+        logger.info(({
+          text: '收到WebSocket消息',
+          data: message,
+        }), 'WsManager')
         this.eventCallbacks.onMessage(message)
       }
     }

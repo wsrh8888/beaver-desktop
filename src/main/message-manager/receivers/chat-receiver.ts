@@ -25,6 +25,10 @@ export class ChatReceiver {
    */
   async handle(wsMessage: any) {
     const { data, messageId } = wsMessage
+    logger.info({ text: '处理收到的hanle消息', data: {
+      data,
+      messageId,
+    } }, 'ChatReceiver')
 
     // 检查消息是否已处理过
     if (messageId && ChatReceiver.messageCache.has(messageId)) {
@@ -37,11 +41,12 @@ export class ChatReceiver {
       ChatReceiver.addToCache(messageId)
     }
 
-    logger.info({ text: '收到服务端聊天消息', data: { messageId, type: data?.type } }, 'ChatReceiver')
-
     // 根据消息类型进行处理
     switch (data?.type) {
       case 'private_message_receive':
+        await this.handlePrivateMessageReceive(data)
+        break
+      case 'private_message_sync':
         await this.handlePrivateMessageReceive(data)
         break
       case 'group_message_receive':

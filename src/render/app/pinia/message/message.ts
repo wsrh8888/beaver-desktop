@@ -5,11 +5,24 @@ import { useConversationStore } from '../conversation/conversation'
 
 /**
  * @description: 聊天消息管理
+ * 大厂IM的消息加载策略：
+ * 1. 打开会话时：调用 init()，检查缓存，没有才加载最近30条消息
+ * 2. 收到WS新消息时：调用 addMessage() 追加到数组末尾
+ * 3. 滑动到顶部时：调用 loadMoreChatHistory() 加载更早的消息
+ * 4. 强制刷新时：调用 refreshChatHistory() 清除缓存并重新加载
+ * 5. UI显示时：通过 getChatHistory() 转换为时间正序显示
+ *
+ * 缓存策略：
+ * - 通过 messagePagination 判断是否已初始化
+ * - 消息按时间倒序存储（最新的在末尾）
+ * - 首次加载后缓存，避免重复查询
+ * - 内存中保持多个会话的缓存，提升切换体验
  */
 export const useMessageStore = defineStore('useMessageStore', {
   state: () => ({
     /**
      * @description: 聊天记录，key为会话ID，value为消息数组（时间倒序，最新的在最后）
+     * 存储格式：[老消息1, 老消息2, ..., 最新消息]
      */
     chatHistory: new Map<string, IChatHistory[]>(),
 
@@ -26,12 +39,12 @@ export const useMessageStore = defineStore('useMessageStore', {
 
   getters: {
     /**
-     * @description: 获取会话的聊天记录（时间正序，最旧的在前面）
+     * @description: 获取会话的聊天记录（时间倒序，最新的在最后）
      */
     getChatHistory: state => (conversationId: string) => {
       const messages = state.chatHistory.get(conversationId) || []
-      // 返回时间正序的副本（最旧的在前面）
-      return [...messages].reverse()
+      // 返回时间倒序的副本（最新的在最后）
+      return [...messages]
     },
 
     /**
@@ -65,10 +78,21 @@ export const useMessageStore = defineStore('useMessageStore', {
     },
 
     /**
-     * @description: 初始化会话的消息历史（第一页）
+     * @description: 初始化会话的消息（智能缓存策略）
+     * 大厂IM的做法：检查是否已有缓存，有缓存就复用，没有才加载
+     * 这样每次点开会话时，如果已有数据就直接用，性能更好
      */
     async init(conversationId: string) {
-      // 初始化分页状态
+      // 检查是否已有缓存（通过messagePagination来判断是否已初始化过）
+      const existingPagination = this.messagePagination.get(conversationId)
+      const existingMessages = this.chatHistory.get(conversationId)
+
+      // 如果已有完整的缓存（分页状态 + 消息数据），说明已经初始化过了
+      if (existingPagination && existingMessages && existingMessages.length > 0) {
+        return // 使用缓存，不重新加载
+      }
+
+      // 没有缓存或缓存不完整，才进行初始化加载
       this.messagePagination.set(conversationId, {
         hasMore: true,
         isLoadingMore: false,
@@ -78,21 +102,24 @@ export const useMessageStore = defineStore('useMessageStore', {
 
       const pagination = this.messagePagination.get(conversationId)!
 
+      // 加载最近的30条消息（大厂IM的典型做法）
       const result = await electron.database.chat.getChatHistory({
         conversationId,
         page: pagination.currentPage,
-        limit: 50, // 每次加载50条消息
+        limit: 30,
       })
 
       if (result.list && result.list.length > 0) {
-        // 存储消息（时间倒序，最新的在数组末尾）
-        this.chatHistory.set(conversationId, result.list)
+        // 后端返回的是时间正序的数据（最旧的在前）
+        // 需要反转为时间倒序存储（最新的在数组末尾）
+        const reversedList = [...result.list].reverse()
+        this.chatHistory.set(conversationId, reversedList)
 
         // 更新最大序列号，用于增量同步
         pagination.currentMaxSeq = Math.max(...result.list.map(m => m.seq))
 
-        // 判断是否还有更多数据
-        pagination.hasMore = result.list.length >= 50
+        // 如果返回的消息数量等于请求数量，说明可能还有更多历史消息
+        pagination.hasMore = result.list.length >= 30
       }
       else {
         pagination.hasMore = false
@@ -100,7 +127,8 @@ export const useMessageStore = defineStore('useMessageStore', {
     },
 
     /**
-     * @description: 加载更多消息历史（分页）
+     * @description: 加载更多消息历史（当用户滑动到顶部时调用）
+     * 大厂IM的做法：加载更早的消息，添加到现有消息的前面
      */
     async loadMoreChatHistory(conversationId: string) {
       const pagination = this.messagePagination.get(conversationId)
@@ -116,20 +144,21 @@ export const useMessageStore = defineStore('useMessageStore', {
         const result = await electron.database.chat.getChatHistory({
           conversationId,
           page: pagination.currentPage,
-          limit: 50,
+          limit: 30, // 每次加载30条历史消息
         })
 
         if (result.list && result.list.length > 0) {
-          // 将新消息添加到现有消息的开头（因为是更早的消息）
+          // 后端返回的是时间正序的数据（最旧的在前）
+          // 需要反转后添加到现有消息的前面，保持整体时间倒序
+          const reversedList = [...result.list].reverse()
           const existingMessages = this.chatHistory.get(conversationId) || []
-          this.chatHistory.set(conversationId, [...result.list, ...existingMessages])
+          this.chatHistory.set(conversationId, [...reversedList, ...existingMessages])
 
-          // 更新最大序列号（虽然加载的是更早的消息，但可能有更新的序列号）
-          const newMaxSeq = Math.max(...result.list.map(m => m.seq))
-          pagination.currentMaxSeq = Math.max(pagination.currentMaxSeq, newMaxSeq)
+          // 注意：历史消息的seq通常比当前消息小，不会影响currentMaxSeq
+          // 如果历史消息中有更大的seq，说明数据异常，但这里不处理
 
-          // 判断是否还有更多数据
-          pagination.hasMore = result.list.length >= 50
+          // 如果返回的消息数量等于请求数量，说明可能还有更多历史消息
+          pagination.hasMore = result.list.length >= 30
         }
         else {
           pagination.hasMore = false
@@ -190,12 +219,5 @@ export const useMessageStore = defineStore('useMessageStore', {
       }
     },
 
-    /**
-     * @description: 清理指定会话的消息缓存
-     */
-    clearChatHistory(conversationId: string) {
-      this.chatHistory.delete(conversationId)
-      this.messagePagination.delete(conversationId)
-    },
   },
 })
