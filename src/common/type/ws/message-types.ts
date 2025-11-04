@@ -10,6 +10,34 @@ export interface IMessageMsg {
   atMsg?: { content: string, atUsers: string[] } | null
   replyMsg?: { replyToMessageId: string, replyContent: string } | null
 }
+
+// WebSocket 消息发送者信息
+export interface IMessageSender {
+  avatar?: string
+  nickname?: string
+  userId: string
+}
+
+// WebSocket 消息体 - 私聊消息接收
+export interface IPrivateMessageReceiveBody {
+  conversationId: string
+  conversationType: number
+  createAt: string
+  id?: number
+  messageId: string
+  msg: IMessageMsg
+  msgPreview: string
+  sender: IMessageSender
+  seq: number
+  status?: number
+}
+
+// WebSocket 消息体 - 私聊消息同步
+export interface IPrivateMessageSyncBody extends IPrivateMessageReceiveBody {
+  // 同步消息与接收消息结构相同
+}
+
+// WebSocket 消息体 - 私聊消息发送
 export interface IPrivateMessageSendBody {
   conversationId: string
   msg: IMessageMsg

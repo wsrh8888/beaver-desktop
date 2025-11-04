@@ -1,3 +1,5 @@
+import type { IDBChatMessage } from 'commonModule/type/database/chat'
+import type { IPrivateMessageReceiveBody, IPrivateMessageSyncBody } from 'commonModule/type/ws/message-types'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
 import { MessageService } from 'mainModule/database/services/chat/message'
@@ -6,23 +8,9 @@ import logger from 'mainModule/utils/log'
 import { BaseReceiver } from '../../base/base-receiver'
 
 /**
- * 聊天消息数据接口
- */
-interface ChatMessageData {
-  messageId: string
-  conversationId: string
-  sender: any
-  msg: any
-  seq: number
-  createAt: string
-  _messageType: 'private' | 'group'
-  _receivedAt: number
-}
-
-/**
  * @description: 消息接收器 - 处理messages表的操作
  */
-export class MessageReceiver extends BaseReceiver<ChatMessageData> {
+export class MessageReceiver extends BaseReceiver<IDBChatMessage> {
   protected readonly receiverName = 'MessageReceiver'
 
   constructor() {
@@ -41,11 +29,8 @@ export class MessageReceiver extends BaseReceiver<ChatMessageData> {
     switch (data?.type) {
       case 'private_message_receive':
       case 'private_message_sync':
-      case 'group_message_receive':
-        await super.handle({
-          messageId: wsMessage.messageId,
-          data: { ...data, _messageType: data.type.includes('private') ? 'private' : 'group' },
-        })
+        // 直接传递实际的消息数据，不需要包装
+        await super.handle(data.body)
         break
       default:
         logger.warn({ text: '未知消息类型', data: { type: data?.type } }, this.receiverName)
@@ -53,30 +38,39 @@ export class MessageReceiver extends BaseReceiver<ChatMessageData> {
   }
 
   /**
-   * 预处理消息
+   * 预处理消息 - 将原始消息转换为数据库格式
    */
-  protected async preProcessMessage(wsMessage: any): Promise<ChatMessageData> {
+  protected async preProcessMessage(messageBody: IPrivateMessageReceiveBody | IPrivateMessageSyncBody): Promise<IDBChatMessage> {
     return {
-      ...wsMessage,
-      _receivedAt: Date.now(),
+      messageId: messageBody.messageId,
+      conversationId: messageBody.conversationId,
+      conversationType: messageBody.conversationType,
+      sendUserId: messageBody.sender?.userId,
+      msgType: messageBody.msg.type,
+      msgPreview: messageBody.msgPreview,
+      msg: JSON.stringify(this.transformMessageMsg(messageBody.msg)),
+      seq: messageBody.seq,
+      createdAt: Math.floor(new Date(messageBody.createAt).getTime() / 1000), // 转换为时间戳
+      updatedAt: Math.floor(Date.now() / 1000), // 使用当前时间戳
     }
   }
 
   /**
    * 批量处理消息 - 插入messages表并更新会话
    */
-  protected async processBatchMessages(messages: ChatMessageData[]): Promise<void> {
+  protected async processBatchMessages(messages: IDBChatMessage[]): Promise<void> {
     // 1. 批量插入消息
     const dbMessages = messages.map(msg => ({
-      messageId: msg.messageId || Date.now().toString(),
+      messageId: msg.messageId,
       conversationId: msg.conversationId,
-      sendUserId: msg.sender?.id || msg.sender,
-      msgType: this.parseMessageType(msg.msg),
-      msgPreview: this.extractMessagePreview(msg.msg),
-      msg: JSON.stringify(msg.msg),
+      conversationType: msg.conversationType,
+      sendUserId: msg.sendUserId,
+      msgType: msg.msgType,
+      msgPreview: msg.msgPreview,
+      msg: msg.msg,
       seq: msg.seq || 0,
-      createdAt: msg.createAt || new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      createdAt: msg.createdAt,
+      updatedAt: msg.updatedAt,
     }))
 
     await MessageService.batchCreate(dbMessages)
@@ -85,80 +79,76 @@ export class MessageReceiver extends BaseReceiver<ChatMessageData> {
     await this.batchUpdateConversationLastMessages(messages)
   }
 
+  private transformMessageMsg(msg: any) {
+    let newMsg = {
+      type: msg.type,
+      textMsg: undefined,
+      imageMsg: undefined,
+      videoMsg: undefined,
+      fileMsg: undefined,
+      voiceMsg: undefined,
+      emojiMsg: undefined,
+      replyMsg: undefined,
+    }
+    if (msg.type === 1) {
+      newMsg.textMsg = msg.textMsg
+    }
+    return newMsg
+  }
+
   /**
-   * 通知前端
+   * 通知前端 - 只发送数据范围，不发送完整数据
+   * 前端收到通知后会主动拉取数据
    */
-  protected notifyProcessed(messages: ChatMessageData[]): void {
-    const conversationGroups = new Map<string, any[]>()
+  protected notifyProcessed(messages: IDBChatMessage[]): void {
+    const conversationGroups = new Map<string, { minSeq: number, maxSeq: number, count: number }>()
 
-    // 按会话分组
+    // 按会话分组，计算seq范围
     for (const msg of messages) {
-      if (!conversationGroups.has(msg.conversationId)) {
-        conversationGroups.set(msg.conversationId, [])
-      }
+      const seq = msg.seq || 0
+      const existing = conversationGroups.get(msg.conversationId)
 
-      conversationGroups.get(msg.conversationId)!.push({
-        messageId: msg.messageId,
-        conversationId: msg.conversationId,
-        sender: msg.sender,
-        msgType: this.parseMessageType(msg.msg),
-        msgPreview: this.extractMessagePreview(msg.msg),
-        seq: msg.seq,
-        createAt: msg.createAt,
-      })
+      if (!existing) {
+        conversationGroups.set(msg.conversationId, {
+          minSeq: seq,
+          maxSeq: seq,
+          count: 1,
+        })
+      }
+      else {
+        existing.minSeq = Math.min(existing.minSeq, seq)
+        existing.maxSeq = Math.max(existing.maxSeq, seq)
+        existing.count++
+      }
     }
 
-    // 发送通知
-    for (const [conversationId, msgs] of conversationGroups) {
-      const seqs = msgs.map(m => m.seq).sort((a, b) => a - b)
+    // 发送通知 - 只包含会话ID、seq范围和消息数量
+    for (const [conversationId, range] of conversationGroups) {
       sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.NEW_MESSAGES, {
         conversationId,
-        messages: msgs,
-        seqRange: { min: seqs[0], max: seqs[seqs.length - 1] },
-        count: msgs.length,
+        seqRange: { min: range.minSeq, max: range.maxSeq },
+        count: range.count,
       })
     }
-  }
-
-  /**
-   * 解析消息类型
-   */
-  private parseMessageType(msg: any): number {
-    if (typeof msg === 'string')
-      return 1
-    if (msg?.type)
-      return msg.type
-    return 1
-  }
-
-  /**
-   * 提取消息预览
-   */
-  private extractMessagePreview(msg: any): string {
-    if (typeof msg === 'string')
-      return msg
-    if (msg?.content)
-      return msg.content
-    if (msg?.text)
-      return msg.text
-    return '[消息]'
   }
 
   /**
    * 批量更新会话最后消息
    */
-  private async batchUpdateConversationLastMessages(messages: ChatMessageData[]): Promise<void> {
+  private async batchUpdateConversationLastMessages(messages: IDBChatMessage[]): Promise<void> {
     const updates = new Map<string, { lastMessage: string, maxSeq: number, receivedAt: number }>()
 
     // 按会话分组，取最新消息和最大序列号
     for (const msg of messages) {
-      const preview = this.extractMessagePreview(msg.msg)
+      // 使用消息预览或默认文本
+      const preview = msg.msgPreview || '[消息]'
+
       if (!updates.has(msg.conversationId)
-        || msg.seq > updates.get(msg.conversationId)!.maxSeq) {
+        || (msg.seq || 0) > updates.get(msg.conversationId)!.maxSeq) {
         updates.set(msg.conversationId, {
           lastMessage: preview,
-          maxSeq: msg.seq,
-          receivedAt: msg._receivedAt,
+          maxSeq: msg.seq || 0,
+          receivedAt: msg.updatedAt || msg.createdAt || Math.floor(Date.now() / 1000),
         })
       }
     }

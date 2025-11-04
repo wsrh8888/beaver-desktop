@@ -50,6 +50,7 @@ export const useFriendStore = defineStore('friendStore', {
     getFriendByConversationId: (state) => {
       return (conversationId: string): IFriendInfo | undefined => {
         const friend = state.friendList.find(friend => friend.conversationId === conversationId)
+        console.log('3333333333333333', state.friendList)
         if (!friend) {
           console.error('好友信息未找到，conversationId:', conversationId)
           return undefined

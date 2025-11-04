@@ -120,7 +120,7 @@ import { useGroupStore } from 'renderModule/app/pinia/group/group'
 import { useFriendViewStore } from 'renderModule/app/pinia/view/friend'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, ref } from 'vue'
-import { DIALOG_TYPES, notificationList, POPUP_MENU_CONFIG, TABS_CONFIG } from '../data'
+import { notificationList, POPUP_MENU_CONFIG, TABS_CONFIG } from '../data'
 import PopupMenu from './PopupMenu.vue'
 
 export default {
@@ -147,8 +147,8 @@ export default {
       friendViewStore.setCurrentTab(tab)
     }
 
-    const handleNotificationClick = (value: 'friend-notification' | 'group-notification') => {
-      friendViewStore.setSelectedConversationWithType('', value)
+    const handleNotificationClick = (value: string) => {
+      friendViewStore.setSelectedConversationWithType('', value as 'friend-notification' | 'group-notification')
     }
     const changePopupMenu = (visible: boolean) => {
       console.log('changePopupMenu', visible)
@@ -158,18 +158,14 @@ export default {
     // 处理弹窗菜单项点击
     const handlePopupItemClick = (item: any) => {
       if (item.action === 'add-friend') {
-        changePopupMenu(false)
         // 打开独立的搜索窗口
         electron.window.openWindow('search')
       }
-      else if (item.action === 'apply-friend') {
-        changePopupMenu(false)
-        // 显示申请好友弹窗
-        friendViewStore.showDialog(DIALOG_TYPES.APPLY_FRIEND)
-      }
       else if (item.action === 'create-group') {
-        changePopupMenu(false)
+        // 显示创建群聊弹窗
+        friendViewStore.showDialog('create-group')
       }
+      changePopupMenu(false)
     }
 
     // 处理项目点击

@@ -271,6 +271,7 @@ export interface IChatSyncReq {
 export interface IChatSyncMessage {
   messageId: string // 客户端消息ID
   conversationId: string // 会话ID
+  conversationType: number // 会话类型（1=私聊 2=群聊）
   sendUserId: string // 发送者用户ID
   msgType: number // 消息类型
   msgPreview: string // 消息预览

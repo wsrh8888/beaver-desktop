@@ -13,8 +13,8 @@
           <div class="user-avatar-container">
             <div v-if="userInfo" class="user-avatar">
               <BeaverImage
-                v-if="userInfo.fileName"
-                :file-name="userInfo.fileName"
+                v-if="userInfo.avatar"
+                :file-name="userInfo.avatar"
                 alt="用户头像"
                 image-class="user-avatar-image"
               />
@@ -112,7 +112,7 @@
 <script lang="ts">
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/app/pinia/friend/friend'
-// import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
+import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, defineComponent, ref, watch } from 'vue'
 

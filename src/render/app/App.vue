@@ -13,7 +13,6 @@
 import HeaderComponent from 'renderModule/app/components/header/header.vue'
 // import Sidebar from './components/sidebar/index.vue'
 import Sidebar from 'renderModule/app/components/sidebar/index.vue'
-import NotificationManager from 'renderModule/app/notification-manager'
 import { useAppStore } from 'renderModule/app/pinia/app/app'
 import { defineComponent, onMounted } from 'vue'
 
@@ -26,9 +25,6 @@ export default defineComponent({
     const appStore = useAppStore()
 
     onMounted(() => {
-      // 初始化通知管理器（监听数据变化）
-      NotificationManager.init()
-
       // 初始化应用数据（异步，不阻塞UI渲染）
       appStore.initApp()
     })
