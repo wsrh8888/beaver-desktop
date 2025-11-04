@@ -46,6 +46,7 @@ class MessageSyncService {
         const messages = response.result.messages.map(msg => ({
           messageId: msg.messageId,
           conversationId: msg.conversationId,
+          conversationType: msg.conversationType,
           sendUserId: msg.sendUserId,
           msgType: msg.msgType,
           msgPreview: msg.msgPreview,

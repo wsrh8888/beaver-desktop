@@ -72,6 +72,7 @@ export default defineComponent({
     // 处理点击更多按钮
     const handleMore = () => {
       // 根据会话类型发出不同的事件
+      console.log('1111111111111111', chatType)
       switch (chatType.value) {
         case 'private':
           emit('showPrivateDetails')

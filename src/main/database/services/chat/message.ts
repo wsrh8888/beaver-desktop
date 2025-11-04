@@ -1,4 +1,5 @@
-import { desc, eq, gte, lte } from 'drizzle-orm'
+import type { IChatHistoryRes, IChatMessageVerRangeRes } from 'commonModule/type/ajax/chat'
+import { and, desc, eq, gte, lte } from 'drizzle-orm'
 import dbManager from '../../db'
 import { chats } from '../../tables/chat/chat'
 import { UserService } from '../user/user'
@@ -24,7 +25,7 @@ export class MessageService {
   }
 
   // 获取会话的历史消息
-  static async getChatHistory(header: any, params: any) {
+  static async getChatHistory(header: any, params: any): Promise<IChatHistoryRes> {
     // 前端可能传递 conversation 或 conversationId
     const conversationId = params.conversationId || params.conversation
     const page = params.page || 1
@@ -93,14 +94,90 @@ export class MessageService {
   }
 
   // 按序列号范围获取消息（用于数据同步）
-  static async getChatMessagesBySeqRange(_header: any, params: any) {
+  static async getChatMessagesBySeqRange(_header: any, params: any): Promise<IChatMessageVerRangeRes> {
     const { startSeq, endSeq, conversationId } = params
-    let query = this.db.select().from(chats).where(gte(chats.seq, startSeq)).where(lte(chats.seq, endSeq)).orderBy(chats.seq, 'asc')
+    console.log(`[DEBUG] getChatMessagesBySeqRange called with:`, { startSeq, endSeq, conversationId, startSeqType: typeof startSeq, endSeqType: typeof endSeq })
 
-    if (conversationId) {
-      query = query.where(eq(chats.conversationId, conversationId))
+    // 构建基础查询
+    let query = this.db.select().from(chats)
+
+    // 应用复合条件：seq 范围 + conversationId
+    console.log(`[DEBUG] Applying filters: seq >= ${startSeq} AND seq <= ${endSeq} AND conversationId = ${conversationId}`)
+
+    query = query.where(and(
+      gte(chats.seq, startSeq),
+      lte(chats.seq, endSeq),
+      eq(chats.conversationId, conversationId),
+    ))
+
+    // 排序
+    query = query.orderBy(chats.seq, 'asc')
+
+    console.log(`[DEBUG] Query built, executing...`)
+
+    const result = await query.all()
+    console.log(`[DEBUG] Query result: found ${result.length} messages`)
+
+    if (result.length > 0) {
+      // 检查结果中的 conversationId 是否一致
+      const uniqueConversations = [...new Set(result.map((m: any) => m.conversationId))]
+      console.log(`[DEBUG] Unique conversationIds in result:`, uniqueConversations)
+
+      // 检查 seq 值分布
+      const seqCounts = result.reduce((acc: Record<number, number>, msg: any) => {
+        acc[msg.seq] = (acc[msg.seq] || 0) + 1
+        return acc
+      }, {} as Record<number, number>)
+      console.log(`[DEBUG] Seq distribution:`, seqCounts)
+
+      console.log(`[DEBUG] Sample messages:`, result.slice(0, 3).map((m: any) => ({
+        id: m.id,
+        messageId: m.messageId,
+        seq: m.seq,
+        conversationId: m.conversationId,
+      })))
     }
 
-    return await query.all()
+    // 获取发送者信息（同步接口也需要完整用户信息）
+    const senderIds = [...new Set(result.map((m: any) => m.sendUserId).filter((id: string) => id && id.trim()))]
+    const senderInfoMap = new Map()
+    if (senderIds.length > 0) {
+      try {
+        const senderDetails = await UserService.getUsersBasicInfo(senderIds as string[])
+        senderDetails.forEach((detail) => {
+          senderInfoMap.set(detail.userId, {
+            userId: detail.userId,
+            nickname: detail.nickName,
+            avatar: detail.avatar,
+          })
+        })
+      }
+      catch (error) {
+        console.warn('[DEBUG] Failed to get sender details in seq range query:', error)
+      }
+    }
+
+    // 转换为 IChatHistory 格式
+    const formattedMessages = result.map((message: any) => {
+      const senderDetail = senderInfoMap.get(message.sendUserId)
+      return {
+        id: message.id,
+        messageId: message.messageId,
+        conversationId: message.conversationId,
+        seq: message.seq,
+        msg: typeof message.msg === 'string' ? JSON.parse(message.msg) : message.msg, // 解析JSON字符串
+        sender: {
+          userId: message.sendUserId || '',
+          avatar: senderDetail?.avatar || '',
+          nickname: senderDetail?.nickname || (message.sendUserId ? '用户' : '系统消息'),
+        },
+        create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
+        status: 0, // 默认正常状态
+      }
+    })
+
+    return {
+      list: formattedMessages,
+    }
   }
 }

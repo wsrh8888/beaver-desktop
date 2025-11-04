@@ -2,7 +2,6 @@ import { defineStore } from 'pinia'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/app/pinia/friend/friend'
 import { useUserStore } from 'renderModule/app/pinia/user/user'
-import notificationManager from '../../notification-manager'
 import { useFriendVerifyStore } from '../friend/friend_verify'
 
 /**
@@ -70,9 +69,6 @@ export const useAppStore = defineStore('useAppStore', {
         ]
 
         await Promise.all(promises)
-
-        // 初始化通知管理器
-        notificationManager.init()
 
         this.isInitialized = true
         console.log('应用数据初始化完成')

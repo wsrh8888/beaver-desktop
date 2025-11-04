@@ -24,23 +24,7 @@ export const POPUP_MENU_CONFIG = [
   },
 ]
 
-// 弹窗类型常量
-export const DIALOG_TYPES = {
-  CREATE_GROUP: 'create-group',
-  APPLY_FRIEND: 'apply-friend',
-} as const
-
-// 搜索类型常量
-export const SEARCH_TYPES = {
-  EMAIL: 'email',
-  USER_ID: 'id',
-} as const
-
 export const notificationList = [{
   key: 'friend-notification',
   text: '好友通知',
 }]
-// , {
-//   key: 'group-notification',
-//   text: '群通知',
-// }

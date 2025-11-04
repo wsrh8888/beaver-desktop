@@ -165,7 +165,7 @@ class MessageManager {
    * @param wsMessage WebSocket 消息
    */
   private processMessage(wsMessage: any, source: 'ws' | 'queue') {
-    console.log('处理消息', wsMessage, source)
+    console.log('处理消息', JSON.stringify(wsMessage), source)
     switch (wsMessage.command) {
       case 'CHAT_MESSAGE':
         this.messageReceiver.handle(wsMessage.content)

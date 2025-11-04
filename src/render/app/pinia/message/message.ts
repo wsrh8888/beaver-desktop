@@ -1,8 +1,11 @@
 import type { IChatHistory } from 'commonModule/type/ajax/chat'
 import { defineStore } from 'pinia'
 
+import Logger from 'renderModule/utils/log'
+
 import { useConversationStore } from '../conversation/conversation'
 
+const logger = new Logger('MessageStore')
 /**
  * @description: 聊天消息管理
  * 大厂IM的消息加载策略：
@@ -171,19 +174,32 @@ export const useMessageStore = defineStore('useMessageStore', {
 
     /**
      * @description: 添加新消息（实时接收或发送成功）
+     * 使用 seq 进行排序，保证消息顺序的绝对正确性
      */
     addMessage(conversationId: string, message: IChatHistory) {
+      console.log('增加了消息', conversationId, message)
       const history = this.chatHistory.get(conversationId) || []
 
-      // 检查消息是否已存在（通过 messageId 去重）
-      const existingIndex = history.findIndex(m => m.messageId === message.messageId)
+      // 使用 seq 去重 - seq 在 conversation 中应该是严格唯一的
+      // 如果 seq 重复，说明系统有严重问题，需要记录错误
+      const existingIndex = history.findIndex(m => m.seq === message.seq)
       if (existingIndex !== -1) {
-        // 更新现有消息
+        // seq 重复是严重错误，但为了健壮性，我们更新消息
         history[existingIndex] = message
+        console.error(`[MessageStore] seq重复错误! conversationId=${conversationId}, seq=${message.seq}, messageId=${message.messageId}`)
       }
       else {
-        // 添加新消息到末尾（最新的在最后）
-        history.push(message)
+        // 按 seq 插入到正确位置，保持时间倒序（最新的在最后）
+        // seq 越小越早，seq 越大越新
+        const insertIndex = history.findIndex(m => m.seq > message.seq)
+        if (insertIndex === -1) {
+          // 没有找到比当前消息 seq 更大的消息，添加到末尾
+          history.push(message)
+        }
+        else {
+          // 插入到正确位置
+          history.splice(insertIndex, 0, message)
+        }
       }
 
       this.chatHistory.set(conversationId, history)
@@ -196,6 +212,46 @@ export const useMessageStore = defineStore('useMessageStore', {
 
       // 更新会话列表的最新消息预览
       this.updateConversationPreview(conversationId, message)
+    },
+
+    /**
+     * @description: 根据seq范围拉取消息数据（用于处理后台推送通知）
+     * 大厂IM的做法：收到推送后主动拉取数据，避免推送大量数据
+     */
+    async fetchMessagesBySeqRange(conversationId: string, minSeq: number, maxSeq: number) {
+      try {
+        logger.info({
+          text: '开始拉取消息数据',
+          data: { conversationId, minSeq, maxSeq },
+        })
+        // 调用后端API获取指定seq范围的消息
+        const result = await electron.database.chat.getChatMessagesBySeqRange({
+          startSeq: minSeq,
+          endSeq: maxSeq,
+          conversationId,
+        })
+        logger.info({
+          text: '拉取消息数据',
+          data: result,
+        })
+
+        if (result && result.list && result.list.length > 0) {
+          // 将消息添加到store中
+          for (const message of result.list) {
+            this.addMessage(conversationId, message)
+          }
+
+          // 更新分页状态的最大序列号
+          const pagination = this.messagePagination.get(conversationId)
+          if (pagination) {
+            pagination.currentMaxSeq = Math.max(pagination.currentMaxSeq, maxSeq)
+          }
+        }
+      }
+      catch (error) {
+        console.error('拉取消息数据失败:', error)
+        throw error
+      }
     },
 
     /**

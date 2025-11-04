@@ -6,15 +6,20 @@
     <div class="friend__right">
       <FriendRightComponent />
     </div>
-    <div>
-      <FriendDialogComponent />
-    </div>
+
+    <!-- 创建群聊组件 -->
+    <CreateGroupComponent
+      v-if="friendViewStore.currentDialog === 'create-group'"
+      @close="hideCreateGroup"
+      @created="onGroupCreated"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import { useFriendViewStore } from 'renderModule/app/pinia/view/friend'
 import { defineComponent, onMounted } from 'vue'
-import FriendDialogComponent from './dialog-component/index.vue'
+import CreateGroupComponent from './detail-component/create-group.vue'
 import FriendLeftComponent from './left-component/FriendLeft.vue'
 import FriendRightComponent from './right-component/index.vue'
 
@@ -22,13 +27,31 @@ export default defineComponent({
   components: {
     FriendLeftComponent,
     FriendRightComponent,
-    FriendDialogComponent,
+    CreateGroupComponent,
   },
   setup() {
+    const friendViewStore = useFriendViewStore()
+
+    // 隐藏创建群聊弹窗
+    const hideCreateGroup = () => {
+      friendViewStore.showDialog(null)
+    }
+
+    // 群聊创建成功回调
+    const onGroupCreated = (groupInfo: any) => {
+      console.log('群聊创建成功:', groupInfo)
+      // 这里可以添加刷新群聊列表等逻辑
+      friendViewStore.showDialog(null)
+    }
+
     onMounted(() => {
     })
 
-    return {}
+    return {
+      friendViewStore,
+      hideCreateGroup,
+      onGroupCreated,
+    }
   },
 })
 </script>

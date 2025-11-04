@@ -9,7 +9,7 @@ import { users } from 'mainModule/database/tables/user/user'
 function generateConversationId(userId1: string, userId2: string): string {
   // 确保 userId1 < userId2，保证唯一性
   const sortedIds = [userId1, userId2].sort()
-  return `friend_${sortedIds[0]}_${sortedIds[1]}`
+  return `private_${sortedIds[0]}_${sortedIds[1]}`
 }
 
 interface UserInfo {
