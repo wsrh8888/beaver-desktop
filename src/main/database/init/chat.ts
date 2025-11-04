@@ -77,6 +77,7 @@ export const initChatTables = (db: any) => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       message_id TEXT NOT NULL UNIQUE,
       conversation_id TEXT NOT NULL,
+      conversation_type INTEGER NOT NULL,
       seq INTEGER DEFAULT 0,
       send_user_id TEXT,
       msg_type INTEGER NOT NULL,

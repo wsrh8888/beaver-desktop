@@ -14,14 +14,13 @@ export class MessageService {
     return await this.db.insert(chats).values(messageData).run()
   }
 
-  // 批量创建消息（调用create方法）
+  // 批量创建消息（一次性插入所有消息，忽略重复数据）
   static async batchCreate(messages: any[]) {
     if (messages.length === 0)
       return
 
-    for (const message of messages) {
-      await this.create(message)
-    }
+    // 一次性批量插入所有消息，如果messageId重复则忽略（避免重复插入）
+    return await this.db.insert(chats).values(messages).onConflictDoNothing({ target: chats.messageId }).run()
   }
 
   // 获取会话的历史消息

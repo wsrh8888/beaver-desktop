@@ -1,10 +1,14 @@
+import { NotificationConnectionCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { dataSyncManager } from 'mainModule/datasync/manager.ts'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 import WsManager from 'mainModule/ws-manager/index'
-import { ChatReceiver } from './receivers/chat-receiver'
-import { FriendReceiver } from './receivers/friend-receiver.ts'
-import { GroupReceiver } from './receivers/group-receiver.ts'
-import { UserReceiver } from './receivers/user-receiver.ts'
+import { ConversationReceiver } from './receivers/chat/conversation-receiver'
+import { MessageReceiver } from './receivers/chat/message-receiver'
+import { UserConversationReceiver } from './receivers/chat/user-conversation-receiver'
+import { FriendReceiver } from './receivers/friend/receiver'
+import { GroupReceiver } from './receivers/group/receiver'
+import { UserReceiver } from './receivers/user/receiver'
 import { ChatSender } from './senders/chat-sender'
 
 /**
@@ -12,7 +16,9 @@ import { ChatSender } from './senders/chat-sender'
  */
 class MessageManager {
   public chatSender = new ChatSender()
-  public chatReceiver = new ChatReceiver()
+  public messageReceiver = new MessageReceiver()
+  public conversationReceiver = new ConversationReceiver()
+  public userConversationReceiver = new UserConversationReceiver()
   public friendReceiver = new FriendReceiver()
   public groupReceiver = new GroupReceiver()
   public userReceiver = new UserReceiver()
@@ -39,8 +45,21 @@ class MessageManager {
   private async onWsConnect() {
     logger.info({ text: 'WebSocket 连接成功，开始数据同步' }, 'MessageManager')
 
+    // 通知前端：连接成功
+    sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+      status: 'connected',
+      timestamp: Date.now(),
+    })
+
     try {
       this.isDataSyncing = true
+
+      // 通知前端：开始同步
+      sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+        status: 'syncing',
+        timestamp: Date.now(),
+      })
+
       // 开始数据同步，并等待同步完成
       await dataSyncManager.autoSync()
       this.isDataSyncing = false
@@ -48,10 +67,26 @@ class MessageManager {
       // 处理队列中的所有消息
       this.processMessageQueue()
 
+      // 通知前端：同步完成，系统就绪
+      sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+        status: 'ready',
+        timestamp: Date.now(),
+        messageCount: this.messageQueue.length,
+      })
+
       logger.info({ text: 'WebSocket 连接成功，消息管理器已准备就绪' }, 'MessageManager')
     }
     catch (error) {
       this.isDataSyncing = false
+
+      // 通知前端：同步失败
+      sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+        status: 'error',
+        timestamp: Date.now(),
+        error: (error as Error).message,
+        reason: 'sync_failed',
+      })
+
       logger.error({ text: '数据同步失败', data: { error: (error as any)?.message } }, 'MessageManager')
     }
   }
@@ -60,6 +95,12 @@ class MessageManager {
    * @description: WebSocket 断开连接回调
    */
   private onWsDisconnect() {
+    // 通知前端：连接断开
+    sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+      status: 'disconnected',
+      timestamp: Date.now(),
+    })
+
     logger.info({ text: 'WebSocket 断开连接' }, 'MessageManager')
   }
 
@@ -67,6 +108,14 @@ class MessageManager {
    * @description: WebSocket 错误回调
    */
   private onWsError(error: any) {
+    // 通知前端：连接错误
+    sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+      status: 'error',
+      timestamp: Date.now(),
+      error: error?.message || error,
+      reason: 'connection_error',
+    })
+
     logger.error({ text: 'WebSocket 错误', data: { error } }, 'MessageManager')
   }
 
@@ -119,7 +168,7 @@ class MessageManager {
     console.log('处理消息', wsMessage, source)
     switch (wsMessage.command) {
       case 'CHAT_MESSAGE':
-        this.chatReceiver.handle(wsMessage.content)
+        this.messageReceiver.handle(wsMessage.content)
         break
       case 'FRIEND_OPERATION':
         this.friendReceiver.handleFriendOperation(wsMessage)

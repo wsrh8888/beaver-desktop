@@ -6,6 +6,7 @@ export const chats = sqliteTable('chat_messages', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   messageId: text('message_id').notNull().unique(), // 唯一消息ID
   conversationId: text('conversation_id').notNull(), // 所属会话ID
+  conversationType: integer('conversation_type').notNull(), // 会话类型（1=私聊 2=群聊）
   seq: integer('seq').default(0), // 消息在会话内的序列号
   sendUserId: text('send_user_id'), // 发送者用户ID（系统消息可为null）
   msgType: integer('msg_type').notNull(), // 消息类型
