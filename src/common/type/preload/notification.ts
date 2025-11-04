@@ -10,6 +10,10 @@ export enum NotificationModule {
    */
   DATABASE_CHAT = 'database:chat',
   /**
+   * 连接状态通知
+   */
+  CONNECTION = 'connection',
+  /**
    * 搜索结果通知到验证窗口
    */
   SEARCH_TO_VERIFY = 'search:to:verify',
@@ -44,11 +48,21 @@ export enum NotificationChatCommand {
    */
   MESSAGE_STATUS_UPDATE = 'messageStatusUpdate',
 }
+
+export enum NotificationConnectionCommand {
+  /**
+   * 连接状态变更 - 统一的状态变更通知
+   * data: { status: 'connected' | 'disconnected' | 'error' | 'syncing' | 'ready' }
+   */
+  STATUS_CHANGE = 'statusChange',
+}
+
 export interface NotificationCommandMap {
   [NotificationModule.DATABASE_FRIEND]: NotificationFriendCommand
   [NotificationModule.DATABASE_USER]: NotificationUserCommand
   [NotificationModule.DATABASE_DATASYNC]: NotificationDataSyncCommand
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
+  [NotificationModule.CONNECTION]: NotificationConnectionCommand
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
 }
 

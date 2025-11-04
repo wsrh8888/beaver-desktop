@@ -1,3 +1,4 @@
+import DatabaseChatEventManager from './databasechat'
 import DatabaseFriendEventManager from './databasefriend'
 import DatabaseUserEventManager from './databaseuser'
 
@@ -8,11 +9,13 @@ class NotificationManager {
   init() {
     DatabaseFriendEventManager.init()
     DatabaseUserEventManager.init()
+    DatabaseChatEventManager.init()
   }
 
   off() {
     DatabaseFriendEventManager.off()
     DatabaseUserEventManager.off()
+    DatabaseChatEventManager.off()
   }
 }
 
