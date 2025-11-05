@@ -16,9 +16,9 @@ export enum MessageType {
 
 // 消息发送状态
 export enum MessageStatus {
-  SENDING = 'sending',
-  SENT = 'sent',
-  FAILED = 'failed',
+  SENDING = 0, // 发送中
+  SENT = 1, // 已发送（本地发送成功）
+  FAILED = 2, // 发送失败
 }
 
 export interface IRecentChatReq {
@@ -257,6 +257,7 @@ export interface IChatHistory {
   sender: ISender // 发送者信息
   create_at: string // 创建时间
   status: number // 消息状态
+  sendStatus?: MessageStatus // 发送状态（本地发送状态）
 }
 
 // 聊天数据同步请求

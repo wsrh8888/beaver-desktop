@@ -1,7 +1,14 @@
 import EmojiSvg from 'renderModule/assets/image/chat/emoji.svg'
+import FileSvg from 'renderModule/assets/image/chat/file.svg'
 import ImageSvg from 'renderModule/assets/image/chat/image.svg'
 
 export const toolList = [
+  {
+    id: 3,
+    name: '文件',
+    value: 'file',
+    icon: FileSvg,
+  },
   {
     id: 1,
     name: '表情',
@@ -14,12 +21,7 @@ export const toolList = [
     value: 'image',
     icon: ImageSvg,
   },
-  // {
-  //   id: 3,
-  //   name: '文件',
-  //   value: 'file',
-  //   icon: FileSvg
-  // },
+
   // {
   //   id: 4,
   //   name: '语音',

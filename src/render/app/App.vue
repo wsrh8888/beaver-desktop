@@ -6,13 +6,14 @@
     <div class="app__content">
       <router-view />
     </div>
+    <GlobalComponent />
   </div>
 </template>
 
 <script lang="ts">
-import HeaderComponent from 'renderModule/app/components/header/header.vue'
-// import Sidebar from './components/sidebar/index.vue'
-import Sidebar from 'renderModule/app/components/sidebar/index.vue'
+import GlobalComponent from 'renderModule/app/components/global/index.vue'
+import HeaderComponent from 'renderModule/app/components/layout/header/header.vue'
+import Sidebar from 'renderModule/app/components/layout/sidebar/index.vue'
 import { useAppStore } from 'renderModule/app/pinia/app/app'
 import { defineComponent, onMounted } from 'vue'
 
@@ -20,6 +21,7 @@ export default defineComponent({
   components: {
     Sidebar,
     HeaderComponent,
+    GlobalComponent,
   },
   setup() {
     const appStore = useAppStore()

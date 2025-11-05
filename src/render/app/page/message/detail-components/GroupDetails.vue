@@ -145,10 +145,9 @@
 </template>
 
 <script lang="ts">
-import { quitGroupApi, updateGroupInfoApi } from 'renderModule/api/group'
-import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
+import { updateGroupInfoApi } from 'renderModule/api/group'
 import { useGroupStore } from 'renderModule/app/pinia/group/group'
-import { useUserStore } from 'renderModule/app/pinia/user/user'
+import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 // import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue'
@@ -166,9 +165,9 @@ export default defineComponent({
   },
   emits: ['update:visible', 'close'],
   setup(props, { emit }) {
-    const conversationStore = useConversationStore()
+    // const conversationStore = useConversationStore()
     const groupStore = useGroupStore()
-    const _userStore = useUserStore()
+    // const _userStore = useUserStore()
     const messageViewStore = useMessageViewStore()
 
     const isVisible = ref(props.visible)
@@ -313,22 +312,22 @@ export default defineComponent({
         return
 
       // 使用更用户友好的确认方式
-      // eslint-disable-next-line no-alert
-      const confirmed = confirm('确定要退出该群聊吗？')
-      if (confirmed) {
-        try {
-          await quitGroupApi({ groupId: groupInfo.value.conversationId })
+      // const confirmed = confirm('确定要退出该群聊吗？')
+      // if (confirmed) {
+      //   try {
+      //     await quitGroupApi({ groupId: groupInfo.value.conversationId })
 
-          // 退出成功后关闭详情面板
-          closeDetails()
+      //     // 退出成功后关闭详情面板
+      //     closeDetails()
 
-          // 跳转到其他会话或首页
-          conversationStore.setCurrentChat('')
-        }
-        catch (error) {
-          console.error('Failed to leave group:', error)
-        }
-      }
+      //     // 跳转到其他会话或首页
+      //     // conversationStore.setCurrentChat('')
+      //   }
+      //   catch (error) {
+      //     console.error('Failed to leave group:', error)
+      //   }
+      // }
+      console.log('退出群聊')
     }
 
     // 保存群设置

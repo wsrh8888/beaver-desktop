@@ -1,4 +1,3 @@
-import type { IDatasyncBase } from 'commonModule/type/database'
 import { EDataType } from 'commonModule/type/ajax/datasync'
 import { SyncStatus } from 'commonModule/type/datasync'
 import { friendVerifySyncApi } from 'mainModule/api/frined'
@@ -10,7 +9,7 @@ import { FriendVerifyService } from '../../database/services/friend/friend_verif
 import { UserSyncModule } from '../user/user'
 
 // 好友验证数据同步模块
-class FriendVerifySyncModule implements IDatasyncBase {
+class FriendVerifySyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步

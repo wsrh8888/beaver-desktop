@@ -40,5 +40,6 @@ export interface IPrivateMessageSyncBody extends IPrivateMessageReceiveBody {
 // WebSocket 消息体 - 私聊消息发送
 export interface IPrivateMessageSendBody {
   conversationId: string
+  messageId: string // 客户端消息ID
   msg: IMessageMsg
 }

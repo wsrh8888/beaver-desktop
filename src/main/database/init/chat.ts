@@ -4,6 +4,7 @@ function ensureChatsFields(sqlite: any) {
     'seq INTEGER DEFAULT 0',
     'target_message_id TEXT',
     'conversation_type INTEGER NOT NULL DEFAULT 1', // 添加默认值避免 NOT NULL 约束问题
+    'send_status INTEGER DEFAULT 1', // 发送状态 (0=发送中 1=已发送 2=发送失败)
 
     // 如果以后添加新字段，在这里添加：
     // 'new_field TEXT',
@@ -49,11 +50,11 @@ function ensureChatConversationsFields(sqlite: any) {
 // 用户会话表(ChatUserConversation)字段补齐 - 确保老用户的数据库结构与新版本兼容
 function ensureChatUserConversationsFields(sqlite: any) {
   const fields: string[] = [
-    'joined_at INTEGER DEFAULT 0',
     'is_hidden INTEGER DEFAULT 0',
     'is_muted INTEGER DEFAULT 0',
     'user_read_seq INTEGER DEFAULT 0',
     // last_message 已移至 chat_conversation_metas 表，不再需要
+    // joined_at 已移除，不再需要
     // 如果以后添加新字段，在这里添加：
     // 'new_field TEXT',
   ]
@@ -96,6 +97,7 @@ export const initChatTables = (db: any) => {
       target_message_id TEXT,
       msg_preview TEXT,
       msg TEXT,
+      send_status INTEGER DEFAULT 1,
       created_at INTEGER DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER DEFAULT (strftime('%s', 'now'))
     )
@@ -121,7 +123,6 @@ export const initChatTables = (db: any) => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       user_id TEXT NOT NULL,
       conversation_id TEXT NOT NULL,
-      joined_at INTEGER DEFAULT 0,
       is_hidden INTEGER DEFAULT 0,
       is_pinned INTEGER DEFAULT 0,
       is_muted INTEGER DEFAULT 0,
@@ -173,7 +174,7 @@ export const fixChatDatabase = (db: any) => {
     }
 
     // 检查其他缺失的列
-    const requiredColumns = ['seq', 'target_message_id']
+    const requiredColumns = ['seq', 'target_message_id', 'send_status']
     for (const colName of requiredColumns) {
       const hasColumn = columns.some((col: any) => col.name === colName)
       if (!hasColumn) {
@@ -184,6 +185,9 @@ export const fixChatDatabase = (db: any) => {
           }
           else if (colName === 'target_message_id') {
             sqlite.exec(`ALTER TABLE chat_messages ADD COLUMN target_message_id TEXT`)
+          }
+          else if (colName === 'send_status') {
+            sqlite.exec(`ALTER TABLE chat_messages ADD COLUMN send_status INTEGER DEFAULT 1`)
           }
           console.log(`Successfully added ${colName} column`)
         }

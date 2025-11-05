@@ -1,3 +1,4 @@
+import type { IDBFriend } from 'commonModule/type/database/friend'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
@@ -14,4 +15,4 @@ export const friends = sqliteTable('friends', {
   version: integer('version').default(0), // 版本号
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
-})
+}) as unknown as IDBFriend

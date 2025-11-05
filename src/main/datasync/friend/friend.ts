@@ -1,4 +1,3 @@
-import type { IDatasyncBase } from 'commonModule/type/database'
 import { EDataType } from 'commonModule/type/ajax/datasync'
 import { SyncStatus } from 'commonModule/type/datasync'
 import { getSyncCursorApi, updateSyncCursorApi } from 'mainModule/api/datasync'
@@ -9,7 +8,7 @@ import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
 // 好友数据同步模块
-export class FriendSyncModule implements IDatasyncBase {
+export class FriendSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步

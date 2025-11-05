@@ -1,4 +1,3 @@
-import type { IDatasyncBase } from 'commonModule/type/database'
 import { EDataType } from 'commonModule/type/ajax/datasync'
 import { SyncStatus } from 'commonModule/type/datasync'
 import { userConversationSyncApi } from 'mainModule/api/chat'
@@ -9,7 +8,7 @@ import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
 // 会话设置表同步模块
-class ConversationSettingSyncModule implements IDatasyncBase {
+class ConversationSettingSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步
@@ -58,7 +57,6 @@ class ConversationSettingSyncModule implements IDatasyncBase {
         const userConversations = response.result.userConversations.map(uc => ({
           userId: uc.userId,
           conversationId: uc.conversationId,
-          joinedAt: uc.joinedAt,
           lastMessage: uc.lastMessage,
           isHidden: uc.isHidden ? 1 : 0,
           isPinned: uc.isPinned ? 1 : 0,

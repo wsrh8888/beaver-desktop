@@ -16,6 +16,10 @@ export interface IGroupInfo {
    * @description: 会话ID
    */
   conversationId: string
+  /**
+   * @description: 数据版本号
+   */
+  version: number
 }
 
 // 群组列表响应
@@ -49,9 +53,17 @@ export interface IGroupMember {
    */
   role: number
   /**
+   * @description: 成员状态：1正常 2退出 3被踢
+   */
+  status: number
+  /**
    * @description: 加入时间
    */
   joinTime: string
+  /**
+   * @description: 数据版本号
+   */
+  version: number
 }
 
 // 群成员列表响应
@@ -412,19 +424,53 @@ export interface IGroupInfoReq {
 
 export interface IGroupInfoRes {
   /**
-   * @description: 会话ID
+   * @description: 群组ID
    */
-  conversationId: IGroupInfo
-
-  /**
-   * @description: 群组头像URL
-   */
-  avatar: string
-
+  groupId: string
   /**
    * @description: 群组名称
    */
   title: string
+  /**
+   * @description: 群组头像URL
+   */
+  avatar: string
+  /**
+   * @description: 成员数量
+   */
+  memberCount: number
+  /**
+   * @description: 创建者ID
+   */
+  creatorId: string
+  /**
+   * @description: 群公告
+   */
+  notice: string
+  /**
+   * @description: 加入方式
+   */
+  joinType: number
+  /**
+   * @description: 群状态
+   */
+  status: number
+  /**
+   * @description: 会话ID
+   */
+  conversationId: string
+  /**
+   * @description: 创建时间戳
+   */
+  createAt: number
+  /**
+   * @description: 更新时间戳
+   */
+  updateAt: number
+  /**
+   * @description: 数据版本号
+   */
+  version: number
 }
 
 // 获取群成员列表请求
@@ -480,6 +526,94 @@ export interface ISearchGroupRes {
   memberCount: number
   description?: string
   conversationId?: string
+}
+
+// 入群申请列表请求
+export interface IGroupJoinRequestListReq {
+  /**
+   * @description: 用户ID（从header获取）
+   */
+  userId?: string
+  /**
+   * @description: 页码，可选，默认1
+   */
+  page?: number
+  /**
+   * @description: 每页数量，可选，默认20
+   */
+  limit?: number
+}
+
+// 入群申请项
+export interface IGroupJoinRequestItem {
+  /**
+   * @description: 申请ID
+   */
+  requestId: number
+  /**
+   * @description: 群组ID
+   */
+  groupId: string
+  /**
+   * @description: 申请者用户ID
+   */
+  applicantId: string
+  /**
+   * @description: 申请者昵称
+   */
+  applicantName: string
+  /**
+   * @description: 申请者头像
+   */
+  applicantAvatar: string
+  /**
+   * @description: 申请消息
+   */
+  message: string
+  /**
+   * @description: 状态：0待审 1同意 2拒绝
+   */
+  status: number
+  /**
+   * @description: 申请时间戳
+   */
+  createAt: number
+  /**
+   * @description: 数据版本号
+   */
+  version: number
+}
+
+// 入群申请列表响应
+export interface IGroupJoinRequestListRes {
+  /**
+   * @description: 申请列表
+   */
+  list: IGroupJoinRequestItem[]
+  /**
+   * @description: 总数
+   */
+  count: number
+}
+
+// 处理入群申请请求
+export interface IGroupJoinRequestHandleReq {
+  /**
+   * @description: 处理者用户ID（从header获取）
+   */
+  userId?: string
+  /**
+   * @description: 申请ID
+   */
+  requestId: number
+  /**
+   * @description: 处理状态：1同意 2拒绝
+   */
+  status: number
+}
+
+// 处理入群申请响应
+export interface IGroupJoinRequestHandleRes {
 }
 
 // 群聊搜索结果

@@ -1,3 +1,4 @@
+import type { IDBMedia } from 'commonModule/type/database/media'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
 
@@ -13,4 +14,4 @@ export const media = sqliteTable('media', {
   isDeleted: integer('is_deleted').default(0),
 }, table => ({
   fileNameIdx: unique().on(table.fileName),
-}))
+})) as unknown as IDBMedia

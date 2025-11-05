@@ -1,6 +1,6 @@
 import { WsType } from 'commonModule/type/ws/command'
-import messageManager from 'mainModule/message-manager'
 import { store } from 'mainModule/store'
+import { ChatSender } from '../senders/chat-sender'
 
 export class ChatHandler {
   /**
@@ -13,7 +13,7 @@ export class ChatHandler {
     }
     switch (command) {
       case WsType.PRIVATE_MESSAGE_SEND:
-        return await messageManager.chatSender.sendMessage(data.conversationId, data.content, WsType.PRIVATE_MESSAGE_SEND)
+        return await ChatSender.sendPrivateMessage(data, userStore.userId)
       default:
         throw new Error('好友数据库命令处理失败')
     }

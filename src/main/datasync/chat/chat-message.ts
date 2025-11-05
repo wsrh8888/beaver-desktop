@@ -49,9 +49,11 @@ class MessageSyncService {
           conversationType: msg.conversationType,
           sendUserId: msg.sendUserId,
           msgType: msg.msgType,
+          targetMessageId: msg.targetMessageId || null, // 引用消息ID（撤回/删除等）
           msgPreview: msg.msgPreview,
           msg: msg.msg,
           seq: msg.seq,
+          // sendStatus: 默认值1（已发送）- 服务端同步的消息
           createdAt: msg.createAt,
           updatedAt: Math.floor(Date.now() / 1000),
         }))

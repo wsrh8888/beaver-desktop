@@ -20,8 +20,8 @@ function ensureGroupsFields(sqlite: any) {
 // 群成员表字段补齐 - 确保老用户的数据库结构与新版本兼容
 function ensureGroupMembersFields(sqlite: any) {
   const fields: string[] = [
-    // 如果以后添加新字段，在这里添加：
-    // 'new_field TEXT',
+    // 添加version字段用于数据同步
+    'version INTEGER DEFAULT 0',
   ]
 
   fields.forEach((field) => {
@@ -35,6 +35,24 @@ function ensureGroupMembersFields(sqlite: any) {
   })
 }
 
+// 入群申请表字段补齐 - 确保老用户的数据库结构与新版本兼容
+function ensureGroupJoinRequestsFields(sqlite: any) {
+  const fields: string[] = [
+    // 如果以后添加新字段，在这里添加：
+    // 'new_field TEXT',
+  ]
+
+  fields.forEach((field) => {
+    try {
+      sqlite.exec(`ALTER TABLE group_join_requests ADD COLUMN ${field}`)
+    }
+    catch {
+      console.error('Group join requests table field already exists')
+      // 字段已存在，忽略错误
+    }
+  })
+}
+
 // 群组相关表初始化
 export const initGroupTables = (db: any) => {
   const sqlite = db.$client
@@ -42,6 +60,7 @@ export const initGroupTables = (db: any) => {
   // 先执行字段补齐，确保老用户的数据库结构完整
   ensureGroupsFields(sqlite)
   ensureGroupMembersFields(sqlite)
+  ensureGroupJoinRequestsFields(sqlite)
 
   // 创建群组表
   sqlite.exec(`
@@ -68,9 +87,26 @@ export const initGroupTables = (db: any) => {
       user_id TEXT NOT NULL,
       role INTEGER DEFAULT 3,
       status INTEGER DEFAULT 1,
+      version INTEGER DEFAULT 0,
       created_at INTEGER DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER DEFAULT (strftime('%s', 'now')),
       PRIMARY KEY (group_id, user_id)
+    )
+  `)
+
+  // 创建入群申请表
+  sqlite.exec(`
+    CREATE TABLE IF NOT EXISTS group_join_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      group_id TEXT NOT NULL,
+      applicant_user_id TEXT NOT NULL,
+      message TEXT,
+      status INTEGER DEFAULT 0,
+      handled_by TEXT,
+      handled_at INTEGER,
+      version INTEGER DEFAULT 0,
+      created_at INTEGER DEFAULT (strftime('%s', 'now')),
+      updated_at INTEGER DEFAULT (strftime('%s', 'now'))
     )
   `)
 }

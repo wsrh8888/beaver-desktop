@@ -18,7 +18,7 @@ class SearchToVerifyEventManager {
     switch (params.command) {
       case NotificationSearchToVerifyCommand.SEARCH_TO_VERIFY: {
         const verifyStore = useVerifyStore()
-        verifyStore.updateSearchData(params.data, 'friend')
+        verifyStore.updateSearchData(params.data, params.data.type)
         break
       }
       default:

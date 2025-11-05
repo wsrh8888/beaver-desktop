@@ -90,7 +90,6 @@ export class ConversationReceiver extends BaseReceiver<ConversationOperationData
         await ChatUserConversationService.create({
           userId: currentUserId,
           conversationId: message.conversationId,
-          joinedAt: message.timestamp,
           isHidden: 0,
           isPinned: 0,
           isMuted: 0,

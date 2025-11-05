@@ -1,4 +1,3 @@
-import type { IDatasyncBase } from 'commonModule/type/database'
 import { EDataType } from 'commonModule/type/ajax/datasync'
 import { SyncStatus } from 'commonModule/type/datasync'
 import { eq } from 'drizzle-orm'
@@ -12,7 +11,7 @@ import logger from 'mainModule/utils/log'
 import messageSyncModule from './chat-message'
 
 // 数据同步表同步模块
-class DatasyncSyncModule implements IDatasyncBase {
+class DatasyncSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步

@@ -29,7 +29,6 @@ export class ChatUserConversationService {
         .onConflictDoUpdate({
           target: [chatUserConversations.userId, chatUserConversations.conversationId],
           set: {
-            joinedAt: userConversation.joinedAt,
             // lastMessage 已移至 ChatConversationMeta 表
             isHidden: userConversation.isHidden,
             isPinned: userConversation.isPinned,
@@ -43,6 +42,21 @@ export class ChatUserConversationService {
     }
   }
 
+  // 更新用户的已读游标
+  static async updateReadSeq(userId: string, conversationId: string, readSeq: number) {
+    return await this.db
+      .update(chatUserConversations)
+      .set({
+        userReadSeq: readSeq,
+        updatedAt: Math.floor(Date.now() / 1000),
+      })
+      .where(and(
+        eq(chatUserConversations.userId, userId as any),
+        eq(chatUserConversations.conversationId, conversationId as any),
+      ))
+      .run()
+  }
+
   // 获取聚合后的最近聊天列表（包含会话元数据）
   static async getAggregatedRecentChatList(header: any, params: IRecentChatReq) {
     const userId = String(header.userId) // 确保userId是字符串类型
@@ -52,7 +66,7 @@ export class ChatUserConversationService {
     const offset = (page - 1) * limit
 
     // 获取用户的未隐藏会话列表（支持分页）
-    const conversations = await this.db.select().from(chatUserConversations).where(and(eq(chatUserConversations.userId, userId), eq(chatUserConversations.isHidden, 0))).orderBy(chatUserConversations.updatedAt, 'desc').limit(limit).offset(offset).all()
+    const conversations = await this.db.select().from(chatUserConversations).where(and(eq(chatUserConversations.userId, userId as any), eq(chatUserConversations.isHidden, 0 as any))).orderBy(chatUserConversations.updatedAt, 'desc').limit(limit).offset(offset).all()
 
     if (conversations.length === 0) {
       return {
@@ -150,9 +164,9 @@ export class ChatUserConversationService {
     const userId = String(header.userId)
     const conversationId = params.conversationId
     return await this.db.select().from(chatUserConversations).where(and(
-      eq(chatUserConversations.userId, userId),
-      eq(chatUserConversations.conversationId, conversationId),
-      eq(chatUserConversations.isHidden, 0),
+      eq(chatUserConversations.userId, userId as any),
+      eq(chatUserConversations.conversationId, conversationId as any),
+      eq(chatUserConversations.isHidden, 0 as any),
     )).get()
   }
 
@@ -161,10 +175,10 @@ export class ChatUserConversationService {
     const userId = String(header.userId)
     const { startVersion, endVersion } = params
     return await this.db.select().from(chatUserConversations).where(and(
-      eq(chatUserConversations.userId, userId),
+      eq(chatUserConversations.userId, userId as any),
       and(
-        gte(chatUserConversations.version, startVersion),
-        lte(chatUserConversations.version, endVersion),
+        gte(chatUserConversations.version, startVersion as any),
+        lte(chatUserConversations.version, endVersion as any),
       ),
     )).orderBy(chatUserConversations.version, 'asc').all()
   }

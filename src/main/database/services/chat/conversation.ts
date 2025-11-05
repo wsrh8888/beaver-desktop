@@ -41,12 +41,12 @@ export class ChatConversationService {
   static async getConversationsByIds(conversationIds: string[]) {
     if (conversationIds.length === 0)
       return []
-    return await this.db.select().from(chatConversations).where(inArray(chatConversations.conversationId, conversationIds)).all()
+    return await this.db.select().from(chatConversations).where(inArray(chatConversations.conversationId as any, conversationIds as any)).all()
   }
 
   // 根据会话ID获取单个会话元数据
   static async getConversationById(conversationId: string) {
-    return await this.db.select().from(chatConversations).where(eq(chatConversations.conversationId, conversationId)).get()
+    return await this.db.select().from(chatConversations).where(eq(chatConversations.conversationId as any, conversationId as any)).get()
   }
 
   // 更新会话的最后消息
@@ -60,7 +60,7 @@ export class ChatConversationService {
     }
     return await this.db.update(chatConversations)
       .set(updateData)
-      .where('conversationId', conversationId)
+      .where(eq(chatConversations.conversationId as any, conversationId))
       .run()
   }
 }

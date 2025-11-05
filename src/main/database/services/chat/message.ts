@@ -36,7 +36,7 @@ export class MessageService {
     console.log('[DEBUG] getChatHistory params:', { conversationId, page, limit, offset, currentUserId })
 
     // 获取消息列表 - 按seq降序排列，确保最新的消息在前
-    const messages = await this.db.select().from(chats).where(eq(chats.conversationId, conversationId)).orderBy(desc(chats.seq)).limit(limit + 1).offset(offset).all()
+    const messages = await this.db.select().from(chats).where(eq(chats.conversationId as any, conversationId as any)).orderBy(desc(chats.seq as any)).limit(limit + 1).offset(offset).all()
 
     console.log('[DEBUG] Found messages:', messages.length, 'for conversationId:', conversationId)
     console.log('[DEBUG] First few messages seq:', messages.slice(0, 5).map((m: any) => ({ seq: m.seq, messageId: m.messageId })))
@@ -83,7 +83,8 @@ export class MessageService {
           nickname: senderDetail?.nickname || (message.sendUserId ? '用户' : '系统消息'),
         },
         create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
-        status: 0, // 默认正常状态
+        status: 0, // 消息状态：正常（只增不修改原则）
+        sendStatus: message.sendStatus || 0, // 发送状态（前端需要）
       }
     })
 
@@ -104,11 +105,13 @@ export class MessageService {
     // 应用复合条件：seq 范围 + conversationId
     console.log(`[DEBUG] Applying filters: seq >= ${startSeq} AND seq <= ${endSeq} AND conversationId = ${conversationId}`)
 
-    query = query.where(and(
-      gte(chats.seq, startSeq),
-      lte(chats.seq, endSeq),
-      eq(chats.conversationId, conversationId),
-    ))
+    query = query.where(
+      and(
+        gte(chats.seq as any, startSeq as any),
+        lte(chats.seq as any, endSeq as any),
+        eq(chats.conversationId as any, conversationId as any),
+      ),
+    )
 
     // 排序
     query = query.orderBy(chats.seq, 'asc')
@@ -172,7 +175,8 @@ export class MessageService {
           nickname: senderDetail?.nickname || (message.sendUserId ? '用户' : '系统消息'),
         },
         create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
-        status: 0, // 默认正常状态
+        status: 0, // 消息状态：正常（只增不修改原则）
+        sendStatus: message.sendStatus || 1, // 发送状态（客户端使用）
       }
     })
 

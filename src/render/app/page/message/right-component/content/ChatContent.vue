@@ -27,6 +27,23 @@
             />
           </div>
         </div>
+
+        <!-- 发送状态指示器 -->
+        <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.userInfo.userId" class="message-status">
+          <div v-if="message.sendStatus === 0" class="status-sending">
+            <div class="sending-spinner" />
+            发送中...
+          </div>
+          <div v-else-if="message.sendStatus === 2" class="status-failed" @click="retrySend(message)">
+            <svg class="retry-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+              <path d="M21 3v5h-5" />
+              <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+              <path d="M8 16H3v5" />
+            </svg>
+            发送失败，点击重试
+          </div>
+        </div>
       </div>
     </div>
 
@@ -47,6 +64,7 @@
 import { CacheType } from 'commonModule/type/cache/cache'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useMessageStore } from 'renderModule/app/pinia/message/message'
+import { useMessageSenderStore } from 'renderModule/app/pinia/message/message-sender'
 import { useUserStore } from 'renderModule/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import { emojiMap } from 'renderModule/app/utils/emoji'
@@ -71,6 +89,7 @@ export default defineComponent({
     })
     const userStore = useUserStore()
     const messageStore = useMessageStore()
+    const messageSenderStore = useMessageSenderStore()
 
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
@@ -325,6 +344,21 @@ export default defineComponent({
     })
 
     // 移除 previewOnlineFile 函数，因为现在使用 BeaverImage 组件
+    // 重发消息
+    const retrySend = async (message: any) => {
+      if (!message.messageId || message.sendStatus !== 2) {
+        return
+      }
+
+      try {
+        // 使用messageSenderStore重发消息
+        await messageSenderStore.retrySendMessage(message.messageId)
+      }
+      catch (error) {
+        console.error('重发消息失败:', error)
+      }
+    }
+
     return {
       CacheType,
       messages,
@@ -342,6 +376,7 @@ export default defineComponent({
       userInfo,
       showUserInfo,
       getImageSize,
+      retrySend,
     }
   },
 })
@@ -386,6 +421,11 @@ export default defineComponent({
 .menu-item:hover {
   background-color: #F9FAFB;
   color: #FF7D45;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 </style>
 
@@ -479,6 +519,47 @@ export default defineComponent({
         line-height: 1.5;
         word-break: break-word;
         color: #2D3436;
+      }
+
+      .message-status {
+        margin-top: 4px;
+        font-size: 11px;
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+
+        .status-sending {
+          color: #666;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          .sending-spinner {
+            width: 12px;
+            height: 12px;
+            border: 1px solid #ddd;
+            border-top: 1px solid #FF7D45;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+          }
+        }
+
+        .status-failed {
+          color: #ff4d4f;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+
+          &:hover {
+            opacity: 0.8;
+          }
+
+          .retry-icon {
+            width: 12px;
+            height: 12px;
+          }
+        }
       }
 
       .message-image {

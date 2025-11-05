@@ -16,7 +16,7 @@
       </BeaverButton>
     </div>
     <!-- 标签页组件 -->
-    <Tabs
+    <TabsComponent
       v-model="activeTab"
       :tabs="tabs"
       type="line"
@@ -33,9 +33,10 @@
 <script lang="ts">
 import type { ISearchResult } from 'commonModule/type/view/search'
 import { isValidEmail } from 'commonModule/utils/validation'
+import { searchGroupApi } from 'renderModule/api/group'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverInput from 'renderModule/components/ui/input/Input.vue'
-import Tabs from 'renderModule/components/ui/tabs/Tabs.vue'
+import TabsComponent from 'renderModule/components/ui/tabs/Tabs.vue'
 import { defineComponent, ref } from 'vue'
 import { getSearchFriendApi } from '../../api/friend'
 import SearchResults from './components/SearchResults.vue'
@@ -43,7 +44,7 @@ import SearchResults from './components/SearchResults.vue'
 export default defineComponent({
   name: 'SearchView',
   components: {
-    Tabs,
+    TabsComponent,
     SearchResults,
     BeaverInput,
     BeaverButton,
@@ -80,6 +81,22 @@ export default defineComponent({
         searchResults.value = []
       }
     }
+    const searchGroup = async () => {
+      const response = await searchGroupApi({ keyword: searchValue.value.trim() })
+      if (response.code === 0) {
+        searchResults.value = response.result.list.map(group => ({
+          id: group.groupId,
+          title: group.name,
+          avatar: group.avatar || '',
+          conversationId: group.conversationId || '',
+          type: 'group',
+          source: '',
+        }))
+      }
+      else {
+        searchResults.value = []
+      }
+    }
 
     // 执行搜索
     const handleSearch = async () => {
@@ -89,6 +106,9 @@ export default defineComponent({
       }
       if (activeTab.value === 'friend') {
         searchFriend()
+      }
+      else if (activeTab.value === 'group') {
+        searchGroup()
       }
     }
 

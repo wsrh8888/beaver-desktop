@@ -7,19 +7,14 @@ import { useConversationStore } from '../conversation/conversation'
 
 const logger = new Logger('MessageStore')
 /**
- * @description: 聊天消息管理
- * 大厂IM的消息加载策略：
- * 1. 打开会话时：调用 init()，检查缓存，没有才加载最近30条消息
- * 2. 收到WS新消息时：调用 addMessage() 追加到数组末尾
- * 3. 滑动到顶部时：调用 loadMoreChatHistory() 加载更早的消息
- * 4. 强制刷新时：调用 refreshChatHistory() 清除缓存并重新加载
- * 5. UI显示时：通过 getChatHistory() 转换为时间正序显示
+ * @description: 聊天消息存储和管理
+ * 核心职责：
+ * 1. 消息存储：维护消息列表和分页状态
+ * 2. 消息查询：提供消息查询接口
+ * 3. 消息添加：处理新消息的添加和去重
+ * 4. 会话更新：更新会话预览信息
  *
- * 缓存策略：
- * - 通过 messagePagination 判断是否已初始化
- * - 消息按时间倒序存储（最新的在末尾）
- * - 首次加载后缓存，避免重复查询
- * - 内存中保持多个会话的缓存，提升切换体验
+ * 注意：消息发送相关功能已分离到 MessageSenderStore
  */
 export const useMessageStore = defineStore('useMessageStore', {
   state: () => ({
@@ -174,15 +169,36 @@ export const useMessageStore = defineStore('useMessageStore', {
 
     /**
      * @description: 添加新消息（实时接收或发送成功）
+     * 优先通过 messageId 去重（用于发送确认），其次通过 seq 去重
      * 使用 seq 进行排序，保证消息顺序的绝对正确性
      */
     addMessage(conversationId: string, message: IChatHistory) {
       console.log('增加了消息', conversationId, message)
       const history = this.chatHistory.get(conversationId) || []
 
-      // 使用 seq 去重 - seq 在 conversation 中应该是严格唯一的
-      // 如果 seq 重复，说明系统有严重问题，需要记录错误
-      const existingIndex = history.findIndex(m => m.seq === message.seq)
+      // 优先通过 messageId 去重（用于发送消息的本地创建和服务器确认）
+      let existingIndex = history.findIndex(m => m.messageId === message.messageId)
+      if (existingIndex !== -1) {
+        // 找到相同messageId的消息，更新它（通常是发送确认时更新seq和状态）
+        const oldMessage = history[existingIndex]
+        history[existingIndex] = { ...oldMessage, ...message }
+        console.log(`[MessageStore] 通过messageId更新消息: ${message.messageId}`)
+
+        // 如果消息是从服务器拉取到的（有sendStatus字段），说明状态已确认，清理发送状态
+        if (message.sendStatus) {
+          // 延迟清理，避免立即清理导致的问题
+          setTimeout(() => {
+            const { useMessageSenderStore } = require('../message/message-sender')
+            const messageSenderStore = useMessageSenderStore()
+            messageSenderStore.cleanupMessageStatus(message.messageId)
+          }, 100)
+        }
+
+        return
+      }
+
+      // 如果没有找到相同messageId，再通过seq去重（正常的消息接收）
+      existingIndex = history.findIndex(m => m.seq === message.seq)
       if (existingIndex !== -1) {
         // seq 重复是严重错误，但为了健壮性，我们更新消息
         history[existingIndex] = message

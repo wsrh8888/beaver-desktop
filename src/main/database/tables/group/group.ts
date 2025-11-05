@@ -1,3 +1,4 @@
+import type { IDBGroup, IDBGroupJoinRequest, IDBGroupMember } from 'commonModule/type/database/group'
 import { sql } from 'drizzle-orm'
 import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
@@ -14,7 +15,7 @@ export const groups = sqliteTable('groups', {
   status: integer('status').default(1),
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
-})
+}) as unknown as IDBGroup
 
 // 群成员表
 export const groupMembers = sqliteTable('group_members', {
@@ -23,8 +24,23 @@ export const groupMembers = sqliteTable('group_members', {
   userId: text('user_id').notNull(),
   role: integer('role').default(3),
   status: integer('status').default(1),
+  version: integer('version').default(0),
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
 }, table => ({
   pk: primaryKey({ columns: [table.groupId, table.userId] }),
-}))
+})) as unknown as IDBGroupMember
+
+// 入群申请表
+export const groupJoinRequests = sqliteTable('group_join_requests', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  groupId: text('group_id').notNull(),
+  applicantUserId: text('applicant_user_id').notNull(),
+  message: text('message'),
+  status: integer('status').default(0), // 0待审 1同意 2拒绝
+  handledBy: text('handled_by'),
+  handledAt: integer('handled_at'),
+  version: integer('version').default(0),
+  createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
+  updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
+}) as unknown as IDBGroupJoinRequest
