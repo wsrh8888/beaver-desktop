@@ -1,5 +1,5 @@
 import type { IDBGroupJoinRequest } from 'commonModule/type/database/group'
-import { and, gte, inArray, lte } from 'drizzle-orm'
+import { and, eq, gte, inArray, lte } from 'drizzle-orm'
 import dbManager from '../../db'
 import { groupJoinRequests } from '../../tables/group/group'
 import { GroupMemberService } from './group-member'
@@ -55,5 +55,10 @@ export class GroupJoinRequestService {
     const requests = await this.db.select().from(groupJoinRequests).where(and(inArray(groupJoinRequests.groupId as any, groupIds as any), gte(groupJoinRequests.version as any, startVersion as any), lte(groupJoinRequests.version as any, endVersion as any))).orderBy(groupJoinRequests.version, 'asc').all()
 
     return { list: requests }
+  }
+
+  // 删除指定群组的所有入群申请
+  static async deleteGroupRequests(groupId: string): Promise<any> {
+    return await this.db.delete(groupJoinRequests).where(eq(groupJoinRequests.groupId as any, groupId as any)).run()
   }
 }

@@ -488,15 +488,11 @@ export interface IGetGroupListReq {
 
 // 群组数据同步
 export interface IGroupSyncReq {
-  fromVersion: number
-  toVersion: number
-  limit?: number
+  groupIds: string[]
 }
 
 export interface IGroupSyncRes {
   groups: IGroupSyncItem[]
-  hasMore: boolean
-  nextVersion: number
 }
 
 export interface IGroupSyncItem {
@@ -620,4 +616,58 @@ export interface IGroupJoinRequestHandleRes {
 export interface IGroupSearchRes {
   count: number
   list: ISearchGroupRes[]
+}
+
+// 获取用户群组版本信息请求
+export interface IGetUserGroupVersionsReq {
+}
+
+// 获取用户群组版本信息响应
+export interface IGetUserGroupVersionsRes {
+  groups: IGroupVersionItem[]
+}
+
+export interface IGroupVersionItem {
+  /**
+   * @description: 群组ID
+   */
+  groupId: string
+  /**
+   * @description: 群资料版本
+   */
+  groupVersion: number
+  /**
+   * @description: 群成员版本
+   */
+  memberVersion: number
+  /**
+   * @description: 入群申请版本
+   */
+  requestVersion: number
+}
+
+// 群成员同步请求
+export interface IGroupMemberSyncReq {
+  groups: IGroupVersionSyncItem[]
+}
+
+// 群成员同步响应
+export interface IGroupMemberSyncRes {
+  groupMembers: IGroupMemberSyncItem[]
+}
+
+// 入群申请同步请求
+export interface IGroupJoinRequestSyncReq {
+  groups: IGroupVersionSyncItem[]
+}
+
+// 入群申请同步响应
+export interface IGroupJoinRequestSyncRes {
+  groupJoinRequests: IGroupJoinRequestSyncItem[]
+}
+
+// 群组版本同步项
+export interface IGroupVersionSyncItem {
+  groupId: string
+  version: number
 }

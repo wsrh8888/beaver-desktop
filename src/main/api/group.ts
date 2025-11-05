@@ -1,4 +1,5 @@
 import type {
+  IGetUserGroupVersionsRes,
   IGroupJoinRequestSyncReq,
   IGroupJoinRequestSyncRes,
   IGroupMemberSyncReq,
@@ -8,6 +9,16 @@ import type {
 } from 'commonModule/type/ajax/group'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
+
+/**
+ * @description: 获取用户群组版本信息
+ */
+export const getUserGroupVersionsApi = () => {
+  return ajax<IGetUserGroupVersionsRes>({
+    method: 'GET',
+    url: `${getBaseUrl()}/api/group/versions`,
+  })
+}
 
 /**
  * @description: 群组数据同步

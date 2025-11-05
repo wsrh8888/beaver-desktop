@@ -1,12 +1,10 @@
-import groupSyncModule from './group'
-import groupJoinRequestSyncModule from './group-join-request'
-import groupMemberSyncModule from './group-member'
+import groupUnifiedSyncManager from './group-unified-sync'
 
-export const groupDatasync = new class groupDatasync {
+// 群组数据同步统一入口（大厂IM标准架构）
+// 不再分别同步三个模块，而是统一管理所有群组相关数据的增量同步
+export const groupDatasync = new class GroupDatasync {
   async checkAndSync() {
-    // 同步顺序：先同步群组基本信息，再同步群成员和入群申请
-    await groupSyncModule.checkAndSync() // 1. 群组基本信息
-    await groupMemberSyncModule.checkAndSync() // 2. 群成员
-    await groupJoinRequestSyncModule.checkAndSync() // 3. 入群申请
+    // 使用统一同步管理器：批量获取版本信息 → 批量增量同步 → 分发到各个数据域
+    await groupUnifiedSyncManager.checkAndSync()
   }
 }()

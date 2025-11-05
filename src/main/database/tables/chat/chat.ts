@@ -1,6 +1,6 @@
 import type { IDBChatConversationMeta, IDBChatMessage, IDBChatUserConversation } from 'commonModule/type/database/chat'
 import { sql } from 'drizzle-orm'
-import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 // 聊天消息表 (ChatMessage)
 export const chats = sqliteTable('chat_messages', {
@@ -44,6 +44,4 @@ export const chatUserConversations = sqliteTable('chat_user_conversations', {
   version: integer('version').default(0), // 配置版本
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
-}, table => ({
-  userConversationIdx: unique().on(table.userId, table.conversationId),
-})) as unknown as IDBChatUserConversation
+}) as unknown as IDBChatUserConversation

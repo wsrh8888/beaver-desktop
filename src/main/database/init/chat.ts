@@ -1,5 +1,12 @@
 // 聊天消息表(ChatMessage)字段补齐 - 确保老用户的数据库结构与新版本兼容
 function ensureChatsFields(sqlite: any) {
+  // 先检查表是否存在
+  const tables = sqlite.prepare('SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'chat_messages\'').all()
+  if (tables.length === 0) {
+    console.log('Chat messages table does not exist, skipping field addition')
+    return
+  }
+
   const fields: string[] = [
     'seq INTEGER DEFAULT 0',
     'target_message_id TEXT',
@@ -29,6 +36,13 @@ function ensureChatsFields(sqlite: any) {
 
 // 聊天会话表(ChatConversationMeta)字段补齐 - 确保老用户的数据库结构与新版本兼容
 function ensureChatConversationsFields(sqlite: any) {
+  // 先检查表是否存在
+  const tables = sqlite.prepare('SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'chat_conversation_metas\'').all()
+  if (tables.length === 0) {
+    console.log('Chat conversation metas table does not exist, skipping field addition')
+    return
+  }
+
   const fields: string[] = [
     'max_seq INTEGER DEFAULT 0',
     'last_message TEXT',
@@ -49,6 +63,13 @@ function ensureChatConversationsFields(sqlite: any) {
 
 // 用户会话表(ChatUserConversation)字段补齐 - 确保老用户的数据库结构与新版本兼容
 function ensureChatUserConversationsFields(sqlite: any) {
+  // 先检查表是否存在
+  const tables = sqlite.prepare('SELECT name FROM sqlite_master WHERE type=\'table\' AND name=\'chat_user_conversations\'').all()
+  if (tables.length === 0) {
+    console.log('Chat user conversations table does not exist, skipping field addition')
+    return
+  }
+
   const fields: string[] = [
     'is_hidden INTEGER DEFAULT 0',
     'is_muted INTEGER DEFAULT 0',
@@ -76,13 +97,8 @@ export const initChatTables = (db: any) => {
 
   console.log('Starting chat tables initialization...')
 
-  // 先执行字段补齐，确保老用户的数据库结构完整
-  console.log('Ensuring chat fields...')
-  ensureChatsFields(sqlite)
-  console.log('Ensuring chat conversation fields...')
-  ensureChatConversationsFields(sqlite)
-  console.log('Ensuring chat user conversation fields...')
-  ensureChatUserConversationsFields(sqlite)
+  // 先创建表
+  console.log('Creating chat tables...')
 
   // 创建聊天消息表 (ChatMessage)
   sqlite.exec(`
@@ -133,6 +149,14 @@ export const initChatTables = (db: any) => {
       UNIQUE(user_id, conversation_id)
     )
   `)
+
+  // 表创建完成后，再执行字段补齐，确保老用户的数据库结构完整
+  console.log('Ensuring chat fields...')
+  ensureChatsFields(sqlite)
+  console.log('Ensuring chat conversation fields...')
+  ensureChatConversationsFields(sqlite)
+  console.log('Ensuring chat user conversation fields...')
+  ensureChatUserConversationsFields(sqlite)
 
   console.log('Chat tables initialization completed')
 }

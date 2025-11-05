@@ -49,6 +49,7 @@
 <script lang="ts">
 import { useFriendStore } from 'renderModule/app/pinia/friend/friend'
 import { useFriendViewStore } from 'renderModule/app/pinia/view/friend'
+import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 // import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useRouterHelper } from 'renderModule/utils/router/index'
