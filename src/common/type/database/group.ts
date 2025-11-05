@@ -9,6 +9,7 @@ export interface IDBGroup {
   notice?: string
   joinType?: number
   status?: number
+  version?: number
   createdAt?: number
   updatedAt?: number
 }
@@ -35,6 +36,17 @@ export interface IDBGroupJoinRequest {
   handledBy?: string
   handledAt?: number
   version?: number
+  createdAt?: number
+  updatedAt?: number
+}
+
+// 群组同步状态表
+export interface IDBGroupSyncStatus {
+  id?: number
+  groupId: string
+  groupVersion?: number
+  memberVersion?: number
+  requestVersion?: number
   createdAt?: number
   updatedAt?: number
 }

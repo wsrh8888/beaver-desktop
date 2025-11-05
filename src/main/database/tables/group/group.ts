@@ -1,6 +1,6 @@
-import type { IDBGroup, IDBGroupJoinRequest, IDBGroupMember } from 'commonModule/type/database/group'
+import type { IDBGroup, IDBGroupJoinRequest, IDBGroupMember, IDBGroupSyncStatus } from 'commonModule/type/database/group'
 import { sql } from 'drizzle-orm'
-import { integer, primaryKey, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 // 群组表
 export const groups = sqliteTable('groups', {
@@ -13,13 +13,14 @@ export const groups = sqliteTable('groups', {
   notice: text('notice'),
   joinType: integer('join_type').default(0),
   status: integer('status').default(1),
+  version: integer('version').default(1), // 群组版本号，每个群组独立
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
 }) as unknown as IDBGroup
 
 // 群成员表
 export const groupMembers = sqliteTable('group_members', {
-  id: integer('id').notNull(),
+  id: integer('id').primaryKey({ autoIncrement: true }),
   groupId: text('group_id').notNull(),
   userId: text('user_id').notNull(),
   role: integer('role').default(3),
@@ -27,9 +28,7 @@ export const groupMembers = sqliteTable('group_members', {
   version: integer('version').default(0),
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
-}, table => ({
-  pk: primaryKey({ columns: [table.groupId, table.userId] }),
-})) as unknown as IDBGroupMember
+}) as unknown as IDBGroupMember
 
 // 入群申请表
 export const groupJoinRequests = sqliteTable('group_join_requests', {
@@ -44,3 +43,14 @@ export const groupJoinRequests = sqliteTable('group_join_requests', {
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
 }) as unknown as IDBGroupJoinRequest
+
+// 群组同步状态表（客户端本地维护）
+export const groupSyncStatus = sqliteTable('group_sync_status', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  groupId: text('group_id').notNull().unique(),
+  groupVersion: integer('group_version').default(0), // 群资料版本
+  memberVersion: integer('member_version').default(0), // 群成员版本
+  requestVersion: integer('request_version').default(0), // 入群申请版本
+  createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
+  updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
+}) as unknown as IDBGroupSyncStatus

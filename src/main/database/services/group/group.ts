@@ -41,6 +41,39 @@ export class GroupService {
     }
   }
 
+  // 批量插入或更新群组（基于版本号判断是否需要更新）
+  static async batchUpsert(groupsData: any[]): Promise<void> {
+    if (groupsData.length === 0)
+      return
+
+    for (const group of groupsData) {
+      // 获取本地群组数据
+      const localGroup = await this.getGroupByUuid(group.uuid)
+
+      // 如果本地不存在或版本号不同，则更新
+      if (!localGroup || localGroup.version !== group.version) {
+        await this.db
+          .insert(groups)
+          .values(group)
+          .onConflictDoUpdate({
+            target: groups.uuid,
+            set: {
+              type: group.type,
+              title: group.title,
+              fileName: group.fileName,
+              creatorId: group.creatorId,
+              notice: group.notice,
+              joinType: group.joinType,
+              status: group.status,
+              version: group.version, // 也要更新版本号
+              updatedAt: group.updatedAt,
+            },
+          })
+          .run()
+      }
+    }
+  }
+
   // 根据UUID获取群组
   static async getGroupByUuid(uuid: string): Promise<IDBGroup | undefined> {
     return await this.db.select().from(groups).where(eq(groups.uuid as any, uuid as any)).get()

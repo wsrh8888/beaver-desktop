@@ -20,18 +20,44 @@ export class GroupMemberService {
       return
 
     for (const member of membersData) {
-      await this.db
-        .insert(groupMembers)
-        .values(member)
-        .onConflictDoUpdate({
-          target: [groupMembers.groupId, groupMembers.userId],
-          set: {
-            role: member.role,
-            status: member.status,
-            updatedAt: member.updatedAt,
-          },
-        })
-        .run()
+      // 映射服务器端字段名到数据库字段名，并只包含数据库表中存在的字段
+      const dbMember = {
+        groupId: member.groupId,
+        userId: member.userId,
+        role: member.role,
+        status: member.status,
+        version: member.version,
+        createdAt: member.createAt,
+        updatedAt: member.updateAt,
+      }
+
+      // 先尝试查找是否已存在
+      const existing = await this.db
+        .select()
+        .from(groupMembers)
+        .where(and(eq(groupMembers.groupId as any, dbMember.groupId as any), eq(groupMembers.userId as any, dbMember.userId as any)))
+        .get()
+
+      if (existing) {
+        // 如果存在，更新
+        await this.db
+          .update(groupMembers)
+          .set({
+            role: dbMember.role,
+            status: dbMember.status,
+            version: dbMember.version,
+            updatedAt: dbMember.updatedAt,
+          })
+          .where(eq(groupMembers.id, existing.id))
+          .run()
+      }
+      else {
+        // 如果不存在，插入
+        await this.db
+          .insert(groupMembers)
+          .values(dbMember)
+          .run()
+      }
     }
   }
 
@@ -60,5 +86,10 @@ export class GroupMemberService {
     const members = await this.db.select().from(groupMembers).where(and(inArray(groupMembers.groupId as any, groupIds as any), gte(groupMembers.version as any, startVersion as any), lte(groupMembers.version as any, endVersion as any))).orderBy(groupMembers.version, 'asc').all()
 
     return { list: members }
+  }
+
+  // 删除指定群组的所有成员
+  static async deleteGroupMembers(groupId: string): Promise<any> {
+    return await this.db.delete(groupMembers).where(eq(groupMembers.groupId as any, groupId as any)).run()
   }
 }

@@ -3,7 +3,6 @@
     <div class="search-container">
       <div class="search-wrapper">
         <input v-model="searchText" type="text" class="search-input" placeholder="搜索" @input="handleSearch">
-        <SelectGroup />
         <!-- <img class="search-icon" src="renderModule/assets/image/chat/search.svg" alt="search"> -->
       </div>
     </div>
@@ -47,7 +46,6 @@
 
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
-import selectGroup from 'renderModule/app/components/selectGroup/selectGroup.vue'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -55,7 +53,6 @@ import { computed, defineComponent, ref } from 'vue'
 
 export default defineComponent({
   components: {
-    SelectGroup: selectGroup,
     BeaverImage,
   },
   setup() {
