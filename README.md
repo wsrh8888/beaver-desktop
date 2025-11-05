@@ -1,6 +1,5 @@
 # 海狸IM(桌面端未发布正式开源版本，可以先使用移动端)
 
-
 ### 更新日期
 2025-06-03
 
@@ -12,24 +11,18 @@ https://wsrh8888.github.io/beaver-docs/
 + 如果喜欢可以点一个star
 + 加入QQ群：[![加入QQ群](https://img.shields.io/badge/加入QQ群-1013328597-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)（1013328597）
 
-
-
 ### 启动命令教程：
 
 npm install
 
 npm run dev
 
-
-
-
 ### 项目列表
-| [GitHub仓库]    |   [Gitee仓库]    |说明                                                                                      
+| [GitHub仓库]    |   [Gitee仓库]    |说明
 | ------------------------------------------------------------ | --------------------------------------------------------------------------|--------------------------------------------------------------------------|
 | [beaver-server](https://github.com/wsrh8888/beaver-server)               |[beaver-server](https://gitee.com/dawwdadfrf/beaver-server)               | 后端服务  |
 | [beaver-mobile](https://github.com/wsrh8888/beaver-mobile)        | [beaver-mobile](https://gitee.com/dawwdadfrf/beaver-mobile)               |手机端 |
 | [beaver-desktop](https://github.com/wsrh8888/beaver-desktop)        | [beaver-desktop](https://gitee.com/dawwdadfrf/beaver-desktop)               |桌面端 |
-
 
 ### 更新记录
 20250604

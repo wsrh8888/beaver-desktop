@@ -1,4 +1,3 @@
-import type { IDatasyncBase } from 'commonModule/type/database'
 import { EDataType } from 'commonModule/type/ajax/datasync'
 import { SyncStatus } from 'commonModule/type/datasync'
 import { getSyncCursorApi, updateSyncCursorApi } from 'mainModule/api/datasync'
@@ -9,7 +8,7 @@ import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
 // 群组数据同步模块
-export class GroupSyncModule implements IDatasyncBase {
+export class GroupSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步
@@ -100,4 +99,4 @@ export class GroupSyncModule implements IDatasyncBase {
 }
 
 // 导出群组同步模块实例
-export const groupSyncModule = new GroupSyncModule()
+export default new GroupSyncModule()

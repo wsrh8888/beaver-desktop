@@ -1,4 +1,4 @@
-import type { IDataBaseUserModel, IDatasyncBase } from 'commonModule/type/database'
+import type { IDataBaseUserModel } from 'commonModule/type/database'
 import { EDataType } from 'commonModule/type/ajax/datasync'
 import { SyncStatus } from 'commonModule/type/datasync'
 import { getSyncCursorApi, updateSyncCursorApi } from 'mainModule/api/datasync'
@@ -9,7 +9,7 @@ import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
 // 用户数据同步模块
-export class UserSyncModule implements IDatasyncBase {
+export class UserSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步

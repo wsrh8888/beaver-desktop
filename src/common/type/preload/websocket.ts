@@ -18,10 +18,7 @@ export interface IWebSocketModule {
     /**
      * @description: 发送私聊消息
      */
-    privateMessageSend<T extends WsType>(
-      conversationId: string,
-      content: GetWsMessageBody<T>
-    ): Promise<boolean>
+    privateMessageSend(wsMessage: any): Promise<boolean>
 
     /**
      * @description: 发送群聊消息

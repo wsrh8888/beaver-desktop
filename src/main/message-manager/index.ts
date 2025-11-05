@@ -9,13 +9,11 @@ import { UserConversationReceiver } from './receivers/chat/user-conversation-rec
 import { FriendReceiver } from './receivers/friend/receiver'
 import { GroupReceiver } from './receivers/group/receiver'
 import { UserReceiver } from './receivers/user/receiver'
-import { ChatSender } from './senders/chat-sender'
 
 /**
  * @description: 消息管理器 - 主进程版本，负责消息的发送、接收和状态管理
  */
 class MessageManager {
-  public chatSender = new ChatSender()
   public messageReceiver = new MessageReceiver()
   public conversationReceiver = new ConversationReceiver()
   public userConversationReceiver = new UserConversationReceiver()

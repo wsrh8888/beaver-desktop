@@ -13,8 +13,8 @@
           <div class="user-avatar-container">
             <div v-if="userInfo" class="user-avatar">
               <BeaverImage
-                v-if="userInfo.avatar"
-                :file-name="userInfo.avatar"
+                v-if="userInfo?.avatar"
+                :file-name="userInfo?.avatar"
                 alt="用户头像"
                 image-class="user-avatar-image"
               />
@@ -153,7 +153,7 @@ export default defineComponent({
         return null
 
       // 从好友store获取用户信息
-      return friendStore.getFriendByConversationId(currentId)
+      return friendStore.getFriendByConversationId(currentId) as any
     })
 
     // 移除了获取头像文本函数，因为不再需要
@@ -170,12 +170,12 @@ export default defineComponent({
     // 处理删除聊天
     const handleDeleteChat = () => {
       // 使用更用户友好的确认方式
-      // eslint-disable-next-line no-alert
-      const confirmed = confirm('确定要删除与该用户的聊天记录吗？')
-      if (confirmed) {
-        console.log('删除聊天功能开发中')
-        closeDetails()
-      }
+      // const confirmed = confirm('确定要删除与该用户的聊天记录吗？')
+      // if (confirmed) {
+      //   console.log('删除聊天功能开发中')
+      //   closeDetails()
+      // }
+      console.log('删除聊天功能开发中')
     }
 
     return {

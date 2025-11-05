@@ -1,3 +1,4 @@
+import type { IDBUser } from 'commonModule/type/database/user'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
@@ -15,4 +16,4 @@ export const users = sqliteTable('users', {
   version: integer('version').default(0), // 版本号
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
-})
+}) as unknown as IDBUser

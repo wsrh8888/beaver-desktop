@@ -21,7 +21,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 
-interface TabItem {
+export interface TabItem {
   key: string
   label: string
   disabled?: boolean

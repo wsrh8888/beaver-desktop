@@ -2,8 +2,6 @@ import type { INotificationPayload } from 'commonModule/type/preload/notificatio
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 
 import Logger from 'renderModule/utils/log'
-// 导入pinia stores（需要在使用的地方导入，避免循环依赖）
-import { useMessageStore } from '../pinia/message/message'
 
 const logger = new Logger('DatabaseChatEventManager')
 
@@ -50,10 +48,12 @@ class DatabaseChatEventManager {
     })
 
     // 使用 pinia 的消息管理来处理新消息
+    const { useMessageStore } = await import('../pinia/message/message')
     const messageStore = useMessageStore()
 
     try {
       // 根据 seq 范围主动拉取消息数据
+      // 拉取到的消息中如果包含当前用户发送的消息，会自动通过messageId匹配更新发送状态
       await messageStore.fetchMessagesBySeqRange(conversationId, seqRange.min, seqRange.max)
 
       // TODO: 更新会话的未读消息计数
@@ -79,9 +79,6 @@ class DatabaseChatEventManager {
    */
   private handleMessageStatusUpdate(data: any) {
     // 处理消息状态更新，比如消息已读、发送状态等
-    // const messageStore = useMessageStore()
-    // messageStore.updateMessageStatus(data.messageId, data.status)
-
     console.log('消息状态更新:', data)
   }
 }

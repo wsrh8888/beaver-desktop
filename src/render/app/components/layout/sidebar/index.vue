@@ -22,8 +22,8 @@
       </div>
     </div>
     <!-- <div class="app__no_drag" style="height: 200px;width: 100%; background-color: red;" @click="loginOut()">loginOut</div> -->
-    <div class="user-avatar-nav">
-      <BeaverImage :file-name="userInfo.avatar" file :cache-type="CacheType.AVATAR" />
+    <div class="user-avatar-nav" @click="handleAvatarClick">
+      <BeaverImage :file-name="userInfo.avatar" :cache-type="CacheType.USER_AVATAR" />
     </div>
   </div>
 </template>
@@ -34,6 +34,7 @@ import { useUserStore } from 'renderModule/app/pinia/user/user'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useGlobalStore } from '../../../pinia/view/global/index'
 import { outsideList } from './data'
 
 export default {
@@ -44,6 +45,7 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const userStore = useUserStore()
+    const globalStore = useGlobalStore()
 
     const userInfo = computed(() => userStore.userInfo)
 
@@ -54,14 +56,21 @@ export default {
       })
     }
 
+    const handleAvatarClick = () => {
+      globalStore.setComponent('userinfo')
+    }
+
     const loginOut = () => {
-      window.electron.window.loginOut()
+      // TODO: 实现退出登录逻辑
+      console.log('退出登录')
+      // window.electron.window.loginOut()
     }
     return {
       CacheType,
       userInfo,
       route,
       handleClick,
+      handleAvatarClick,
       outsideList,
       loginOut,
     }

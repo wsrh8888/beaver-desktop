@@ -1,3 +1,4 @@
+import type { IDBDatasync } from 'commonModule/type/database/datasync'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
@@ -12,4 +13,4 @@ export const datasync = sqliteTable('datasync', {
   syncStatus: text('sync_status').default('pending'), // pending/syncing/completed/failed
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
-})
+}) as unknown as IDBDatasync

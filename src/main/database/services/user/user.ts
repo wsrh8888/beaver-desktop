@@ -1,5 +1,4 @@
 import type { IUserInfoRes } from 'commonModule/type/ajax/user'
-import type { IDataBaseUserModel } from 'commonModule/type/database'
 import { eq, inArray } from 'drizzle-orm'
 import dbManager from '../../db'
 import { users } from '../../tables/user/user'

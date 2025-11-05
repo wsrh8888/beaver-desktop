@@ -40,8 +40,7 @@
 <script lang="ts">
 import { MessageType } from 'commonModule/type/ajax/chat'
 import { uploadFileApi } from 'renderModule/api/file'
-import chatSender from 'renderModule/app/message-manager/senders/chat-sender'
-import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
+import { useMessageSenderStore } from 'renderModule/app/pinia/message/message-sender'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import { defineComponent, ref } from 'vue'
 import { toolList } from './data'
@@ -52,8 +51,8 @@ export default defineComponent({
     EmojiComponent,
   },
   setup() {
-    const _conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
+    const messageSenderStore = useMessageSenderStore()
     const inputValue = ref('')
     const inputRef = ref<HTMLDivElement | null>(null)
     const height = ref(151)
@@ -91,10 +90,9 @@ export default defineComponent({
         inputRef.value.textContent = ''
       }
 
+      // 通过messageSenderStore发送消息
       try {
-        console.error('1231232')
-        // 通过Main进程发送消息
-        await chatSender.sendMessage(conversationId, content, MessageType.TEXT, 'private')
+        await messageSenderStore.sendMessage(conversationId, content, MessageType.TEXT, 'private')
       }
       catch (error) {
         console.error('发送消息失败:', error)

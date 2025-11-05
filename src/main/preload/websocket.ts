@@ -16,16 +16,12 @@ export const websocketModule: IWebSocketModule = {
   },
 
   chat: {
-    privateMessageSend: async <T extends WsType>(
-      conversationId: string,
-      content: GetWsMessageBody<T>
+    privateMessageSend: async (
+      wsMessage: any
     ): Promise<boolean> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WebSocketCommand.SEND_CHAT_MESSAGE, {
         command: WsType.PRIVATE_MESSAGE_SEND,
-        data: {
-          conversationId,
-          content,
-        },
+        data: wsMessage,
       })
     },
     groupMessageSend: async <T extends WsType>(

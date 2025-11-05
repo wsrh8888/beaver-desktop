@@ -1,16 +1,37 @@
-import type { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { MessageType } from 'commonModule/type/ajax/chat'
+import type { MessageType } from 'commonModule/type/ajax/chat'
+import { useMessageSenderStore } from '../../pinia/message/message-sender'
+import { useUserStore } from '../../pinia/user/user'
 
 /**
  * @description: 聊天消息发送器 - PC端
  */
 class ChatSender {
   /**
+   * @description: 生成唯一的客户端消息ID
+   * @return {string} 消息ID
+   */
+  private generateMessageId(): string {
+    const timestamp = Date.now()
+    const random = Math.random().toString(36).substr(2, 9)
+    const userId = this.getCurrentUserId()
+    return `msg_${userId}_${timestamp}_${random}`
+  }
+
+  /**
+   * @description: 获取当前用户ID
+   * @return {string} 用户ID
+   */
+  private getCurrentUserId(): string {
+    const userStore = useUserStore()
+    return userStore.userInfo.userId || 'unknown'
+  }
+
+  /**
    * @description: 发送消息
    * @param {string} conversationId - 会话ID
    * @param {any} content - 消息内容
    * @param {MessageType} type - 消息类型
-   * @param {Map<string, IChatHistory>} pendingMessages - 待确认消息列表
+   * @param {string} chatType - 聊天类型
    * @return {Promise<string>} 消息ID
    */
   async sendMessage(
@@ -18,108 +39,35 @@ class ChatSender {
     content: any,
     messageType: MessageType,
     chatType: string,
-  ) {
+  ): Promise<string> {
     console.error('sendMessage', conversationId, content, messageType)
+
+    // 生成唯一的客户端消息ID
+    const messageId = this.generateMessageId()
+
+    // 使用message-sender store构建消息内容
+    const messageSenderStore = useMessageSenderStore()
+    const localMessage = messageSenderStore.buildMessageContentInternal(content, messageType)
+    const wsMessageContent = messageSenderStore.convertToWsMessageFormat(localMessage)
+
+    // 只构建业务数据，主进程负责WebSocket消息格式
+    const messageData = {
+      conversationId,
+      messageId,
+      msg: wsMessageContent,
+    }
+
     if (chatType === 'private') {
-      await electron.websocket.chat.privateMessageSend(conversationId, {
-        conversationId,
-        msg: this.buildMessageContent(content, messageType),
-      })
+      await electron.websocket.chat.privateMessageSend(conversationId, messageData)
     }
     else if (chatType === 'group') {
-      // await electron.websocket.chat.groupMessageSend(conversationId, this.buildMessageContent(content, messageType))
+      // await electron.websocket.chat.groupMessageSend(wsMessage)
     }
     else {
       throw new Error('Invalid chat type')
     }
-  }
 
-  /**
-   * @description: 构建消息内容
-   * @param {any} content - 消息内容
-   * @param {MessageType} type - 消息类型
-   * @return {IMessage} 消息内容对象
-   */
-  private buildMessageContent(content: any, type: MessageType): IMessageMsg {
-    switch (type) {
-      case MessageType.TEXT:
-        return {
-          type: MessageType.TEXT,
-          textMsg: { content },
-          imageMsg: null,
-          videoMsg: null,
-          fileMsg: null,
-          voiceMsg: null,
-          emojiMsg: null,
-          replyMsg: null,
-        }
-      case MessageType.IMAGE:
-        return {
-          type: MessageType.IMAGE,
-          textMsg: undefined,
-          imageMsg: content,
-          videoMsg: null,
-          fileMsg: null,
-          voiceMsg: null,
-          emojiMsg: null,
-          replyMsg: null,
-        }
-      case MessageType.VOICE:
-        return {
-          type: MessageType.VOICE,
-          textMsg: undefined,
-          imageMsg: null,
-          videoMsg: null,
-          fileMsg: null,
-          voiceMsg: content,
-          emojiMsg: null,
-          replyMsg: null,
-        }
-      case MessageType.VIDEO:
-        return {
-          type: MessageType.VIDEO,
-          textMsg: undefined,
-          imageMsg: null,
-          videoMsg: content,
-          fileMsg: null,
-          voiceMsg: null,
-          emojiMsg: null,
-          replyMsg: null,
-        }
-      case MessageType.FILE:
-        return {
-          type: MessageType.FILE,
-          textMsg: undefined,
-          imageMsg: null,
-          videoMsg: null,
-          fileMsg: content,
-          voiceMsg: null,
-          emojiMsg: null,
-          replyMsg: null,
-        }
-      case MessageType.AT:
-        return {
-          type: MessageType.AT,
-          textMsg: { content: String(content) },
-          imageMsg: null,
-          videoMsg: null,
-          fileMsg: null,
-          voiceMsg: null,
-          emojiMsg: null,
-          replyMsg: null,
-        }
-      default:
-        return {
-          type: MessageType.TEXT,
-          textMsg: { content: String(content) },
-          imageMsg: null,
-          videoMsg: null,
-          fileMsg: null,
-          voiceMsg: null,
-          emojiMsg: null,
-          replyMsg: null,
-        }
-    }
+    return messageId
   }
 }
 

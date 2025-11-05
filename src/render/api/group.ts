@@ -8,7 +8,12 @@ import type {
   IGroupDeleteReq,
   IGroupInfoReq,
   IGroupInfoRes,
+  IGroupInviteReq,
   IGroupJoinReq,
+  IGroupJoinRequestHandleReq,
+  IGroupJoinRequestHandleRes,
+  IGroupJoinRequestListReq,
+  IGroupJoinRequestListRes,
   IGroupListRes,
   IGroupMemberAddReq,
   IGroupMemberListRes,
@@ -134,6 +139,17 @@ export const joinGroupApi = (data: IGroupJoinReq) => {
 }
 
 /**
+ * @description: 邀请用户加入群组
+ */
+export const inviteGroupMemberApi = (data: IGroupInviteReq) => {
+  return ajax<Record<string, never>>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/invite`,
+  })
+}
+
+/**
  * @description: 退出群组
  */
 export const quitGroupApi = (data: IGroupQuitReq) => {
@@ -174,5 +190,27 @@ export const searchGroupApi = (data: ISearchGroupReq) => {
     method: 'GET',
     params: data,
     url: `${baseUrl}/api/group/search`,
+  })
+}
+
+/**
+ * @description: 获取用户管理的群组申请列表
+ */
+export const getGroupJoinRequestListApi = (data: IGroupJoinRequestListReq) => {
+  return ajax<IGroupJoinRequestListRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/joinRequest-list`,
+  })
+}
+
+/**
+ * @description: 处理群组申请
+ */
+export const handleGroupJoinRequestApi = (data: IGroupJoinRequestHandleReq) => {
+  return ajax<IGroupJoinRequestHandleRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/joinRequest-handle`,
   })
 }

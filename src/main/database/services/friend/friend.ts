@@ -63,8 +63,8 @@ export class FriendService {
       .from(friends)
       .where(
         or(
-          and(eq(friends.sendUserId, userId), inArray(friends.revUserId, friendIds)),
-          and(eq(friends.revUserId, userId), inArray(friends.sendUserId, friendIds)),
+          and(eq(friends.sendUserId, userId as any), inArray(friends.revUserId, friendIds as any)),
+          and(eq(friends.revUserId, userId as any), inArray(friends.sendUserId, friendIds as any)),
         ),
       )
       .all()

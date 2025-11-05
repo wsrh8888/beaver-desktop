@@ -13,6 +13,7 @@
     <!-- 主要内容 -->
     <div class="verify__main">
       <AddFriendComponent v-if="verifyType === 'friend'" :target-value="targetValue" @close="handleClose" />
+      <AddGroupComponent v-if="verifyType === 'group'" :target-value="targetValue" @close="handleClose" />
     </div>
   </div>
 </template>
@@ -21,11 +22,13 @@
 // import { NotificationEvent } from 'commonModule/type/preload/notification'
 import { computed, defineComponent } from 'vue'
 import AddFriendComponent from './components/add-friend.vue'
+import AddGroupComponent from './components/add-group.vue'
 import { useVerifyStore } from './pinia/verify'
 
 export default defineComponent({
   components: {
     AddFriendComponent,
+    AddGroupComponent,
   },
   setup() {
     // 使用pinia store

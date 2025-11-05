@@ -3,6 +3,8 @@ export enum EDataType {
   FRIENDS = 'friends',
   FRIEND_VERIFY = 'friend_verify',
   GROUPS = 'groups',
+  GROUP_MEMBERS = 'group_members', // 群成员表 - 使用version
+  GROUP_JOIN_REQUESTS = 'group_join_requests', // 入群申请表 - 使用version
   // 聊天模块的细分数据类型
   CHAT_MESSAGES = 'chat_messages', // 消息表 - 使用seq
   CHAT_DATASYNC = 'chat_datasync', // 数据同步表 - 使用version
@@ -10,7 +12,7 @@ export enum EDataType {
 }
 
 export interface IGetSyncCursorReq {
-  dataType: EDataType // users/friends/groups/chat_messages/chat_datasync/chat_conversation_settings
+  dataType: EDataType // users/friends/groups/group_members/group_join_requests/chat_messages/chat_datasync/chat_conversation_settings
 }
 
 // 获取同步游标响应

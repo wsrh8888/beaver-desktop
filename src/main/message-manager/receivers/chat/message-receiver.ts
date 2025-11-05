@@ -29,7 +29,7 @@ export class MessageReceiver extends BaseReceiver<IDBChatMessage> {
     switch (data?.type) {
       case 'private_message_receive':
       case 'private_message_sync':
-        // 直接传递实际的消息数据，不需要包装
+        // 统一处理消息接收，消息状态确认通过前端拉取数据时自动完成
         await super.handle(data.body)
         break
       default:
