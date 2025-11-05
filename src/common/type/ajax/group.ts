@@ -671,3 +671,44 @@ export interface IGroupVersionSyncItem {
   groupId: string
   version: number
 }
+
+// 搜索群组请求
+export interface IGroupSearchReq {
+  keyword: string
+  page?: number
+  limit?: number
+}
+
+// 搜索群组响应项
+export interface IGroupSearchItem {
+  /**
+   * @description: 群组ID
+   */
+  groupId: string
+  /**
+   * @description: 群组名称
+   */
+  title: string
+  /**
+   * @description: 群组头像URL
+   */
+  avatar: string
+  /**
+   * @description: 成员数量
+   */
+  memberCount: number
+  /**
+   * @description: 加入方式：0自由加入 1需审批 2不允许加入
+   */
+  joinType: number
+  /**
+   * @description: 创建者ID
+   */
+  creatorId: string
+}
+
+// 搜索群组响应
+export interface IGroupSearchRes {
+  list: IGroupSearchItem[]
+  count: number
+}

@@ -12,7 +12,7 @@ export const TABS_CONFIG = [
 export const POPUP_MENU_CONFIG = [
   {
     key: 'add-friend',
-    text: '添加好友',
+    text: '加好友/群',
     icon: addFriendIcon,
     action: 'add-friend',
   },

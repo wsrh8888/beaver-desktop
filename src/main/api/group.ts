@@ -4,6 +4,8 @@ import type {
   IGroupJoinRequestSyncRes,
   IGroupMemberSyncReq,
   IGroupMemberSyncRes,
+  IGroupSearchReq,
+  IGroupSearchRes,
   IGroupSyncReq,
   IGroupSyncRes,
 } from 'commonModule/type/ajax/group'
@@ -50,5 +52,16 @@ export const groupJoinRequestSyncApi = (data: IGroupJoinRequestSyncReq) => {
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/group/join-request-sync`,
+  })
+}
+
+/**
+ * @description: 搜索群组
+ */
+export const searchGroupsApi = (data: IGroupSearchReq) => {
+  return ajax<IGroupSearchRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/group/search`,
   })
 }
