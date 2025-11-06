@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/app/pinia/friend/friend'
+import { useGroupStore } from 'renderModule/app/pinia/group/group'
 import { useUserStore } from 'renderModule/app/pinia/user/user'
 import { useFriendVerifyStore } from '../friend/friend_verify'
 
@@ -56,6 +57,7 @@ export const useAppStore = defineStore('useAppStore', {
       const friendStore = useFriendStore()
       const friendVerifyStore = useFriendVerifyStore()
       const conversationStore = useConversationStore()
+      const groupStore = useGroupStore()
 
       try {
         // 1. 初始化用户信息
@@ -66,6 +68,7 @@ export const useAppStore = defineStore('useAppStore', {
           friendStore.init(),
           conversationStore.init(),
           friendVerifyStore.init(),
+          groupStore.init(),
         ]
 
         await Promise.all(promises)

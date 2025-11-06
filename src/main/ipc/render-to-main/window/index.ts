@@ -4,7 +4,6 @@ import appApplication from 'mainModule/application/app'
 import loginApplication from 'mainModule/application/login'
 import searchApplication from 'mainModule/application/search'
 import verifyApplication from 'mainModule/application/verify'
-import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
 export class WindowHandler {
@@ -20,7 +19,7 @@ export class WindowHandler {
     // 处理同步命令
     switch (command) {
       case WinHook.CLOSE:
-        this.handleClose(event)
+        this.handleClose(event, data)
         break
       case WinHook.MINIMIZE:
         this.handleMinimize(event)
@@ -28,41 +27,28 @@ export class WindowHandler {
       case WinHook.MAXIMIZE:
         this.handleToggleMaximize(event)
         break
-      case WinHook.RESTORE:
-        this.handleRestore(event)
-        break
       case WinHook.OPEN_WINDOW:
         this.handleOpen(data)
         break
-      case WinHook.LOGINOUT:
-        this.handleLoginOut()
-        break
-      case WinHook.IS_MAXIMIZED:
-        return this.handleIsMaximized(event)
       default:
         console.error(`窗口处理未知命令: ${command}`)
     }
   }
 
   /**
-   * 检查窗口是否最大化（同步）
+   * 关闭窗口
    */
-  private static handleIsMaximized(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent): boolean {
+  private static handleClose(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, data: any) {
+    // { hideOnly?: boolean, isSelf?: boolean }
+    const { hideOnly = false } = data
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
-      return window.isMaximized()
-    }
-    return false
-  }
-
-  /**
-   * 隐藏窗口到后台
-   */
-  private static handleClose(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent) {
-    logger.info({ text: `[render][${event.sender.id}] 隐藏窗口到后台` })
-    const window = BrowserWindow.fromWebContents(event.sender)
-    if (window) {
-      window.hide()
+      if (hideOnly) {
+        window.hide()
+      }
+      else {
+        window.close()
+      }
     }
     else {
       logger.error({ text: `[render][${event.sender.id}] 无法获取窗口实例` })
@@ -104,20 +90,6 @@ export class WindowHandler {
   }
 
   /**
-   * 恢复窗口
-   */
-  private static handleRestore(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent) {
-    logger.info({ text: `[render][${event.sender.id}] 恢复窗口` })
-    const window = BrowserWindow.fromWebContents(event.sender)
-    if (window) {
-      window.restore()
-    }
-    else {
-      logger.error({ text: `[render][${event.sender.id}] 无法获取窗口实例` })
-    }
-  }
-
-  /**
    * 打开指定窗口
    */
   private static handleOpen(data: { name: string, options?: any }) {
@@ -145,14 +117,5 @@ export class WindowHandler {
           break
       }
     }
-  }
-
-  /**
-   * 退出登录
-   */
-  private static handleLoginOut() {
-    loginApplication.createBrowserWindow()
-    appApplication.closeBrowserWindow()
-    store.delete('userInfo', { persist: true })
   }
 }

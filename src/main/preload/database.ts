@@ -3,9 +3,10 @@ import type { IUserInfoRes } from 'commonModule/type/ajax/user'
 import type { IConversationInfoReq, IConversationInfoRes, IChatHistoryReq, IChatHistoryRes, IRecentChatRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IChatConversationVerRangeReq, IChatConversationVerRangeRes, IRecentChatReq } from 'commonModule/type/ajax/chat'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
-import { DataFriendCommand, DataUserCommand, DataChatCommand } from 'commonModule/type/ipc/database'
+import { DataFriendCommand, DataUserCommand, DataChatCommand, DataGroupCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
+import { IGetGroupListReq, IGetGroupMembersReq, IGroupMemberListRes } from 'commonModule/type/ajax/group'
 
 export const databaseModule: IDatabaseModule = {
   // 用户相关
@@ -70,6 +71,20 @@ export const databaseModule: IDatabaseModule = {
     getChatConversationsByVerRange: async (params: IChatConversationVerRangeReq): Promise<IChatConversationVerRangeRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.CHAT, {
         command: DataChatCommand.GET_CHAT_CONVERSATIONS_BY_VER_RANGE,
+        data: params,
+      })
+    },
+  },
+  group: {
+    getGroupList: async (params: IGetGroupListReq): Promise<IGetGroupListReq> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
+        command: DataGroupCommand.GET_GROUP_LIST,
+        data: params,
+      })
+    },
+    getGroupMembers: async (params: IGetGroupMembersReq): Promise<IGroupMemberListRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
+        command: DataGroupCommand.GET_GROUP_MEMBERS,
         data: params,
       })
     },

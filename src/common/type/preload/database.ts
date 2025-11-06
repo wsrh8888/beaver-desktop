@@ -1,5 +1,6 @@
 import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from '../ajax/chat'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
+import type { IGetGroupListReq, IGetGroupMembersReq, IGroupMemberListRes } from '../ajax/group'
 import type { IUserInfoRes } from '../ajax/user'
 
 /**
@@ -60,5 +61,8 @@ export interface IDatabaseModule {
      */
     getChatConversationsByVerRange(params: IChatConversationVerRangeReq): Promise<IChatConversationVerRangeRes>
   }
-
+  group: {
+    getGroupList(params: IGetGroupListReq): Promise<IGetGroupListReq>
+    getGroupMembers(params: IGetGroupMembersReq): Promise<IGroupMemberListRes>
+  }
 }

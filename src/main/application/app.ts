@@ -3,6 +3,7 @@ import path from 'node:path'
 import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
 import ApplicationBase from './common/base'
+import trayHandler from './tray'
 
 class App extends ApplicationBase implements Application {
   declare mainWin: BrowserWindow
@@ -31,6 +32,8 @@ class App extends ApplicationBase implements Application {
     this.win.setFullScreenable(false)
     // 加载渲染器
     this.loadRender()
+    // 创建托盘
+    trayHandler.init(this.win)
     this.init()
     this.initEvents()
   }

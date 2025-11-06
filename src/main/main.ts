@@ -1,10 +1,9 @@
-import path from 'node:path'
-import { app, BrowserWindow, Menu, nativeImage, Tray } from 'electron'
-import { __dirname } from 'mainModule/config'
+import { app } from 'electron'
 import ipcBase from 'mainModule/ipc'
 
 import logger from 'mainModule/utils/log'
 import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
+import trayHandler from './application/tray'
 import cacheManager from './cache'
 import { initCustom, loadConfigs, setupMiniAppDirectory } from './config'
 import ipcManager from './ipc'
@@ -16,9 +15,6 @@ import { store } from './store'
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
 class Main {
-  private tray: Tray | null = null
-  private isQuiting: boolean = false
-
   constructor() {
     this.initUa()
     initCustom()
@@ -36,8 +32,6 @@ class Main {
   }
 
   async onAppReady() {
-    // app.disableHardwareAcceleration();
-    // app.commandLine.appendSwitch('gpu-memory-buffer-compositor-resources');
     await app.whenReady()
 
     if (store.get('userInfo')?.token) {
@@ -48,7 +42,6 @@ class Main {
       AuthHandler.handleLogout()
     }
     ipcBase.init()
-    this.createTray()
   }
 
   setupEventListeners() {
@@ -57,20 +50,13 @@ class Main {
         app.quit()
       }
     })
-
-    // 当所有窗口都隐藏时，不退出应用
-    app.on('before-quit', (event) => {
-      // 如果有托盘，且不是主动退出，阻止默认的退出行为
-      if (this.tray && !this.isQuiting) {
-        event.preventDefault()
-        // 隐藏所有窗口而不是退出
-        const windows = BrowserWindow.getAllWindows()
-        windows.forEach((window) => {
-          if (!window.isDestroyed()) {
-            window.hide()
-          }
-        })
-      }
+    app.on('browser-window-created', (_, window) => {
+      window.on('closed', () => {
+        // 如果关闭的是app窗口，则销毁托盘
+        if ((window as any).__appName === 'app') {
+          trayHandler.destroy()
+        }
+      })
     })
   }
 
@@ -85,56 +71,6 @@ class Main {
     ipcManager.init()
 
     logger.info({ text: 'beforeReady' })
-  }
-
-  private createTray() {
-    try {
-      // 创建托盘图标
-      const iconPath = path.join(__dirname, '../resource/logo.png')
-      const icon = nativeImage.createFromPath(iconPath) || nativeImage.createEmpty()
-
-      this.tray = new Tray(icon)
-      this.tray.setToolTip('Beaver Desktop')
-
-      // 创建托盘菜单
-      const contextMenu = Menu.buildFromTemplate([
-        {
-          label: '显示窗口',
-          click: () => {
-            const windows = BrowserWindow.getAllWindows()
-            windows.forEach((window) => {
-              if (!window.isDestroyed()) {
-                window.show()
-              }
-            })
-          },
-        },
-        {
-          label: '退出',
-          click: () => {
-            this.isQuiting = true
-            app.quit()
-          },
-        },
-      ])
-
-      this.tray.setContextMenu(contextMenu)
-
-      // 点击托盘图标显示窗口
-      this.tray.on('click', () => {
-        const windows = BrowserWindow.getAllWindows()
-        windows.forEach((window) => {
-          if (!window.isDestroyed()) {
-            window.show()
-          }
-        })
-      })
-
-      logger.info({ text: '系统托盘创建成功' })
-    }
-    catch (error) {
-      logger.error({ text: '创建系统托盘失败', data: error })
-    }
   }
 
   static init() {

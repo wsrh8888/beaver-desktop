@@ -1,28 +1,5 @@
-// 媒体表字段补齐 - 确保老用户的数据库结构与新版本兼容
-function ensureMediaFields(sqlite: any) {
-  const fields: string[] = [
-    // 如果以后添加新字段，在这里添加：
-    // 'new_field TEXT',
-  ]
-
-  fields.forEach((field) => {
-    try {
-      sqlite.exec(`ALTER TABLE media ADD COLUMN ${field}`)
-    }
-    catch {
-      console.error('Chat conversations table field already exists')
-      // 字段已存在，忽略错误
-    }
-  })
-}
-
-// 媒体表初始化
-export const initMediaTable = (db: any) => {
-  const sqlite = db.$client
-
-  // 先执行字段补齐，确保老用户的数据库结构完整
-  ensureMediaFields(sqlite)
-
+// 初始化媒体表
+export const initMediaTable = (sqlite: any) => {
   // 创建媒体表
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS media (
