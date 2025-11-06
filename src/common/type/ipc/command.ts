@@ -15,21 +15,9 @@ export enum WinHook {
    */
   MAXIMIZE = 'winHook:maximize',
   /**
-   * @description: 从最大化或最小化状态恢复窗口到正常大小
-   */
-  RESTORE = 'winHook:restore',
-  /**
    * @description: 打开指定名称的窗口
    */
   OPEN_WINDOW = 'winHook:openWindow',
-  /**
-   * @description: 用户退出登录，清除登录状态并跳转到登录页面
-   */
-  LOGINOUT = 'winHook:loginOut',
-  /**
-   * @description: 检查窗口是否最大化
-   */
-  IS_MAXIMIZED = 'winHook:isMaximized',
 }
 
 /**
@@ -209,6 +197,7 @@ export enum DatabaseCommand {
   USER = 'database:user',
   FRIEND = 'database:friend',
   CHAT = 'database:chat',
+  GROUP = 'database:group',
 }
 
 /**

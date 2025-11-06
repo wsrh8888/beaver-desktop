@@ -147,6 +147,7 @@
 <script lang="ts">
 import { updateGroupInfoApi } from 'renderModule/api/group'
 import { useGroupStore } from 'renderModule/app/pinia/group/group'
+import { useGroupMemberStore } from 'renderModule/app/pinia/group/group-member'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 // import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -167,6 +168,7 @@ export default defineComponent({
   setup(props, { emit }) {
     // const conversationStore = useConversationStore()
     const groupStore = useGroupStore()
+    const groupMemberStore = useGroupMemberStore()
     // const _userStore = useUserStore()
     const messageViewStore = useMessageViewStore()
 
@@ -195,8 +197,13 @@ export default defineComponent({
       return groupStore.getGroupById(currentId)
     })
 
-    // 群组成员列表
-    const groupMembers = ref<any[]>([])
+    // 群组成员列表 - 从store获取
+    const groupMembers = computed(() => {
+      const currentId = messageViewStore.currentChatId
+      if (!currentId)
+        return []
+      return groupMemberStore.getMembersByGroupId(currentId)
+    })
 
     // 显示的成员列表（受showAllMembers控制）
     const displayedMembers = computed(() => {
@@ -219,10 +226,7 @@ export default defineComponent({
         return
 
       try {
-        const res = await groupStore.getGroupMembersApi(groupInfo.value.conversationId, true)
-        if (res.code === 0) {
-          groupMembers.value = res.result.list
-        }
+        await groupMemberStore.getGroupMembersApi(groupInfo.value.conversationId, true)
       }
       catch (error) {
         console.error('Failed to load group members:', error)

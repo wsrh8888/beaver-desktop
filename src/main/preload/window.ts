@@ -18,10 +18,4 @@ export const windowModule: IWindowModule = {
   maximize: () => {
     ipcRenderManager.send(IEvent.RenderToMain, WinHook.MAXIMIZE)
   },
-  restore: () => {
-    ipcRenderManager.send(IEvent.RenderToMain, WinHook.RESTORE)
-  },
-  toggleMaximize: () => {
-    ipcRenderManager.send(IEvent.RenderToMain, WinHook.MAXIMIZE)
-  },
 }

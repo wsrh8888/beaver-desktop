@@ -129,10 +129,6 @@ export default defineComponent({
       this.groupName = ''
       this.searchKeyword = ''
       this.selectedFriends = []
-      // 确保好友数据已加载
-      if (this.friendStore.friendList.length === 0) {
-        this.friendStore.init()
-      }
     },
 
     handleClose() {

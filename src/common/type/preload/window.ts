@@ -27,14 +27,4 @@ export interface IWindowModule {
    * 最大化当前窗口。
    */
   maximize(): void
-
-  /**
-   * 恢复当前窗口为正常大小。
-   */
-  restore(): void
-
-  /**
-   * 切换当前窗口的最大化/还原状态。
-   */
-  toggleMaximize(): void
 }

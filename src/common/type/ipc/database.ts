@@ -10,6 +10,11 @@ export enum DataFriendCommand {
   GET_VALID_BY_VER_RANGE = 'friend:getValidByVerRange',
 }
 
+export enum DataGroupCommand {
+  GET_GROUP_LIST = 'group:getGroupList',
+  GET_GROUP_MEMBERS = 'group:getGroupMembers',
+}
+
 export enum DataChatCommand {
   GET_RECENT_CHAT_LIST = 'chat:getRecentChatList',
   GET_CONVERSATION_INFO = 'chat:getConversationInfo',
