@@ -1,5 +1,4 @@
 import { app } from 'electron'
-import ipcBase from 'mainModule/ipc'
 
 import logger from 'mainModule/utils/log'
 import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
@@ -41,7 +40,8 @@ class Main {
     else {
       AuthHandler.handleLogout()
     }
-    ipcBase.init()
+    // IPC已在beforeAppReady中初始化，这里不需要重复初始化
+    // ipcBase.init()
   }
 
   setupEventListeners() {

@@ -9,13 +9,14 @@ class Verify extends ApplicationBase implements Application {
     super('verify')
   }
 
-  public createBrowserWindow(): void {
+  public createBrowserWindow(isHide?: boolean): void {
     this.win = new BrowserWindow({
       width: 320,
       height: 490,
       minWidth: 320,
       minHeight: 490,
       frame: false,
+      show: !isHide,
       resizable: false,
       webPreferences: {
         preload: path.join(__dirname, './preload/electron.js'), // 引用预加载脚本

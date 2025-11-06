@@ -1,3 +1,3 @@
 export interface Application {
-  createBrowserWindow(url?: string): void
+  createBrowserWindow(isHide?: boolean): void
 }

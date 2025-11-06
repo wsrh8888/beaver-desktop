@@ -3,6 +3,7 @@ import path from 'node:path'
 import { CacheType } from 'commonModule/type/cache/cache'
 import { cacheTypeToFilePath } from 'mainModule/cache/config'
 import { getCachePath } from 'mainModule/config'
+import { createDir } from '../utils/file'
 import { initTables } from './tables'
 
 // 使用 createRequire 来避免 __filename 问题
@@ -13,11 +14,15 @@ const { drizzle } = require('drizzle-orm/better-sqlite3')
 class DBManager {
   private _db: ReturnType<typeof drizzle> | null = null
 
-  init(userId: string) {
+  async init(userId: string) {
     if (this._db)
       return this._db
     const filePath = cacheTypeToFilePath[CacheType.USER_DB]
     const databasePath = path.join(getCachePath(), filePath.replace('[userId]', userId), 'database.db')
+
+    // 确保数据库目录存在
+    await createDir(path.dirname(databasePath))
+
     const sqlite = new Database(databasePath)
 
     sqlite.pragma('journal_mode = WAL')

@@ -1,4 +1,11 @@
-import type { IFriendSyncReq, IFriendSyncRes, IFriendVerifySyncReq, IFriendVerifySyncRes } from 'commonModule/type/ajax/friend'
+import type {
+  IFriendSyncReq,
+  IFriendSyncRes,
+  IFriendUserVersionsReq,
+  IFriendUserVersionsRes,
+  IFriendVerifySyncReq,
+  IFriendVerifySyncRes,
+} from 'commonModule/type/ajax/friend'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
 
@@ -21,5 +28,16 @@ export const friendVerifySyncApi = (data: IFriendVerifySyncReq) => {
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/friend/verifySync`,
+  })
+}
+
+/**
+ * @description: 获取好友用户版本信息（用于数据同步）
+ */
+export const friendUserVersionsApi = (data: IFriendUserVersionsReq) => {
+  return ajax<IFriendUserVersionsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/friend/friend-user-versions`,
   })
 }

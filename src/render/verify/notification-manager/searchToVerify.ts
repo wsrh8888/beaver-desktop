@@ -15,6 +15,7 @@ class SearchToVerifyEventManager {
   }
 
   handle(params: INotificationPayload<NotificationModule.SEARCH_TO_VERIFY>) {
+    console.log('verify 收到通知', params)
     switch (params.command) {
       case NotificationSearchToVerifyCommand.SEARCH_TO_VERIFY: {
         const verifyStore = useVerifyStore()

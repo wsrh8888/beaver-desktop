@@ -34,20 +34,25 @@ export class AuthHandler {
 
       // 初始化文件缓存
       cacheManager.init()
-      // 1. 关闭所有的窗口
-      this.closeAllWindows()
-      const userInfo = store.get('userInfo')
+      // 1. 关闭登录窗口
 
+      const userInfo = store.get('userInfo')
+      logger.info({
+        text: '获取userInfo',
+      })
       // 3. 初始化用户缓存
       if (userInfo?.userId) {
         await cacheManager.init(userInfo.userId)
-
-        dbManager.init(userInfo?.userId)
+        logger.info({
+          text: '开始初始化数据库',
+        })
+        await dbManager.init(userInfo?.userId)
         logger.info({ text: '用户缓存初始化完成' }, 'AuthHandler')
       }
 
       // 4. 打开app主窗口
       AppApplication.createBrowserWindow()
+      this.closeLoginWindow()
 
       // 5. 在后台建立ws连接 (不阻塞UI显示)
       wsManager.connect()
@@ -57,6 +62,7 @@ export class AuthHandler {
       logger.info({ text: '登录流程完成，窗口已显示' }, 'AuthHandler')
     }
     catch (error) {
+      console.error(error)
       logger.error({ text: '登录流程失败', data: error }, 'AuthHandler')
       throw error
     }
@@ -74,11 +80,10 @@ export class AuthHandler {
       store.clearAll()
       logger.info({ text: 'Store数据已清空' }, 'AuthHandler')
 
-      // 2. 关闭所有的窗口
-      this.closeAllWindows()
-
       // 3. 打开login窗口
       LoginApplication.createBrowserWindow()
+      // 2. 关闭所有窗口
+      this.closeAllWindows()
 
       // 4. 关闭ws连接
       wsManager.disconnect()
@@ -97,15 +102,32 @@ export class AuthHandler {
   }
 
   /**
-   * 关闭所有窗口
+   * 关闭所有应用窗口（排除登录窗口）
    */
   private static closeAllWindows() {
     const windows = BrowserWindow.getAllWindows()
+    let closedCount = 0
     windows.forEach((window) => {
-      if (!window.isDestroyed()) {
+      if (!window.isDestroyed() && (window as any).__appName !== 'login') {
         window.close()
+        closedCount++
       }
     })
-    logger.info({ text: `已关闭 ${windows.length} 个窗口` }, 'AuthHandler')
+    logger.info({ text: `已关闭 ${closedCount} 个应用窗口` }, 'AuthHandler')
+  }
+
+  /**
+   * 关闭登录窗口
+   */
+  private static closeLoginWindow() {
+    const windows = BrowserWindow.getAllWindows()
+    let closedCount = 0
+    windows.forEach((window) => {
+      if (!window.isDestroyed() && (window as any).__appName === 'login') {
+        window.close()
+        closedCount++
+      }
+    })
+    logger.info({ text: `已关闭 ${closedCount} 个登录窗口` }, 'AuthHandler')
   }
 }

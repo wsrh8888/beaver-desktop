@@ -12,12 +12,13 @@ class App extends ApplicationBase implements Application {
     super('app')
   }
 
-  public createBrowserWindow(): void {
+  public createBrowserWindow(isHide?: boolean): void {
     this.win = new BrowserWindow({
       width: 1024,
       height: 726,
       minWidth: 1024,
       minHeight: 726,
+      show: !isHide,
       frame: false,
       webPreferences: {
         preload: path.join(__dirname, './preload/electron.js'), // 引用预加载脚本

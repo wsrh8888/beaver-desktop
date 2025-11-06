@@ -27,9 +27,9 @@ export default class ApplicationBase {
     (this.win as any).__appName = this.name
     if (process.custom.TOOLS) {
       // 延迟打开开发者工具，确保窗口完全加载
-      setTimeout(() => {
-        this.win.webContents.openDevTools()
-      }, 1000)
+      // setTimeout(() => {
+      //   this.win.webContents.openDevTools()
+      // }, 1000)
     }
   }
 
