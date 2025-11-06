@@ -66,7 +66,7 @@ export default defineComponent({
   },
   setup() {
     const handleActionClick = async (result: ISearchResult) => {
-      electron.window.openWindow('verify')
+      window.electron.window.openWindow('verify')
       electron.notification.send('verify', NotificationModule.SEARCH_TO_VERIFY, NotificationSearchToVerifyCommand.SEARCH_TO_VERIFY, {
         type: result.type,
         id: result.id,

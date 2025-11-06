@@ -1,23 +1,18 @@
-import { initChatConversationsTable } from './chat/conversations'
-import { initChatMessagesTable } from './chat/messages'
-import { initChatUserConversationsTable } from './chat/user-conversations'
-import { initDatasyncTable } from './datasync/init'
+import { initChatTables } from './chat/index'
+import { initDatasyncTables } from './datasync/index'
 import { initFriendTables } from './friend/index'
 import { initGroupTables } from './group/index'
-import { initMediaTable } from './media/init'
-import { initUserTable } from './user/init'
+import { initMediaTables } from './media/index'
+import { initUserTables } from './user/index'
 
 export const initTables = (db: any) => {
-  initUserTable(db)
+  // 初始化所有表 - 直接使用drizzle-orm的db实例
+  console.log('开始初始化用户表')
+  initUserTables(db)
   initFriendTables(db)
   initGroupTables(db)
-
-  // 初始化聊天表
-  const sqlite = db.$client
-  initChatMessagesTable(sqlite)
-  initChatConversationsTable(sqlite)
-  initChatUserConversationsTable(sqlite)
-
-  initDatasyncTable(db)
-  initMediaTable(db)
+  initChatTables(db)
+  initDatasyncTables(db)
+  initMediaTables(db)
+  console.log('数据表初始化完成')
 }

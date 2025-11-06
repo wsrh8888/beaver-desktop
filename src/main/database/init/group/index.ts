@@ -9,6 +9,7 @@ export const initGroupTables = (db: any) => {
   const sqlite = db.$client
 
   // 初始化各个表
+
   initGroupsTable(sqlite)
   initGroupMembersTable(sqlite)
   initGroupJoinRequestsTable(sqlite)

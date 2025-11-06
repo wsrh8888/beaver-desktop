@@ -28,8 +28,7 @@ export class WindowHandler {
         this.handleToggleMaximize(event)
         break
       case WinHook.OPEN_WINDOW:
-        this.handleOpen(data)
-        break
+        return this.handleOpen(data)
       default:
         console.error(`窗口处理未知命令: ${command}`)
     }
@@ -38,15 +37,16 @@ export class WindowHandler {
   /**
    * 关闭窗口
    */
-  private static handleClose(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, data: any) {
+  private static handleClose(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, data: { name: string, options?: any }) {
     // { hideOnly?: boolean, isSelf?: boolean }
-    const { hideOnly = false } = data
+    const { hideOnly = false } = data.options || {}
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
       if (hideOnly) {
         window.hide()
       }
       else {
+        console.log('关闭窗口', window)
         window.close()
       }
     }
@@ -95,25 +95,32 @@ export class WindowHandler {
   private static handleOpen(data: { name: string, options?: any }) {
     const options = data.options || {}
     const unique = options.unique || true // 默认唯一
+    const isHide = options.isHide || false // 默认不隐藏
     // 通过name搜素进程
     const window = BrowserWindow.getAllWindows().find(win => (win as any).__appName === data.name)
     if (window && unique) {
-      window.show()
-      window.focus()
+      if (isHide) {
+        window.hide()
+      }
+      else {
+        window.show()
+        window.focus()
+      }
     }
     else {
+      console.log('打开新窗口', data.name, window, data)
       switch (data.name) {
         case 'app':
-          appApplication.createBrowserWindow()
+          appApplication.createBrowserWindow(isHide)
           break
         case 'login':
-          loginApplication.createBrowserWindow()
+          return loginApplication.createBrowserWindow()
           break
         case 'search':
           searchApplication.createBrowserWindow()
           break
         case 'verify':
-          verifyApplication.createBrowserWindow()
+          verifyApplication.createBrowserWindow(isHide)
           break
       }
     }

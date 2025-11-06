@@ -104,6 +104,7 @@ export default defineComponent({
       if (!keyword) {
         return
       }
+      window.electron.window.openWindow('verify', { isHide: true })
       if (activeTab.value === 'friend') {
         searchFriend()
       }

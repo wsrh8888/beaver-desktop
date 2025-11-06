@@ -1,6 +1,6 @@
 // 初始化聊天会话表
 export const initChatConversationsTable = (sqlite: any) => {
-  // 创建表
+  // 创建表 - 使用drizzle-orm的run方法
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS chat_conversation_metas (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,7 +22,7 @@ export const initChatConversationsTable = (sqlite: any) => {
 
   fields.forEach((field) => {
     try {
-      sqlite.exec(`ALTER TABLE chat_conversation_metas ADD COLUMN ${field}`)
+      sqlite.run(`ALTER TABLE chat_conversation_metas ADD COLUMN ${field}`)
     }
     catch (error: any) {
       // 忽略已存在的列错误

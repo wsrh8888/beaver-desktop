@@ -159,6 +159,22 @@ export interface IFriendSyncItem {
   updateAt: number
 }
 
+// 获取好友用户版本信息（用于数据同步）
+export interface IFriendUserVersionsReq {
+  offset?: number // 分页偏移量，默认0
+  limit?: number // 分页大小，默认100
+}
+
+export interface IFriendUserVersionsRes {
+  userVersions: IFriendUserVersionItem[]
+  total: number // 总好友数
+}
+
+export interface IFriendUserVersionItem {
+  userId: string // 好友用户ID
+  version: number // 好友用户资料版本号
+}
+
 // 好友验证数据同步
 export interface IFriendVerifySyncReq {
   fromVersion: number

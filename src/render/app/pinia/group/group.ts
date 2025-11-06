@@ -2,7 +2,6 @@ import type { IGroupInfo } from 'commonModule/type/ajax/group'
 import { defineStore } from 'pinia'
 import {
   getGroupInfoApi,
-  getGroupListApi,
 } from 'renderModule/api/group'
 
 /**
@@ -39,13 +38,11 @@ export const useGroupStore = defineStore('groupStore', {
      * @description: 初始化群组列表
      */
     async init() {
-      const getGroupApi = await getGroupListApi({
+      const getGroupApi = await electron.database.group.getGroupList({
         page: 1,
         limit: 100,
       })
-      if (getGroupApi.code === 0 && getGroupApi.result?.list?.length > 0) {
-        this.groupList = getGroupApi.result.list
-      }
+      this.groupList = getGroupApi.list || []
     },
 
     /**
