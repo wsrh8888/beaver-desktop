@@ -12,13 +12,12 @@ class App extends ApplicationBase implements Application {
     super('app')
   }
 
-  public createBrowserWindow(isHide?: boolean): void {
+  public createBrowserWindow(): BrowserWindow {
     this.win = new BrowserWindow({
       width: 1024,
       height: 726,
       minWidth: 1024,
       minHeight: 726,
-      show: !isHide,
       frame: false,
       webPreferences: {
         preload: path.join(__dirname, './preload/electron.js'), // 引用预加载脚本
@@ -37,6 +36,7 @@ class App extends ApplicationBase implements Application {
     trayHandler.init(this.win)
     this.init()
     this.initEvents()
+    return this.win
   }
 }
 

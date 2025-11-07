@@ -1,15 +1,17 @@
 import { SyncStatus } from 'commonModule/type/datasync'
-import { friendUserVersionsApi } from 'mainModule/api/frined'
-import { userSyncByIdsApi } from 'mainModule/api/user'
+import { datasyncGetSyncAllUsersApi } from 'mainModule/api/datasync'
+import { userSyncApi } from 'mainModule/api/user'
+import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
+import { UserSyncStatusService } from 'mainModule/database/services/user/sync-status'
 import { UserService } from 'mainModule/database/services/user/user'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
-// 用户数据同步模块（大厂简化版：按需同步）
+// 用户数据同步模块（两阶段增量同步）
 export class UserSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
-  // 登录时同步当前用户和好友（大厂真实做法）
+  // 登录时同步用户数据
   async checkAndSync() {
     const userId = store.get('userInfo')?.userId
     if (!userId) {
@@ -18,97 +20,69 @@ export class UserSyncModule {
     }
 
     try {
-      logger.info({ text: '开始登录用户数据同步', data: { userId } }, 'UserSyncModule')
-
-      // 一次性同步所有用户（当前用户 + 好友）
-      await this.syncAllUsersInBackground(userId)
-
+      await this.syncAllUsersInBackground()
       this.syncStatus = SyncStatus.COMPLETED
-      logger.info({ text: '登录用户数据同步完成' }, 'UserSyncModule')
     }
     catch (error) {
       this.syncStatus = SyncStatus.FAILED
-      logger.error({ text: '登录用户同步失败', data: {
-        error: (error as any)?.message,
-        userId,
-      } }, 'UserSyncModule')
+      logger.error({ text: '用户同步失败', data: { error: (error as any)?.message } }, 'UserSyncModule')
     }
   }
 
-  // 一次性同步所有用户（当前用户 + 好友）
-  private async syncAllUsersInBackground(userId: string) {
+  // 两阶段用户数据同步（包含本地差值比较）
+  private async syncAllUsersInBackground() {
     try {
-      logger.info({ text: '开始同步所有用户信息', data: { userId } }, 'UserSyncModule')
+      // 1. 获取本地最后同步时间
+      const cursor = await DataSyncService.get('users').catch(() => null)
+      const lastSyncTime = cursor?.lastSeq || 0
 
-      // 1. 获取所有用户ID（好友 + 当前用户）
-      const allUserIds = await this.getAllUserIds()
+      // 2. 获取变更的用户版本摘要
+      const response = await datasyncGetSyncAllUsersApi({
+        type: 'all',
+        since: lastSyncTime,
+      }).catch(() => ({ result: { userVersions: [], serverTimestamp: Date.now() } }))
 
-      if (allUserIds.length === 0) {
-        logger.info({ text: '没有用户需要同步' }, 'UserSyncModule')
+      const changedUserVersions = response.result.userVersions
+      const serverTimestamp = response.result.serverTimestamp
+
+      if (changedUserVersions.length === 0) {
+        // 即使没有变更，也要更新同步时间
+        await DataSyncService.upsert({
+          dataType: 'users',
+          lastSeq: serverTimestamp,
+          syncStatus: 'completed',
+        }).catch(() => {})
         return
       }
 
-      // 2. 批量同步所有用户的信息
-      await this.syncUsersByIds(allUserIds)
+      // 3. 和本地版本比较，找出需要同步的用户
+      const serverVersions = changedUserVersions.reduce((acc: Record<string, number>, item: any) => {
+        acc[item.userId] = item.version
+        return acc
+      }, {})
 
-      logger.info({ text: '所有用户信息同步完成', data: { userCount: allUserIds.length } }, 'UserSyncModule')
-    }
-    catch (error: any) {
-      logger.error({ text: '同步所有用户信息失败', data: {
-        error: error.message,
-        userId,
-      } }, 'UserSyncModule')
-    }
-  }
-
-  // 获取所有用户ID（当前用户 + 好友）
-  private async getAllUserIds(): Promise<string[]> {
-    const allUserIds: string[] = []
-
-    try {
-      logger.info({ text: '获取所有用户版本信息' }, 'UserSyncModule')
-
-      // 调用好友服务的获取用户版本接口（一次性获取所有用户：当前用户 + 好友）
-      const response = await friendUserVersionsApi({
-        offset: 0,
-        limit: 1000, // 设置一个足够大的limit来获取所有用户
-      })
-
-      if (response.result.userVersions && response.result.userVersions.length > 0) {
-        // 收集所有用户ID（包含当前用户和好友）
-        response.result.userVersions.forEach((item: any) => {
-          allUserIds.push(item.userId)
-        })
+      const usersNeedSync = await UserSyncStatusService.getUsersNeedSync(serverVersions)
+      if (usersNeedSync.length === 0) {
+        // 更新同步时间，即使没有需要同步的用户
+        await DataSyncService.upsert({
+          dataType: 'users',
+          lastSeq: serverTimestamp,
+          syncStatus: 'completed',
+        }).catch(() => {})
+        return
       }
 
-      logger.info({
-        text: '获取所有用户ID完成',
-        data: { requested: response.result.total, received: allUserIds.length },
-      }, 'UserSyncModule')
-    }
-    catch (error: any) {
-      logger.error({ text: '获取所有用户ID失败', data: { error: error.message } }, 'UserSyncModule')
-    }
+      // 4. 只同步需要更新的用户
+      const userVersionList = changedUserVersions
+        .filter((item: any) => usersNeedSync.includes(item.userId))
+        .map((item: any) => ({
+          userId: item.userId,
+          version: item.version,
+        }))
 
-    return allUserIds
-  }
-
-  // 批量同步多个用户信息
-  async syncUsersByIds(userIds: string[]): Promise<void> {
-    if (!userIds.length)
-      return
-
-    try {
-      logger.info({ text: '批量同步用户信息', data: { count: userIds.length } }, 'UserSyncModule')
-
-      // 调用用户服务的批量获取API
-      const response = await userSyncByIdsApi({
-        userIds,
-        limit: 1000,
-      })
-
-      if (response.result.users && response.result.users.length > 0) {
-        const usersModels = response.result.users.map((user: any) => ({
+      const syncResponse = await userSyncApi({ userVersions: userVersionList })
+      if (syncResponse.result.users?.length > 0) {
+        const usersModels = syncResponse.result.users.map((user: any) => ({
           uuid: user.userId,
           nickName: user.nickname,
           avatar: user.avatar,
@@ -122,27 +96,27 @@ export class UserSyncModule {
           updatedAt: user.updateAt,
         }))
 
-        // 批量更新本地用户数据
         await UserService.batchCreate(usersModels)
 
-        logger.info({
-          text: '批量用户信息同步成功',
-          data: { requested: userIds.length, synced: usersModels.length },
-        }, 'UserSyncModule')
+        // 更新本地用户版本状态
+        const statusUpdates = usersModels.map(user => ({
+          userId: user.uuid,
+          userVersion: user.version,
+        }))
+        await UserSyncStatusService.batchUpsertUserSyncStatus(statusUpdates)
       }
-      else {
-        logger.warn({ text: '服务器返回空的批量用户信息', data: { userIds: userIds.length } }, 'UserSyncModule')
-      }
+
+      // 5. 更新同步时间（使用服务端时间戳）
+      await DataSyncService.upsert({
+        dataType: 'users',
+        lastSeq: serverTimestamp,
+        syncStatus: 'completed',
+      }).catch(() => {})
     }
     catch (error: any) {
-      logger.error({ text: '批量同步用户信息失败', data: {
-        count: userIds.length,
-        error: error.message,
-      } }, 'UserSyncModule')
-      throw error
+      logger.error({ text: '用户数据同步失败', data: { error: error.message } }, 'UserSyncModule')
     }
   }
 }
-
 // 导出用户同步模块实例
 export const userSyncModule = new UserSyncModule()

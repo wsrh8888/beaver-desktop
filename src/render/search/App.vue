@@ -33,7 +33,7 @@ export default defineComponent({
   },
   setup() {
     const handleClose = () => {
-      electron?.window.closeWindow('search', { hideOnly: true, isSelf: true })
+      electron?.window.closeWindow('search', { hideOnly: true })
     }
     return {
       handleClose,

@@ -58,3 +58,40 @@ export interface IManualSyncRes {
   results?: Record<string, boolean>
   error?: string
 }
+
+// 获取所有用户同步信息请求
+export interface IGetSyncAllUsersReq {
+  type?: string // 类型：friends/group/all，不传或为空则同步所有相关用户
+  since?: number // 从这个时间戳之后开始同步，不传则同步所有
+}
+
+// 获取所有用户同步信息响应
+export interface IGetSyncAllUsersRes {
+  userVersions: IUserVersionItem[]
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 用户版本信息
+export interface IUserVersionItem {
+  userId: string // 用户ID
+  version: number // 最新版本号
+}
+
+// 获取所有群组同步信息请求
+export interface IGetSyncAllGroupsReq {
+  since?: number // 从这个时间戳之后开始同步，不传则同步所有
+}
+
+// 获取所有群组同步信息响应
+export interface IGetSyncAllGroupsRes {
+  groupVersions: IGroupVersionItem[]
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 群组版本信息
+export interface IGroupVersionItem {
+  groupId: string // 群组ID
+  groupVersion: number // 群资料版本
+  memberVersion: number // 群成员版本
+  requestVersion: number // 入群申请版本
+}

@@ -15,7 +15,7 @@ export default defineComponent({
   name: 'WindowControls',
   setup() {
     const handleClose = () => {
-      window.electron.window.closeWindow('login', { hideOnly: false, isSelf: true })
+      window.electron.window.closeWindow('login', { hideOnly: false })
     }
 
     return {

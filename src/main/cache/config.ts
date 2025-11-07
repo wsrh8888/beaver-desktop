@@ -50,4 +50,6 @@ export const fileTypeMapping: Record<string, string> = {
 export const cacheTypeToFilePath: Record<CacheType, string> = {
   [CacheType.USER_AVATAR]: '/users/[userId]/cache/avatars',
   [CacheType.USER_DB]: '/users/[userId]/db',
+  [CacheType.USER_LOGS]: '/users/[userId]/logs',
+  [CacheType.PUBLIC_LOGS]: '/logs',
 }

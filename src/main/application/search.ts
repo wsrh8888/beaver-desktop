@@ -9,7 +9,7 @@ class Search extends ApplicationBase implements Application {
     super('search')
   }
 
-  public createBrowserWindow(): void {
+  public createBrowserWindow(): BrowserWindow {
     this.win = new BrowserWindow({
       width: 900,
       height: 670,
@@ -32,6 +32,7 @@ class Search extends ApplicationBase implements Application {
     this.loadRender()
     this.init()
     this.initEvents()
+    return this.win
   }
 }
 

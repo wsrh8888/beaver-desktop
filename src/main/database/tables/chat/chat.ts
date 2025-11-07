@@ -1,4 +1,4 @@
-import type { IDBChatConversationMeta, IDBChatMessage, IDBChatUserConversation } from 'commonModule/type/database/chat'
+import type { IDBChatConversationMeta, IDBChatMessage, IDBChatSyncStatus, IDBChatUserConversation } from 'commonModule/type/database/chat'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
@@ -45,3 +45,14 @@ export const chatUserConversations = sqliteTable('chat_user_conversations', {
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
 }) as unknown as IDBChatUserConversation
+
+// 聊天同步状态表 (ChatSyncStatus)
+export const chatSyncStatus = sqliteTable('chat_sync_status', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  conversationId: text('conversation_id').notNull().unique(), // 会话ID
+  messageSeq: integer('message_seq').default(0), // 已同步的消息序列号
+  conversationVersion: integer('conversation_version').default(0), // 会话版本号
+  settingVersion: integer('setting_version').default(0), // 设置版本号
+  createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
+  updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
+}) as unknown as IDBChatSyncStatus
