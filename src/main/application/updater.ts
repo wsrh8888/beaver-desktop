@@ -9,7 +9,7 @@ class Updater extends ApplicationBase implements Application {
     super('updater') // 对应 updater.html
   }
 
-  public createBrowserWindow(): void {
+  public createBrowserWindow(): BrowserWindow {
     this.win = new BrowserWindow({
       width: 450,
       height: 350,
@@ -31,6 +31,7 @@ class Updater extends ApplicationBase implements Application {
     this.loadRender()
     this.init()
     this.initEvents()
+    return this.win
   }
 }
 

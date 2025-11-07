@@ -79,15 +79,14 @@ export interface IEmailLoginRes {
 
 // 用户数据同步
 export interface IUserSyncReq {
-  fromVersion: number
-  toVersion: number
-  limit?: number
+  userVersions: Array<{
+    userId: string
+    version: number
+  }>
 }
 
 export interface IUserSyncRes {
   users: IUserSyncItem[]
-  hasMore: boolean
-  nextVersion: number
 }
 
 // 通过用户ID列表同步用户信息（大厂方式）

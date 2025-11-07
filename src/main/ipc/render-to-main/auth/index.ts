@@ -43,6 +43,10 @@ export class AuthHandler {
       // 3. 初始化用户缓存
       if (userInfo?.userId) {
         await cacheManager.init(userInfo.userId)
+
+        // 初始化用户日志
+        logger.init(userInfo.userId)
+
         logger.info({
           text: '开始初始化数据库',
         })
@@ -79,6 +83,9 @@ export class AuthHandler {
       // 1. 清空store的所有数据
       store.clearAll()
       logger.info({ text: 'Store数据已清空' }, 'AuthHandler')
+
+      // 2. 切换回公共日志
+      logger.init()
 
       // 3. 打开login窗口
       LoginApplication.createBrowserWindow()

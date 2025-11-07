@@ -1,3 +1,4 @@
+import type { IWindowOpenOptions, IWinodwCloseOptions } from 'commonModule/type/preload/window'
 import { WinHook } from 'commonModule/type/ipc/command'
 import { BrowserWindow } from 'electron'
 import appApplication from 'mainModule/application/app'
@@ -16,19 +17,21 @@ export class WindowHandler {
       data,
     } }, 'WindowHandler')
 
+    const name = data?.name || ''
+    const options = data?.options || {}
     // 处理同步命令
     switch (command) {
       case WinHook.CLOSE:
-        this.handleClose(event, data)
+        this.handleClose(event, name, options)
         break
       case WinHook.MINIMIZE:
-        this.handleMinimize(event)
+        this.handleMinimize(event, name, options)
         break
       case WinHook.MAXIMIZE:
-        this.handleToggleMaximize(event)
+        this.handleToggleMaximize(event, name, options)
         break
       case WinHook.OPEN_WINDOW:
-        return this.handleOpen(data)
+        return this.handleOpen(event, name, options)
       default:
         console.error(`窗口处理未知命令: ${command}`)
     }
@@ -37,9 +40,8 @@ export class WindowHandler {
   /**
    * 关闭窗口
    */
-  private static handleClose(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, data: { name: string, options?: any }) {
-    // { hideOnly?: boolean, isSelf?: boolean }
-    const { hideOnly = false } = data.options || {}
+  private static handleClose(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, name: string, options: IWinodwCloseOptions) {
+    const { hideOnly = false } = options
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
       if (hideOnly) {
@@ -58,7 +60,7 @@ export class WindowHandler {
   /**
    * 最小化窗口
    */
-  private static handleMinimize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent) {
+  private static handleMinimize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, _name: string, _options: IWindowOpenOptions) {
     logger.info({ text: `[render][${event.sender.id}] 最小化窗口` })
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
@@ -72,7 +74,7 @@ export class WindowHandler {
   /**
    * 切换窗口最大化状态
    */
-  private static handleToggleMaximize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent) {
+  private static handleToggleMaximize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, _name: string, _options: IWindowOpenOptions) {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
       if (window.isMaximized()) {
@@ -92,37 +94,46 @@ export class WindowHandler {
   /**
    * 打开指定窗口
    */
-  private static handleOpen(data: { name: string, options?: any }) {
-    const options = data.options || {}
+  private static async handleOpen(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, name: string, options: IWindowOpenOptions): Promise<void> {
     const unique = options.unique || true // 默认唯一
-    const isHide = options.isHide || false // 默认不隐藏
     // 通过name搜素进程
-    const window = BrowserWindow.getAllWindows().find(win => (win as any).__appName === data.name)
+    const window = BrowserWindow.getAllWindows().find(win => (win as any).__appName === name)
     if (window && unique) {
-      if (isHide) {
-        window.hide()
-      }
-      else {
-        window.show()
-        window.focus()
-      }
+      window.show()
+      window.focus()
+      return Promise.resolve()
     }
     else {
-      console.log('打开新窗口', data.name, window, data)
-      switch (data.name) {
+      console.log('打开新窗口', name, window, options)
+      let newWindow!: BrowserWindow
+
+      switch (name) {
         case 'app':
-          appApplication.createBrowserWindow(isHide)
+          newWindow = appApplication.createBrowserWindow()
           break
         case 'login':
-          return loginApplication.createBrowserWindow()
+          newWindow = loginApplication.createBrowserWindow()
           break
         case 'search':
           searchApplication.createBrowserWindow()
+          newWindow = (searchApplication as any).win
           break
         case 'verify':
-          verifyApplication.createBrowserWindow(isHide)
+          verifyApplication.createBrowserWindow()
+          newWindow = (verifyApplication as any).win
           break
       }
+
+      // 如果创建了新窗口，等待它准备好
+      if (newWindow) {
+        return new Promise((resolve) => {
+          newWindow!.once('ready-to-show', () => {
+            resolve()
+          })
+        })
+      }
+
+      return Promise.resolve()
     }
   }
 }

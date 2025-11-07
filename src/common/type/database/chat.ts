@@ -60,3 +60,14 @@ export interface IDBChatUserConversation {
   createdAt?: number
   updatedAt?: number
 }
+
+// 聊天同步状态表
+export interface IDBChatSyncStatus {
+  id?: number
+  conversationId: string
+  messageSeq?: number // 已同步的消息序列号
+  conversationVersion?: number // 会话版本号
+  settingVersion?: number // 设置版本号
+  createdAt?: number
+  updatedAt?: number
+}

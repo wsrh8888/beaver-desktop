@@ -9,7 +9,7 @@ class Login extends ApplicationBase implements Application {
     super('login')
   }
 
-  public createBrowserWindow(): void {
+  public createBrowserWindow(): BrowserWindow {
     this.win = new BrowserWindow({
       width: 800,
       height: 500,
@@ -32,6 +32,7 @@ class Login extends ApplicationBase implements Application {
     this.loadRender()
     this.init()
     this.initEvents()
+    return this.win
   }
 }
 

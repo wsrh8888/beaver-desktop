@@ -4,6 +4,8 @@
 export enum CacheType {
   USER_AVATAR = 'user_avatar',
   USER_DB = 'user_db',
+  USER_LOGS = 'user_logs',
+  PUBLIC_LOGS = 'public_logs',
 }
 
 /**

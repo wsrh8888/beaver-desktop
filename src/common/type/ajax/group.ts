@@ -625,6 +625,7 @@ export interface IGetUserGroupVersionsReq {
 // 获取用户群组版本信息响应
 export interface IGetUserGroupVersionsRes {
   groups: IGroupVersionItem[]
+  serverTimestamp: number
 }
 
 export interface IGroupVersionItem {

@@ -1,5 +1,5 @@
 import type { ISyncCursor } from 'commonModule/type/database'
-import { and, eq } from 'drizzle-orm'
+import { eq } from 'drizzle-orm'
 import dbManager from '../../db'
 import { datasync } from '../../tables/datasync/datasync'
 
@@ -10,35 +10,19 @@ export class DataSyncService {
   }
 
   // 获取同步游标
-  static async get(userId: string, deviceId: string, dataType: string, conversationId?: string): Promise<ISyncCursor | undefined> {
-    const conditions = [
-      eq(datasync.userId, userId),
-      eq(datasync.deviceId, deviceId),
+  static async get(dataType: string): Promise<ISyncCursor | undefined> {
+    return await this.db.select().from(datasync).where(
       eq(datasync.dataType, dataType),
-    ]
-
-    if (conversationId) {
-      conditions.push(eq(datasync.conversationId, conversationId))
-    }
-
-    return await this.db.select().from(datasync).where(and(...conditions)).get()
+    ).get()
   }
 
   // 创建或更新同步游标
   static async upsert(cursorData: {
-    userId: string
-    deviceId: string
     dataType: string
-    conversationId?: string
     lastSeq: number
     syncStatus: string
   }) {
-    const existing = await this.get(
-      cursorData.userId,
-      cursorData.deviceId,
-      cursorData.dataType,
-      cursorData.conversationId,
-    )
+    const existing = await this.get(cursorData.dataType)
 
     if (existing) {
       return await this.db.update(datasync)

@@ -1,4 +1,8 @@
 import type {
+  IGetSyncAllGroupsReq,
+  IGetSyncAllGroupsRes,
+  IGetSyncAllUsersReq,
+  IGetSyncAllUsersRes,
   IGetSyncCursorReq,
   IGetSyncCursorRes,
   IUpdateSyncCursorReq,
@@ -26,5 +30,27 @@ export const updateSyncCursorApi = (data: IUpdateSyncCursorReq) => {
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/datasync/cursor`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的用户版本信息
+ */
+export const datasyncGetSyncAllUsersApi = (data: IGetSyncAllUsersReq) => {
+  return ajax<IGetSyncAllUsersRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncAllUsers`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的群组版本信息
+ */
+export const datasyncGetSyncAllGroupsApi = (data: IGetSyncAllGroupsReq) => {
+  return ajax<IGetSyncAllGroupsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncAllGroups`,
   })
 }
