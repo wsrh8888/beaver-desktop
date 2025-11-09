@@ -228,6 +228,7 @@ export class GroupUnifiedSyncManager {
       await DataSyncService.upsert({
         module: 'groups',
         version: this.serverTimestamp,
+        updatedAt: this.serverTimestamp,
       }).catch(() => {})
     }
   }

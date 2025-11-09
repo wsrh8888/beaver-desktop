@@ -25,6 +25,7 @@ export class DataSyncService {
   static async upsert(cursorData: {
     module: string
     version: number | null
+    updatedAt: number
   }) {
     const existing = await this.get(cursorData.module)
 
@@ -32,16 +33,13 @@ export class DataSyncService {
       return await this.db.update(datasync)
         .set({
           version: cursorData.version,
-          updatedAt: Math.floor(Date.now() / 1000),
+          updatedAt: cursorData.updatedAt,
         })
         .where(eq(datasync.id, existing.id!))
         .run()
     }
     else {
-      return await this.db.insert(datasync).values({
-        ...cursorData,
-        updatedAt: Math.floor(Date.now() / 1000),
-      }).run()
+      return await this.db.insert(datasync).values(cursorData).run()
     }
   }
 

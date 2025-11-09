@@ -3,7 +3,6 @@ import { datasyncGetSyncFriendVerifiesApi } from 'mainModule/api/datasync'
 import { getFriendVerifiesListByIdsApi } from 'mainModule/api/friened'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
-import { FriendVerifySyncStatusService } from 'mainModule/database/services/friend/sync-status'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
@@ -30,11 +29,13 @@ export class FriendVerifySyncModule {
       if (serverResponse.result.friendVerifyVersions.length > 0) {
         // 有变更的好友验证，需要同步数据
         await this.syncFriendVerifyData(serverResponse.result.friendVerifyVersions)
-        await this.updateFriendVerifiesCursor(userId, serverResponse.result.serverTimestamp)
+        // 从变更的数据中找到最大的版本号
+        const maxVersion = Math.max(...serverResponse.result.friendVerifyVersions.map(item => item.version))
+        await this.updateFriendVerifiesCursor(maxVersion, serverResponse.result.serverTimestamp)
       }
       else {
         // 没有变更，将version设为null表示没有新数据
-        await this.updateFriendVerifiesCursor(userId, null)
+        await this.updateFriendVerifiesCursor(null, serverResponse.result.serverTimestamp)
       }
 
       this.syncStatus = SyncStatus.COMPLETED
@@ -84,11 +85,6 @@ export class FriendVerifySyncModule {
 
         // 批量插入好友验证数据
         await FriendVerifyService.batchCreate(friendVerifies)
-
-        // 更新同步状态
-        for (const verify of response.result.friendVerifies) {
-          await FriendVerifySyncStatusService.upsertFriendVerifySyncStatus(verify.uuid, verify.version)
-        }
       }
     }
 
@@ -96,10 +92,11 @@ export class FriendVerifySyncModule {
   }
 
   // 更新游标
-  private async updateFriendVerifiesCursor(userId: string, lastVersion: number | null) {
+  private async updateFriendVerifiesCursor(version: number | null, updatedAt: number) {
     await DataSyncService.upsert({
       module: 'friend_verifies',
-      version: lastVersion,
+      version,
+      updatedAt,
     })
   }
 

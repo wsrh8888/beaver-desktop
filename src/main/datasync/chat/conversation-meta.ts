@@ -169,10 +169,11 @@ class DatasyncSyncModule {
   }
 
   // 更新游标
-  private async updateCursor(userId: string, lastVersion: number) {
+  private async updateCursor(userId: string, serverTimestamp: number) {
     await DataSyncService.upsert({
       module: 'chat_conversations',
-      version: lastVersion,
+      version: serverTimestamp,
+      updatedAt: serverTimestamp,
     })
   }
 
