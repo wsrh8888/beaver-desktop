@@ -1,6 +1,6 @@
 import { eq, inArray } from 'drizzle-orm'
+import { chatConversations } from 'mainModule/database/tables/chat/conversation'
 import dbManager from '../../db'
-import { chatConversations } from '../../tables/chat/chat'
 
 // 聊天会话服务
 export class ChatConversationService {

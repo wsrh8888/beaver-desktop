@@ -30,7 +30,7 @@ export interface IFriendInfoReq {
 export interface IFriendInfo {
   userId: string
   nickname: string
-  fileName: string
+  avatar: string
   abstract: string
   notice: string
   isFriend: boolean
@@ -196,6 +196,59 @@ export interface IFriendVerifySyncItem {
   revStatus: number // 接收方状态：0(未处理)/1(已通过)/2(已拒绝)/3(忽略)/4(删除)
   message: string // 附加消息
   source: string // 添加好友来源：qrcode/search/group/recommend
+  version: number // 版本号
+  createAt: number // 创建时间戳
+  updateAt: number // 更新时间戳
+}
+
+// 批量获取好友数据
+export interface IGetFriendsListByIdsReq {
+  friendIds: string[] // 好友ID列表
+}
+
+export interface IGetFriendsListByIdsRes {
+  friends: IFriendSyncItem[] // 好友列表
+}
+
+// 批量获取好友数据（通过好友关系ID）
+export interface IGetFriendsListByFriendshipIdsReq {
+  friendshipIds: string[] // 好友关系ID列表
+}
+
+export interface IGetFriendsListByFriendshipIdsRes {
+  friends: IFriendByFriendshipId[] // 好友列表
+}
+
+export interface IFriendByFriendshipId {
+  friendshipId: string // 好友关系唯一ID
+  sendUserId: string // 发送者用户ID
+  revUserId: string // 接收者用户ID
+  sendUserNotice: string // 发送者备注
+  revUserNotice: string // 接收者备注
+  source: string // 添加好友来源
+  isDeleted: boolean // 是否已删除
+  version: number // 版本号
+  createAt: number // 创建时间戳
+  updateAt: number // 更新时间戳
+}
+
+// 批量获取好友验证数据（通过UUID）
+export interface IGetFriendVerifiesListByIdsReq {
+  uuids: string[] // 验证记录UUID列表
+}
+
+export interface IGetFriendVerifiesListByIdsRes {
+  friendVerifies: IFriendVerifyById[] // 好友验证列表
+}
+
+export interface IFriendVerifyById {
+  uuid: string // 验证记录UUID
+  sendUserId: string // 发送者用户ID
+  revUserId: string // 接收者用户ID
+  sendStatus: number // 发送方状态：0(未处理)/1(已通过)/2(已拒绝)/3(忽略)/4(删除)
+  revStatus: number // 接收方状态：0(未处理)/1(已通过)/2(已拒绝)/3(忽略)/4(删除)
+  message: string // 附加消息
+  source: string // 添加好友来源
   version: number // 版本号
   createAt: number // 创建时间戳
   updateAt: number // 更新时间戳

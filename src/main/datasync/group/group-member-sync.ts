@@ -15,21 +15,7 @@ class GroupMemberSync {
     if (members.length > 0) {
       await GroupMemberService.batchCreate(members)
 
-      // 更新本地同步状态
-      const memberGroups = new Set(members.map((m: any) => m.groupId))
-      for (const groupId of memberGroups) {
-        const groupMembers = members.filter((m: any) => m.groupId === groupId)
-        const maxMemberVersion = groupMembers.length > 0
-          ? Math.max(...groupMembers.map((m: any) => m.version))
-          : 0
-
-        await GroupSyncStatusService.upsertGroupSyncStatus(
-          groupId,
-          0, // 保持群资料版本不变
-          maxMemberVersion, // 更新成员版本
-          0, // 保持申请版本不变
-        )
-      }
+      // 注意：版本状态更新由统一同步器负责，这里不更新
     }
 
     logger.info({ text: '群成员同步完成', data: { count: members.length } }, 'GroupMemberSync')

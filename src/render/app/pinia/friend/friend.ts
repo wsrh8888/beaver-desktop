@@ -103,6 +103,7 @@ export const useFriendStore = defineStore('friendStore', {
         limit: 1000,
       })
       this.friendList = res.list || []
+      console.error('1111111111111111', this.friendList)
 
       // 将好友信息同步到联系人缓存中
       const contactStore = useContactStore()

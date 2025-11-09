@@ -1,6 +1,6 @@
 <template>
   <div class="login__content">
-    <!-- <router-view /> -->
+    <router-view />
   </div>
 </template>
 

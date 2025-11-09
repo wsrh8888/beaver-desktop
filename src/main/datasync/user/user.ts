@@ -34,7 +34,7 @@ export class UserSyncModule {
     try {
       // 1. 获取本地最后同步时间
       const cursor = await DataSyncService.get('users').catch(() => null)
-      const lastSyncTime = cursor?.lastSeq || 0
+      const lastSyncTime = cursor?.version || 0
 
       // 2. 获取变更的用户版本摘要
       const response = await datasyncGetSyncAllUsersApi({
@@ -48,9 +48,8 @@ export class UserSyncModule {
       if (changedUserVersions.length === 0) {
         // 即使没有变更，也要更新同步时间
         await DataSyncService.upsert({
-          dataType: 'users',
-          lastSeq: serverTimestamp,
-          syncStatus: 'completed',
+          module: 'users',
+          version: serverTimestamp,
         }).catch(() => {})
         return
       }
@@ -62,12 +61,21 @@ export class UserSyncModule {
       }, {})
 
       const usersNeedSync = await UserSyncStatusService.getUsersNeedSync(serverVersions)
+      console.error('2222222222222222222222222222')
+      console.error('2222222222222222222222222222')
+      console.error('2222222222222222222222222222')
+      console.error('2222222222222222222222222222')
+      console.error('2222222222222222222222222222')
+      console.error('2222222222222222222222222222')
+      console.error('2222222222222222222222222222')
+      console.error('2222222222222222222222222222')
+
+      console.error(usersNeedSync)
       if (usersNeedSync.length === 0) {
         // 更新同步时间，即使没有需要同步的用户
         await DataSyncService.upsert({
-          dataType: 'users',
-          lastSeq: serverTimestamp,
-          syncStatus: 'completed',
+          module: 'users',
+          version: serverTimestamp,
         }).catch(() => {})
         return
       }

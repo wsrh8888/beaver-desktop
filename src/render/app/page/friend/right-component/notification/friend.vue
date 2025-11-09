@@ -1,5 +1,6 @@
 <template>
   <div class="friend-notification-container">
+    111
     <!-- 通知列表 -->
     <div class="notification-list">
       <NotificationItem
@@ -37,7 +38,9 @@ export default defineComponent({
     const friendVerifyStore = useFriendVerifyStore()
     const friendVerifyList = computed(() => friendVerifyStore.friendVerifyList)
 
-    onMounted(() => {
+    onMounted(async () => {
+      await friendVerifyStore.init()
+
       loadNotifications()
       console.error(friendVerifyList.value, '111')
     })

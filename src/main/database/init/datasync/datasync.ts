@@ -4,11 +4,17 @@ export const initDatasyncTable = (sqlite: any) => {
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS datasync (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      data_type TEXT NOT NULL,
-      last_seq INTEGER DEFAULT 0,
-      sync_status TEXT DEFAULT 'pending',
-      created_at INTEGER DEFAULT (strftime('%s', 'now')),
+      module TEXT NOT NULL,
+      version INTEGER DEFAULT 0,
       updated_at INTEGER DEFAULT (strftime('%s', 'now'))
     )
   `)
+
+  // 创建唯一索引（如果不存在）
+  try {
+    sqlite.run(`CREATE UNIQUE INDEX IF NOT EXISTS unique_module ON datasync(module)`)
+  }
+  catch {
+    console.log('unique_module索引可能已存在')
+  }
 }

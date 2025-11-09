@@ -55,7 +55,7 @@ export const useAppStore = defineStore('useAppStore', {
 
       const userStore = useUserStore()
       const friendStore = useFriendStore()
-      const friendVerifyStore = useFriendVerifyStore()
+      const _friendVerifyStore = useFriendVerifyStore()
       const conversationStore = useConversationStore()
       const groupStore = useGroupStore()
 
@@ -67,7 +67,6 @@ export const useAppStore = defineStore('useAppStore', {
         const promises = [
           friendStore.init(),
           conversationStore.init(),
-          friendVerifyStore.init(),
           groupStore.init(),
         ]
 

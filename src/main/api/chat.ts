@@ -3,6 +3,10 @@ import type {
   IChatSyncRes,
   IConversationSyncReq,
   IConversationSyncRes,
+  IGetConversationsListByIdsReq,
+  IGetConversationsListByIdsRes,
+  IGetUserConversationSettingsListByIdsReq,
+  IGetUserConversationSettingsListByIdsRes,
   IUserConversationSyncReq,
   IUserConversationSyncRes,
 } from 'commonModule/type/ajax/chat'
@@ -39,5 +43,27 @@ export const userConversationSyncApi = (data: IUserConversationSyncReq) => {
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/chat/userConversationSync`,
+  })
+}
+
+/**
+ * @description: 批量获取会话数据
+ */
+export const getConversationsListByIdsApi = (data: IGetConversationsListByIdsReq) => {
+  return ajax<IGetConversationsListByIdsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/chat/getConversationsListByIds`,
+  })
+}
+
+/**
+ * @description: 批量获取用户会话设置数据
+ */
+export const getUserConversationSettingsListByIdsApi = (data: IGetUserConversationSettingsListByIdsReq) => {
+  return ajax<IGetUserConversationSettingsListByIdsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/chat/getUserConversationSettingsListByIds`,
   })
 }

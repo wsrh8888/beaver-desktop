@@ -1,5 +1,6 @@
 import type { IValidInfo } from 'commonModule/type/ajax/friend'
 import { defineStore } from 'pinia'
+import { getValidListApi } from 'renderModule/api/friend'
 import { useContactStore } from '../contact/contact'
 
 /**
@@ -63,11 +64,11 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
   actions: {
 
     async init() {
-      const res = await electron.database.friend.getValidList({
+      const res = await getValidListApi({
         page: 1,
         limit: 1000,
       })
-      this.friendVerifyList = res.list || []
+      this.friendVerifyList = res.result.list || []
 
       // 将验证列表中的用户信息同步到联系人缓存中（仅基本信息）
       const contactStore = useContactStore()

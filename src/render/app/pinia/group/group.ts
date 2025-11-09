@@ -42,7 +42,7 @@ export const useGroupStore = defineStore('groupStore', {
         page: 1,
         limit: 100,
       })
-      this.groupList = getGroupApi.list || []
+      this.groupList = getGroupApi?.list || []
     },
 
     /**
