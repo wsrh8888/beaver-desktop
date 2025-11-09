@@ -30,16 +30,12 @@ export class UserSyncStatusService {
   static async upsertUserSyncStatus(
     userId: string,
     userVersion: number,
-    syncStatus: string = 'completed',
-    retryCount: number = 0,
   ): Promise<void> {
     await this.db
       .insert(userSyncStatus)
       .values({
         userId,
         userVersion,
-        syncStatus,
-        retryCount,
         lastSyncTime: Math.floor(Date.now() / 1000),
         updatedAt: Math.floor(Date.now() / 1000),
       })
@@ -47,8 +43,6 @@ export class UserSyncStatusService {
         target: userSyncStatus.userId,
         set: {
           userVersion,
-          syncStatus,
-          retryCount,
           lastSyncTime: Math.floor(Date.now() / 1000),
           updatedAt: Math.floor(Date.now() / 1000),
         },
@@ -60,15 +54,11 @@ export class UserSyncStatusService {
   static async batchUpsertUserSyncStatus(statuses: Array<{
     userId: string
     userVersion: number
-    syncStatus?: string
-    retryCount?: number
   }>): Promise<void> {
     for (const status of statuses) {
       await this.upsertUserSyncStatus(
         status.userId,
         status.userVersion,
-        status.syncStatus || 'completed',
-        status.retryCount || 0,
       )
     }
   }

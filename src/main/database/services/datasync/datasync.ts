@@ -9,26 +9,29 @@ export class DataSyncService {
     return dbManager.db
   }
 
-  // 获取同步游标
-  static async get(dataType: string): Promise<ISyncCursor | undefined> {
+  // 获取同步游标 (新接口)
+  static async get(module: string): Promise<ISyncCursor | undefined> {
     return await this.db.select().from(datasync).where(
-      eq(datasync.dataType, dataType),
+      eq(datasync.module, module),
     ).get()
   }
 
-  // 创建或更新同步游标
+  // 获取同步游标 (旧接口，向后兼容)
+  static async getByDataType(dataType: string): Promise<ISyncCursor | undefined> {
+    return this.get(dataType)
+  }
+
+  // 创建或更新同步游标 (新接口)
   static async upsert(cursorData: {
-    dataType: string
-    lastSeq: number
-    syncStatus: string
+    module: string
+    version: number | null
   }) {
-    const existing = await this.get(cursorData.dataType)
+    const existing = await this.get(cursorData.module)
 
     if (existing) {
       return await this.db.update(datasync)
         .set({
-          lastSeq: cursorData.lastSeq,
-          syncStatus: cursorData.syncStatus,
+          version: cursorData.version,
           updatedAt: Math.floor(Date.now() / 1000),
         })
         .where(eq(datasync.id, existing.id!))
@@ -37,9 +40,19 @@ export class DataSyncService {
     else {
       return await this.db.insert(datasync).values({
         ...cursorData,
-        createdAt: Math.floor(Date.now() / 1000),
         updatedAt: Math.floor(Date.now() / 1000),
       }).run()
     }
+  }
+
+  // 创建或更新同步游标 (旧接口，向后兼容)
+  static async upsertByDataType(cursorData: {
+    dataType: string
+    lastSeq: number
+  }) {
+    return this.upsert({
+      module: cursorData.dataType,
+      version: cursorData.lastSeq,
+    })
   }
 }

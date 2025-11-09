@@ -1,37 +1,25 @@
 import type {
-  IGetSyncAllGroupsReq,
-  IGetSyncAllGroupsRes,
   IGetSyncAllUsersReq,
   IGetSyncAllUsersRes,
-  IGetSyncCursorReq,
-  IGetSyncCursorRes,
-  IUpdateSyncCursorReq,
-  IUpdateSyncCursorRes,
+  IGetSyncChatConversationsReq,
+  IGetSyncChatConversationsRes,
+  IGetSyncChatMessagesReq,
+  IGetSyncChatMessagesRes,
+  IGetSyncChatUserConversationsReq,
+  IGetSyncChatUserConversationsRes,
+  IGetSyncFriendsReq,
+  IGetSyncFriendsRes,
+  IGetSyncFriendVerifiesReq,
+  IGetSyncFriendVerifiesRes,
+  IGetSyncGroupInfoReq,
+  IGetSyncGroupInfoRes,
+  IGetSyncGroupMembersReq,
+  IGetSyncGroupMembersRes,
+  IGetSyncGroupRequestsReq,
+  IGetSyncGroupRequestsRes,
 } from 'commonModule/type/ajax/datasync'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
-
-/**
- * @description: 获取同步游标
- */
-export const getSyncCursorApi = (params: IGetSyncCursorReq) => {
-  return ajax<IGetSyncCursorRes>({
-    method: 'GET',
-    params,
-    url: `${getBaseUrl()}/api/datasync/cursor`,
-  })
-}
-
-/**
- * @description: 更新同步游标
- */
-export const updateSyncCursorApi = (data: IUpdateSyncCursorReq) => {
-  return ajax<IUpdateSyncCursorRes>({
-    method: 'POST',
-    data,
-    url: `${getBaseUrl()}/api/datasync/cursor`,
-  })
-}
 
 /**
  * @description: 获取所有需要更新的用户版本信息
@@ -45,12 +33,89 @@ export const datasyncGetSyncAllUsersApi = (data: IGetSyncAllUsersReq) => {
 }
 
 /**
- * @description: 获取所有需要更新的群组版本信息
+ * @description: 获取所有需要更新的群组信息版本
  */
-export const datasyncGetSyncAllGroupsApi = (data: IGetSyncAllGroupsReq) => {
-  return ajax<IGetSyncAllGroupsRes>({
+export const datasyncGetSyncGroupInfoApi = (data: IGetSyncGroupInfoReq) => {
+  return ajax<IGetSyncGroupInfoRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncAllGroups`,
+    url: `${getBaseUrl()}/api/datasync/getSyncGroupInfo`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的群成员版本
+ */
+export const datasyncGetSyncGroupMembersApi = (data: IGetSyncGroupMembersReq) => {
+  return ajax<IGetSyncGroupMembersRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncGroupMembers`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的入群申请版本
+ */
+export const datasyncGetSyncGroupRequestsApi = (data: IGetSyncGroupRequestsReq) => {
+  return ajax<IGetSyncGroupRequestsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncGroupRequests`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的聊天消息版本
+ */
+export const datasyncGetSyncChatMessagesApi = (data: IGetSyncChatMessagesReq) => {
+  return ajax<IGetSyncChatMessagesRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncChatMessages`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的会话元信息版本
+ */
+export const datasyncGetSyncChatConversationsApi = (data: IGetSyncChatConversationsReq) => {
+  return ajax<IGetSyncChatConversationsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncChatConversations`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的用户会话设置版本
+ */
+export const datasyncGetSyncChatUserConversationsApi = (data: IGetSyncChatUserConversationsReq) => {
+  return ajax<IGetSyncChatUserConversationsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncChatUserConversations`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的好友版本
+ */
+export const datasyncGetSyncFriendsApi = (data: IGetSyncFriendsReq) => {
+  return ajax<IGetSyncFriendsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncFriends`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的好友验证版本
+ */
+export const datasyncGetSyncFriendVerifiesApi = (data: IGetSyncFriendVerifiesReq) => {
+  return ajax<IGetSyncFriendVerifiesRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncFriendVerifies`,
   })
 }

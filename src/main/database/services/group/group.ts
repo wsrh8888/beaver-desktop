@@ -1,7 +1,7 @@
 import type { IDBGroup } from 'commonModule/type/database/group'
 import { eq, inArray } from 'drizzle-orm'
+import { groups } from 'mainModule/database/tables/group/groups'
 import dbManager from '../../db'
-import { groups } from '../../tables/group/group'
 
 // 群组服务
 export class GroupService {
@@ -25,11 +25,10 @@ export class GroupService {
         .insert(groups)
         .values(group)
         .onConflictDoUpdate({
-          target: groups.uuid,
+          target: groups.groupId,
           set: {
-            type: group.type,
             title: group.title,
-            fileName: group.fileName,
+            avatar: group.avatar,
             creatorId: group.creatorId,
             notice: group.notice,
             joinType: group.joinType,
@@ -48,7 +47,7 @@ export class GroupService {
 
     for (const group of groupsData) {
       // 获取本地群组数据
-      const localGroup = await this.getGroupByUuid(group.uuid)
+      const localGroup = await this.getGroupByUuid(group.groupId)
 
       // 如果本地不存在或版本号不同，则更新
       if (!localGroup || localGroup.version !== group.version) {
@@ -56,11 +55,10 @@ export class GroupService {
           .insert(groups)
           .values(group)
           .onConflictDoUpdate({
-            target: groups.uuid,
+            target: groups.groupId,
             set: {
-              type: group.type,
               title: group.title,
-              fileName: group.fileName,
+              avatar: group.avatar,
               creatorId: group.creatorId,
               notice: group.notice,
               joinType: group.joinType,
@@ -74,26 +72,26 @@ export class GroupService {
     }
   }
 
-  // 根据UUID获取群组
-  static async getGroupByUuid(uuid: string): Promise<IDBGroup | undefined> {
-    return await this.db.select().from(groups).where(eq(groups.uuid as any, uuid as any)).get()
+  // 根据GroupID获取群组
+  static async getGroupByUuid(groupId: string): Promise<IDBGroup | undefined> {
+    return await this.db.select().from(groups).where(eq(groups.groupId as any, groupId as any)).get()
   }
 
-  // 根据UUID列表批量获取群组
-  static async getGroupsByUuids(uuids: string[]): Promise<IDBGroup[]> {
-    if (uuids.length === 0)
+  // 根据GroupID列表批量获取群组
+  static async getGroupsByUuids(groupIds: string[]): Promise<IDBGroup[]> {
+    if (groupIds.length === 0)
       return []
-    return await this.db.select().from(groups).where(inArray(groups.uuid as any, uuids as any)).all()
+    return await this.db.select().from(groups).where(inArray(groups.groupId as any, groupIds as any)).all()
   }
 
   // 更新群组信息
-  static async updateGroup(uuid: string, updateData: any): Promise<any> {
+  static async updateGroup(groupId: string, updateData: any): Promise<any> {
     updateData.updatedAt = Math.floor(Date.now() / 1000)
-    return await this.db.update(groups).set(updateData).where(eq(groups.uuid as any, uuid as any)).run()
+    return await this.db.update(groups).set(updateData).where(eq(groups.groupId as any, groupId as any)).run()
   }
 
   // 删除群组
-  static async deleteGroup(uuid: string): Promise<any> {
-    return await this.db.delete(groups).where(eq(groups.uuid as any, uuid as any)).run()
+  static async deleteGroup(groupId: string): Promise<any> {
+    return await this.db.delete(groups).where(eq(groups.groupId as any, groupId as any)).run()
   }
 }

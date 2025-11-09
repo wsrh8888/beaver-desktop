@@ -241,7 +241,7 @@ export class FriendService {
         return {
           userId: friendUserId,
           nickname: friendUser?.nickName || '',
-          fileName: friendUser?.avatar || '',
+          avatar: friendUser?.avatar || '',
           abstract: friendUser?.abstract || '',
           notice: notice || '',
           isFriend: true,

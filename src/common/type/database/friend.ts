@@ -27,3 +27,11 @@ export interface IDBFriendVerify {
   createdAt?: number
   updatedAt?: number
 }
+
+// 好友同步状态表
+export interface IDBFriendSyncStatus {
+  id?: number
+  friendId: string // 好友ID
+  version?: number // 好友关系版本号
+  updatedAt?: number
+}

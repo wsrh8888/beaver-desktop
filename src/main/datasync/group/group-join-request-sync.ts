@@ -15,21 +15,7 @@ class GroupJoinRequestSync {
     if (requests.length > 0) {
       await GroupJoinRequestService.batchCreate(requests)
 
-      // 更新本地同步状态
-      const requestGroups = new Set(requests.map((r: any) => r.groupId))
-      for (const groupId of requestGroups) {
-        const groupRequests = requests.filter((r: any) => r.groupId === groupId)
-        const maxRequestVersion = groupRequests.length > 0
-          ? Math.max(...groupRequests.map((r: any) => r.version))
-          : 0
-
-        await GroupSyncStatusService.upsertGroupSyncStatus(
-          groupId,
-          0, // 保持群资料版本不变
-          0, // 保持成员版本不变
-          maxRequestVersion, // 更新申请版本
-        )
-      }
+      // 注意：版本状态更新由统一同步器负责，这里不更新
     }
 
     logger.info({ text: '入群申请同步完成', data: { count: requests.length } }, 'GroupJoinRequestSync')

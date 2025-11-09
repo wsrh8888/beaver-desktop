@@ -53,7 +53,7 @@ import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 // import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useRouterHelper } from 'renderModule/utils/router/index'
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 
 export default {
   name: 'FriendDetailContent',
@@ -65,6 +65,9 @@ export default {
     const friendStore = useFriendStore()
     const messageViewStore = useMessageViewStore()
     const routerHelper = useRouterHelper()
+
+    onMounted(() => {
+    })
 
     // 获取好友信息
     const friendInfo = computed(() => {

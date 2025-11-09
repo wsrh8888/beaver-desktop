@@ -15,9 +15,9 @@ class GroupSync {
     if (groups.length > 0) {
       // 转换为本地格式
       const localGroups = groups.map((group: any) => ({
-        uuid: group.groupId,
+        groupId: group.groupId,
         title: group.title,
-        fileName: group.avatar, // 假设avatar是文件名
+        avatar: group.avatar, // 头像文件名
         creatorId: group.creatorId,
         joinType: group.joinType,
         status: group.isDeleted ? 0 : 1,
@@ -28,15 +28,7 @@ class GroupSync {
 
       await GroupService.batchUpsert(localGroups)
 
-      // 更新本地同步状态
-      for (const group of groups) {
-        await GroupSyncStatusService.upsertGroupSyncStatus(
-          group.groupId,
-          group.version, // 更新群资料版本
-          0, // 保持成员版本不变
-          0, // 保持申请版本不变
-        )
-      }
+      // 注意：版本状态更新由统一同步器负责，这里不更新
     }
 
     logger.info({ text: '群资料同步完成', data: { count: groups.length } }, 'GroupSync')

@@ -1,5 +1,5 @@
 import { SyncStatus } from 'commonModule/type/datasync'
-import { datasyncGetSyncAllGroupsApi } from 'mainModule/api/datasync'
+import { datasyncGetSyncGroupInfoApi, datasyncGetSyncGroupMembersApi, datasyncGetSyncGroupRequestsApi } from 'mainModule/api/datasync'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupService } from 'mainModule/database/services/group/group'
 import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
@@ -32,22 +32,27 @@ export class GroupUnifiedSyncManager {
 
     try {
       this.syncStatus = SyncStatus.SYNCING
+      console.error('数据库同步1')
 
       // 第一步：获取本地最后同步时间
-      this.lastSyncTime = await DataSyncService.get('groups').then(cursor => cursor?.lastSeq || 0).catch(() => 0)
-
+      this.lastSyncTime = await DataSyncService.get('groups').then(cursor => cursor?.version || 0).catch(() => 0)
+      console.error('数据库同步2')
       // 第二步：获取服务器群组版本信息
       const serverVersions = await this.fetchServerGroupVersions(userId)
+      console.error('数据库同步3')
 
       // 第三步：对比本地状态，决定需要同步哪些群组
       const syncPlan = await this.calculateSyncPlan(serverVersions)
+      console.error('数据库同步4', syncPlan)
 
       // 第四步：执行同步计划
-      await this.executeSyncPlan(syncPlan)
+      await this.executeSyncPlan(syncPlan, serverVersions)
+      console.error('数据库同步5')
 
       // 第五步：更新本地同步时间
       await this.updateLocalSyncTime()
 
+      console.error('数据库同步6')
       this.syncStatus = SyncStatus.COMPLETED
       logger.info({ text: '统一群组同步完成' }, 'GroupUnifiedSyncManager')
     }
@@ -59,12 +64,48 @@ export class GroupUnifiedSyncManager {
 
   // 获取服务器群组版本信息
   private async fetchServerGroupVersions(_userId: string) {
-    const response = await datasyncGetSyncAllGroupsApi({
-      since: this.lastSyncTime,
+    // 并行调用3个API获取不同类型的版本信息
+    const [infoResponse, membersResponse, requestsResponse] = await Promise.all([
+      datasyncGetSyncGroupInfoApi({ since: this.lastSyncTime }),
+      datasyncGetSyncGroupMembersApi({ since: this.lastSyncTime }),
+      datasyncGetSyncGroupRequestsApi({ since: this.lastSyncTime }),
+    ])
+
+    // 保存服务端时间戳，用于更新本地同步时间（取最大的时间戳）
+    this.serverTimestamp = Math.max(
+      infoResponse.result.serverTimestamp || 0,
+      membersResponse.result.serverTimestamp || 0,
+      requestsResponse.result.serverTimestamp || 0,
+    ) || Date.now()
+
+    // 合并3个API的结果
+    const groupMap = new Map<string, any>()
+
+    // 处理群组信息版本
+    infoResponse.result.groupVersions?.forEach((item) => {
+      if (!groupMap.has(item.groupId)) {
+        groupMap.set(item.groupId, { groupId: item.groupId })
+      }
+      groupMap.get(item.groupId).groupVersion = item.version
     })
-    // 保存服务端时间戳，用于更新本地同步时间
-    this.serverTimestamp = response.result.serverTimestamp || Date.now()
-    return response.result.groupVersions || []
+
+    // 处理群成员版本
+    membersResponse.result.groupVersions?.forEach((item) => {
+      if (!groupMap.has(item.groupId)) {
+        groupMap.set(item.groupId, { groupId: item.groupId })
+      }
+      groupMap.get(item.groupId).memberVersion = item.version
+    })
+
+    // 处理入群申请版本
+    requestsResponse.result.groupVersions?.forEach((item) => {
+      if (!groupMap.has(item.groupId)) {
+        groupMap.set(item.groupId, { groupId: item.groupId })
+      }
+      groupMap.get(item.groupId).requestVersion = item.version
+    })
+
+    return Array.from(groupMap.values())
   }
 
   // 计算同步计划
@@ -126,7 +167,7 @@ export class GroupUnifiedSyncManager {
   }
 
   // 执行同步计划
-  private async executeSyncPlan(syncPlan: SyncPlan) {
+  private async executeSyncPlan(syncPlan: SyncPlan, serverVersions: any[]) {
     // 1. 删除退群/解散的群组
     if (syncPlan.groupsToDelete.length > 0) {
       await this.deleteGroups(syncPlan.groupsToDelete)
@@ -146,6 +187,23 @@ export class GroupUnifiedSyncManager {
     if (syncPlan.requestsToSync.length > 0) {
       await groupJoinRequestSync.syncRequests(syncPlan.requestsToSync)
     }
+
+    // 5. 更新同步状态版本
+    await this.updateSyncVersions(serverVersions)
+  }
+
+  // 更新同步版本状态
+  private async updateSyncVersions(serverVersions: any[]) {
+    for (const serverVersion of serverVersions) {
+      await GroupSyncStatusService.upsertGroupSyncStatus(
+        serverVersion.groupId,
+        serverVersion.groupVersion,
+        serverVersion.memberVersion,
+        serverVersion.requestVersion,
+      )
+    }
+
+    logger.info({ text: '同步版本状态更新完成', data: { count: serverVersions.length } }, 'GroupUnifiedSyncManager')
   }
 
   // 删除群组（退群/解散）
@@ -168,9 +226,8 @@ export class GroupUnifiedSyncManager {
   private async updateLocalSyncTime() {
     if (this.serverTimestamp > 0) {
       await DataSyncService.upsert({
-        dataType: 'groups',
-        lastSeq: this.serverTimestamp,
-        syncStatus: 'completed',
+        module: 'groups',
+        version: this.serverTimestamp,
       }).catch(() => {})
     }
   }

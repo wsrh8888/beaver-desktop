@@ -339,3 +339,23 @@ export interface IUserConversationSyncRes {
   hasMore: boolean // 是否还有更多数据
   nextVersion: number // 下次同步的起始版本号
 }
+
+// 批量获取会话数据请求
+export interface IGetConversationsListByIdsReq {
+  conversationIds: string[] // 会话ID列表
+}
+
+// 批量获取会话数据响应
+export interface IGetConversationsListByIdsRes {
+  conversations: IConversationSyncItem[] // 会话列表
+}
+
+// 批量获取用户会话设置数据请求
+export interface IGetUserConversationSettingsListByIdsReq {
+  conversationIds: string[] // 会话ID列表
+}
+
+// 批量获取用户会话设置数据响应
+export interface IGetUserConversationSettingsListByIdsRes {
+  userConversationSettings: IUserConversationSyncItem[] // 用户会话设置列表
+}

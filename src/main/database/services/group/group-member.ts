@@ -1,7 +1,7 @@
 import type { IDBGroupMember } from 'commonModule/type/database/group'
 import { and, eq, gte, inArray, lte } from 'drizzle-orm'
+import { groupMembers } from 'mainModule/database/tables/group/members'
 import dbManager from '../../db'
-import { groupMembers } from '../../tables/group/group'
 
 // 群成员服务
 export class GroupMemberService {
@@ -26,6 +26,7 @@ export class GroupMemberService {
         userId: member.userId,
         role: member.role,
         status: member.status,
+        joinTime: member.joinTime,
         version: member.version,
         createdAt: member.createAt,
         updatedAt: member.updateAt,

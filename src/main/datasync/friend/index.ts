@@ -1,11 +1,19 @@
 import { friendSyncModule } from './friend'
-import friendVerifySyncModule from './friend_verify'
+import { friendVerifySyncModule } from './friend-verify'
 
 export const friendDatasync = new class friendDatasync {
   async checkAndSync() {
-    // 同步好友数据
-    await friendSyncModule.checkAndSync()
-    // 同步好友验证数据
-    await friendVerifySyncModule.checkAndSync()
+    // 并行同步好友数据和好友验证数据
+    await Promise.all([
+      friendSyncModule.checkAndSync(),
+      friendVerifySyncModule.checkAndSync(),
+    ])
+  }
+
+  async getStatus() {
+    return {
+      friends: friendSyncModule.getStatus(),
+      friendVerifies: friendVerifySyncModule.getStatus(),
+    }
   }
 }()

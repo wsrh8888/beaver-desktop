@@ -8,8 +8,5 @@ export const userSyncStatus = sqliteTable('user_sync_status', {
   userId: text('user_id').notNull().unique(), // 用户ID
   userVersion: integer('user_version').default(0), // 用户资料版本号
   lastSyncTime: integer('last_sync_time').default(0), // 最后同步时间戳
-  syncStatus: text('sync_status').default('pending'), // 同步状态：pending/syncing/completed/failed
-  retryCount: integer('retry_count').default(0), // 重试次数
-  createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
 }) as unknown as IDBUserSyncStatus

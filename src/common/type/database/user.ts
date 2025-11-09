@@ -20,8 +20,5 @@ export interface IDBUserSyncStatus {
   userId: string // 用户ID
   userVersion: number // 用户资料版本号
   lastSyncTime: number // 最后同步时间戳
-  syncStatus: string // 同步状态：pending/syncing/completed/failed
-  retryCount: number // 重试次数
-  createdAt?: number
   updatedAt?: number
 }

@@ -93,88 +93,86 @@
 import type { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { createGroupApi } from 'renderModule/api/group'
 import { useFriendStore } from 'renderModule/app/pinia/friend/friend'
-import { defineComponent } from 'vue'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import Message from 'renderModule/components/ui/message'
+import { computed, onMounted, ref } from 'vue'
 
-export default defineComponent({
+export default {
   name: 'CreateGroup',
   components: {
-    BeaverImage: () => import('renderModule/components/ui/image/index.vue'),
+    BeaverImage,
   },
   emits: ['close', 'created'],
-  data() {
-    return {
-      groupName: '',
-      searchKeyword: '',
-      selectedFriends: [] as IFriendInfo[],
-      friendStore: useFriendStore(),
-    }
-  },
-  computed: {
-    filteredFriends(): IFriendInfo[] {
-      if (!this.searchKeyword.trim()) {
-        return this.friendStore.friendList
+  setup(props, { emit }) {
+    const groupName = ref('')
+    const searchKeyword = ref('')
+    const selectedFriends = ref<IFriendInfo[]>([])
+
+    const friendStore = useFriendStore()
+
+    const filteredFriends = computed(() => {
+      if (!searchKeyword.value.trim()) {
+        return friendStore.friendList
       }
-      const keyword = this.searchKeyword.toLowerCase()
-      return this.friendStore.friendList.filter((friend: IFriendInfo) =>
+      const keyword = searchKeyword.value.toLowerCase()
+      return friendStore.friendList.filter((friend: IFriendInfo) =>
         friend.nickname.toLowerCase().includes(keyword),
       )
-    },
-  },
-  mounted() {
-    this.initData()
-  },
-  methods: {
-    initData() {
+    })
+
+    const initData = () => {
       // 初始化数据
-      this.groupName = ''
-      this.searchKeyword = ''
-      this.selectedFriends = []
-    },
+      groupName.value = ''
+      searchKeyword.value = ''
+      selectedFriends.value = []
+    }
 
-    handleClose() {
-      this.$emit('close')
-    },
+    const handleClose = () => {
+      emit('close')
+    }
 
-    isSelected(userId: string): boolean {
-      return this.selectedFriends.some(friend => friend.userId === userId)
-    },
+    const isSelected = (userId: string): boolean => {
+      return selectedFriends.value.some(friend => friend.userId === userId)
+    }
 
-    toggleFriendSelection(friend: IFriendInfo) {
-      const index = this.selectedFriends.findIndex(f => f.userId === friend.userId)
+    const toggleFriendSelection = (friend: IFriendInfo) => {
+      const index = selectedFriends.value.findIndex(f => f.userId === friend.userId)
       if (index > -1) {
-        this.selectedFriends.splice(index, 1)
+        selectedFriends.value.splice(index, 1)
       }
       else {
-        this.selectedFriends.push(friend)
+        selectedFriends.value.push(friend)
       }
-    },
+    }
 
-    removeFriend(userId: string) {
-      const index = this.selectedFriends.findIndex(friend => friend.userId === userId)
+    const removeFriend = (userId: string) => {
+      const index = selectedFriends.value.findIndex(friend => friend.userId === userId)
       if (index > -1) {
-        this.selectedFriends.splice(index, 1)
+        selectedFriends.value.splice(index, 1)
       }
-    },
+    }
 
-    async createGroup() {
-      if (!this.groupName.trim()) {
+    const createGroup = async () => {
+      if (!groupName.value.trim()) {
+        Message.error('请输入群聊名称')
         return
       }
 
-      if (this.selectedFriends.length < 2) {
+      if (selectedFriends.value.length < 1) {
+        Message.error('请选择至少一个好友')
         return
       }
 
       try {
-        const userIdList = this.selectedFriends.map(friend => friend.userId)
+        const userIdList = selectedFriends.value.map(friend => friend.userId)
         const res = await createGroupApi({
-          name: this.groupName.trim(),
+          name: groupName.value.trim(),
           userIdList,
         })
 
         if (res.code === 0) {
-          this.$emit('created', res.result)
-          this.handleClose()
+          emit('created', res.result)
+          handleClose()
         }
         else {
           console.error('创建群聊失败:', res.msg)
@@ -183,9 +181,25 @@ export default defineComponent({
       catch (error) {
         console.error('创建群聊失败:', error)
       }
-    },
+    }
+
+    onMounted(() => {
+      initData()
+    })
+
+    return {
+      groupName,
+      searchKeyword,
+      selectedFriends,
+      filteredFriends,
+      isSelected,
+      toggleFriendSelection,
+      removeFriend,
+      createGroup,
+      handleClose,
+    }
   },
-})
+}
 </script>
 
 <style lang="less" scoped>

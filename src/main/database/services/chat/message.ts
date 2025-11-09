@@ -1,7 +1,7 @@
 import type { IChatHistoryRes, IChatMessageVerRangeRes } from 'commonModule/type/ajax/chat'
 import { and, desc, eq, gte, lte } from 'drizzle-orm'
+import { chats } from 'mainModule/database/tables/chat/message'
 import dbManager from '../../db'
-import { chats } from '../../tables/chat/chat'
 import { UserService } from '../user/user'
 
 // 消息服务

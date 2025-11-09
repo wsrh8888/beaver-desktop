@@ -1,6 +1,6 @@
 import { initChatConversationsTable } from './conversations'
 import { initChatMessagesTable } from './messages'
-import { initChatSyncStatusTable } from './sync-status'
+import { initSyncStatusTable } from './sync-status'
 import { initChatUserConversationsTable } from './user-conversations'
 
 export const initChatTables = (db: any) => {
@@ -9,5 +9,5 @@ export const initChatTables = (db: any) => {
   initChatConversationsTable(sqlite)
   initChatMessagesTable(sqlite)
   initChatUserConversationsTable(sqlite)
-  initChatSyncStatusTable(sqlite)
+  initSyncStatusTable(sqlite)
 }
