@@ -1,7 +1,10 @@
 import { NotificationDataSyncCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
+import { chatDatasync } from './chat'
 import { friendDatasync } from './friend'
+import { groupDatasync } from './group'
+import { userDatasync } from './user'
 
 // 数据同步管理器
 export class DataSyncManager {
@@ -16,10 +19,10 @@ export class DataSyncManager {
     sendMainNotification('*', NotificationModule.DATABASE_DATASYNC, NotificationDataSyncCommand.DATABASE_DATASYNC_START)
 
     try {
-      // await userDatasync.checkAndSync()
-      // await chatDatasync.checkAndSync()
+      await userDatasync.checkAndSync()
+      await chatDatasync.checkAndSync()
       await friendDatasync.checkAndSync()
-      // await groupDatasync.checkAndSync()
+      await groupDatasync.checkAndSync()
 
       // 通知渲染进程：同步完成
       sendMainNotification('*', NotificationModule.DATABASE_DATASYNC, NotificationDataSyncCommand.DATABASE_DATASYNC_COMPLETE)

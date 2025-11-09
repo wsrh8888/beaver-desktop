@@ -171,7 +171,7 @@ export interface IGetSyncFriendsRes {
 
 // 好友版本信息
 export interface IFriendVersionItem {
-  friendshipId: string // 好友关系唯一ID
+  id: string // 好友关系唯一ID
   version: number // 好友关系版本号
 }
 

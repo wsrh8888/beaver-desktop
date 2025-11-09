@@ -46,10 +46,11 @@ export class UserSyncModule {
       const serverTimestamp = response.result.serverTimestamp
 
       if (changedUserVersions.length === 0) {
-        // 即使没有变更，也要更新同步时间
+        // 没有变更，将version设为null表示没有新数据
         await DataSyncService.upsert({
           module: 'users',
-          version: serverTimestamp,
+          version: null,
+          updatedAt: serverTimestamp,
         }).catch(() => {})
         return
       }
@@ -72,10 +73,12 @@ export class UserSyncModule {
 
       console.error(usersNeedSync)
       if (usersNeedSync.length === 0) {
-        // 更新同步时间，即使没有需要同步的用户
+        // 没有需要同步的用户，但有版本变更，设置最大版本号
+        const maxVersion = Math.max(...changedUserVersions.map(item => item.version))
         await DataSyncService.upsert({
           module: 'users',
-          version: serverTimestamp,
+          version: maxVersion,
+          updatedAt: serverTimestamp,
         }).catch(() => {})
         return
       }
@@ -112,14 +115,15 @@ export class UserSyncModule {
           userVersion: user.version,
         }))
         await UserSyncStatusService.batchUpsertUserSyncStatus(statusUpdates)
-      }
 
-      // 5. 更新同步时间（使用服务端时间戳）
-      await DataSyncService.upsert({
-        dataType: 'users',
-        lastSeq: serverTimestamp,
-        syncStatus: 'completed',
-      }).catch(() => {})
+        // 从同步的用户中找到最大版本号
+        const maxVersion = Math.max(...usersModels.map(user => user.version))
+        await DataSyncService.upsert({
+          module: 'users',
+          version: maxVersion,
+          updatedAt: serverTimestamp,
+        }).catch(() => {})
+      }
     }
     catch (error: any) {
       logger.error({ text: '用户数据同步失败', data: { error: error.message } }, 'UserSyncModule')

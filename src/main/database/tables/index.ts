@@ -10,7 +10,6 @@ export { chatUserConversations } from './chat/user-conversation'
 // 好友相关表
 export { friends } from './friend/friend'
 export { friendVerifies } from './friend/friend_verify'
-export { friendSyncStatus } from './friend/sync-status'
 
 // 群组相关表
 export { groups } from './group/groups'
