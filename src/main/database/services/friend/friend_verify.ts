@@ -15,6 +15,26 @@ export class FriendVerifyService {
     return await this.db.insert(friendVerifies).values(verifyData).run()
   }
 
+  // 根据uuids批量查询好友验证记录
+  static async getFriendVerifiesByIds(uuids: string[]): Promise<Map<string, any>> {
+    if (uuids.length === 0) {
+      return new Map()
+    }
+
+    const existingVerifies = await this.db
+      .select()
+      .from(friendVerifies)
+      .where(inArray(friendVerifies.uuid, uuids as any))
+      .all()
+
+    const verifyMap = new Map<string, any>()
+    existingVerifies.forEach((verify) => {
+      verifyMap.set(verify.uuid, verify)
+    })
+
+    return verifyMap
+  }
+
   // 批量创建好友验证记录（支持插入或更新）
   static async batchCreate(verifiesData: any[]) {
     if (verifiesData.length === 0)

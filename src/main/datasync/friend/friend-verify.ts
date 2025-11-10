@@ -24,17 +24,18 @@ export class FriendVerifySyncModule {
       // 获取服务器上变更的好友验证版本信息
       const serverResponse = await datasyncGetSyncFriendVerifiesApi({ since: lastSyncTime })
 
-      console.error('22222222222222222222222222', localCursor, lastSyncTime)
-      console.error(serverResponse)
-      if (serverResponse.result.friendVerifyVersions.length > 0) {
-        // 有变更的好友验证，需要同步数据
-        await this.syncFriendVerifyData(serverResponse.result.friendVerifyVersions)
+      // 对比本地数据，过滤出需要更新的数据
+      const needUpdateUuids = await this.compareAndFilterFriendVerifyVersions(serverResponse.result.friendVerifyVersions)
+
+      if (needUpdateUuids.length > 0) {
+        // 有需要更新的好友验证数据
+        await this.syncFriendVerifyData(needUpdateUuids)
         // 从变更的数据中找到最大的版本号
         const maxVersion = Math.max(...serverResponse.result.friendVerifyVersions.map(item => item.version))
         await this.updateFriendVerifiesCursor(maxVersion, serverResponse.result.serverTimestamp)
       }
       else {
-        // 没有变更，将version设为null表示没有新数据
+        // 没有需要更新的数据，直接更新时间戳
         await this.updateFriendVerifiesCursor(null, serverResponse.result.serverTimestamp)
       }
 
@@ -46,14 +47,48 @@ export class FriendVerifySyncModule {
     }
   }
 
-  // 同步好友验证数据
-  async syncFriendVerifyData(friendVerifyVersions: any[]) {
-    logger.info({ text: '开始同步好友验证数据', data: { count: friendVerifyVersions.length } }, 'FriendVerifySyncModule')
+  // 对比本地数据，过滤出需要更新的好友验证UUID
+  private async compareAndFilterFriendVerifyVersions(friendVerifyVersions: any[]): Promise<string[]> {
+    if (friendVerifyVersions.length === 0) {
+      return []
+    }
 
     // 提取所有变更的好友验证UUID，过滤掉空字符串
     const uuids = friendVerifyVersions
       .map(item => item.uuid)
       .filter(uuid => uuid && uuid.trim() !== '')
+
+    if (uuids.length === 0) {
+      return []
+    }
+
+    // 查询本地已存在的记录
+    const existingVerifiesMap = await FriendVerifyService.getFriendVerifiesByIds(uuids)
+
+    // 过滤出需要更新的uuids（本地不存在或版本号更旧的数据）
+    const needUpdateUuids = uuids.filter((uuid) => {
+      const existingVerify = existingVerifiesMap.get(uuid)
+      const serverVersion = friendVerifyVersions.find(item => item.uuid === uuid)?.version || 0
+
+      // 如果本地不存在，或服务器版本更新，则需要更新
+      return !existingVerify || existingVerify.version < serverVersion
+    })
+
+    logger.info({
+      text: '好友验证版本对比结果',
+      data: {
+        total: uuids.length,
+        needUpdate: needUpdateUuids.length,
+        skipped: uuids.length - needUpdateUuids.length,
+      },
+    }, 'FriendVerifySyncModule')
+
+    return needUpdateUuids
+  }
+
+  // 同步好友验证数据
+  private async syncFriendVerifyData(uuids: string[]) {
+    logger.info({ text: '开始同步好友验证数据', data: { count: uuids.length } }, 'FriendVerifySyncModule')
 
     if (uuids.length === 0) {
       logger.info({ text: '没有有效的uuids需要同步' }, 'FriendVerifySyncModule')

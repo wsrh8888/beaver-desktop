@@ -210,17 +210,17 @@ export interface IGetFriendsListByIdsRes {
   friends: IFriendSyncItem[] // 好友列表
 }
 
-// 批量获取好友数据（通过好友关系ID）
-export interface IGetFriendsListByFriendshipIdsReq {
-  friendshipIds: string[] // 好友关系ID列表
+// 批量获取好友数据（通过UUID）
+export interface IGetFriendsListByUuidsReq {
+  uuids: string[] // 好友记录UUID列表
 }
 
-export interface IGetFriendsListByFriendshipIdsRes {
-  friends: IFriendByFriendshipId[] // 好友列表
+export interface IGetFriendsListByUuidsRes {
+  friends: IFriendByUuid[] // 好友列表
 }
 
-export interface IFriendByFriendshipId {
-  friendshipId: string // 好友关系唯一ID
+export interface IFriendByUuid {
+  uuid: string // 好友记录UUID
   sendUserId: string // 发送者用户ID
   revUserId: string // 接收者用户ID
   sendUserNotice: string // 发送者备注
