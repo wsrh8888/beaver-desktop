@@ -347,7 +347,18 @@ export interface IGetConversationsListByIdsReq {
 
 // 批量获取会话数据响应
 export interface IGetConversationsListByIdsRes {
-  conversations: IConversationSyncItem[] // 会话列表
+  conversations: IConversationById[] // 会话列表
+}
+
+// 会话数据项（按ID批量获取）
+export interface IConversationById {
+  conversationId: string // 会话ID
+  type: number // 会话类型 1=私聊 2=群聊 3=系统会话
+  maxSeq: number // 会话消息的最大Seq
+  lastMessage: string // 会话最后一条消息预览
+  version: number // 版本号
+  createAt: number // 创建时间戳
+  updateAt: number // 更新时间戳
 }
 
 // 批量获取用户会话设置数据请求
@@ -357,5 +368,19 @@ export interface IGetUserConversationSettingsListByIdsReq {
 
 // 批量获取用户会话设置数据响应
 export interface IGetUserConversationSettingsListByIdsRes {
-  userConversationSettings: IUserConversationSyncItem[] // 用户会话设置列表
+  userConversationSettings: IUserConversationSettingById[] // 用户会话设置列表
+}
+
+// 用户会话设置项（按ID批量获取）
+export interface IUserConversationSettingById {
+  userId: string // 用户ID
+  conversationId: string // 会话ID
+  lastMessage: string // 最后一条消息预览
+  isHidden: boolean // 是否隐藏
+  isPinned: boolean // 是否置顶
+  isMuted: boolean // 是否免打扰
+  userReadSeq: number // 用户已读序列号
+  version: number // 版本号
+  createAt: number // 创建时间戳
+  updateAt: number // 更新时间戳
 }

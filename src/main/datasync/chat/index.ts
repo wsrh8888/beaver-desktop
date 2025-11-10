@@ -1,11 +1,15 @@
-import datasyncModule from './conversation-meta'
-import conversationSettingModule from './user-conversation'
+import messageSync from './chat-message'
+import conversationMetaSync from './conversation-meta'
+import userConversationSync from './user-conversation'
 
-export const chatDatasync = new class chatDatasync {
+// 聊天数据同步统一入口
+export const chatDatasync = new class ChatDatasync {
   async checkAndSync() {
-    // 优化同步顺序：先同步用户会话关系，再同步会话元数据（会自动触发消息同步）
-    // 这样确保会话元数据和消息数据的一致性
-    await conversationSettingModule.checkAndSync() // 1. 用户会话关系
-    await datasyncModule.checkAndSync() // 2. 会话元数据 + 消息（通过调用 messageSyncModule）
+    // 并行执行聊天相关同步器
+    await Promise.all([
+      userConversationSync.checkAndSync(), // 用户会话设置同步
+      conversationMetaSync.checkAndSync(), // 会话元数据同步
+      messageSync.checkAndSync(), // 消息同步
+    ])
   }
 }()

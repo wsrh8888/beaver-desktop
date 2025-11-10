@@ -5,10 +5,10 @@ import type {
   IFriendUserVersionsRes,
   IFriendVerifySyncReq,
   IFriendVerifySyncRes,
-  IGetFriendsListByFriendshipIdsReq,
-  IGetFriendsListByFriendshipIdsRes,
   IGetFriendsListByIdsReq,
   IGetFriendsListByIdsRes,
+  IGetFriendsListByUuidsReq,
+  IGetFriendsListByUuidsRes,
   IGetFriendVerifiesListByIdsReq,
   IGetFriendVerifiesListByIdsRes,
 } from 'commonModule/type/ajax/friend'
@@ -60,13 +60,13 @@ export const getFriendsListByIdsApi = (data: IGetFriendsListByIdsReq) => {
 }
 
 /**
- * @description: 批量获取好友数据（通过好友关系ID）
+ * @description: 批量获取好友数据（通过UUID）
  */
-export const getFriendsListByFriendshipIdsApi = (data: IGetFriendsListByFriendshipIdsReq) => {
-  return ajax<IGetFriendsListByFriendshipIdsRes>({
+export const getFriendsListByUuidsApi = (data: IGetFriendsListByUuidsReq) => {
+  return ajax<IGetFriendsListByUuidsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/friend/getFriendsListByFriendshipIds`,
+    url: `${getBaseUrl()}/api/friend/getFriendsListByUuids`,
   })
 }
 

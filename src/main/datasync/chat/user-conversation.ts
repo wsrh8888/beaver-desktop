@@ -1,4 +1,3 @@
-import { SyncStatus } from 'commonModule/type/datasync'
 import { getUserConversationSettingsListByIdsApi } from 'mainModule/api/chat'
 import { datasyncGetSyncChatUserConversationsApi } from 'mainModule/api/datasync'
 import { ChatSyncStatusService } from 'mainModule/database/services/chat/sync-status'
@@ -7,11 +6,9 @@ import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
-// 会话设置表同步模块
-class ConversationSettingSyncModule {
-  syncStatus: SyncStatus = SyncStatus.PENDING
-
-  // 检查并同步
+// 用户会话设置同步器
+class UserConversationSync {
+  // 检查并同步用户会话设置
   async checkAndSync() {
     const userId = store.get('userInfo')?.userId
     if (!userId)
@@ -27,28 +24,70 @@ class ConversationSettingSyncModule {
         since: lastSyncTime,
       })
 
-      if (serverResponse.result.userConversationVersions.length > 0) {
+      // 对比本地数据，过滤出需要更新的会话
+      const needUpdateConversations = await this.compareAndFilterUserConversationVersions(serverResponse.result.userConversationVersions)
+
+      if (needUpdateConversations.length > 0) {
         // 有变更的用户会话设置，需要同步数据
-        await this.syncUserConversationSettings(serverResponse.result.userConversationVersions)
-        await this.updateCursor(userId, serverResponse.result.serverTimestamp)
+        await this.syncUserConversationSettings(needUpdateConversations)
       }
 
-      this.syncStatus = SyncStatus.COMPLETED
+      // 更新游标（无论是否有变更都要更新）
+      await DataSyncService.upsert({
+        module: 'chat_user_conversations',
+        version: -1, // 使用时间戳而不是版本号
+        updatedAt: serverResponse.result.serverTimestamp,
+      }).catch(() => {})
+
+      logger.info({ text: '用户会话设置同步完成' }, 'UserConversationSync')
     }
     catch (error) {
-      this.syncStatus = SyncStatus.FAILED
-      logger.error({ text: '会话设置同步失败', data: { error: (error as any)?.message } }, 'ConversationSettingSyncModule')
+      logger.error({ text: '用户会话设置同步失败', data: { error: (error as any)?.message } }, 'UserConversationSync')
     }
   }
 
-  // 同步用户会话设置数据
-  async syncUserConversationSettings(userConversationVersions: any[]) {
-    this.syncStatus = SyncStatus.SYNCING
-
-    logger.info({ text: '开始同步会话设置数据', data: { count: userConversationVersions.length } }, 'ConversationSettingSyncModule')
+  // 对比本地数据，过滤出需要更新的会话信息
+  private async compareAndFilterUserConversationVersions(userConversationVersions: any[]): Promise<Array<{ conversationId: string, version: number }>> {
+    if (userConversationVersions.length === 0) {
+      return []
+    }
 
     // 提取所有变更的会话ID
     const conversationIds = userConversationVersions.map(item => item.conversationId)
+
+    // 查询本地已存在的用户会话版本状态
+    const localVersions = await ChatSyncStatusService.getUserConversationVersions(conversationIds)
+    const localVersionMap = new Map(localVersions.map(v => [v.conversationId, v.version]))
+
+    // 过滤出需要更新的会话信息（本地不存在或版本号更旧的数据）
+    const needUpdateConversations = userConversationVersions.filter((conversation) => {
+      const localVersion = localVersionMap.get(conversation.conversationId) || 0
+
+      // 如果服务器版本更新，则需要更新
+      return localVersion < conversation.version
+    })
+
+    logger.info({
+      text: '用户会话设置版本对比结果',
+      data: {
+        total: conversationIds.length,
+        needUpdate: needUpdateConversations.length,
+        skipped: conversationIds.length - needUpdateConversations.length,
+      },
+    }, 'UserConversationSync')
+
+    return needUpdateConversations
+  }
+
+  // 同步用户会话设置数据
+  private async syncUserConversationSettings(conversationsWithVersions: Array<{ conversationId: string, version: number }>) {
+    logger.info({ text: '开始同步会话设置数据', data: { count: conversationsWithVersions.length } }, 'UserConversationSync')
+
+    // 提取会话ID列表
+    const conversationIds = conversationsWithVersions.map(item => item.conversationId)
+
+    // 构建版本映射，方便查找
+    const versionMap = new Map(conversationsWithVersions.map(item => [item.conversationId, item.version]))
 
     // 分批获取用户会话设置数据（避免一次性获取过多数据）
     const batchSize = 50
@@ -78,31 +117,18 @@ class ConversationSettingSyncModule {
 
         // 更新同步状态
         for (const uc of response.result.userConversationSettings) {
-          // 找到对应的版本号
-          const versionItem = userConversationVersions.find(v => v.conversationId === uc.conversationId)
-          if (versionItem) {
-            await ChatSyncStatusService.upsertUserConversationSyncStatus(uc.conversationId, versionItem.version)
+          // 从版本映射中获取版本号
+          const version = versionMap.get(uc.conversationId)
+          if (version !== undefined) {
+            await ChatSyncStatusService.upsertUserConversationSyncStatus(uc.conversationId, version)
           }
         }
       }
     }
 
-    logger.info({ text: '会话设置数据同步完成', data: { totalCount: conversationIds.length } }, 'ConversationSettingSyncModule')
-  }
-
-  // 更新游标
-  private async updateCursor(userId: string, serverTimestamp: number) {
-    await DataSyncService.upsert({
-      module: 'chat_user_conversations',
-      version: serverTimestamp,
-      updatedAt: serverTimestamp,
-    })
-  }
-
-  async getStatus() {
-    return this.syncStatus
+    logger.info({ text: '会话设置数据同步完成', data: { totalCount: conversationsWithVersions.length } }, 'UserConversationSync')
   }
 }
 
-// 导出会话设置同步模块实例
-export default new ConversationSettingSyncModule()
+// 导出用户会话设置同步器实例
+export default new UserConversationSync()

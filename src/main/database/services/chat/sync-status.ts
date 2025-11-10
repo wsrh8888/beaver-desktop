@@ -35,6 +35,33 @@ export class ChatSyncStatusService {
     return await this.db.select().from(chatSyncStatus).where(and(eq(chatSyncStatus.module, module), inArray(chatSyncStatus.conversationId, conversationIds))).all()
   }
 
+  // 批量获取会话版本状态
+  static async getConversationVersions(conversationIds: string[]): Promise<Array<{ conversationId: string, version: number }>> {
+    const statuses = await this.getSyncStatuses('conversation', conversationIds)
+    return statuses.map(status => ({
+      conversationId: status.conversationId,
+      version: status.version || 0,
+    }))
+  }
+
+  // 批量获取消息版本状态
+  static async getMessageVersions(conversationIds: string[]): Promise<Array<{ conversationId: string, seq: number }>> {
+    const statuses = await this.getSyncStatuses('message', conversationIds)
+    return statuses.map(status => ({
+      conversationId: status.conversationId,
+      seq: status.seq || 0,
+    }))
+  }
+
+  // 批量获取用户会话版本状态
+  static async getUserConversationVersions(conversationIds: string[]): Promise<Array<{ conversationId: string, version: number }>> {
+    const statuses = await this.getSyncStatuses('user_conversation', conversationIds)
+    return statuses.map(status => ({
+      conversationId: status.conversationId,
+      version: status.version || 0,
+    }))
+  }
+
   // 获取所有同步状态
   static async getAllSyncStatus() {
     return await this.db.select().from(chatSyncStatus).all()

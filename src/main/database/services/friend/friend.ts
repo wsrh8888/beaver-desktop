@@ -143,6 +143,26 @@ export class FriendService {
     return friendDetailsMap
   }
 
+  // 根据friendshipIds批量查询本地好友关系
+  static async getFriendsByIds(friendshipIds: string[]): Promise<Map<string, any>> {
+    if (friendshipIds.length === 0) {
+      return new Map()
+    }
+
+    const existingFriends = await this.db
+      .select()
+      .from(friends)
+      .where(inArray(friends.uuid, friendshipIds as any))
+      .all()
+
+    const friendMap = new Map<string, any>()
+    existingFriends.forEach((friend: any) => {
+      friendMap.set(friend.uuid, friend)
+    })
+
+    return friendMap
+  }
+
   // 批量创建好友关系（调用upsert方法，避免重复数据错误）
   static async batchCreate(friendsData: any[]) {
     if (friendsData.length === 0)

@@ -1,6 +1,6 @@
 import { SyncStatus } from 'commonModule/type/datasync'
 import { datasyncGetSyncFriendsApi } from 'mainModule/api/datasync'
-import { getFriendsListByFriendshipIdsApi } from 'mainModule/api/friened'
+import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { store } from 'mainModule/store'
@@ -24,18 +24,18 @@ export class FriendSyncModule {
       // 获取服务器上变更的好友版本信息
       const serverResponse = await datasyncGetSyncFriendsApi({ since: lastSyncTime })
 
-      console.error('11111111111111111111111111')
-      console.error(JSON.stringify(serverResponse))
-      if (serverResponse.result.friendVersions.length > 0) {
-        // 有变更的好友，需要同步数据
-        await this.syncFriendData(serverResponse.result.friendVersions)
+      // 对比本地数据，过滤出需要更新的数据
+      const needUpdateFriendshipIds = await this.compareAndFilterFriendVersions(serverResponse.result.friendVersions)
+
+      if (needUpdateFriendshipIds.length > 0) {
+        // 有需要更新的好友数据
+        await this.syncFriendData(needUpdateFriendshipIds)
         // 从变更的数据中找到最大的版本号
         const maxVersion = Math.max(...serverResponse.result.friendVersions.map(item => item.version))
-        console.error('计算得到maxVersion:', maxVersion, 'serverTimestamp:', serverResponse.result.serverTimestamp)
         await this.updateFriendsCursor(maxVersion, serverResponse.result.serverTimestamp)
       }
       else {
-        // 没有变更，将version设为null表示没有新数据
+        // 没有需要更新的数据，直接更新时间戳
         await this.updateFriendsCursor(null, serverResponse.result.serverTimestamp)
       }
 
@@ -47,14 +47,48 @@ export class FriendSyncModule {
     }
   }
 
-  // 同步好友数据
-  async syncFriendData(friendVersions: any[]) {
-    logger.info({ text: '开始同步好友数据', data: { count: friendVersions.length } }, 'FriendSyncModule')
+  // 对比本地数据，过滤出需要更新的好友关系ID
+  private async compareAndFilterFriendVersions(friendVersions: any[]): Promise<string[]> {
+    if (friendVersions.length === 0) {
+      return []
+    }
 
     // 提取所有变更的好友关系ID，过滤掉空字符串
     const friendshipIds = friendVersions
       .map(item => item.id)
       .filter(id => id && id.trim() !== '')
+
+    if (friendshipIds.length === 0) {
+      return []
+    }
+
+    // 查询本地已存在的记录
+    const existingFriendsMap = await FriendService.getFriendsByIds(friendshipIds)
+
+    // 过滤出需要更新的friendshipIds（本地不存在或版本号更旧的数据）
+    const needUpdateFriendshipIds = friendshipIds.filter((id) => {
+      const existingFriend = existingFriendsMap.get(id)
+      const serverVersion = friendVersions.find(item => item.id === id)?.version || 0
+
+      // 如果本地不存在，或服务器版本更新，则需要更新
+      return !existingFriend || existingFriend.version < serverVersion
+    })
+
+    logger.info({
+      text: '好友版本对比结果',
+      data: {
+        total: friendshipIds.length,
+        needUpdate: needUpdateFriendshipIds.length,
+        skipped: friendshipIds.length - needUpdateFriendshipIds.length,
+      },
+    }, 'FriendSyncModule')
+
+    return needUpdateFriendshipIds
+  }
+
+  // 同步好友数据
+  private async syncFriendData(friendshipIds: string[]) {
+    logger.info({ text: '开始同步好友数据', data: { count: friendshipIds.length } }, 'FriendSyncModule')
 
     if (friendshipIds.length === 0) {
       logger.info({ text: '没有有效的friendshipIds需要同步' }, 'FriendSyncModule')
@@ -67,8 +101,8 @@ export class FriendSyncModule {
       const batchIds = friendshipIds.slice(i, i + batchSize)
 
       console.error('API请求friendshipIds:', batchIds)
-      const response = await getFriendsListByFriendshipIdsApi({
-        friendshipIds: batchIds,
+      const response = await getFriendsListByUuidsApi({
+        uuids: batchIds,
       })
       console.error('API响应:', JSON.stringify(response))
 

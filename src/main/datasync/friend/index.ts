@@ -9,11 +9,4 @@ export const friendDatasync = new class friendDatasync {
       friendVerifySyncModule.checkAndSync(),
     ])
   }
-
-  async getStatus() {
-    return {
-      friends: friendSyncModule.getStatus(),
-      friendVerifies: friendVerifySyncModule.getStatus(),
-    }
-  }
 }()
