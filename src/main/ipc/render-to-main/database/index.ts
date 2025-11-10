@@ -3,6 +3,7 @@ import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import { ChatHandler } from './chat'
 import { FriendHandler } from './friend'
+import { GroupHandler } from './group'
 import { UserHandler } from './user'
 
 const loggerName = 'database-handler'
@@ -25,6 +26,8 @@ export class DatabaseHandler {
           return await FriendHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.CHAT:
           return await ChatHandler.handle(_event, data?.command, data?.data, header)
+        case DatabaseCommand.GROUP:
+          return await GroupHandler.handle(_event, data?.command, data?.data, header)
         default:
           logger.error({ text: `未处理的数据库命令: ${command}` }, loggerName)
           return null
