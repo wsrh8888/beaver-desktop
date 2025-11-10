@@ -16,6 +16,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 设置当前会话
      */
     setCurrentChat(conversationId: string) {
+      console.log('viewStore setCurrentChat', conversationId)
       this.currentChatId = conversationId
     },
   },

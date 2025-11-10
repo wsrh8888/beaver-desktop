@@ -58,7 +58,7 @@ class ChatSender {
     }
 
     if (chatType === 'private') {
-      await electron.websocket.chat.privateMessageSend(conversationId, messageData)
+      await electron.websocket.chat.privateMessageSend(messageData)
     }
     else if (chatType === 'group') {
       // await electron.websocket.chat.groupMessageSend(wsMessage)

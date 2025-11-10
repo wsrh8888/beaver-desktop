@@ -17,16 +17,17 @@ class UserConversationSync {
     try {
       // 获取本地同步时间戳
       const localCursor = await DataSyncService.get('chat_user_conversations')
-      const lastSyncTime = localCursor?.version || 0
-
+      const lastSyncTime = localCursor?.updatedAt || 0
+      console.log('获取时间戳', lastSyncTime)
       // 获取服务器上变更的用户会话设置版本信息
       const serverResponse = await datasyncGetSyncChatUserConversationsApi({
         since: lastSyncTime,
       })
+      console.log('获取服务器的数据', JSON.stringify(serverResponse))
 
       // 对比本地数据，过滤出需要更新的会话
       const needUpdateConversations = await this.compareAndFilterUserConversationVersions(serverResponse.result.userConversationVersions)
-
+      console.log('对比完后的数据', JSON.stringify(needUpdateConversations))
       if (needUpdateConversations.length > 0) {
         // 有变更的用户会话设置，需要同步数据
         await this.syncUserConversationSettings(needUpdateConversations)
@@ -97,12 +98,12 @@ class UserConversationSync {
       const response = await getUserConversationSettingsListByIdsApi({
         conversationIds: batchIds,
       })
-
-      if (response.result.userConversationSettings.length > 0) {
+      console.log('分页查询参数', JSON.stringify(batchIds))
+      console.log('分页查询user设置数据', JSON.stringify(response))
+      if (response.result.userConversationSettings && response.result.userConversationSettings.length > 0) {
         const userConversations = response.result.userConversationSettings.map(uc => ({
           userId: uc.userId,
           conversationId: uc.conversationId,
-          lastMessage: uc.lastMessage,
           isHidden: uc.isHidden ? 1 : 0,
           isPinned: uc.isPinned ? 1 : 0,
           isMuted: uc.isMuted ? 1 : 0,

@@ -17,6 +17,22 @@ export const useFriendStore = defineStore('friendStore', {
   }),
 
   getters: {
+    getFriendList(): IFriendInfo[] {
+      return this.friendList.map((friend) => {
+        const contactStore = useContactStore()
+        const contactInfo = contactStore.getContact(friend.userId)
+        console.log('555555555555555555555555', contactInfo)
+        if (contactInfo) {
+          return {
+            ...friend,
+            nickname: contactInfo.nickName || friend.nickname,
+            avatar: contactInfo.avatar || friend.avatar,
+          }
+        }
+
+        return friend
+      })
+    },
     /**
      * @description: 根据用户ID获取好友信息（包含联系人信息）
      * @param {string} userId - 用户ID
@@ -103,7 +119,6 @@ export const useFriendStore = defineStore('friendStore', {
         limit: 1000,
       })
       this.friendList = res.list || []
-      console.error('1111111111111111', this.friendList)
 
       // 将好友信息同步到联系人缓存中
       const contactStore = useContactStore()

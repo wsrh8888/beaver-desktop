@@ -1,5 +1,10 @@
 <template>
-  <div v-show="visible" class="popup-menu">
+  <div
+    v-show="visible"
+    ref="popupRef"
+    class="popup-menu"
+    @click.stop
+  >
     <div
       v-for="item in menuItems"
       :key="item.key"
@@ -13,6 +18,8 @@
 </template>
 
 <script lang="ts">
+import { onBeforeUnmount, onMounted, ref } from 'vue'
+
 interface MenuItem {
   key: string
   text: string
@@ -32,14 +39,43 @@ export default {
       required: true,
     },
   },
-  emits: ['itemClick'],
+  emits: ['itemClick', 'hide'],
   setup(props, { emit }) {
+    const popupRef = ref<HTMLElement | null>(null)
+
     const handleItemClick = (item: MenuItem) => {
       emit('itemClick', item)
     }
 
+    const handleClickOutside = (event: MouseEvent) => {
+      console.log('handleClickOutside', props.visible)
+      if (!props.visible)
+        return
+
+      const target = event.target as HTMLElement
+      const popup = popupRef.value
+
+      // 如果点击的是弹窗内部，不隐藏
+      if (popup && popup.contains(target)) {
+        return
+      }
+
+      // 点击外部，隐藏弹窗
+      emit('hide')
+    }
+
+    onMounted(() => {
+      document.addEventListener('click', handleClickOutside)
+    })
+
+    onBeforeUnmount(() => {
+      document.removeEventListener('click', handleClickOutside)
+    })
+
     return {
+      popupRef,
       handleItemClick,
+      handleClickOutside,
     }
   },
 }

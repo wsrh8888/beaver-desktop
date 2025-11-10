@@ -13,6 +13,35 @@ export class ChatConversationService {
     return await this.db.insert(chatConversations).values(conversationData).run()
   }
 
+  // upsert单个会话（插入或更新）
+  static async upsert(conversationData: any) {
+    // 处理字段名映射：API返回的 createAt/updateAt 映射到数据库的 createdAt/updatedAt
+    const dbData = {
+      conversationId: conversationData.conversationId,
+      type: conversationData.type,
+      maxSeq: conversationData.maxSeq,
+      lastMessage: conversationData.lastMessage,
+      version: conversationData.version,
+      createdAt: conversationData.createAt, // API返回的是 createAt
+      updatedAt: conversationData.updateAt, // API返回的是 updateAt
+    }
+
+    return await this.db
+      .insert(chatConversations)
+      .values(dbData)
+      .onConflictDoUpdate({
+        target: chatConversations.conversationId,
+        set: {
+          type: dbData.type,
+          maxSeq: dbData.maxSeq,
+          lastMessage: dbData.lastMessage,
+          version: dbData.version,
+          updatedAt: dbData.updatedAt,
+        },
+      })
+      .run()
+  }
+
   // 批量创建会话（支持插入或更新）
   static async batchCreate(conversations: any[]) {
     if (conversations.length === 0)
@@ -20,17 +49,28 @@ export class ChatConversationService {
 
     // 使用插入或更新的方式来避免唯一约束冲突
     for (const conversation of conversations) {
+      // 处理字段名映射：API返回的 createAt/updateAt 映射到数据库的 createdAt/updatedAt
+      const dbData = {
+        conversationId: conversation.conversationId,
+        type: conversation.type,
+        maxSeq: conversation.maxSeq,
+        lastMessage: conversation.lastMessage,
+        version: conversation.version,
+        createdAt: conversation.createAt, // API返回的是 createAt
+        updatedAt: conversation.updateAt, // API返回的是 updateAt
+      }
+
       await this.db
         .insert(chatConversations)
-        .values(conversation)
+        .values(dbData)
         .onConflictDoUpdate({
           target: chatConversations.conversationId,
           set: {
-            type: conversation.type,
-            maxSeq: conversation.maxSeq,
-            lastMessage: conversation.lastMessage,
-            version: conversation.version,
-            updatedAt: conversation.updatedAt,
+            type: dbData.type,
+            maxSeq: dbData.maxSeq,
+            lastMessage: dbData.lastMessage,
+            version: dbData.version,
+            updatedAt: dbData.updatedAt,
           },
         })
         .run()

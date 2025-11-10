@@ -1,5 +1,5 @@
 import type { IChatHistoryRes, IChatMessageVerRangeRes } from 'commonModule/type/ajax/chat'
-import { and, desc, eq, gte, lte } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, lt, lte } from 'drizzle-orm'
 import { chats } from 'mainModule/database/tables/chat/message'
 import dbManager from '../../db'
 import { UserService } from '../user/user'
@@ -24,19 +24,59 @@ export class MessageService {
     return await this.db.insert(chats).values(messages).onConflictDoNothing({ target: chats.messageId }).run()
   }
 
+  // 批量更新消息的发送状态（用于收到服务器消息后，更新本地已发送消息的状态）
+  // seqMap: messageId -> seq 的映射，用于同时更新seq值
+  static async batchUpdateSendStatus(messageIds: string[], sendStatus: number, seqMap?: Map<string, number>) {
+    if (messageIds.length === 0)
+      return
+
+    // 如果有seqMap，需要逐个更新（因为每条消息的seq可能不同）
+    if (seqMap && seqMap.size > 0) {
+      for (const messageId of messageIds) {
+        const seq = seqMap.get(messageId)
+        const updateData: any = {
+          sendStatus,
+          updatedAt: Math.floor(Date.now() / 1000),
+        }
+        if (seq !== undefined) {
+          updateData.seq = seq
+        }
+        await this.db.update(chats)
+          .set(updateData)
+          .where(eq(chats.messageId as any, messageId as any))
+          .run()
+      }
+    }
+    else {
+      // 如果没有seqMap，批量更新所有消息的send_status（使用inArray一次性更新所有消息）
+      await this.db.update(chats)
+        .set({ sendStatus, updatedAt: Math.floor(Date.now() / 1000) })
+        .where(inArray(chats.messageId as any, messageIds as any))
+        .run()
+    }
+  }
+
   // 获取会话的历史消息
   static async getChatHistory(header: any, params: any): Promise<IChatHistoryRes> {
     // 前端可能传递 conversation 或 conversationId
     const conversationId = params.conversationId || params.conversation
-    const page = params.page || 1
+    const seq = params.seq // 可选，用于加载历史消息（比这个seq更小的消息）
     const limit = params.limit || 20
-    const offset = (page - 1) * limit
     const currentUserId = String(header.userId) // 当前用户ID
 
-    console.log('[DEBUG] getChatHistory params:', { conversationId, page, limit, offset, currentUserId })
+    console.log('[DEBUG] getChatHistory params:', { conversationId, seq, limit, currentUserId })
+
+    let query = this.db.select().from(chats).where(eq(chats.conversationId as any, conversationId as any))
+
+    if (seq !== undefined && seq !== null) {
+      // 如果传入了seq，加载比这个seq更小的消息（历史消息）
+      // 使用 lt(seq) 而不是 lte(seq) 来避免重复加载
+      query = query.where(lt(chats.seq as any, seq))
+    }
 
     // 获取消息列表 - 按seq降序排列，确保最新的消息在前
-    const messages = await this.db.select().from(chats).where(eq(chats.conversationId as any, conversationId as any)).orderBy(desc(chats.seq as any)).limit(limit + 1).offset(offset).all()
+    // limit + 1 用于判断是否还有更多数据
+    const messages = await query.orderBy(desc(chats.seq as any)).limit(limit + 1).all()
 
     console.log('[DEBUG] Found messages:', messages.length, 'for conversationId:', conversationId)
     console.log('[DEBUG] First few messages seq:', messages.slice(0, 5).map((m: any) => ({ seq: m.seq, messageId: m.messageId })))

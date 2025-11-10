@@ -5,13 +5,10 @@
       <div class="avatar-section">
         <div class="avatar">
           <BeaverImage
-            v-if="friendInfo?.fileName"
-            :file-name="friendInfo.fileName"
+            v-if="friendInfo?.avatar"
+            :file-name="friendInfo.avatar"
             :alt="friendInfo.nickname"
           />
-          <div v-else class="avatar-placeholder">
-            {{ getAvatarText(friendInfo?.nickname || '') }}
-          </div>
         </div>
       </div>
 
@@ -76,7 +73,7 @@ export default {
         return null
 
       // 从好友列表中查找，使用userId
-      return friendStore.friendList.find(friend =>
+      return friendStore.getFriendList.find(friend =>
         friend.userId === selectedId,
       )
     })
@@ -90,7 +87,7 @@ export default {
     const handleSendMessage = () => {
       if (friendInfo.value?.userId) {
         // 设置当前聊天会话ID
-        messageViewStore.setCurrentChat(friendInfo.value.userId)
+        messageViewStore.setCurrentChat(friendInfo.value.conversationId)
         // 跳转到聊天页面
         routerHelper.push('/message')
       }

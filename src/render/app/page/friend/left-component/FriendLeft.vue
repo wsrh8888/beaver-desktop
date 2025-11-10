@@ -9,13 +9,14 @@
         </span>
       </div>
 
-      <div class="add-button" tabindex="0" @click="changePopupMenu(true)">
+      <div class="add-button" tabindex="0" @click.stop="changePopupMenu(true)">
         <img src="renderModule/assets/image/friend/add.svg" alt="添加">
       </div>
       <PopupMenu
         :visible="showPopupMenu"
         :menu-items="POPUP_MENU_CONFIG"
         @item-click="handlePopupItemClick"
+        @hide="changePopupMenu(false)"
       />
     </div>
 
@@ -61,7 +62,7 @@
           >
             <div class="friend-avatar">
               <BeaverImage
-                :file-name="friend.fileName"
+                :file-name="friend.avatar"
                 :alt="friend.nickname"
               />
             </div>
@@ -179,7 +180,7 @@ export default {
       currentTab,
       tabs,
       showPopupMenu,
-      friendList: computed(() => friendStore.friendList),
+      friendList: computed(() => friendStore.getFriendList),
       groupList: computed(() => groupStore.groupList),
       handleTabChange,
       handleItemClick,
