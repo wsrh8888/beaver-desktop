@@ -142,7 +142,7 @@ export interface ICreateConversationReq {
 // 聊天历史请求
 export interface IChatHistoryReq {
   conversationId: string // 会话ID
-  page?: number
+  seq?: number // 可选，消息序列号，用于分页加载（加载比这个seq更小的消息）
   limit?: number
 }
 
@@ -375,7 +375,6 @@ export interface IGetUserConversationSettingsListByIdsRes {
 export interface IUserConversationSettingById {
   userId: string // 用户ID
   conversationId: string // 会话ID
-  lastMessage: string // 最后一条消息预览
   isHidden: boolean // 是否隐藏
   isPinned: boolean // 是否置顶
   isMuted: boolean // 是否免打扰

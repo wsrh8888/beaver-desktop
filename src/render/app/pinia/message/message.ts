@@ -4,6 +4,7 @@ import { defineStore } from 'pinia'
 import Logger from 'renderModule/utils/log'
 
 import { useConversationStore } from '../conversation/conversation'
+import { useMessageSenderStore } from './message-sender'
 
 const logger = new Logger('MessageStore')
 /**
@@ -30,8 +31,8 @@ export const useMessageStore = defineStore('useMessageStore', {
     messagePagination: new Map<string, {
       hasMore: boolean
       isLoadingMore: boolean
-      currentPage: number
-      currentMaxSeq: number // 当前加载的最大消息序列号
+      currentMinSeq: number // 当前加载的最小消息序列号（用于加载历史消息）
+      currentMaxSeq: number // 当前加载的最大消息序列号（用于增量同步）
     }>(),
   }),
 
@@ -52,7 +53,7 @@ export const useMessageStore = defineStore('useMessageStore', {
       return state.messagePagination.get(conversationId) || {
         hasMore: true,
         isLoadingMore: false,
-        currentPage: 1,
+        currentMinSeq: 0,
         currentMaxSeq: 0,
       }
     },
@@ -87,6 +88,7 @@ export const useMessageStore = defineStore('useMessageStore', {
 
       // 如果已有完整的缓存（分页状态 + 消息数据），说明已经初始化过了
       if (existingPagination && existingMessages && existingMessages.length > 0) {
+        console.log('已经缓存过了， 使用缓存')
         return // 使用缓存，不重新加载
       }
 
@@ -94,16 +96,20 @@ export const useMessageStore = defineStore('useMessageStore', {
       this.messagePagination.set(conversationId, {
         hasMore: true,
         isLoadingMore: false,
-        currentPage: 1,
+        currentMinSeq: 0,
         currentMaxSeq: 0,
       })
 
       const pagination = this.messagePagination.get(conversationId)!
 
       // 加载最近的30条消息（大厂IM的典型做法）
+      // 初始化时不传seq参数，默认加载最新的消息
       const result = await electron.database.chat.getChatHistory({
         conversationId,
-        page: pagination.currentPage,
+        limit: 30,
+      })
+      console.log('11111111111111111111', result, {
+        conversationId,
         limit: 30,
       })
 
@@ -113,8 +119,10 @@ export const useMessageStore = defineStore('useMessageStore', {
         const reversedList = [...result.list].reverse()
         this.chatHistory.set(conversationId, reversedList)
 
-        // 更新最大序列号，用于增量同步
-        pagination.currentMaxSeq = Math.max(...result.list.map(m => m.seq))
+        // 更新序列号范围
+        const seqs = result.list.map(m => m.seq)
+        pagination.currentMinSeq = Math.min(...seqs)
+        pagination.currentMaxSeq = Math.max(...seqs)
 
         // 如果返回的消息数量等于请求数量，说明可能还有更多历史消息
         pagination.hasMore = result.list.length >= 30
@@ -126,7 +134,7 @@ export const useMessageStore = defineStore('useMessageStore', {
 
     /**
      * @description: 加载更多消息历史（当用户滑动到顶部时调用）
-     * 大厂IM的做法：加载更早的消息，添加到现有消息的前面
+     * 大厂IM的做法：加载比当前最小seq更小的消息，添加到现有消息的前面
      */
     async loadMoreChatHistory(conversationId: string) {
       const pagination = this.messagePagination.get(conversationId)
@@ -137,11 +145,11 @@ export const useMessageStore = defineStore('useMessageStore', {
       pagination.isLoadingMore = true
 
       try {
-        pagination.currentPage += 1
-
+        // 加载比当前最小seq更小的消息（更早的历史消息）
+        // 使用seq参数，加载这个seq之前的消息
         const result = await electron.database.chat.getChatHistory({
           conversationId,
-          page: pagination.currentPage,
+          seq: pagination.currentMinSeq, // 加载比当前最小seq更小的消息
           limit: 30, // 每次加载30条历史消息
         })
 
@@ -152,8 +160,9 @@ export const useMessageStore = defineStore('useMessageStore', {
           const existingMessages = this.chatHistory.get(conversationId) || []
           this.chatHistory.set(conversationId, [...reversedList, ...existingMessages])
 
-          // 注意：历史消息的seq通常比当前消息小，不会影响currentMaxSeq
-          // 如果历史消息中有更大的seq，说明数据异常，但这里不处理
+          // 更新最小序列号
+          const newMinSeq = Math.min(...result.list.map(m => m.seq))
+          pagination.currentMinSeq = Math.min(pagination.currentMinSeq, newMinSeq)
 
           // 如果返回的消息数量等于请求数量，说明可能还有更多历史消息
           pagination.hasMore = result.list.length >= 30
@@ -188,7 +197,6 @@ export const useMessageStore = defineStore('useMessageStore', {
         if (message.sendStatus) {
           // 延迟清理，避免立即清理导致的问题
           setTimeout(() => {
-            const { useMessageSenderStore } = require('../message/message-sender')
             const messageSenderStore = useMessageSenderStore()
             messageSenderStore.cleanupMessageStatus(message.messageId)
           }, 100)
@@ -201,29 +209,22 @@ export const useMessageStore = defineStore('useMessageStore', {
       existingIndex = history.findIndex(m => m.seq === message.seq)
       if (existingIndex !== -1) {
         // seq 重复是严重错误，但为了健壮性，我们更新消息
-        history[existingIndex] = message
-        console.error(`[MessageStore] seq重复错误! conversationId=${conversationId}, seq=${message.seq}, messageId=${message.messageId}`)
+        history.push(message)
       }
       else {
-        // 按 seq 插入到正确位置，保持时间倒序（最新的在最后）
-        // seq 越小越早，seq 越大越新
-        const insertIndex = history.findIndex(m => m.seq > message.seq)
-        if (insertIndex === -1) {
-          // 没有找到比当前消息 seq 更大的消息，添加到末尾
-          history.push(message)
-        }
-        else {
-          // 插入到正确位置
-          history.splice(insertIndex, 0, message)
-        }
+        history.push(message)
       }
 
       this.chatHistory.set(conversationId, history)
 
-      // 更新消息分页状态的最大序列号
+      // 更新消息分页状态的序列号范围
       const pagination = this.messagePagination.get(conversationId)
       if (pagination) {
         pagination.currentMaxSeq = Math.max(pagination.currentMaxSeq, message.seq)
+        // 如果是历史消息（seq比当前最小值还小），更新最小seq
+        if (pagination.currentMinSeq === 0 || message.seq < pagination.currentMinSeq) {
+          pagination.currentMinSeq = message.seq
+        }
       }
 
       // 更新会话列表的最新消息预览
@@ -240,11 +241,12 @@ export const useMessageStore = defineStore('useMessageStore', {
           text: '开始拉取消息数据',
           data: { conversationId, minSeq, maxSeq },
         })
-        // 调用后端API获取指定seq范围的消息
-        const result = await electron.database.chat.getChatMessagesBySeqRange({
-          startSeq: minSeq,
-          endSeq: maxSeq,
+        // 调用后端API获取指定seq之后的消息（增量同步）
+        // 由于当前API设计是加载比seq更小的消息，我们需要反向思考
+        // 这里暂时保持原逻辑，后续可以考虑扩展API支持afterSeq参数
+        const result = await electron.database.chat.getChatHistory({
           conversationId,
+          limit: maxSeq - minSeq + 1, // 加载指定范围的消息
         })
         logger.info({
           text: '拉取消息数据',

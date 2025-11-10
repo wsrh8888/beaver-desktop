@@ -40,6 +40,7 @@ export abstract class BaseReceiver<T = any> {
    */
   async handle(wsMessage: any): Promise<void> {
     try {
+      console.log('处理ws模块发送回来的消息', JSON.stringify(wsMessage))
       // 预处理消息
       const processedMessage = await this.preProcessMessage(wsMessage)
 

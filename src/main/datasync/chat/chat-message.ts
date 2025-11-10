@@ -23,10 +23,17 @@ class MessageSync {
       const serverResponse = await datasyncGetSyncChatMessagesApi({
         since: lastSyncTime,
       })
+      console.log('1111111111111111111111111111111111111111111111111111111111111')
+      console.log('1111111111111111111111111111111111111111111111111111111111111')
+      console.log('1111111111111111111111111111111111111111111111111111111111111')
+      console.log('1111111111111111111111111111111111111111111111111111111111111')
+      console.log('1111111111111111111111111111111111111111111111111111111111111')
 
+      console.log('服务器的数据', JSON.stringify(serverResponse))
       // 对比本地数据，过滤出需要同步消息的会话
       const needSyncConversations = await this.compareAndFilterMessageVersions(serverResponse.result.messageVersions)
 
+      console.log('服务器的消息数据和本地的对比', JSON.stringify(needSyncConversations))
       if (needSyncConversations.length > 0) {
         // 有需要同步消息的会话
         await this.syncMessagesForConversations(needSyncConversations)
@@ -98,15 +105,6 @@ class MessageSync {
       const localSyncStatus = await ChatSyncStatusService.getMessageSyncStatus(conversationId)
       const localSeq = localSyncStatus?.messageSeq || 0
 
-      logger.info({
-        text: '会话需要同步消息',
-        data: {
-          conversationId,
-          localSeq,
-          serverSeq,
-        },
-      }, 'MessageSync')
-
       // 同步该会话的消息（从本地seq+1开始到服务器seq）
       await this.syncConversationMessages(
         conversationId,
@@ -127,15 +125,11 @@ class MessageSync {
     fromSeq: number,
     toSeq: number,
   ) {
-    logger.info({
-      text: '同步会话消息',
-      data: {
-        conversationId,
-        fromSeq,
-        toSeq,
-      },
-    }, 'MessageSyncService')
+    console.log('33333333333333333333333333333')
+    console.log('33333333333333333333333333333')
+    console.log('33333333333333333333333333333')
 
+    console.log('开始同步了', conversationId, fromSeq, toSeq)
     await this.doSyncConversationMessages(
       conversationId,
       fromSeq,
@@ -152,12 +146,30 @@ class MessageSync {
     let currentSeq = fromSeq
 
     while (currentSeq <= toSeq) {
+      console.log('调用chatSyncApi:', {
+        conversationId,
+        fromSeq: currentSeq,
+        toSeq: Math.min(currentSeq + 99, toSeq),
+        limit: 100,
+      })
+
       const response = await chatSyncApi({
         conversationId, // 指定会话ID
         fromSeq: currentSeq,
         toSeq: Math.min(currentSeq + 99, toSeq),
         limit: 100,
       })
+      console.log('5666666666666666666666666666666')
+      console.log('5666666666666666666666666666666')
+      console.log('5666666666666666666666666666666')
+      console.log('chatSyncApi参数', JSON.stringify({
+        conversationId, // 指定会话ID
+        fromSeq: currentSeq,
+        toSeq: Math.min(currentSeq + 99, toSeq),
+        limit: 100,
+      }))
+
+      console.log('chatSyncApi响应:', JSON.stringify(response))
 
       if (response.result.messages && response.result.messages.length > 0) {
         const messages = response.result.messages.map(msg => ({
@@ -175,10 +187,17 @@ class MessageSync {
           updatedAt: Math.floor(Date.now() / 1000),
         }))
 
+        console.log('准备批量创建消息:', messages.length, '条')
+        console.log('第一条消息:', messages[0])
+
         await MessageService.batchCreate(messages)
+
+        console.log('消息批量创建完成')
+
         currentSeq = Math.min(currentSeq + 99, toSeq) + 1
       }
       else {
+        console.log('没有更多消息，结束同步')
         break
       }
     }

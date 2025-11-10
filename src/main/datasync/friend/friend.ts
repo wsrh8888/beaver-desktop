@@ -25,13 +25,13 @@ export class FriendSyncModule {
       const serverResponse = await datasyncGetSyncFriendsApi({ since: lastSyncTime })
 
       // 对比本地数据，过滤出需要更新的数据
-      const needUpdateFriendshipIds = await this.compareAndFilterFriendVersions(serverResponse.result.friendVersions)
+      const needUpdateFriendshipIds = await this.compareAndFilterFriendVersions(serverResponse.result.friendVersions || [])
 
       if (needUpdateFriendshipIds.length > 0) {
         // 有需要更新的好友数据
         await this.syncFriendData(needUpdateFriendshipIds)
         // 从变更的数据中找到最大的版本号
-        const maxVersion = Math.max(...serverResponse.result.friendVersions.map(item => item.version))
+        const maxVersion = Math.max(...(serverResponse.result.friendVersions || []).map(item => item.version))
         await this.updateFriendsCursor(maxVersion, serverResponse.result.serverTimestamp)
       }
       else {
@@ -49,7 +49,7 @@ export class FriendSyncModule {
 
   // 对比本地数据，过滤出需要更新的好友关系ID
   private async compareAndFilterFriendVersions(friendVersions: any[]): Promise<string[]> {
-    if (friendVersions.length === 0) {
+    if (!friendVersions || friendVersions.length === 0) {
       return []
     }
 

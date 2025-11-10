@@ -2,7 +2,7 @@
   <div class="chat-header">
     <div class="user-info">
       <div class="user-avatar">
-        <BeaverImage :file-name="friendInfo.avatar" alt="用户头像" image-class="user-avatar-image" />
+        <BeaverImage :file-name="friendInfo?.avatar" alt="用户头像" image-class="user-avatar-image" />
       </div>
       <div class="user-details">
         <div class="user-name">
@@ -41,6 +41,7 @@ export default defineComponent({
 
     const friendInfo = computed(() => {
       const currentId = messageViewStore.currentChatId
+      console.log('currentId', currentId)
       return currentId ? conversationStore.getConversationInfo(currentId) : {}
     })
     // 判断当前会话类型

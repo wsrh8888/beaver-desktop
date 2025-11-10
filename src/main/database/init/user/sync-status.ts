@@ -7,9 +7,6 @@ export const initUserSyncStatusTable = (sqlite: any) => {
       user_id TEXT NOT NULL UNIQUE,
       user_version INTEGER DEFAULT 0,
       last_sync_time INTEGER DEFAULT 0,
-      sync_status TEXT DEFAULT 'pending',
-      retry_count INTEGER DEFAULT 0,
-      created_at INTEGER DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER DEFAULT (strftime('%s', 'now'))
     )
   `)

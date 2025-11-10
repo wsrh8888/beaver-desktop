@@ -107,6 +107,7 @@ export default defineComponent({
     // 判断messageViewStore.currentChatId的值是否发生变化
     watch(() => messageViewStore.currentChatId, () => {
       if (messageViewStore.currentChatId) {
+        console.error('messageViewStore.currentChatId 发生变化', messageViewStore.currentChatId)
         messageStore.init(messageViewStore.currentChatId)
       }
     })

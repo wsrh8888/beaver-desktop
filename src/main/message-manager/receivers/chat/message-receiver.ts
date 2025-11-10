@@ -1,9 +1,11 @@
 import type { IDBChatMessage } from 'commonModule/type/database/chat'
 import type { IPrivateMessageReceiveBody, IPrivateMessageSyncBody } from 'commonModule/type/ws/message-types'
+import { SendStatus } from 'commonModule/type/database/chat'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
 import { MessageService } from 'mainModule/database/services/chat/message'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import { BaseReceiver } from '../../base/base-receiver'
 
@@ -25,6 +27,14 @@ export class MessageReceiver extends BaseReceiver<IDBChatMessage> {
    */
   async handle(wsMessage: any) {
     const { data } = wsMessage
+    console.log('11111111111111111111111')
+    console.log('11111111111111111111111')
+    console.log('11111111111111111111111')
+    console.log('11111111111111111111111')
+    console.log('11111111111111111111111')
+    console.log('11111111111111111111111')
+    console.log('11111111111111111111111')
+    console.log('data', JSON.stringify(data))
 
     switch (data?.type) {
       case 'private_message_receive':
@@ -72,10 +82,39 @@ export class MessageReceiver extends BaseReceiver<IDBChatMessage> {
       createdAt: msg.createdAt,
       updatedAt: msg.updatedAt,
     }))
+    console.log('cccccccccccccccccccccccccc')
+    console.log('cccccccccccccccccccccccccc')
+    console.log('cccccccccccccccccccccccccc')
+    console.log('cccccccccccccccccccccccccc')
+    console.log('cccccccccccccccccccccccccc')
+    console.log('cccccccccccccccccccccccccc')
+    console.log('dbMessages', JSON.stringify(dbMessages))
 
     await MessageService.batchCreate(dbMessages)
 
-    // 2. 批量更新会话最后消息
+    // 2. 更新当前用户发送的消息的send_status为"已发送"，同时更新seq值
+    // 当收到服务器推送的消息时，如果本地已存在该消息（之前发送的），需要更新其状态和seq
+    const currentUserId = store.get('userInfo')?.userId
+    if (currentUserId) {
+      // 筛选出当前用户发送的消息
+      const currentUserMessages = messages.filter(msg => msg.sendUserId === currentUserId)
+      const currentUserMessageIds = currentUserMessages.map(msg => msg.messageId)
+
+      if (currentUserMessageIds.length > 0) {
+        // 构建 messageId -> seq 的映射
+        const seqMap = new Map<string, number>()
+        for (const msg of currentUserMessages) {
+          if (msg.seq !== undefined && msg.seq !== null) {
+            seqMap.set(msg.messageId, msg.seq)
+          }
+        }
+
+        // 批量更新这些消息的send_status为"已发送"，同时更新seq值
+        await MessageService.batchUpdateSendStatus(currentUserMessageIds, SendStatus.SENT, seqMap)
+      }
+    }
+
+    // 3. 批量更新会话最后消息
     await this.batchUpdateConversationLastMessages(messages)
   }
 

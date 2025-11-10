@@ -1,5 +1,5 @@
 import type { IValidInfo } from 'commonModule/type/ajax/friend'
-import { and, eq, gte, lte, or } from 'drizzle-orm'
+import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
 import dbManager from '../../db'
 import { friendVerifies } from '../../tables/friend/friend_verify'
 import { users } from '../../tables/user/user'
