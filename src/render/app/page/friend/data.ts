@@ -27,4 +27,7 @@ export const POPUP_MENU_CONFIG = [
 export const notificationList = [{
   key: 'friend-notification',
   text: '好友通知',
+}, {
+  key: 'group-notification',
+  text: '群通知',
 }]

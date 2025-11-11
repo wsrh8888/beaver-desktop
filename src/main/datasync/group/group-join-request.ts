@@ -3,7 +3,9 @@ import { groupJoinRequestSyncApi } from 'mainModule/api/group'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('datasync-群申请')
 
 // 入群申请同步器
 class GroupJoinRequestSync {
@@ -31,6 +33,7 @@ class GroupJoinRequestSync {
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverResponse.result.serverTimestamp,
       }).catch(() => {})
+      logger.info({ text: '入群申请同步完成' })
     }
     catch (error) {
       logger.error({ text: '入群申请同步失败', data: { error: (error as any)?.message } })

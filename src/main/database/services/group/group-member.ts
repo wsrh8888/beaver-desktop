@@ -1,5 +1,7 @@
+import type { IGroupInfo } from 'commonModule/type/ajax/group'
 import type { IDBGroupMember } from 'commonModule/type/database/group'
 import { and, eq, gte, inArray, lte } from 'drizzle-orm'
+import { groups } from 'mainModule/database/tables/group/groups'
 import { groupMembers } from 'mainModule/database/tables/group/members'
 import dbManager from '../../db'
 
@@ -39,7 +41,7 @@ export class GroupMemberService {
         .where(and(eq(groupMembers.groupId as any, dbMember.groupId as any), eq(groupMembers.userId as any, dbMember.userId as any)))
         .get()
 
-      if (existing) {
+      if (existing && existing.id) {
         // 如果存在，更新
         await this.db
           .update(groupMembers)
@@ -49,7 +51,7 @@ export class GroupMemberService {
             version: dbMember.version,
             updatedAt: dbMember.updatedAt,
           })
-          .where(eq(groupMembers.id, existing.id))
+          .where(eq(groupMembers.id as any, existing.id))
           .run()
       }
       else {
@@ -64,12 +66,62 @@ export class GroupMemberService {
 
   // 获取群成员列表
   static async getGroupMembers(groupId: string): Promise<IDBGroupMember[]> {
-    return await this.db.select().from(groupMembers).where(and(eq(groupMembers.groupId as any, groupId as any), eq(groupMembers.status as any, 1 as any))).all()
+    return await this.db.select().from(groupMembers).where(and(eq(groupMembers.groupId as any, groupId as any), eq(groupMembers.status as any, 1))).all()
   }
 
-  // 获取用户加入的群组列表
-  static async getUserGroups(userId: string): Promise<IDBGroupMember[]> {
-    return await this.db.select().from(groupMembers).where(and(eq(groupMembers.userId as any, userId as any), eq(groupMembers.status as any, 1 as any))).all()
+  // 获取用户加入的群组列表（包含群组详细信息）
+  static async getUserGroups(userId: string): Promise<IGroupInfo[]> {
+    // 1. 获取用户加入的群组成员记录
+    const userMemberships = await this.db
+      .select()
+      .from(groupMembers)
+      .where(and(
+        eq(groupMembers.userId as any, userId as any),
+        eq(groupMembers.status as any, 1),
+      ))
+      .all()
+
+    if (userMemberships.length === 0) {
+      return []
+    }
+
+    // 2. 提取群组ID列表
+    const groupIds = userMemberships.map((membership: any) => membership.groupId)
+
+    // 3. 获取这些群组的详细信息
+    const groupDetails = await this.db
+      .select()
+      .from(groups)
+      .where(inArray(groups.groupId as any, groupIds as any))
+      .all()
+
+    // 4. 获取每个群组的成员数量
+    const memberCounts = new Map<string, number>()
+    for (const groupId of groupIds) {
+      const count = await this.db
+        .select({ count: groupMembers.id })
+        .from(groupMembers)
+        .where(and(
+          eq(groupMembers.groupId as any, groupId as any),
+          eq(groupMembers.status as any, 1 as any),
+        ))
+        .all()
+
+      memberCounts.set(groupId, count[0]?.count || 0)
+    }
+
+    // 5. 组装返回数据
+    return groupDetails.map((group: any) => {
+      const memberCount = memberCounts.get(group.groupId) || 0
+
+      return {
+        title: group.title || '',
+        avatar: group.avatar || '',
+        memberCount,
+        conversationId: `group_${group.groupId}`,
+        version: group.version || 0,
+      }
+    })
   }
 
   // 按版本范围获取群成员（用于数据同步）
@@ -77,14 +129,31 @@ export class GroupMemberService {
     const userId = String(header.userId)
     const { startVersion, endVersion } = params
 
-    // 获取用户加入的群组
-    const userGroups = await this.getUserGroups(userId)
-    if (userGroups.length === 0) {
+    // 获取用户加入的群组成员记录
+    const userMemberships = await this.db
+      .select()
+      .from(groupMembers)
+      .where(and(
+        eq(groupMembers.userId as any, userId as any),
+        eq(groupMembers.status as any, 1),
+      ))
+      .all()
+
+    if (userMemberships.length === 0) {
       return { list: [] }
     }
 
-    const groupIds = userGroups.map(g => g.groupId)
-    const members = await this.db.select().from(groupMembers).where(and(inArray(groupMembers.groupId as any, groupIds as any), gte(groupMembers.version as any, startVersion as any), lte(groupMembers.version as any, endVersion as any))).orderBy(groupMembers.version, 'asc').all()
+    const groupIds = userMemberships.map((m: any) => m.groupId)
+    const members = await this.db
+      .select()
+      .from(groupMembers)
+      .where(and(
+        inArray(groupMembers.groupId as any, groupIds as any),
+        gte(groupMembers.version as any, startVersion),
+        lte(groupMembers.version as any, endVersion),
+      ))
+      .orderBy(groupMembers.version, 'asc')
+      .all()
 
     return { list: members }
   }

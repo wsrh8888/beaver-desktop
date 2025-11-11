@@ -23,7 +23,8 @@
 
 <script lang="ts">
 import type { INotificationItem } from 'commonModule/type/view/notification'
-import { defineComponent, onMounted, ref } from 'vue'
+import { useGroupJoinRequestStore } from 'renderModule/app/pinia/group/group-join-request'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import NotificationItem from './item.vue'
 
 export default defineComponent({
@@ -33,28 +34,68 @@ export default defineComponent({
   },
   setup() {
     const notifications = ref<INotificationItem[]>([])
+    const groupJoinRequestStore = useGroupJoinRequestStore()
+    const groupJoinRequestList = computed(() => groupJoinRequestStore.getEnhancedRequestList)
 
-    onMounted(() => {
-      // 模拟加载通知数据
+    onMounted(async () => {
+      await groupJoinRequestStore.init()
+
       loadNotifications()
+      console.log('群申请列表:', groupJoinRequestList.value)
     })
 
-    const getStatusText = (type: string, status: number) => {
-      switch (type) {
-        case 'group_invite':
-          if (status === 1)
-            return '已同意'
-          return '邀请你加入群聊'
-        case 'group_join_request':
-          if (status === 1)
-            return '已同意'
-          if (status === 2)
-            return '已拒绝'
+    const loadNotifications = async () => {
+      notifications.value = groupJoinRequestList.value.map((item) => {
+        return {
+          id: item.requestId.toString(),
+          name: item.applicantName,
+          avatar: item.applicantAvatar,
+          time: new Date(item.createAt).toLocaleString(),
+          message: item.message || '申请加入群聊',
+          status: item.status,
+          isGroup: false, // 申请者是个人，不是群
+          headerText: getHeaderText(item.status),
+          statusResult: getStatusResult(item.status),
+          statusText: getStatusText(item.status),
+          statusClass: getStatusClass(item.status),
+          canApprove: item.status === 0,
+          canReject: item.status === 0,
+        } as INotificationItem
+      })
+    }
+
+    const getHeaderText = (status: number) => {
+      switch (status) {
+        case 0:
           return '申请加入你的群聊'
-        case 'group_owner_leave':
-          return '通知'
-        case 'group_member_change':
-          return '通知'
+        case 1:
+          return '入群申请已同意'
+        case 2:
+          return '入群申请已拒绝'
+        default:
+          return '入群申请'
+      }
+    }
+
+    const getStatusText = (status: number) => {
+      switch (status) {
+        case 0:
+          return '申请加入你的群聊'
+        case 1:
+          return '已同意入群申请'
+        case 2:
+          return '已拒绝入群申请'
+        default:
+          return '入群申请'
+      }
+    }
+
+    const getStatusResult = (status: number) => {
+      switch (status) {
+        case 1:
+          return '已同意'
+        case 2:
+          return '已拒绝'
         default:
           return ''
       }
@@ -71,69 +112,33 @@ export default defineComponent({
       }
     }
 
-    const loadNotifications = () => {
-      // 模拟数据（目前没有群通知API，先使用模拟数据）
-      notifications.value = [
-        {
-          id: '1',
-          name: '前端交流群',
-          avatar: '',
-          time: Date.now() - 1000 * 60 * 60,
-          message: '邀请你加入群聊',
-          status: 1,
-          isGroup: true,
-          statusText: '已同意',
-          statusClass: 'status-approved',
-          canApprove: false,
-          canReject: false,
-        },
-        {
-          id: '2',
-          name: '后端交流群',
-          avatar: '',
-          time: Date.now() - 1000 * 60 * 60 * 2,
-          message: '群主已退出该群聊',
-          status: 0,
-          isGroup: true,
-          statusText: '通知',
-          statusClass: '',
-          canApprove: false,
-          canReject: false,
-        },
-        {
-          id: '3',
-          name: '王五',
-          avatar: '',
-          time: Date.now() - 1000 * 60 * 60 * 3,
-          message: '申请加入你的群聊',
-          status: 0,
-          isGroup: false,
-          statusText: '申请加入你的群聊',
-          statusClass: '',
-          canApprove: true,
-          canReject: true,
-        },
-      ]
-    }
-
     const handleGroupRequest = async (item: INotificationItem, action: 'approve' | 'reject') => {
-      console.log('处理群请求:', item, action)
-      // TODO: 调用API处理群请求（目前没有API，先模拟处理）
       const status = action === 'approve' ? 1 : 2
-      const notification = notifications.value.find(n => n.id === item.id)
-      if (notification) {
-        notification.status = status
-        notification.statusText = getStatusText('group_join_request', status)
-        notification.statusClass = getStatusClass(status)
-        notification.canApprove = false
-        notification.canReject = false
-        notification.message = status === 1 ? '你已同意对方的入群申请' : '你已拒绝对方的入群申请'
+      const requestId = Number.parseInt(item.id)
+
+      try {
+        await groupJoinRequestStore.handleRequest(requestId, status)
+
+        // 更新本地通知状态
+        const notification = notifications.value.find(n => n.id === item.id)
+        if (notification) {
+          notification.status = status
+          notification.statusText = getStatusText(status)
+          notification.statusClass = getStatusClass(status)
+          notification.canApprove = false
+          notification.canReject = false
+          notification.message = status === 1 ? '你已同意对方的入群申请' : '你已拒绝对方的入群申请'
+        }
+      }
+      catch (error) {
+        console.error('处理群申请失败:', error)
+        // 可以在这里显示错误提示
       }
     }
 
     const handleItemClick = (item: INotificationItem) => {
       console.log('点击群通知项:', item)
-      // TODO: 处理通知项点击事件
+      // TODO: 可以跳转到群详情或申请详情页面
     }
 
     return {

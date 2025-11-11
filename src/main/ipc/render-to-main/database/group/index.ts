@@ -1,4 +1,5 @@
 import { DataGroupCommand } from 'commonModule/type/ipc/database'
+import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
 import { GroupMemberService } from 'mainModule/database/services/group/group-member'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
@@ -21,6 +22,10 @@ export class GroupHandler {
         return await GroupMemberService.getUserGroups(header.userId)
       case DataGroupCommand.GET_GROUP_MEMBERS:
         return await GroupMemberService.getGroupMembers(data.groupId)
+      case DataGroupCommand.GET_GROUP_JOIN_REQUEST_LIST:
+        return await GroupJoinRequestService.getUserManagedGroupJoinRequests(header.userId, data.page, data.limit)
+      case DataGroupCommand.GET_ALL_GROUP_JOIN_REQUESTS:
+        return await GroupJoinRequestService.getAllGroupJoinRequests(data.page, data.limit)
       default:
         throw new Error('群组数据库命令处理失败')
     }
