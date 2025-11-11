@@ -7,7 +7,7 @@ export interface IGroupInfo {
   /**
    * @description: 群组头像URL
    */
-  fileName: string
+  avatar: string
   /**
    * @description: 成员数量
    */

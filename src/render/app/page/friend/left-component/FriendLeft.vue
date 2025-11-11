@@ -97,7 +97,7 @@
         >
           <div class="friend-avatar">
             <BeaverImage
-              :file-name="group.fileName"
+              :file-name="group.avatar"
               :alt="group.title"
             />
           </div>
@@ -181,7 +181,7 @@ export default {
       tabs,
       showPopupMenu,
       friendList: computed(() => friendStore.getFriendList),
-      groupList: computed(() => groupStore.groupList),
+      groupList: computed(() => groupStore.getGroupList),
       handleTabChange,
       handleItemClick,
       handleNotificationClick,

@@ -1,6 +1,6 @@
 import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from '../ajax/chat'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
-import type { IGetGroupListReq, IGetGroupMembersReq, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
+import type { IGetGroupListReq, IGetGroupMembersReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
 import type { IUserInfoRes } from '../ajax/user'
 
 /**
@@ -64,5 +64,7 @@ export interface IDatabaseModule {
   group: {
     getGroupList(params: IGetGroupListReq): Promise<IGroupListRes>
     getGroupMembers(params: IGetGroupMembersReq): Promise<IGroupMemberListRes>
+    getGroupJoinRequestList(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
+    getAllGroupJoinRequests(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
   }
 }

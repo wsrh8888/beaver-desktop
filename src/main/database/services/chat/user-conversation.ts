@@ -77,16 +77,12 @@ export class ChatUserConversationService {
 
     // 获取对应的会话元数据
     const conversationIds = conversations.map((conv: any) => conv.conversationId)
-    console.log('[DEBUG] Conversation IDs to query:', conversationIds)
 
     const conversationMetas = await ChatConversationService.getConversationsByIds(conversationIds)
-    console.log('[DEBUG] Conversation metas returned:', conversationMetas.length, conversationMetas)
 
     // 创建会话元数据的映射
     const metaMap = new Map()
     conversationMetas.forEach((meta: any) => {
-      console.log('[DEBUG] Meta object:', meta)
-      console.log('[DEBUG] Meta lastMessage:', meta?.lastMessage)
       metaMap.set(meta.conversationId, meta)
     })
 
@@ -138,7 +134,6 @@ export class ChatUserConversationService {
       }
 
       const msgPreview = meta?.lastMessage || ''
-      console.log('[DEBUG] For conversation', conv.conversationId, 'meta:', meta, 'msgPreview:', msgPreview)
 
       return {
         conversationId: conv.conversationId,

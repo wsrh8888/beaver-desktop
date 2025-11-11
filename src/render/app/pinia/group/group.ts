@@ -18,6 +18,14 @@ export const useGroupStore = defineStore('groupStore', {
   }),
 
   getters: {
+    getGroupList: (state) => {
+      return state.groupList.map((group) => {
+        console.error('dddddddddddddddddddddddddddddddddddd', group)
+        return {
+          ...group,
+        }
+      })
+    },
     /**
      * @description: 根据群组ID获取群组信息
      */
@@ -38,11 +46,12 @@ export const useGroupStore = defineStore('groupStore', {
      * @description: 初始化群组列表
      */
     async init() {
-      const getGroupApi = await electron.database.group.getGroupList({
+      const result = await electron.database.group.getGroupList({
         page: 1,
         limit: 100,
       })
-      this.groupList = getGroupApi?.list || []
+      console.error('111111111111', result)
+      this.groupList = result?.list || []
     },
 
     /**

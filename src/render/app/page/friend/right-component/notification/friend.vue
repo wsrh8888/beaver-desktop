@@ -1,6 +1,5 @@
 <template>
   <div class="friend-notification-container">
-    111
     <!-- 通知列表 -->
     <div class="notification-list">
       <NotificationItem
