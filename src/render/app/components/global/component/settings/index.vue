@@ -6,9 +6,11 @@
         <div class="header-title">
           编辑资料
         </div>
-        <button class="close-btn" @click="handleClose">
-          <img src="renderModule/assets/image/common/close.svg" alt="关闭">
-        </button>
+        <BeaverButton type="text" circle class="close-btn" @click="handleClose">
+          <template #icon>
+            <img src="renderModule/assets/image/common/close.svg" alt="关闭">
+          </template>
+        </BeaverButton>
       </div>
 
       <!-- 内容区域 -->
@@ -112,12 +114,12 @@
 
         <!-- 底部按钮 -->
         <div class="panel-footer">
-          <button class="btn btn-cancel" @click="handleClose">
+          <BeaverButton type="default" @click="handleClose">
             取消
-          </button>
-          <button class="btn btn-save" :disabled="isSaving" @click="handleSave">
-            {{ isSaving ? '保存中...' : '保存' }}
-          </button>
+          </BeaverButton>
+          <BeaverButton type="primary" :loading="isSaving" @click="handleSave">
+            保存
+          </BeaverButton>
         </div>
       </div>
     </div>
@@ -128,6 +130,7 @@
 import { CacheType } from 'commonModule/type/cache/cache'
 import { useUserStore } from 'renderModule/app/pinia/user/user'
 import cameraIcon from 'renderModule/assets/image/leftBar/settings/camera.svg'
+import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { selectAndUploadFile } from 'renderModule/utils/upload'
@@ -137,6 +140,7 @@ export default defineComponent({
   name: 'SettingsComponent',
   components: {
     BeaverImage,
+    BeaverButton,
   },
   emits: ['close'],
   setup(_props, { emit }) {
@@ -309,20 +313,9 @@ export default defineComponent({
   .close-btn {
     width: 32px;
     height: 32px;
-    border: none;
-    background: transparent;
-    cursor: pointer;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background-color 0.2s;
+    padding: 0;
 
-    &:hover {
-      background: #F5F5F5;
-    }
-
-    img {
+    :deep(img) {
       width: 16px;
       height: 16px;
       opacity: 0.7;
@@ -492,38 +485,5 @@ export default defineComponent({
   padding: 20px 24px;
   border-top: 1px solid #EBEEF5;
   margin-top: 24px;
-
-  .btn {
-    padding: 10px 24px;
-    border: none;
-    border-radius: 6px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-
-    &.btn-cancel {
-      background: #F5F5F5;
-      color: #636E72;
-
-      &:hover {
-        background: #EBEEF5;
-      }
-    }
-
-    &.btn-save {
-      background: #FF7D45;
-      color: #FFFFFF;
-
-      &:hover:not(:disabled) {
-        background: #FF6B2E;
-      }
-
-      &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-      }
-    }
-  }
 }
 </style>
