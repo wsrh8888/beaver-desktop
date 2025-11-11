@@ -18,7 +18,7 @@
                 alt="群头像"
                 image-class="group-avatar-image"
               />
-              <span v-else>{{ getGroupAvatarText(groupInfo.title || '') }}</span>
+              <span v-else>{{ groupInfo.title }}</span>
             </div>
             <div class="avatar-edit-icon" @click="handleEditAvatar">
               <img src="renderModule/assets/image/group/edit.svg" alt="编辑">
@@ -98,14 +98,6 @@
             群聊设置
           </div>
 
-          <!-- <div class="settings-item">
-            <div class="setting-label">消息免打扰</div>
-            <label class="switch">
-              <input type="checkbox" v-model="settings.mute">
-              <span class="slider"></span>
-            </label>
-          </div> -->
-
           <div class="settings-item">
             <div class="setting-label">
               群聊置顶
@@ -115,22 +107,6 @@
               <span class="slider" />
             </label>
           </div>
-
-          <!-- <div class="settings-item">
-            <div class="setting-label">保存到收藏夹</div>
-            <label class="switch">
-              <input type="checkbox" v-model="settings.favorite">
-              <span class="slider"></span>
-            </label>
-          </div> -->
-
-          <!-- <div class="settings-item">
-            <div class="setting-label">显示群成员昵称</div>
-            <label class="switch">
-              <input type="checkbox" v-model="settings.showNickname">
-              <span class="slider"></span>
-            </label>
-          </div> -->
         </div>
 
         <button class="leave-group" @click="handleLeaveGroup">
@@ -233,18 +209,6 @@ export default defineComponent({
       }
     }
 
-    // 获取头像文本（取名字第一个字）
-    const getAvatarText = (name: string) => {
-      return name ? name.charAt(0) : '?'
-    }
-
-    // 获取群头像文本（取群名前两个字）
-    const getGroupAvatarText = (name: string) => {
-      if (!name)
-        return '群'
-      return name.length > 1 ? name.substring(0, 2) : name
-    }
-
     // 关闭详情面板
     const closeDetails = () => {
       isVisible.value = false
@@ -314,23 +278,6 @@ export default defineComponent({
     const handleLeaveGroup = async () => {
       if (!groupInfo.value)
         return
-
-      // 使用更用户友好的确认方式
-      // const confirmed = confirm('确定要退出该群聊吗？')
-      // if (confirmed) {
-      //   try {
-      //     await quitGroupApi({ groupId: groupInfo.value.conversationId })
-
-      //     // 退出成功后关闭详情面板
-      //     closeDetails()
-
-      //     // 跳转到其他会话或首页
-      //     // conversationStore.setCurrentChat('')
-      //   }
-      //   catch (error) {
-      //     console.error('Failed to leave group:', error)
-      //   }
-      // }
       console.log('退出群聊')
     }
 
@@ -366,8 +313,6 @@ export default defineComponent({
       nameInput,
       settings,
       showAllMembers,
-      getAvatarText,
-      getGroupAvatarText,
       closeDetails,
       startEditName,
       saveGroupName,

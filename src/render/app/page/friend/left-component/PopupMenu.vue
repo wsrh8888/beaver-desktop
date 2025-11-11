@@ -20,7 +20,7 @@
 <script lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 
-interface MenuItem {
+export interface MenuItem {
   key: string
   text: string
   icon: string

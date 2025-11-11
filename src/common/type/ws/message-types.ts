@@ -2,8 +2,8 @@
 export interface IMessageMsg {
   type: number
   textMsg?: { content: string }
-  imageMsg?: { src: string } | null
-  videoMsg?: { src: string } | null
+  imageMsg?: { fileKey: string, width: number, height: number } | null
+  videoMsg?: { fileKey: string, width: number, height: number, duration: number } | null
   fileMsg?: { name: string, size: number, url: string, type: string } | null
   voiceMsg?: { src: string, duration: number } | null
   emojiMsg?: { emoji: string } | null

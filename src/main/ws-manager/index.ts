@@ -1,10 +1,12 @@
 import type { IWsData, WsType } from 'commonModule/type/ws/command'
 import { getCurrentConfig } from 'commonModule/config'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger/index'
 import { v4 as uuidv4 } from 'uuid'
 
 import WebSocket from 'ws'
+
+const logger = new Logger('WebSocket')
 
 /**
  * @description: WebSocket配置选项
@@ -77,26 +79,25 @@ class WsManager {
     const wsUrl = getCurrentConfig().wsUrl
     // 防止重复连接
     if (this.isConnected || this.status === 'connecting') {
-      logger.info({ text: 'WebSocket已经连接或正在连接中' }, 'WsManager')
+      logger.info({ text: 'WebSocket已经连接或正在连接中' })
       return
     }
 
     if (!token) {
-      logger.warn({ text: '没有token，无法连接WebSocket' }, 'WsManager')
+      logger.warn({ text: '没有token，无法连接WebSocket' })
       return
     }
 
-    logger.info({ text: '开始连接WebSocket' }, 'WsManager')
+    logger.info({ text: '开始连接WebSocket' })
     this.status = 'connecting'
     this.isClose = false
     this.isManualClose = false
 
     try {
-      logger.info({ text: '开始连接WebSocket', data: { url: `${wsUrl}?token=${token}` } }, 'WsManager')
       this.socket = new WebSocket(`${wsUrl}?token=${token}`)
 
       this.socket.on('open', () => {
-        logger.info({ text: 'WebSocket连接成功' }, 'WsManager')
+        logger.info({ text: 'WebSocket连接成功' })
         this.isConnected = true
         this.status = 'connected'
         this.reconnectAttempts = 0
@@ -110,7 +111,7 @@ class WsManager {
       })
 
       this.socket.on('close', (code, reason) => {
-        logger.info({ text: 'WebSocket连接关闭', data: { code, reason: reason.toString() } }, 'WsManager')
+        logger.info({ text: 'WebSocket连接关闭', data: { code, reason: reason.toString() } })
         this.isConnected = false
         this.status = 'closed'
         this.clearTimers()
@@ -128,7 +129,7 @@ class WsManager {
       })
 
       this.socket.on('error', (error) => {
-        logger.error({ text: 'WebSocket错误', data: { error } }, 'WsManager')
+        logger.error({ text: 'WebSocket错误', data: { error } })
         this.isConnected = false
         this.status = 'error'
 
@@ -143,7 +144,7 @@ class WsManager {
       })
     }
     catch (error) {
-      logger.error({ text: 'WebSocket连接失败', data: { error: (error as any)?.message } }, 'WsManager')
+      logger.error({ text: 'WebSocket连接失败', data: { error: (error as any)?.message } })
       this.status = 'error'
       this.reconnect()
     }
@@ -164,12 +165,12 @@ class WsManager {
         logger.info(({
           text: '收到WebSocket消息',
           data: message,
-        }), 'WsManager')
+        }))
         this.eventCallbacks.onMessage(message)
       }
     }
     catch (error) {
-      logger.error({ text: '消息解析失败', data: { error: (error as any)?.message } }, 'WsManager')
+      logger.error({ text: '消息解析失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -181,15 +182,14 @@ class WsManager {
       const messageStr = JSON.stringify(message)
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
         this.socket.send(messageStr)
-        logger.info({ text: '消息发送成功', data: { command: message.command } }, 'WsManager')
+        logger.info({ text: '消息发送成功', data: { command: message.command } })
       }
       else {
-        logger.error({ text: 'WebSocket未就绪，无法发送消息' }, 'WsManager')
         throw new Error('WebSocket not ready')
       }
     }
     catch (error) {
-      logger.error({ text: '发送消息异常', data: { error: (error as any)?.message } }, 'WsManager')
+      logger.error({ text: '发送消息异常', data: { error: (error as any)?.message } })
       throw error
     }
   }
@@ -217,14 +217,14 @@ class WsManager {
         // 设置心跳超时检查
         this.clearHeartbeatTimeout()
         this.heartbeatTimeoutTimer = setTimeout(() => {
-          logger.warn({ text: '心跳超时，可能连接已断开' }, 'WsManager')
+          logger.warn({ text: '心跳超时，可能连接已断开' })
           if (this.socket) {
             this.socket.close()
           }
         }, 10000) // 10秒超时
       }
       catch (error) {
-        logger.error({ text: '发送心跳失败', data: { error: (error as any)?.message } }, 'WsManager')
+        logger.error({ text: '发送心跳失败', data: { error: (error as any)?.message } })
       }
     }
   }
@@ -241,14 +241,14 @@ class WsManager {
 
   private reconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      logger.info({ text: '达到最大重连次数，停止重连' }, 'WsManager')
+      logger.info({ text: '达到最大重连次数，停止重连' })
       return
     }
 
     this.reconnectAttempts++
     const delay = this.reconnectInterval * this.reconnectAttempts
 
-    logger.info({ text: `第${this.reconnectAttempts}次重连，延迟${delay}ms` }, 'WsManager')
+    logger.info({ text: `第${this.reconnectAttempts}次重连，延迟${delay}ms` })
 
     this.reconnectTimer = setTimeout(() => {
       this.connect()
@@ -271,7 +271,7 @@ class WsManager {
    * @description: 断开连接
    */
   public disconnect(): void {
-    logger.info({ text: '手动断开WebSocket连接' }, 'WsManager')
+    logger.info({ text: '手动断开WebSocket连接' })
     this.isManualClose = true
     this.clearTimers()
 
@@ -285,7 +285,6 @@ class WsManager {
     this.isConnected = false
     this.status = 'closed'
     this.reconnectAttempts = 0
-    logger.info({ text: 'WebSocket连接已断开' }, 'WsManager')
   }
 
   /**

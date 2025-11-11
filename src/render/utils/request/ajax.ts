@@ -1,8 +1,8 @@
 import type { AxiosError, AxiosRequestConfig } from 'axios'
 import axios from 'axios'
+import moment from 'moment'
 import { v4 as uuidV4 } from 'uuid'
-import { getCommonParams } from '../config/header'
-import Logger from '../log'
+import Logger from '../logger'
 
 const logger = new Logger('ajax')
 export interface IResponseSuccessData<T> {
@@ -14,6 +14,14 @@ export interface IResponseSuccessData<T> {
 export interface headerRequest {
   [key: string]: string | number
 }
+
+// 简单的内存缓存
+let cachedToken = ''
+
+// 模块加载时自动读取一次
+electron.storage.getAsync('userInfo').then((userInfo: any) => {
+  cachedToken = userInfo?.token || ''
+})
 
 // 基础请求配置
 const baseRequest = axios.create({
@@ -31,13 +39,14 @@ const baseRequest = axios.create({
 baseRequest.interceptors.request.use(
   (config) => {
     // 根据进程类型获取不同的headers
-    const electronHeaders = getCommonParams()
-    if (electronHeaders) {
-      config.headers = {
-        ...electronHeaders,
-        ...config.headers,
-      } as any
-    }
+    config.headers = {
+      source: 'beaver-desktop',
+      timestamp: `${moment().format('YYYY-MM-DD HH:mm:ss.SSS')}`,
+      env: electron.app.env,
+      deviceId: electron.app.devicedId,
+      token: cachedToken,
+      ...(config.headers || {}),
+    } as any
 
     return config
   },
@@ -82,7 +91,6 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
           analyse: '[ajax]接口正常',
           spendTime: `${spendTime}ms`,
           uuid: httpId,
-          url: config.url,
           response: JSON.stringify(response),
           config: JSON.stringify(config),
         })
@@ -93,7 +101,6 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
           analyse: '[ajax]状态码异常',
           spendTime: `${spendTime}ms`,
           uuid: httpId,
-          url: config.url,
           response: JSON.stringify(response),
           config: JSON.stringify(config),
         })
@@ -108,7 +115,6 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
         analyse: '[ajax]接口异常',
         spendTime: `${spendTime}ms`,
         uuid: httpId,
-        url: config.url,
         response: JSON.stringify({
           code: err?.code,
           message: err.message,

@@ -2,6 +2,9 @@ import chatSvg from 'renderModule/assets/image/leftBar/chat.svg'
 import chatActive from 'renderModule/assets/image/leftBar/chat_active.svg'
 import friendSvg from 'renderModule/assets/image/leftBar/friend.svg'
 import friendActive from 'renderModule/assets/image/leftBar/friend_active.svg'
+import aboutIcon from 'renderModule/assets/image/leftBar/settings/about.svg'
+import logoutIcon from 'renderModule/assets/image/leftBar/settings/logout.svg'
+import settingsIcon from 'renderModule/assets/image/leftBar/settings/settings.svg'
 
 export const outsideList = [
   {
@@ -17,5 +20,23 @@ export const outsideList = [
     title: '好友',
     defaultIcon: friendSvg,
     activeIcon: friendActive,
+  },
+]
+
+export const userInfoMenuList = [
+  {
+    key: 'settings',
+    label: '个人资料',
+    icon: settingsIcon,
+  },
+  {
+    key: 'about',
+    label: '关于海狸',
+    icon: aboutIcon,
+  },
+  {
+    key: 'logout',
+    label: '退出',
+    icon: logoutIcon,
   },
 ]

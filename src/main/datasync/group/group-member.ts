@@ -3,34 +3,40 @@ import { groupMemberSyncApi } from 'mainModule/api/group'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupMemberService } from 'mainModule/database/services/group/group-member'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger/index'
+
+const logger = new Logger('数据同步-group-member')
 
 // 群成员同步器
 class GroupMemberSync {
   // 检查并同步群成员
   async checkAndSync() {
-    // 获取本地最后同步时间
-    const lastSyncTime = await DataSyncService.get('group_members').then(cursor => cursor?.version || 0).catch(() => 0)
+    logger.info({ text: '开始同步群成员数据' })
+    try {
+      // 获取本地最后同步时间
+      const lastSyncTime = await DataSyncService.get('group_members').then(cursor => cursor?.version || 0).catch(() => 0)
 
-    // 获取服务器上变更的群成员版本信息
-    const serverResponse = await datasyncGetSyncGroupMembersApi({ since: lastSyncTime })
+      // 获取服务器上变更的群成员版本信息
+      const serverResponse = await datasyncGetSyncGroupMembersApi({ since: lastSyncTime })
 
-    // 对比本地数据，过滤出需要更新的群组
-    const needUpdateGroups = await this.compareAndFilterMemberVersions(serverResponse.result.groupVersions)
+      // 对比本地数据，过滤出需要更新的群组
+      const needUpdateGroups = await this.compareAndFilterMemberVersions(serverResponse.result.groupVersions)
 
-    if (needUpdateGroups.length > 0) {
-      // 有需要更新的群成员
-      await this.syncMemberData(needUpdateGroups)
+      if (needUpdateGroups.length > 0) {
+        // 有需要更新的群成员
+        await this.syncMemberData(needUpdateGroups)
+      }
+
+      // 更新游标（无论是否有变更都要更新）
+      await DataSyncService.upsert({
+        module: 'group_members',
+        version: -1, // 使用时间戳而不是版本号
+        updatedAt: serverResponse.result.serverTimestamp,
+      }).catch(() => { })
     }
-
-    // 更新游标（无论是否有变更都要更新）
-    await DataSyncService.upsert({
-      module: 'group_members',
-      version: -1, // 使用时间戳而不是版本号
-      updatedAt: serverResponse.result.serverTimestamp,
-    }).catch(() => {})
-
-    logger.info({ text: '群成员同步完成' }, 'GroupMemberSync')
+    catch (error) {
+      logger.error({ text: '群成员同步失败', data: { error: (error as any)?.message } })
+    }
   }
 
   // 对比本地数据，过滤出需要更新的群组信息
@@ -53,22 +59,11 @@ class GroupMemberSync {
       return localVersion < groupVersion.version
     })
 
-    logger.info({
-      text: '群成员版本对比结果',
-      data: {
-        total: groupIds.length,
-        needUpdate: needUpdateGroups.length,
-        skipped: groupIds.length - needUpdateGroups.length,
-      },
-    }, 'GroupMemberSync')
-
     return needUpdateGroups
   }
 
   // 同步群成员数据
   private async syncMemberData(groupsWithVersions: Array<{ groupId: string, version: number }>) {
-    logger.info({ text: '开始同步群成员数据', data: { count: groupsWithVersions.length } }, 'GroupMemberSync')
-
     if (groupsWithVersions.length === 0) {
       return
     }
@@ -84,8 +79,6 @@ class GroupMemberSync {
       for (const member of members) {
         await GroupSyncStatusService.upsertSyncStatus('members', member.groupId, member.version)
       }
-
-      logger.info({ text: '群成员数据同步完成', data: { totalCount: members.length } }, 'GroupMemberSync')
     }
   }
 }

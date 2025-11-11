@@ -1,48 +1,55 @@
 <template>
-  <div class="chat-input-area" :style="{ height: `${height}px` }">
-    <div class="toolbar">
-      <div
-        v-for="tool in toolList"
-        :key="tool.id"
-        class="toolbar-btn"
-        @click="handleToolClick(tool.value)"
-      >
-        <img :src="tool.icon" :alt="tool.name">
+  <div class="chat-input-area-wrapper">
+    <div class="resize-handle" @mousedown="startResize" />
+    <div ref="chatInputAreaRef" class="chat-input-area" :style="{ height: `${height}px` }">
+      <div class="toolbar">
+        <div
+          v-for="tool in toolList"
+          :key="tool.id"
+          class="toolbar-btn"
+          @click="handleToolClick(tool.value)"
+        >
+          <img :src="tool.icon" :alt="tool.name">
+        </div>
       </div>
-    </div>
-    <div class="input-row">
-      <div
-        ref="inputRef"
-        class="message-input"
-        contenteditable="true"
-        @input="handleInput"
-        @keydown.enter.prevent="handleSend"
-        @focus="handleFocus"
-        @blur="handleBlur"
+      <div class="input-row">
+        <div
+          ref="inputRef"
+          class="message-input"
+          contenteditable="true"
+          @input="handleInput"
+          @keydown.enter.prevent="handleSend"
+          @focus="handleFocus"
+          @blur="handleBlur"
+          @paste="handlePaste"
+        />
+        <div v-show="!inputValue.trim()" class="placeholder">
+          输入消息...
+        </div>
+      </div>
+      <div class="send-row">
+        <button class="send-btn" :class="{ disabled: !inputValue.trim() }" @click="handleSend">
+          发送
+        </button>
+      </div>
+      <EmojiComponent
+        v-if="showEmoji"
+        :menu-height="height"
+        @select="handleEmojiSelect"
+        @close="hideEmojiPopup"
       />
-      <div v-show="!inputValue.trim()" class="placeholder">
-        输入消息...
-      </div>
     </div>
-    <div class="send-row">
-      <button class="send-btn" :class="{ disabled: !inputValue.trim() }" @click="handleSend">
-        发送
-      </button>
-    </div>
-    <EmojiComponent
-      v-if="showEmoji"
-      :menu-height="height"
-      @select="handleEmojiSelect"
-    />
   </div>
 </template>
 
 <script lang="ts">
+import type { UploadResult } from 'renderModule/utils/upload'
 import { MessageType } from 'commonModule/type/ajax/chat'
-import { uploadFileApi } from 'renderModule/api/file'
 import { useMessageSenderStore } from 'renderModule/app/pinia/message/message-sender'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
-import { defineComponent, ref } from 'vue'
+import { getFilesFromClipboardEvent } from 'renderModule/utils/clipboard'
+import { selectAndUploadFile, uploadFile } from 'renderModule/utils/upload'
+import { defineComponent, onBeforeUnmount, ref } from 'vue'
 import { toolList } from './data'
 import EmojiComponent from './emoji.vue'
 
@@ -55,8 +62,13 @@ export default defineComponent({
     const messageSenderStore = useMessageSenderStore()
     const inputValue = ref('')
     const inputRef = ref<HTMLDivElement | null>(null)
+    const chatInputAreaRef = ref<HTMLDivElement | null>(null)
     const height = ref(151)
     const showEmoji = ref(false)
+
+    let startY = 0
+    let startHeight = 0
+    let isResizing = false
 
     const handleInput = (e: Event) => {
       const target = e.target as HTMLDivElement
@@ -73,6 +85,91 @@ export default defineComponent({
       if (inputRef.value) {
         inputRef.value.blur()
       }
+    }
+
+    // 通用的上传并发送消息函数
+    const uploadAndSendMessage = async (uploadResults: UploadResult[]) => {
+      const conversationId = messageViewStore.currentChatId
+      if (!conversationId || uploadResults.length === 0)
+        return
+
+      try {
+        // 遍历上传结果，根据文件类型发送对应的消息
+        for (const uploadResult of uploadResults) {
+          let messageType: MessageType
+          let content: any
+
+          // 根据文件类型决定消息类型和内容
+          switch (uploadResult.type) {
+            case 'image':
+              messageType = MessageType.IMAGE
+              content = {
+                fileName: uploadResult.fileKey,
+                width: uploadResult.style.width,
+                height: uploadResult.style.height,
+              }
+              break
+
+            case 'video':
+              messageType = MessageType.VIDEO
+              content = {
+                fileName: uploadResult.fileKey,
+              }
+              break
+
+            case 'audio':
+              messageType = MessageType.VOICE
+              content = {
+                fileName: uploadResult.fileKey,
+              }
+              break
+
+            case 'file':
+            default:
+              messageType = MessageType.FILE
+              content = {
+                fileName: uploadResult.fileKey,
+              }
+              break
+          }
+
+          // 发送消息
+          await messageSenderStore.sendMessage(conversationId, content, messageType, 'private')
+        }
+      }
+      catch (error) {
+        console.error('发送文件消息失败:', error)
+        // 可以在这里添加用户提示
+      }
+    }
+
+    // 处理粘贴事件（支持粘贴文件：图片、视频、音频等）
+    const handlePaste = async (e: ClipboardEvent) => {
+      const conversationId = messageViewStore.currentChatId
+      if (!conversationId)
+        return
+
+      // 使用通用工具函数获取剪贴板中的文件
+      const files = getFilesFromClipboardEvent(e)
+
+      if (files.length > 0) {
+        // 阻止默认粘贴行为（不粘贴文件到输入框）
+        e.preventDefault()
+
+        try {
+          // 上传所有文件
+          const uploadPromises = files.map(file => uploadFile(file))
+          const uploadResults = await Promise.all(uploadPromises)
+
+          // 发送消息
+          await uploadAndSendMessage(uploadResults)
+        }
+        catch (error) {
+          console.error('粘贴文件上传失败:', error)
+          // 可以在这里添加用户提示
+        }
+      }
+      // 如果不是文件，允许默认的文本粘贴行为
     }
 
     const handleSend = async () => {
@@ -106,7 +203,8 @@ export default defineComponent({
           showEmoji.value = !showEmoji.value
           break
         case 'image':
-          handleImageSelect()
+        case 'file':
+          handleFileUpload(toolType)
           break
         // 其他工具处理...
         default:
@@ -114,71 +212,27 @@ export default defineComponent({
       }
     }
 
-    // 处理图片选择
-    const handleImageSelect = () => {
-      const input = document.createElement('input')
-      input.type = 'file'
-      input.accept = 'image/*'
-      input.multiple = false
-
-      input.onchange = async (e) => {
-        const target = e.target as HTMLInputElement
-        if (target.files && target.files.length > 0) {
-          const file = target.files[0]
-          await handleImageUpload(file)
-        }
-      }
-
-      input.click()
-    }
-
-    // 处理图片上传
-    const handleImageUpload = async (file: File) => {
-      const conversationId = messageViewStore.currentChatId
-      if (!conversationId)
-        return
-
+    // 统一处理文件上传（根据 toolType 传入不同的 accept，然后根据实际上传的文件类型决定消息类型）
+    const handleFileUpload = async (toolType: string) => {
       try {
-        // 先上传文件到服务器
-        const uploadResult = await uploadFileApi(file, file.name)
-
-        // 获取图片尺寸
-        const imageDimensions = await getImageDimensions(file)
-
-        // 构建图片消息内容
-        const imageContent = {
-          fileName: uploadResult.fileName, // 使用服务器返回的真实fileName
-          width: imageDimensions.width,
-          height: imageDimensions.height,
-          size: file.size,
+        // 根据 toolType 映射到 accept 参数
+        const acceptMap: Record<string, string | undefined> = {
+          image: 'image/*',
+          video: 'video/*',
+          audio: 'audio/*',
+          file: undefined, // 不限制类型
         }
 
-        // 通过Main进程发送图片消息
-        // await electron.messageManager.sendMessage(conversationId, imageContent, MessageType.IMAGE)
+        // 统一使用 selectAndUploadFile，传入对应的 accept，返回数组
+        const uploadResults = await selectAndUploadFile(acceptMap[toolType])
 
-        console.log('图片消息发送成功:', imageContent)
+        // 发送消息（复用通用函数）
+        await uploadAndSendMessage(uploadResults)
       }
       catch (error) {
-        console.error('发送图片消息失败:', error)
+        console.error('文件上传失败:', error)
         // 可以在这里添加用户提示
       }
-    }
-
-    // 获取图片尺寸
-    const getImageDimensions = (file: File): Promise<{ width: number, height: number }> => {
-      return new Promise((resolve, reject) => {
-        const img = new Image()
-        img.onload = () => {
-          resolve({
-            width: img.naturalWidth,
-            height: img.naturalHeight,
-          })
-        }
-        img.onerror = () => {
-          reject(new Error('无法获取图片尺寸'))
-        }
-        img.src = URL.createObjectURL(file)
-      })
     }
 
     // 修复后的表情选择处理函数
@@ -255,50 +309,87 @@ export default defineComponent({
       height.value = newHeight
     }
 
-    // 关闭表情弹窗的方法
-    const closeEmojiPopup = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-
-      // 检查点击是否在表情弹窗内或表情按钮上
-      const isEmojiPopup = !!target.closest('.emoji-popup')
-      const isEmojiButton = !!target.closest('.toolbar-btn')
-        && target.closest('.toolbar-btn')?.querySelector('img')?.alt === '表情'
-
-      // 只有点击在弹窗和按钮外部时才关闭
-      if (!isEmojiPopup && !isEmojiButton && showEmoji.value) {
-        showEmoji.value = false
-      }
-    }
-
-    // 新增 hideEmojiPopup 方法
+    // 隐藏表情弹窗
     const hideEmojiPopup = () => {
       showEmoji.value = false
     }
 
+    // 调整高度相关逻辑
+    const startResize = (e: MouseEvent) => {
+      isResizing = true
+      startY = e.clientY
+      startHeight = height.value
+      // 开始拖动时隐藏表情包详情
+      hideEmojiPopup()
+
+      document.addEventListener('mousemove', resize)
+      document.addEventListener('mouseup', stopResize)
+    }
+
+    const resize = (e: MouseEvent) => {
+      if (!isResizing)
+        return
+
+      requestAnimationFrame(() => {
+        const deltaY = startY - e.clientY
+        const newHeight = Math.max(150, Math.min(300, startHeight + deltaY))
+        setHeight(newHeight)
+      })
+    }
+
+    const stopResize = () => {
+      isResizing = false
+      document.removeEventListener('mousemove', resize)
+      document.removeEventListener('mouseup', stopResize)
+    }
+
+    // 在beforeUnmount钩子中移除事件监听
+    onBeforeUnmount(() => {
+      document.removeEventListener('mousemove', resize)
+      document.removeEventListener('mouseup', stopResize)
+    })
+
     return {
       inputValue,
       inputRef,
+      chatInputAreaRef,
       handleSend,
       handleInput,
       handleFocus,
       handleBlur,
+      handlePaste,
       handleToolClick,
       toolList,
       height,
       setHeight,
       showEmoji,
       handleEmojiSelect,
-      closeEmojiPopup,
       hideEmojiPopup,
-      handleImageSelect,
-      handleImageUpload,
-      getImageDimensions,
+      handleFileUpload,
+      startResize,
     }
   },
 })
 </script>
 
 <style lang="less" scoped>
+.chat-input-area-wrapper {
+  position: relative;
+}
+
+.resize-handle {
+  height: 2px;
+  background-color: #EBEEF5;
+  cursor: ns-resize;
+  transition: background-color 0.2s;
+  will-change: background-color;
+  user-select: none;
+
+  &:hover {
+    background-color: #D1D9E0;
+  }
+}
+
 .chat-input-area {
   background-color: #FFFFFF;
   border-top: 1px solid #EBEEF5;

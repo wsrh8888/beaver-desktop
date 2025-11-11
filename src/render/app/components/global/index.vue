@@ -3,8 +3,7 @@
   <Teleport v-if="currentComponent" to="body">
     <!-- 根据组件类型动态渲染 -->
     <UserInfoComponent v-if="currentComponent === 'userinfo'" @close="hideComponent" />
-    <!-- 这里可以添加其他组件 -->
-    <!-- <SettingsComponent v-if="currentComponent === 'settings'" @close="hideComponent" /> -->
+    <SettingsComponent v-if="currentComponent === 'settings'" @close="hideComponent" />
     <!-- <UpdateComponent v-if="currentComponent === 'update'" @close="hideComponent" /> -->
   </Teleport>
 </template>
@@ -12,12 +11,14 @@
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
 import { useGlobalStore } from '../../pinia/view/global/index'
+import SettingsComponent from './component/settings/index.vue'
 import UserInfoComponent from './component/userinfo/index.vue'
 
 export default defineComponent({
   name: 'GlobalComponent',
   components: {
     UserInfoComponent,
+    SettingsComponent,
   },
   setup() {
     const globalStore = useGlobalStore()

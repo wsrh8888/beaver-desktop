@@ -3,7 +3,7 @@ import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { MessageType } from 'commonModule/type/ajax/chat'
 import { defineStore } from 'pinia'
 
-import Logger from 'renderModule/utils/log'
+import Logger from 'renderModule/utils/logger'
 import chatSender from '../../message-manager/senders/chat-sender'
 import { useUserStore } from '../user/user'
 import { useMessageStore } from './message'
@@ -106,57 +106,52 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
         case MessageType.IMAGE:
           return {
             type: MessageType.IMAGE,
-            textMsg: undefined,
-            imageMsg: message.imageMsg,
-            videoMsg: null,
-            fileMsg: null,
-            voiceMsg: null,
-            emojiMsg: null,
-            replyMsg: null,
+            imageMsg: message.imageMsg
+              ? {
+                  fileKey: message.imageMsg.fileName, // 转换为 WebSocket 格式的 fileKey
+                  width: message.imageMsg.width || 0,
+                  height: message.imageMsg.height || 0,
+                }
+              : null,
           }
         case MessageType.VIDEO:
           return {
             type: MessageType.VIDEO,
-            textMsg: undefined,
-            imageMsg: null,
-            videoMsg: message.videoMsg,
-            fileMsg: null,
-            voiceMsg: null,
-            emojiMsg: null,
-            replyMsg: null,
+            videoMsg: message.videoMsg
+              ? {
+                  fileKey: message.videoMsg.fileName,
+                  width: 0,
+                  height: 0,
+                  duration: 0,
+                }
+              : null,
           }
         case MessageType.FILE:
           return {
             type: MessageType.FILE,
-            textMsg: undefined,
-            imageMsg: null,
-            videoMsg: null,
-            fileMsg: message.fileMsg,
-            voiceMsg: null,
-            emojiMsg: null,
-            replyMsg: null,
+            fileMsg: message.fileMsg
+              ? {
+                  name: message.fileMsg.fileName,
+                  size: 0,
+                  url: '',
+                  type: '',
+                }
+              : null,
           }
         case MessageType.VOICE:
           return {
             type: MessageType.VOICE,
-            textMsg: undefined,
-            imageMsg: null,
-            videoMsg: null,
-            fileMsg: null,
-            voiceMsg: message.voiceMsg,
-            emojiMsg: null,
-            replyMsg: null,
+            voiceMsg: message.voiceMsg
+              ? {
+                  src: message.voiceMsg.fileName,
+                  duration: 0,
+                }
+              : null,
           }
         default:
           return {
             type: MessageType.TEXT,
             textMsg: { content: String(message) },
-            imageMsg: null,
-            videoMsg: null,
-            fileMsg: null,
-            voiceMsg: null,
-            emojiMsg: null,
-            replyMsg: null,
           }
       }
     },

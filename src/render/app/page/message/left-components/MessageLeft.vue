@@ -2,7 +2,7 @@
   <div class="message-left">
     <div class="search-container">
       <div class="search-wrapper">
-        <input v-model="searchText" type="text" class="search-input" placeholder="搜索" @input="handleSearch">
+        <input v-model="searchText" type="text" class="search-input" placeholder="搜索">
         <!-- <img class="search-icon" src="renderModule/assets/image/chat/search.svg" alt="search"> -->
       </div>
     </div>
@@ -63,32 +63,18 @@ export default defineComponent({
     // 获取排序后的聊天列表
     const chatList = computed(() => conversationStore.getConversations)
 
-    // 获取当前会话ID
-    // const currentConversationId = computed(() => messageViewStore.currentChatId)
-
-    // 处理搜索
-    const handleSearch = () => {
-      // 实现搜索逻辑
-    }
-
     // 处理聊天项点击
     const handleChatClick = (chat: any) => {
       messageViewStore.setCurrentChat(chat.conversationId)
-      // conversationStore.setCurrentConversationId(chat.conversationId);
     }
 
-    // 判断是否在线
-    const isOnline = (_chat: any) => {
-      // 这里可以根据实际需求实现在线状态判断
-      return true
-    }
+    const currentConversationId = computed(() => messageViewStore.currentChatId)
+
     return {
       searchText,
       chatList,
-      currentConversationId: '',
-      handleSearch,
+      currentConversationId,
       handleChatClick,
-      isOnline,
       CacheType,
     }
   },

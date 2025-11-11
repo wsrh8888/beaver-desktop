@@ -1,7 +1,7 @@
 import type { IChatHistory } from 'commonModule/type/ajax/chat'
 import { defineStore } from 'pinia'
 
-import Logger from 'renderModule/utils/log'
+import Logger from 'renderModule/utils/logger'
 
 import { useConversationStore } from '../conversation/conversation'
 import { useMessageSenderStore } from './message-sender'

@@ -1,9 +1,10 @@
 import type { AxiosError, AxiosRequestConfig } from 'axios'
 import axios from 'axios'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger/index'
 import { v4 as uuidV4 } from 'uuid'
 import { getCommonParams } from '../config/header'
 
+const logger = new Logger('ajax')
 export interface IResponseSuccessData<T> {
   code: number
   msg: string
@@ -83,24 +84,20 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
       if (_response.code === 0) {
         logger.info({
           text: 'ajax接口正常',
-          analyse: '[ajax]接口正常',
           spendTime: `${spendTime}ms`,
           uuid: httpId,
-          url: config.url,
           response: JSON.stringify(response),
           config: JSON.stringify(config),
-        }, 'ajax')
+        })
       }
       else {
         logger.error({
           text: 'ajax状态码异常',
-          analyse: '[ajax]状态码异常',
           spendTime: `${spendTime}ms`,
           uuid: httpId,
-          url: config.url,
           response: JSON.stringify(response),
           config: JSON.stringify(config),
-        }, 'ajax')
+        })
       }
 
       return _response
@@ -110,16 +107,14 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
 
       logger.error({
         text: 'ajax接口异常',
-        analyse: '[ajax]接口异常',
         spendTime: `${spendTime}ms`,
         uuid: httpId,
-        url: config.url,
         response: JSON.stringify({
           code: err?.code,
           message: err.message,
         }),
         config: JSON.stringify(config),
-      }, 'ajax')
+      })
 
       return {
         code: -1,
