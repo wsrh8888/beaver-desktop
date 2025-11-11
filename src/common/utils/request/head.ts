@@ -8,7 +8,7 @@ let logger: any
 // 简单的进程检测
 if (typeof window !== 'undefined' && window.electron) {
   // 渲染进程
-  import('renderModule/utils/log').then((LoggerModule) => {
+  import('renderModule/utils/logger').then((LoggerModule) => {
     logger = new LoggerModule.default('head')
   })
 }
@@ -68,8 +68,6 @@ function head(config: AxiosRequestConfig): Promise<AxiosResponse | AxiosError> {
           text: 'head请求成功',
           spendTime: `${spendTime}ms`,
           uuid: httpId,
-          url: config.url,
-          method: config.method,
           config: JSON.stringify(config),
         }, 'head')
       }
@@ -83,8 +81,6 @@ function head(config: AxiosRequestConfig): Promise<AxiosResponse | AxiosError> {
           text: 'head请求失败',
           spendTime: `${spendTime}ms`,
           uuid: httpId,
-          url: config.url,
-          method: config.method,
           config: JSON.stringify(config),
           response: JSON.stringify({
             code: err?.code,

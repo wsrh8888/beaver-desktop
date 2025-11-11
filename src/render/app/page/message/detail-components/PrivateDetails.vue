@@ -94,8 +94,6 @@
               <span class="slider" />
             </label>
           </div>
-
-          <!-- 移除了收藏夹设置，因为实际项目中可能不需要 -->
         </div>
 
         <button class="delete-chat" @click="handleDeleteChat">
@@ -110,7 +108,6 @@
 </template>
 
 <script lang="ts">
-import { useConversationStore } from 'renderModule/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/app/pinia/friend/friend'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -127,9 +124,8 @@ export default defineComponent({
       default: false,
     },
   },
-  emits: ['update:visible', 'close'],
+  emits: ['close'],
   setup(props, { emit }) {
-    const _conversationStore = useConversationStore()
     const friendStore = useFriendStore()
     const messageViewStore = useMessageViewStore()
 
@@ -156,14 +152,9 @@ export default defineComponent({
       return friendStore.getFriendByConversationId(currentId) as any
     })
 
-    // 移除了获取头像文本函数，因为不再需要
-
-    // 移除了格式化时间函数，因为不再需要
-
     // 关闭详情面板
     const closeDetails = () => {
       isVisible.value = false
-      emit('update:visible', false)
       emit('close')
     }
 

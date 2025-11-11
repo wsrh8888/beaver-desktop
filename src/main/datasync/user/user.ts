@@ -13,9 +13,9 @@ export class UserSyncModule {
 
   // 登录时同步用户数据
   async checkAndSync() {
+    logger.info({ text: '开始同步用户数据' })
     const userId = store.get('userInfo')?.userId
     if (!userId) {
-      logger.warn({ text: '用户同步跳过：用户ID为空' }, 'UserSyncModule')
       return
     }
 
@@ -79,23 +79,12 @@ export class UserSyncModule {
     // 获取需要同步的用户ID列表
     const usersNeedSync = await UserSyncStatusService.getUsersNeedSync(serverVersions)
 
-    logger.info({
-      text: '用户版本对比结果',
-      data: {
-        total: userVersions.length,
-        needUpdate: usersNeedSync.length,
-        skipped: userVersions.length - usersNeedSync.length,
-      },
-    }, 'UserSyncModule')
-
     // 返回完整的用户版本对象
     return userVersions.filter(item => usersNeedSync.includes(item.userId))
   }
 
   // 同步用户数据
   private async syncUserData(usersWithVersions: Array<{ userId: string, version: number }>) {
-    logger.info({ text: '开始同步用户数据', data: { count: usersWithVersions.length } }, 'UserSyncModule')
-
     if (usersWithVersions.length === 0) {
       return
     }
@@ -125,8 +114,6 @@ export class UserSyncModule {
         userVersion: user.version,
       }))
       await UserSyncStatusService.batchUpsertUserSyncStatus(statusUpdates)
-
-      logger.info({ text: '用户数据同步完成', data: { totalCount: usersModels.length } }, 'UserSyncModule')
     }
   }
 }

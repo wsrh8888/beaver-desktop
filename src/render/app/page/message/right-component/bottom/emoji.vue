@@ -54,7 +54,7 @@
 import type { IEmojiPackageItem } from 'commonModule/type/ajax/emoji'
 import { getEmojiPackageDetailApi, getEmojiPackagesApi } from 'renderModule/api/emoji'
 import { emojiList } from 'renderModule/app/utils/emoji'
-import { defineComponent, onMounted, ref } from 'vue'
+import { defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 
 export default defineComponent({
   name: 'EmojiComponent',
@@ -64,8 +64,8 @@ export default defineComponent({
       default: 0,
     },
   },
-  emits: ['select'],
-  setup(props, { emit }) {
+  emits: ['select', 'close'],
+  setup(_props, { emit }) {
     const categories = ref<IEmojiPackageItem[]>([])
     const currentCategoryId = ref<string | number>('default')
     const currentCategory = ref<string>('默认表情')
@@ -115,9 +115,31 @@ export default defineComponent({
       emit('select', emoji.name)
     }
 
+    // 点击外部区域关闭表情弹窗
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement
+
+      // 检查点击是否在表情弹窗内或表情按钮上
+      const isEmojiPopup = !!target.closest('.emoji-popup')
+      const isEmojiButton = !!target.closest('.toolbar-btn')
+        && target.closest('.toolbar-btn')?.querySelector('img')?.alt === '表情'
+
+      // 只有点击在弹窗和按钮外部时才关闭
+      if (!isEmojiPopup && !isEmojiButton) {
+        emit('close')
+      }
+    }
+
     onMounted(() => {
       loadCategories()
       handleDefaultCategoryClick()
+      // 添加全局点击事件监听
+      document.addEventListener('click', handleClickOutside)
+    })
+
+    onBeforeUnmount(() => {
+      // 移除事件监听
+      document.removeEventListener('click', handleClickOutside)
     })
 
     return {

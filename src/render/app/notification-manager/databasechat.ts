@@ -1,7 +1,7 @@
 import type { INotificationPayload } from 'commonModule/type/preload/notification'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 
-import Logger from 'renderModule/utils/log'
+import Logger from 'renderModule/utils/logger'
 
 const logger = new Logger('DatabaseChatEventManager')
 

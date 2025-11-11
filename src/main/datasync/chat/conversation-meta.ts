@@ -4,15 +4,17 @@ import { ChatConversationService } from 'mainModule/database/services/chat/conve
 import { ChatSyncStatusService } from 'mainModule/database/services/chat/sync-status'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('datasync-conversation-meta')
 
 // 会话元数据同步器
 class ConversationMetaSync {
   // 检查并同步会话元数据
   async checkAndSync() {
+    logger.info({ text: '开始同步会话元数据' })
     const userId = store.get('userInfo')?.userId
     if (!userId) {
-      logger.error({ text: '用户ID不能为空' }, 'ConversationMetaSync')
       return
     }
 
@@ -43,10 +45,10 @@ class ConversationMetaSync {
         updatedAt: serverTimestamp,
       }).catch(() => {})
 
-      logger.info({ text: '会话元数据同步完成' }, 'ConversationMetaSync')
+      logger.info({ text: '会话元数据同步完成' })
     }
     catch (error) {
-      logger.error({ text: '会话元数据同步失败', data: { error: (error as any)?.message } }, 'ConversationMetaSync')
+      logger.error({ text: '会话元数据同步失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -78,14 +80,14 @@ class ConversationMetaSync {
         needUpdate: needUpdateConversations.length,
         skipped: conversationIds.length - needUpdateConversations.length,
       },
-    }, 'ConversationMetaSync')
+    })
 
     return needUpdateConversations
   }
 
   // 同步会话数据
   private async syncConversations(conversationsWithVersions: Array<{ conversationId: string, version: number }>) {
-    logger.info({ text: '开始同步会话元信息数据', data: { count: conversationsWithVersions.length } }, 'ConversationMetaSync')
+    logger.info({ text: '开始同步会话元信息数据', data: { count: conversationsWithVersions.length } })
 
     // 提取会话ID列表
     const conversationIds = conversationsWithVersions.map(item => item.conversationId)
@@ -119,7 +121,7 @@ class ConversationMetaSync {
       }
     }
 
-    logger.info({ text: '会话元信息数据同步完成', data: { totalCount: conversationsWithVersions.length } }, 'ConversationMetaSync')
+    logger.info({ text: '会话元信息数据同步完成', data: { totalCount: conversationsWithVersions.length } })
   }
 }
 

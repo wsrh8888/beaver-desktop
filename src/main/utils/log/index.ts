@@ -6,10 +6,8 @@ import { cacheTypeToFilePath } from 'mainModule/cache/config'
 import { getCachePath } from 'mainModule/config'
 import moment from 'moment'
 
-class Logger {
+class Log {
   constructor() {
-    // 默认初始化为公共日志
-    this.init()
   }
 
   init(userId?: string) {
@@ -63,4 +61,4 @@ class Logger {
   }
 }
 
-export default new Logger()
+export default new Log()

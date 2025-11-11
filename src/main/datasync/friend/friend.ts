@@ -4,7 +4,9 @@ import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger/index'
+
+const logger = new Logger('数据同步-friend')
 
 // 好友数据同步模块
 export class FriendSyncModule {
@@ -12,6 +14,7 @@ export class FriendSyncModule {
 
   // 检查并同步
   async checkAndSync() {
+    logger.info({ text: '开始同步好友数据' })
     const userId = store.get('userInfo')?.userId
     if (!userId)
       return
@@ -43,7 +46,7 @@ export class FriendSyncModule {
     }
     catch (error) {
       this.syncStatus = SyncStatus.FAILED
-      logger.error({ text: '好友同步失败', data: { error: (error as any)?.message } }, 'FriendSyncModule')
+      logger.error({ text: '好友数据同步失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -74,24 +77,12 @@ export class FriendSyncModule {
       return !existingFriend || existingFriend.version < serverVersion
     })
 
-    logger.info({
-      text: '好友版本对比结果',
-      data: {
-        total: friendshipIds.length,
-        needUpdate: needUpdateFriendshipIds.length,
-        skipped: friendshipIds.length - needUpdateFriendshipIds.length,
-      },
-    }, 'FriendSyncModule')
-
     return needUpdateFriendshipIds
   }
 
   // 同步好友数据
   private async syncFriendData(friendshipIds: string[]) {
-    logger.info({ text: '开始同步好友数据', data: { count: friendshipIds.length } }, 'FriendSyncModule')
-
     if (friendshipIds.length === 0) {
-      logger.info({ text: '没有有效的friendshipIds需要同步' }, 'FriendSyncModule')
       return
     }
 
@@ -100,11 +91,9 @@ export class FriendSyncModule {
     for (let i = 0; i < friendshipIds.length; i += batchSize) {
       const batchIds = friendshipIds.slice(i, i + batchSize)
 
-      console.error('API请求friendshipIds:', batchIds)
       const response = await getFriendsListByUuidsApi({
         uuids: batchIds,
       })
-      console.error('API响应:', JSON.stringify(response))
 
       if (response.result.friends.length > 0) {
         const friends = response.result.friends.map((friend: any, index: number) => ({
@@ -120,25 +109,18 @@ export class FriendSyncModule {
           updatedAt: friend.updateAt,
         }))
 
-        console.error('准备批量插入好友数据:', friends.length, '条')
-        console.error('第一条数据:', JSON.stringify(friends[0]))
         await FriendService.batchCreate(friends)
-        console.error('好友数据插入成功')
       }
     }
-
-    logger.info({ text: '好友数据同步完成', data: { totalCount: friendshipIds.length } }, 'FriendSyncModule')
   }
 
   // 更新游标
   private async updateFriendsCursor(version: number | null, updatedAt: number) {
-    console.error('更新friends游标:', { version, updatedAt })
     await DataSyncService.upsert({
       module: 'friends',
       version,
       updatedAt,
     })
-    console.error('friends游标更新完成')
   }
 
   async getStatus() {

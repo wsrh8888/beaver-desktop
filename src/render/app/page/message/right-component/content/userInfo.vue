@@ -1,7 +1,7 @@
 <template>
   <div class="user-card" :style="{ top: userStyle.top, left: userStyle.left }">
     <div class="content">
-      <BeaverImage :file-name="friendInfo.fileName" class="avatar" />
+      <BeaverImage :file-name="friendInfo.avatar" class="avatar" />
       <div class="info">
         <div class="nickname">
           {{ friendInfo.nickname }}

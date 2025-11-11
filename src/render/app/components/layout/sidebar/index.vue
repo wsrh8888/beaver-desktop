@@ -1,7 +1,7 @@
 <template>
   <div class="nav-sidebar">
-    <div class="main-logo">
-      <img src="commonModule/assets/img/logo/logo.png" alt="Beaver Logo">
+    <div ref="avatarRef" class="user-avatar-nav app__no_drag" @click="handleAvatarClick">
+      <BeaverImage :file-name="userInfo.avatar" :cache-type="CacheType.USER_AVATAR" />
     </div>
 
     <div class="nav-icons">
@@ -21,10 +21,11 @@
         </div>
       </div>
     </div>
-    <!-- <div class="app__no_drag" style="height: 200px;width: 100%; background-color: red;" @click="loginOut()">loginOut</div> -->
-    <div class="user-avatar-nav" @click="handleAvatarClick">
-      <BeaverImage :file-name="userInfo.avatar" :cache-type="CacheType.USER_AVATAR" />
+    <div class="main-logo">
+      <img src="commonModule/assets/img/logo/logo.png" alt="Beaver Logo">
     </div>
+    <!-- 用户信息弹窗 -->
+    <UserInfoSidebar :visible="showUserInfo" :avatar-element="avatarRef" @close="showUserInfo = false" />
   </div>
 </template>
 
@@ -32,22 +33,24 @@
 import { CacheType } from 'commonModule/type/cache/cache'
 import { useUserStore } from 'renderModule/app/pinia/user/user'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import { computed, nextTick } from 'vue'
+import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useGlobalStore } from '../../../pinia/view/global/index'
 import { outsideList } from './data'
+import UserInfoSidebar from './userInfo.vue'
 
 export default {
   components: {
     BeaverImage,
+    UserInfoSidebar,
   },
   setup() {
     const router = useRouter()
     const route = useRoute()
     const userStore = useUserStore()
-    const globalStore = useGlobalStore()
 
     const userInfo = computed(() => userStore.userInfo)
+    const showUserInfo = ref(false)
+    const avatarRef = ref<HTMLElement | null>(null)
 
     const handleClick = (path: string) => {
       console.error(path)
@@ -57,14 +60,10 @@ export default {
     }
 
     const handleAvatarClick = () => {
-      globalStore.setComponent('userinfo')
+      console.log('handleAvatarClick')
+      showUserInfo.value = true
     }
 
-    const loginOut = () => {
-      // TODO: 实现退出登录逻辑
-      console.log('退出登录')
-      // window.electron.window.loginOut()
-    }
     return {
       CacheType,
       userInfo,
@@ -72,7 +71,8 @@ export default {
       handleClick,
       handleAvatarClick,
       outsideList,
-      loginOut,
+      showUserInfo,
+      avatarRef,
     }
   },
 }

@@ -9,28 +9,32 @@ import logger from 'mainModule/utils/log'
 class GroupJoinRequestSync {
   // 检查并同步入群申请
   async checkAndSync() {
+    logger.info({ text: '开始同步入群申请数据' })
+    try {
     // 获取本地最后同步时间
-    const lastSyncTime = await DataSyncService.get('group_join_requests').then(cursor => cursor?.version || 0).catch(() => 0)
+      const lastSyncTime = await DataSyncService.get('group_join_requests').then(cursor => cursor?.version || 0).catch(() => 0)
 
-    // 获取服务器上变更的入群申请版本信息
-    const serverResponse = await datasyncGetSyncGroupRequestsApi({ since: lastSyncTime })
+      // 获取服务器上变更的入群申请版本信息
+      const serverResponse = await datasyncGetSyncGroupRequestsApi({ since: lastSyncTime })
 
-    // 对比本地数据，过滤出需要更新的群组
-    const needUpdateGroups = await this.compareAndFilterRequestVersions(serverResponse.result.groupVersions)
+      // 对比本地数据，过滤出需要更新的群组
+      const needUpdateGroups = await this.compareAndFilterRequestVersions(serverResponse.result.groupVersions)
 
-    if (needUpdateGroups.length > 0) {
+      if (needUpdateGroups.length > 0) {
       // 有需要更新的入群申请
-      await this.syncRequestData(needUpdateGroups)
+        await this.syncRequestData(needUpdateGroups)
+      }
+
+      // 更新游标（无论是否有变更都要更新）
+      await DataSyncService.upsert({
+        module: 'group_join_requests',
+        version: -1, // 使用时间戳而不是版本号
+        updatedAt: serverResponse.result.serverTimestamp,
+      }).catch(() => {})
     }
-
-    // 更新游标（无论是否有变更都要更新）
-    await DataSyncService.upsert({
-      module: 'group_join_requests',
-      version: -1, // 使用时间戳而不是版本号
-      updatedAt: serverResponse.result.serverTimestamp,
-    }).catch(() => {})
-
-    logger.info({ text: '入群申请同步完成' }, 'GroupJoinRequestSync')
+    catch (error) {
+      logger.error({ text: '入群申请同步失败', data: { error: (error as any)?.message } })
+    }
   }
 
   // 对比本地数据，过滤出需要更新的群组信息
@@ -53,22 +57,11 @@ class GroupJoinRequestSync {
       return localVersion < groupVersion.version
     })
 
-    logger.info({
-      text: '入群申请版本对比结果',
-      data: {
-        total: groupIds.length,
-        needUpdate: needUpdateGroups.length,
-        skipped: groupIds.length - needUpdateGroups.length,
-      },
-    }, 'GroupJoinRequestSync')
-
     return needUpdateGroups
   }
 
   // 同步入群申请数据
   private async syncRequestData(groupsWithVersions: Array<{ groupId: string, version: number }>) {
-    logger.info({ text: '开始同步入群申请数据', data: { count: groupsWithVersions.length } }, 'GroupJoinRequestSync')
-
     if (groupsWithVersions.length === 0) {
       return
     }
@@ -84,8 +77,6 @@ class GroupJoinRequestSync {
       for (const request of requests) {
         await GroupSyncStatusService.upsertSyncStatus('requests', request.groupId, request.version)
       }
-
-      logger.info({ text: '入群申请数据同步完成', data: { totalCount: requests.length } }, 'GroupJoinRequestSync')
     }
   }
 }

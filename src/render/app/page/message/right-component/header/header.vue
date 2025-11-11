@@ -34,8 +34,8 @@ export default defineComponent({
   components: {
     BeaverImage,
   },
-  emits: ['showGroupDetails', 'showPrivateDetails', 'showAiDetails'],
-  setup(props, { emit }) {
+  emits: ['showDetails'],
+  setup(_props, { emit }) {
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
 
@@ -56,9 +56,6 @@ export default defineComponent({
       else if (friendInfo.value.chatType === 2) {
         return 'group' // 群聊
       }
-      else if (friendInfo.value.chatType === 3) {
-        return 'ai' // AI聊天
-      }
       return null
     })
 
@@ -72,22 +69,8 @@ export default defineComponent({
 
     // 处理点击更多按钮
     const handleMore = () => {
-      // 根据会话类型发出不同的事件
-      console.log('1111111111111111', chatType)
-      switch (chatType.value) {
-        case 'private':
-          emit('showPrivateDetails')
-          break
-        case 'group':
-          emit('showGroupDetails')
-          break
-        case 'ai':
-          emit('showAiDetails')
-          break
-        default:
-          // 默认行为或错误处理
-          console.log('未知的会话类型')
-          break
+      if (chatType.value) {
+        emit('showDetails', chatType.value)
       }
     }
     // 移除 previewOnlineFile 函数，因为现在使用 BeaverImage 组件

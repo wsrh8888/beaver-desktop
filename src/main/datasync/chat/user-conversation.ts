@@ -4,30 +4,30 @@ import { ChatSyncStatusService } from 'mainModule/database/services/chat/sync-st
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('datasync-user-conversation')
 
 // 用户会话设置同步器
 class UserConversationSync {
   // 检查并同步用户会话设置
   async checkAndSync() {
+    logger.info({ text: '开始同步用户会话设置' })
     const userId = store.get('userInfo')?.userId
     if (!userId)
       return
-
     try {
       // 获取本地同步时间戳
       const localCursor = await DataSyncService.get('chat_user_conversations')
       const lastSyncTime = localCursor?.updatedAt || 0
-      console.log('获取时间戳', lastSyncTime)
       // 获取服务器上变更的用户会话设置版本信息
       const serverResponse = await datasyncGetSyncChatUserConversationsApi({
         since: lastSyncTime,
       })
-      console.log('获取服务器的数据', JSON.stringify(serverResponse))
 
       // 对比本地数据，过滤出需要更新的会话
       const needUpdateConversations = await this.compareAndFilterUserConversationVersions(serverResponse.result.userConversationVersions)
-      console.log('对比完后的数据', JSON.stringify(needUpdateConversations))
+
       if (needUpdateConversations.length > 0) {
         // 有变更的用户会话设置，需要同步数据
         await this.syncUserConversationSettings(needUpdateConversations)
@@ -39,11 +39,9 @@ class UserConversationSync {
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverResponse.result.serverTimestamp,
       }).catch(() => {})
-
-      logger.info({ text: '用户会话设置同步完成' }, 'UserConversationSync')
     }
     catch (error) {
-      logger.error({ text: '用户会话设置同步失败', data: { error: (error as any)?.message } }, 'UserConversationSync')
+      logger.error({ text: '用户会话设置同步失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -68,22 +66,11 @@ class UserConversationSync {
       return localVersion < conversation.version
     })
 
-    logger.info({
-      text: '用户会话设置版本对比结果',
-      data: {
-        total: conversationIds.length,
-        needUpdate: needUpdateConversations.length,
-        skipped: conversationIds.length - needUpdateConversations.length,
-      },
-    }, 'UserConversationSync')
-
     return needUpdateConversations
   }
 
   // 同步用户会话设置数据
   private async syncUserConversationSettings(conversationsWithVersions: Array<{ conversationId: string, version: number }>) {
-    logger.info({ text: '开始同步会话设置数据', data: { count: conversationsWithVersions.length } }, 'UserConversationSync')
-
     // 提取会话ID列表
     const conversationIds = conversationsWithVersions.map(item => item.conversationId)
 
@@ -98,8 +85,7 @@ class UserConversationSync {
       const response = await getUserConversationSettingsListByIdsApi({
         conversationIds: batchIds,
       })
-      console.log('分页查询参数', JSON.stringify(batchIds))
-      console.log('分页查询user设置数据', JSON.stringify(response))
+
       if (response.result.userConversationSettings && response.result.userConversationSettings.length > 0) {
         const userConversations = response.result.userConversationSettings.map(uc => ({
           userId: uc.userId,
@@ -126,8 +112,6 @@ class UserConversationSync {
         }
       }
     }
-
-    logger.info({ text: '会话设置数据同步完成', data: { totalCount: conversationsWithVersions.length } }, 'UserConversationSync')
   }
 }
 
