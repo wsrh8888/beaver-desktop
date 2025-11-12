@@ -238,4 +238,16 @@ export enum NotificationCommand {
    * @description: 发送通知
    */
   Send = 'notification:send',
+  /**
+   * @description: 显示系统通知
+   */
+  ShowSystemNotification = 'notification:showSystemNotification',
+  /**
+   * @description: 更新托盘菜单项列表
+   */
+  UpdateTray = 'notification:updateTray',
+  /**
+   * @description: 删除托盘菜单项
+   */
+  DeleteTrayItem = 'notification:deleteTrayItem',
 }

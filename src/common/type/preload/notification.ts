@@ -66,9 +66,37 @@ export interface NotificationCommandMap {
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
 }
 
+import type { TrayMenuItem } from './app'
+
 export interface INotificationPayload<M extends NotificationModule> {
   command: NotificationCommandMap[M]
   data?: any
+}
+
+export interface SystemNotificationOptions {
+  /**
+   * @description: 通知标题
+   */
+  title: string
+  /**
+   * @description: 通知内容
+   */
+  body: string
+  /**
+   * @description: 通知图标
+   */
+  icon?: string
+  /**
+   * @description: 是否静默通知
+   */
+  silent?: boolean
+}
+
+export interface TrayUpdateOptions {
+  /**
+   * @description: 托盘菜单项列表，用于更新或添加消息项
+   */
+  menuItems?: TrayMenuItem[]
 }
 
 export interface INotificationModule {
@@ -80,4 +108,18 @@ export interface INotificationModule {
     command: NotificationCommandMap[M],
     payload?: any
   ): void
+  /**
+   * 显示系统通知
+   */
+  showSystemNotification(options: SystemNotificationOptions): void
+  /**
+   * 更新托盘菜单项列表
+   * @param options 托盘更新选项，可以添加或更新消息项
+   */
+  updateTray(options: TrayUpdateOptions): void
+  /**
+   * 删除托盘菜单项
+   * @param id 要删除的消息项 ID
+   */
+  deleteTrayItem(id: string): void
 }
