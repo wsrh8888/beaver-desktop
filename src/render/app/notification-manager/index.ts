@@ -1,6 +1,6 @@
-import DatabaseChatEventManager from './databasechat'
-import DatabaseFriendEventManager from './databasefriend'
-import DatabaseUserEventManager from './databaseuser'
+import DatabaseChatEventManager from './chat'
+import DatabaseFriendEventManager from './friend'
+import DatabaseUserEventManager from './user'
 
 /**
  * @description: 基础事件管理中心

@@ -1,4 +1,4 @@
-import type { INotificationModule, INotificationPayload, NotificationCommandMap, NotificationModule } from 'commonModule/type/preload/notification'
+import type { INotificationModule, INotificationPayload, NotificationCommandMap, NotificationModule, SystemNotificationOptions, TrayUpdateOptions } from 'commonModule/type/preload/notification'
 import { NotificationCommand } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
@@ -25,5 +25,25 @@ export const notificationModule: INotificationModule = {
   send: <M extends NotificationModule>(targetName: string, module: M, command: NotificationCommandMap[M], payload?: any) => {
     ipcRenderManager.send(IEvent.RenderToMain, NotificationCommand.Send, { targetName, module, command, payload })
   },
-
+  /**
+   * 显示系统通知
+   * @param options 通知选项
+   */
+  showSystemNotification: (options: SystemNotificationOptions) => {
+    ipcRenderManager.send(IEvent.RenderToMain, NotificationCommand.ShowSystemNotification, options)
+  },
+  /**
+   * 更新托盘菜单项列表
+   * @param options 托盘更新选项，可以添加或更新消息项
+   */
+  updateTray: (options: TrayUpdateOptions) => {
+    ipcRenderManager.send(IEvent.RenderToMain, NotificationCommand.UpdateTray, options)
+  },
+  /**
+   * 删除托盘菜单项
+   * @param id 要删除的消息项 ID
+   */
+  deleteTrayItem: (id: string) => {
+    ipcRenderManager.send(IEvent.RenderToMain, NotificationCommand.DeleteTrayItem, id)
+  },
 }
