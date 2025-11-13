@@ -1,8 +1,6 @@
-import type { IChatHistoryRes, IChatMessageVerRangeRes } from 'commonModule/type/ajax/chat'
 import { and, desc, eq, gte, inArray, lt, lte } from 'drizzle-orm'
 import { chats } from 'mainModule/database/tables/chat/message'
 import dbManager from '../../db'
-import { UserService } from '../user/user'
 
 // 消息服务
 export class MessageService {
@@ -56,140 +54,33 @@ export class MessageService {
     }
   }
 
-  // 获取会话的历史消息
-  static async getChatHistory(_header: any, params: any): Promise<IChatHistoryRes> {
-    // 前端可能传递 conversation 或 conversationId
-    const conversationId = params.conversationId || params.conversation
-    const seq = params.seq // 可选，用于加载历史消息（比这个seq更小的消息）
-    const limit = params.limit || 20
+  // 获取会话的历史消息（纯数据库查询，不含业务逻辑）
+  static async getChatHistory(conversationId: string, options?: { seq?: number, limit?: number }): Promise<any[]> {
+    const { seq, limit = 20 } = options || {}
 
     let query = this.db.select().from(chats).where(eq(chats.conversationId as any, conversationId as any))
 
     if (seq !== undefined && seq !== null) {
       // 如果传入了seq，加载比这个seq更小的消息（历史消息）
-      // 使用 lt(seq) 而不是 lte(seq) 来避免重复加载
       query = query.where(lt(chats.seq as any, seq))
     }
 
     // 获取消息列表 - 按seq降序排列，确保最新的消息在前
     // limit + 1 用于判断是否还有更多数据
-    const messages = await query.orderBy(desc(chats.seq as any)).limit(limit + 1).all()
-
-    // 判断是否还有更多数据（返回 limit+1 条，如果超过 limit 条说明有更多数据）
-    const hasMore = messages.length > limit
-    const actualMessages = hasMore ? messages.slice(0, limit) : messages
-
-    // 获取所有发送者ID（排除空值）
-    const senderIds = [...new Set(actualMessages.map((m: any) => m.sendUserId).filter((id: string) => id && id.trim()))]
-
-    // 获取发送者信息
-    const senderInfoMap = new Map()
-    if (senderIds.length > 0) {
-      try {
-        const senderDetails = await UserService.getUsersBasicInfo(senderIds as string[])
-        senderDetails.forEach((detail) => {
-          senderInfoMap.set(detail.userId, {
-            userId: detail.userId,
-            nickname: detail.nickName,
-            avatar: detail.avatar,
-          })
-        })
-      }
-      catch (error) {
-        console.error('Failed to get sender details in chat history:', error)
-      }
-    }
-
-    // 转换数据格式以匹配前端期望的API响应格式
-    const formattedMessages = actualMessages.map((message: any) => {
-      const senderDetail = senderInfoMap.get(message.sendUserId)
-
-      return {
-        id: message.id,
-        messageId: message.messageId,
-        conversationId: message.conversationId,
-        seq: message.seq,
-        msg: typeof message.msg === 'string' ? JSON.parse(message.msg) : message.msg, // 解析JSON字符串
-        sender: {
-          userId: message.sendUserId || '',
-          avatar: senderDetail?.avatar || '',
-          nickname: senderDetail?.nickname || (message.sendUserId ? '用户' : '系统消息'),
-        },
-        create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
-        status: 0, // 消息状态：正常（只增不修改原则）
-        sendStatus: message.sendStatus || 0, // 发送状态（前端需要）
-      }
-    })
-
-    return {
-      count: formattedMessages.length, // 当前页的数量
-      list: formattedMessages,
-    }
+    return await query.orderBy(desc(chats.seq as any)).limit(limit + 1).all()
   }
 
-  // 按序列号范围获取消息（用于数据同步）
-  static async getChatMessagesBySeqRange(_header: any, params: any): Promise<IChatMessageVerRangeRes> {
-    const { startSeq, endSeq, conversationId } = params
-
-    // 构建基础查询
-    let query = this.db.select().from(chats)
-
-    // 应用复合条件：seq 范围 + conversationId
-
-    query = query.where(
-      and(
-        gte(chats.seq as any, startSeq as any),
-        lte(chats.seq as any, endSeq as any),
-        eq(chats.conversationId as any, conversationId as any),
-      ),
-    )
-
-    // 排序
-    query = query.orderBy(chats.seq, 'asc')
-
-    const result = await query.all()
-
-    // 获取发送者信息（同步接口也需要完整用户信息）
-    const senderIds = [...new Set(result.map((m: any) => m.sendUserId).filter((id: string) => id && id.trim()))]
-    const senderInfoMap = new Map()
-    if (senderIds.length > 0) {
-      try {
-        const senderDetails = await UserService.getUsersBasicInfo(senderIds as string[])
-        senderDetails.forEach((detail) => {
-          senderInfoMap.set(detail.userId, {
-            userId: detail.userId,
-            nickname: detail.nickName,
-            avatar: detail.avatar,
-          })
-        })
-      }
-      catch (error) {
-        console.warn('[DEBUG] Failed to get sender details in seq range query:', error)
-      }
-    }
-
-    // 转换为 IChatHistory 格式
-    const formattedMessages = result.map((message: any) => {
-      const senderDetail = senderInfoMap.get(message.sendUserId)
-      return {
-        id: message.id,
-        messageId: message.messageId,
-        conversationId: message.conversationId,
-        seq: message.seq,
-        msg: typeof message.msg === 'string' ? JSON.parse(message.msg) : message.msg, // 解析JSON字符串
-        sender: {
-          userId: message.sendUserId || '',
-          avatar: senderDetail?.avatar || '',
-          nickname: senderDetail?.nickname || (message.sendUserId ? '用户' : '系统消息'),
-        },
-        create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
-        status: 0, // 消息状态：正常（只增不修改原则）
-        sendStatus: message.sendStatus || 1, // 发送状态（客户端使用）
-      }
-    })
-
-    return {
-      list: formattedMessages,
-    }
+  // 按序列号范围获取消息（纯数据库查询，不含业务逻辑）
+  static async getChatMessagesBySeqRange(conversationId: string, startSeq: number, endSeq: number): Promise<any[]> {
+    return await this.db.select().from(chats)
+      .where(
+        and(
+          gte(chats.seq as any, startSeq as any),
+          lte(chats.seq as any, endSeq as any),
+          eq(chats.conversationId as any, conversationId as any),
+        ),
+      )
+      .orderBy(chats.seq, 'asc')
+      .all()
   }
 }

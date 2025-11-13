@@ -13,8 +13,8 @@
           <div class="group-avatar-container">
             <div v-if="groupInfo" class="group-avatar">
               <BeaverImage
-                v-if="groupInfo.fileName"
-                :file-name="groupInfo.fileName"
+                v-if="groupInfo.avatar"
+                :file-name="groupInfo.avatar"
                 alt="群头像"
                 image-class="group-avatar-image"
               />
@@ -70,8 +70,8 @@
             >
               <div class="member-avatar">
                 <BeaverImage
-                  v-if="member.fileName"
-                  :file-name="member.fileName"
+                  v-if="member.avatar"
+                  :file-name="member.avatar"
                   alt="成员头像"
                   image-class="member-avatar-image"
                 />

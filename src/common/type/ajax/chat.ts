@@ -116,15 +116,50 @@ export interface IConversationInfoReq {
 
 // 会话信息响应
 export interface IConversationInfoRes {
-  avatar: string // 头像
-  nickname: string // 昵称
-  msg_preview: string // 消息预览
-  update_at: string // 消息时间
-  is_top: boolean // 是否置顶
-  conversationId: string // 会话ID
-  chatType: number // 会话类型 1:好友 2:群聊 3:AI机器人
-  notice: string // 备注
-  version: number // 会话配置版本号
+  /**
+   * @description: 头像
+   */
+  avatar: string
+  /**
+   * @description: 昵称
+   */
+  nickname: string
+  /**
+   * @description: 消息预览
+   */
+  msg_preview: string
+  /**
+   * @description: 消息时间
+   */
+  update_at: string
+  /**
+   * @description: 是否置顶
+   */
+  is_top: boolean
+  /**
+   * @description: 会话ID
+   */
+  conversationId: string
+  /**
+   * @description: 会话类型
+   */
+  chatType: number
+  /**
+   * @description: 备注
+   */
+  notice: string
+  /**
+   * @description: 会话配置版本号
+   */
+  version: number
+  /**
+   * @description: 未读消息数量
+   */
+  unread_count: number
+  /**
+   * @description: 是否免打扰
+   */
+  is_muted: boolean
 }
 
 // 最近聊天列表请求
@@ -262,7 +297,7 @@ export interface IChatHistory {
 
 // 聊天数据同步请求
 export interface IChatSyncReq {
-  conversationId?: string // 会话ID，可选，不传则同步所有会话
+  conversationId: string // 会话ID，可选，不传则同步所有会话
   fromSeq: number // 起始序列号
   toSeq: number // 结束序列号
   limit?: number // 限制数量，默认100

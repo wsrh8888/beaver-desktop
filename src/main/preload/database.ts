@@ -6,7 +6,7 @@ import { DatabaseCommand } from 'commonModule/type/ipc/command'
 import { DataFriendCommand, DataUserCommand, DataChatCommand, DataGroupCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
-import { IGetGroupListReq, IGetGroupMembersReq, IGroupMemberListRes, IGroupJoinRequestListReq, IGroupJoinRequestListRes } from 'commonModule/type/ajax/group'
+import { IGetGroupListReq, IGetGroupMembersReq, IGroupListRes, IGroupMemberListRes, IGroupJoinRequestListReq, IGroupJoinRequestListRes } from 'commonModule/type/ajax/group'
 
 export const databaseModule: IDatabaseModule = {
   // 用户相关
@@ -76,7 +76,7 @@ export const databaseModule: IDatabaseModule = {
     },
   },
   group: {
-    getGroupList: async (params: IGetGroupListReq): Promise<IGetGroupListReq> => {
+    getGroupList: async (params: IGetGroupListReq): Promise<IGroupListRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
         command: DataGroupCommand.GET_GROUP_LIST,
         data: params,
@@ -95,8 +95,9 @@ export const databaseModule: IDatabaseModule = {
       })
     },
     getAllGroupJoinRequests: async (params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes> => {
+      // 合并为同一个方法：获取用户相关的群组申请（包括用户申请的 + 别人申请用户管理的群组）
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
-        command: DataGroupCommand.GET_ALL_GROUP_JOIN_REQUESTS,
+        command: DataGroupCommand.GET_GROUP_JOIN_REQUEST_LIST,
         data: params,
       })
     },

@@ -14,7 +14,7 @@
           image-class="avatar-image" @click.stop="showUserInfo($event, message)"
         />
       </div>
-      <div class="message-content" @contextmenu.prevent="showCustomContextMenu($event)">
+      <div class="message-content" @contextmenu.prevent="handleContextMenu($event, message)">
         <div
           v-if="message.msg.type === 1" class="message-text selectable"
           v-html="formatMessageWithEmojis(message.msg.textMsg?.content)"
@@ -47,15 +47,16 @@
       </div>
     </div>
 
-    <!-- 自定义右键菜单 -->
-    <div v-show="showMenu" class="custom-context-menu" :style="menuPosition">
-      <div v-show="copyShow" class="menu-item" @click="copySelectedText">
-        复制
-      </div>
-      <div v-for="item in menuList" v-show="!copyShow" :key="item.id" class="menu-item">
-        <div>{{ item.name }}</div>
-      </div>
-    </div>
+    <!-- 右键菜单组件 -->
+    <ContextMenu
+      ref="contextMenuRef"
+      :trigger="'manual'"
+      :visible="contextMenuVisible"
+      :menu-items="contextMenuItems"
+      :position="contextMenuPosition"
+      @update:visible="contextMenuVisible = $event"
+      @command="(item) => handleMenuCommand(item, currentMessage)"
+    />
     <UserInfo v-if="userInfo.show" :user-info="userInfo" />
   </div>
 </template>
@@ -69,13 +70,19 @@ import { useUserStore } from 'renderModule/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import { emojiMap } from 'renderModule/app/utils/emoji'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import ContextMenu from 'renderModule/components/ui/context-menu/index.vue'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import userInfo from './userInfo.vue'
+import { getMenuItems, MessageContentType } from './data'
+import { copyToClipboard, hasTextSelected } from './copy'
+import { calculateImageSize } from 'renderModule/utils/image/index'
+import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 
 export default defineComponent({
   components: {
     UserInfo: userInfo,
     BeaverImage,
+    ContextMenu,
   },
   setup() {
     const userInfo = ref({
@@ -94,10 +101,12 @@ export default defineComponent({
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
     const messageContainer = ref<HTMLElement | null>(null)
-    const copyShow = ref(true)
     // 右键菜单相关状态
-    const showMenu = ref(false)
-    const menuPosition = ref({ top: '0px', left: '0px' })
+    const contextMenuRef = ref<InstanceType<typeof ContextMenu> | null>(null)
+    const contextMenuVisible = ref(false)
+    const contextMenuPosition = ref<{ x: number, y: number } | null>(null)
+    const contextMenuItems = ref<ContextMenuItem[]>([])
+    const currentMessage = ref<any>(null) // 当前右键点击的消息
 
     const messages = computed(() => {
       const currentId = messageViewStore.currentChatId
@@ -112,57 +121,15 @@ export default defineComponent({
       }
     })
 
-    const menuList = ref([
-      { id: 1, name: '复制' },
-    ])
-
-    // 计算图片尺寸
-    const calculateImageSize = (originalWidth: number, originalHeight: number) => {
-      // 设置最大宽度和最大高度限制
-      const maxWidth = 240 // 最大宽度240px
-      const maxHeight = 300 // 最大高度300px
-
-      console.log('原始尺寸:', originalWidth, 'x', originalHeight, '比例:', (originalWidth / originalHeight).toFixed(2))
-      console.log('最大限制:', maxWidth, 'x', maxHeight)
-
-      // 如果图片的宽度和高度都小于最大限制，直接使用原始尺寸
-      if (originalWidth <= maxWidth && originalHeight <= maxHeight) {
-        console.log('图片尺寸在限制范围内，使用原始尺寸')
-        return {
-          width: originalWidth,
-          height: originalHeight,
-        }
-      }
-
-      // 计算宽度和高度的缩放比例
-      const widthRatio = maxWidth / originalWidth
-      const heightRatio = maxHeight / originalHeight
-
-      // 选择较小的缩放比例，确保图片完全适应限制，同时保持宽高比
-      const scaleRatio = Math.min(widthRatio, heightRatio)
-
-      const newWidth = originalWidth * scaleRatio
-      const newHeight = originalHeight * scaleRatio
-
-      console.log('缩放比例:', '宽度比例:', widthRatio.toFixed(3), '高度比例:', heightRatio.toFixed(3), '使用比例:', scaleRatio.toFixed(3))
-      console.log('缩放后尺寸:', newWidth.toFixed(1), 'x', newHeight.toFixed(1), '比例:', (newWidth / newHeight).toFixed(2))
-
-      return {
-        width: newWidth,
-        height: newHeight,
-      }
-    }
 
     // 计算图片尺寸（从消息数据中获取）
     const getImageSize = (message: any) => {
       if (message.msg.type === 2 && message.msg.imageMsg) {
         const { width, height } = message.msg.imageMsg
         if (width && height) {
-          console.log('计算图片尺寸', message.msg.imageMsg.fileName, calculateImageSize(width, height))
           return calculateImageSize(width, height)
         }
       }
-      console.log('没有找到图片尺寸信息，使用默认值')
       // 如果没有尺寸信息，返回默认值
       return { width: 200, height: 200 }
     }
@@ -182,83 +149,81 @@ export default defineComponent({
       })
     }
 
-    // 显示自定义右键菜单
-    const showCustomContextMenu = (event: MouseEvent) => {
-      const selection = window.getSelection()
-      console.log(selection, 'selection')
-      if (selection && selection.toString().trim().length > 0) {
-        // 只有当有文本被选中时才显示右键菜单
-        console.log(selection, 'text')
-        showMenu.value = true
-        menuPosition.value = {
-          top: `${event.clientY}px`,
-          left: `${event.clientX}px`,
-        }
-        copyShow.value = true
-        // 阻止默认的右键菜单
-        event.preventDefault()
+    // 处理右键菜单
+    const handleContextMenu = (event: MouseEvent, message: any) => {
+      event.preventDefault()
+      event.stopPropagation()
+
+      // 保存当前消息，用于菜单命令处理
+      currentMessage.value = message
+
+      // 获取消息类型
+      const messageType = message.msg.type as MessageContentType
+      
+      // 检查是否有文本被选中（仅对文本消息有效）
+      const hasSelected = messageType === MessageContentType.TEXT && hasTextSelected()
+      
+      // 根据消息类型获取菜单项
+      contextMenuItems.value = getMenuItems(messageType, hasSelected)
+      
+      // 设置菜单位置
+      contextMenuPosition.value = {
+        x: event.clientX,
+        y: event.clientY,
       }
-      else {
-        console.log('menu')
-        showMenu.value = true
-        menuPosition.value = {
-          top: `${event.clientY}px`,
-          left: `${event.clientX}px`,
+      
+      // 显示菜单
+      contextMenuVisible.value = true
+    }
+
+    // 处理菜单项点击
+    const handleMenuCommand = async (item: ContextMenuItem, message?: any) => {
+      switch (item.id) {
+        case 'copy': {
+          // 复制文本（文本消息）
+          const selectedText = window.getSelection()?.toString().trim() || ''
+          if (selectedText) {
+            await copyToClipboard(selectedText)
+          }
+          break
         }
-        copyShow.value = false
-        event.preventDefault()
+        case 'save': {
+          // 保存文件（图片/视频/音频/文件）
+          console.log('保存文件功能开发中', message)
+          break
+        }
+        case 'view': {
+          // 查看原图（图片消息）
+          console.log('查看原图功能开发中', message)
+          break
+        }
+        case 'play': {
+          // 播放（视频/音频消息）
+          console.log('播放功能开发中', message)
+          break
+        }
+        case 'open': {
+          // 打开文件（文件消息）
+          console.log('打开文件功能开发中', message)
+          break
+        }
+        case 'forward': {
+          // 转发消息
+          console.log('转发消息功能开发中', message)
+          break
+        }
+        case 'delete': {
+          // 删除消息
+          console.log('删除消息功能开发中', message)
+          break
+        }
+        default:
+          console.log('未知菜单项:', item)
       }
     }
 
-    // 复制选中文本
-    const copySelectedText = () => {
-      const selection = window.getSelection()
-      if (selection && selection.toString().trim().length > 0) {
-        try {
-          // 尝试使用现代剪贴板API
-          navigator.clipboard.writeText(selection.toString())
-            .then(() => {
-              showMenu.value = false
-            })
-            .catch((err) => {
-              console.error('复制失败:', err)
-              // 回退到传统方法
-              fallbackCopy(selection.toString())
-            })
-        }
-        catch {
-          // 如果不支持clipboard API，使用传统方法
-          fallbackCopy(selection.toString())
-        }
-      }
-
-      showMenu.value = false
-    }
-
-    // 传统复制方法（备用）
-    const fallbackCopy = (text: string) => {
-      const textArea = document.createElement('textarea')
-      textArea.value = text
-      textArea.style.position = 'fixed' // 避免滚动到底部
-      document.body.appendChild(textArea)
-      textArea.focus()
-      textArea.select()
-
-      try {
-        document.execCommand('copy')
-      }
-      catch (err) {
-        console.error('复制失败:', err)
-      }
-
-      document.body.removeChild(textArea)
-    }
-
-    // 点击其他地方时隐藏右键菜单
-    const hideDialog = (e: MouseEvent) => {
-      console.log('hide', e)
-
-      showMenu.value = false
+    // 点击其他地方时隐藏用户信息
+    const hideDialog = () => {
       userInfo.value.show = false
     }
 
@@ -311,12 +276,6 @@ export default defineComponent({
       scrollToBottom()
       // 添加全局点击事件监听
       document.addEventListener('click', hideDialog)
-      document.addEventListener('contextmenu', (e) => {
-        // 允许在非自定义区域使用默认右键菜单
-        if (!e.target || !(e.target as HTMLElement).closest('.message-text')) {
-          showMenu.value = false
-        }
-      })
       // 添加滚动监听器
       if (messageContainer.value) {
         messageContainer.value.addEventListener('scroll', handleScroll)
@@ -368,12 +327,13 @@ export default defineComponent({
       messageContainer,
       handleImageClick,
       formatMessageWithEmojis,
-      showMenu,
-      menuPosition,
-      showCustomContextMenu,
-      copySelectedText,
-      copyShow,
-      menuList,
+      contextMenuRef,
+      contextMenuVisible,
+      contextMenuPosition,
+      contextMenuItems,
+      currentMessage,
+      handleContextMenu,
+      handleMenuCommand,
       userInfo,
       showUserInfo,
       getImageSize,
@@ -399,29 +359,6 @@ export default defineComponent({
   -moz-user-select: text !important;
   -ms-user-select: text !important;
   cursor: text;
-}
-
-.custom-context-menu {
-  position: fixed;
-  background: white;
-  border: 1px solid #EBEEF5;
-  border-radius: 4px;
-  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  padding: 5px 0;
-  min-width: 80px;
-  z-index: 9999;
-}
-
-.menu-item {
-  padding: 8px 16px;
-  cursor: pointer;
-  font-size: 14px;
-  color: #2D3436;
-}
-
-.menu-item:hover {
-  background-color: #F9FAFB;
-  color: #FF7D45;
 }
 
 @keyframes spin {

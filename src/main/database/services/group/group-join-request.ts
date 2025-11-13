@@ -1,10 +1,9 @@
 import type { IGroupJoinRequestListRes } from 'commonModule/type/ajax/group'
 import type { IDBGroupJoinRequest } from 'commonModule/type/database/group'
-import { and, eq, gte, inArray, lte } from 'drizzle-orm'
+import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
 import { groupJoinRequests } from 'mainModule/database/tables/group/join-requests'
 import { groupMembers } from 'mainModule/database/tables/group/members'
 import dbManager from '../../db'
-import { UserService } from '../user/user'
 
 // 入群申请服务
 export class GroupJoinRequestService {
@@ -87,7 +86,114 @@ export class GroupJoinRequestService {
     return { list: requests }
   }
 
-  // 获取所有群组申请列表（分页）
+  // 获取群组申请记录（纯数据库查询，不含业务逻辑）
+  static async getJoinRequests(options?: { page?: number, limit?: number }): Promise<IDBGroupJoinRequest[]> {
+    const { page = 1, limit = 20 } = options || {}
+    const offset = (page - 1) * limit
+
+    return await this.db
+      .select()
+      .from(groupJoinRequests)
+      .orderBy(groupJoinRequests.createdAt, 'desc')
+      .limit(limit)
+      .offset(offset)
+      .all()
+  }
+
+  // 获取群组申请总数（纯数据库查询）
+  static async getJoinRequestsCount(): Promise<number> {
+    const result = await this.db
+      .select({ count: groupJoinRequests.id })
+      .from(groupJoinRequests)
+      .all()
+    return result[0]?.count || 0
+  }
+
+  // 根据群组ID列表获取群组申请记录（纯数据库查询）
+  static async getJoinRequestsByGroupIds(groupIds: string[], options?: { page?: number, limit?: number }): Promise<IDBGroupJoinRequest[]> {
+    const { page = 1, limit = 20 } = options || {}
+    const offset = (page - 1) * limit
+
+    return await this.db
+      .select()
+      .from(groupJoinRequests)
+      .where(inArray(groupJoinRequests.groupId as any, groupIds as any))
+      .orderBy(groupJoinRequests.createdAt, 'desc')
+      .limit(limit)
+      .offset(offset)
+      .all()
+  }
+
+  // 根据群组ID列表获取群组申请总数（纯数据库查询）
+  static async getJoinRequestsCountByGroupIds(groupIds: string[]): Promise<number> {
+    const result = await this.db
+      .select({ count: groupJoinRequests.id })
+      .from(groupJoinRequests)
+      .where(inArray(groupJoinRequests.groupId as any, groupIds as any))
+      .all()
+    return result[0]?.count || 0
+  }
+
+  // 获取用户相关的所有群组申请记录（纯数据库查询）
+  // 包括：1. 用户申请的群组（applicantUserId = userId）
+  //       2. 别人申请用户管理的群组（groupId IN (用户管理的群组ID列表)）
+  static async getUserRelatedJoinRequests(userId: string, managedGroupIds: string[], options?: { page?: number, limit?: number }): Promise<IDBGroupJoinRequest[]> {
+    const { page = 1, limit = 20 } = options || {}
+    const offset = (page - 1) * limit
+
+    // 构建查询条件：用户申请的 OR 别人申请用户管理的群组
+    const conditions = []
+    
+    // 条件1：用户申请的群组
+    conditions.push(eq(groupJoinRequests.applicantUserId as any, userId as any))
+    
+    // 条件2：别人申请用户管理的群组
+    if (managedGroupIds.length > 0) {
+      conditions.push(inArray(groupJoinRequests.groupId as any, managedGroupIds as any))
+    }
+
+    // 如果没有任何条件，返回空数组
+    if (conditions.length === 0) {
+      return []
+    }
+
+    return await this.db
+      .select()
+      .from(groupJoinRequests)
+      .where(or(...conditions))
+      .orderBy(groupJoinRequests.createdAt, 'desc')
+      .limit(limit)
+      .offset(offset)
+      .all()
+  }
+
+  // 获取用户相关的所有群组申请总数（纯数据库查询）
+  static async getUserRelatedJoinRequestsCount(userId: string, managedGroupIds: string[]): Promise<number> {
+    // 构建查询条件：用户申请的 OR 别人申请用户管理的群组
+    const conditions = []
+    
+    // 条件1：用户申请的群组
+    conditions.push(eq(groupJoinRequests.applicantUserId as any, userId as any))
+    
+    // 条件2：别人申请用户管理的群组
+    if (managedGroupIds.length > 0) {
+      conditions.push(inArray(groupJoinRequests.groupId as any, managedGroupIds as any))
+    }
+
+    // 如果没有任何条件，返回0
+    if (conditions.length === 0) {
+      return 0
+    }
+
+    const result = await this.db
+      .select({ count: groupJoinRequests.id })
+      .from(groupJoinRequests)
+      .where(or(...conditions))
+      .all()
+    return result[0]?.count || 0
+  }
+
+  // 获取所有群组申请列表（分页）- 已废弃，请使用业务层
   static async getAllGroupJoinRequests(page: number = 1, limit: number = 20): Promise<IGroupJoinRequestListRes> {
     // 计算分页
     const offset = (page - 1) * limit
@@ -112,9 +218,9 @@ export class GroupJoinRequestService {
     // 获取所有申请者ID
     const applicantIds = requests.map((r: IDBGroupJoinRequest) => r.applicantUserId as string).filter((id: string) => id)
 
-    // 批量获取申请者用户信息
-    const userInfos = await UserService.getUsersBasicInfo(applicantIds)
-    const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
+    // 批量获取申请者用户信息（业务逻辑，已移至业务层）
+    // const userInfos = await UserService.getUsersBasicInfo(applicantIds)
+    // const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
 
     // 转换为API响应格式
     const list: IGroupJoinRequestListRes['list'] = []
@@ -183,9 +289,9 @@ export class GroupJoinRequestService {
     // 获取所有申请者ID
     const applicantIds = requests.map((r: IDBGroupJoinRequest) => r.applicantUserId as string).filter((id: string) => id)
 
-    // 批量获取申请者用户信息
-    const userInfos = await UserService.getUsersBasicInfo(applicantIds)
-    const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
+    // 批量获取申请者用户信息（业务逻辑，已移至业务层）
+    // const userInfos = await UserService.getUsersBasicInfo(applicantIds)
+    // const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
 
     // 转换为API响应格式
     const list: IGroupJoinRequestListRes['list'] = []

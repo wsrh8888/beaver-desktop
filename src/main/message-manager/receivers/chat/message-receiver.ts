@@ -2,8 +2,8 @@ import type { IDBChatMessage } from 'commonModule/type/database/chat'
 import type { IPrivateMessageReceiveBody, IPrivateMessageSyncBody } from 'commonModule/type/ws/message-types'
 import { SendStatus } from 'commonModule/type/database/chat'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
-import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
 import { MessageService } from 'mainModule/database/services/chat/message'
+import { messageBusiness } from 'mainModule/business/chat/message'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
@@ -114,8 +114,8 @@ export class MessageReceiver extends BaseReceiver<IDBChatMessage> {
       }
     }
 
-    // 3. 批量更新会话最后消息
-    await this.batchUpdateConversationLastMessages(messages)
+    // 3. 批量更新会话最后消息（通过Business层）
+    await messageBusiness.processNewMessages({ messages })
   }
 
   private transformMessageMsg(msg: any) {

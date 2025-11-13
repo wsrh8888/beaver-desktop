@@ -10,7 +10,7 @@ import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
 
 /**
- * @description: 聊天数据同步
+ * @description: 某个会话的聊天数据同步
  */
 export const chatSyncApi = (data: IChatSyncReq) => {
   return ajax<IChatSyncRes>({

@@ -1,8 +1,8 @@
 import { DataGroupCommand } from 'commonModule/type/ipc/database'
-import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
-import { GroupMemberService } from 'mainModule/database/services/group/group-member'
+import { groupBusiness } from 'mainModule/business/group/group'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
+import { ICommonHeader } from 'commonModule/type/ajax/common'
 
 const loggerName = 'group-handler'
 
@@ -10,7 +10,7 @@ export class GroupHandler {
   /**
    * 处理群组相关的数据库命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataGroupCommand, data: any, header: any = {}): Promise<any> {
+  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataGroupCommand, data: any, header: ICommonHeader): Promise<any> {
     logger.info({ text: '处理群组命令', data: { command, data } }, loggerName)
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
@@ -19,13 +19,13 @@ export class GroupHandler {
 
     switch (command) {
       case DataGroupCommand.GET_GROUP_LIST:
-        return await GroupMemberService.getUserGroups(header.userId)
+        return await groupBusiness.getGroupList(header, data)
       case DataGroupCommand.GET_GROUP_MEMBERS:
-        return await GroupMemberService.getGroupMembers(data.groupId)
+        return await groupBusiness.getGroupMembers(header, data)
       case DataGroupCommand.GET_GROUP_JOIN_REQUEST_LIST:
-        return await GroupJoinRequestService.getUserManagedGroupJoinRequests(header.userId, data.page, data.limit)
       case DataGroupCommand.GET_ALL_GROUP_JOIN_REQUESTS:
-        return await GroupJoinRequestService.getAllGroupJoinRequests(data.page, data.limit)
+        // 合并为同一个方法：获取用户相关的群组申请（包括用户申请的 + 别人申请用户管理的群组）
+        return await groupBusiness.getGroupJoinRequests(header, data)
       default:
         throw new Error('群组数据库命令处理失败')
     }
