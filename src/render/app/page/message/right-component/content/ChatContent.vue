@@ -27,6 +27,44 @@
             />
           </div>
         </div>
+        <div v-else-if="message.msg.type === 3 && message.msg.videoMsg" class="message-video">
+          <div :style="{ width: `${getVideoSize(message).width}px`, height: `${getVideoSize(message).height}px` }" class="video-container">
+            <!-- 视频封面 -->
+            <BeaverImage
+              v-if="message.msg.videoMsg.thumbnailKey"
+              :file-name="message.msg.videoMsg.thumbnailKey"
+              alt="视频封面"
+              image-class="video-thumbnail"
+            />
+            <!-- 播放按钮遮罩层 -->
+            <div class="video-overlay" @click="handleVideoPlay(message)">
+              <div class="play-button">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="5 3 19 12 5 21 5 3" />
+                </svg>
+              </div>
+              <!-- 视频时长 -->
+              <div v-if="message.msg.videoMsg.duration" class="video-duration">
+                {{ formatDuration(message.msg.videoMsg.duration) }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- 音频文件消息组件（type=8 的音频文件消息，用户上传的音频文件） -->
+        <AudioFileMessage
+          v-else-if="message.msg.type === 8"
+          :message="message"
+        />
+        <!-- 语音消息组件（type=5 的语音消息，移动端录制的短语音） -->
+        <VoiceMessage
+          v-else-if="message.msg.type === 5 && message.msg.voiceMsg"
+          :file-name="message.msg.voiceMsg.fileName"
+          :duration="message.msg.voiceMsg.duration || 0"
+          :message-id="message.messageId"
+          :is-playing="currentPlayingVoiceId === message.messageId"
+          @play="handleVoicePlay(message)"
+          @pause="handleVoicePause(message)"
+        />
 
         <!-- 发送状态指示器 -->
         <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.userInfo.userId" class="message-status">
@@ -71,18 +109,22 @@ import { useMessageViewStore } from 'renderModule/app/pinia/view/message'
 import { emojiMap } from 'renderModule/app/utils/emoji'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import ContextMenu from 'renderModule/components/ui/context-menu/index.vue'
+import VoiceMessage from './components/VoiceMessage.vue'
+import AudioFileMessage from './components/AudioFileMessage.vue'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import userInfo from './userInfo.vue'
 import { getMenuItems, MessageContentType } from './data'
 import { copyToClipboard, hasTextSelected } from './copy'
 import { calculateImageSize } from 'renderModule/utils/image/index'
-import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+// import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 
 export default defineComponent({
   components: {
     UserInfo: userInfo,
     BeaverImage,
     ContextMenu,
+    VoiceMessage,
+    AudioFileMessage,
   },
   setup() {
     const userInfo = ref({
@@ -125,7 +167,9 @@ export default defineComponent({
     // 计算图片尺寸（从消息数据中获取）
     const getImageSize = (message: any) => {
       if (message.msg.type === 2 && message.msg.imageMsg) {
-        const { width, height } = message.msg.imageMsg
+        // 直接使用 imageMsg 中的 width/height
+        const imageMsg = message.msg.imageMsg
+        const { width, height } = imageMsg || {}
         if (width && height) {
           return calculateImageSize(width, height)
         }
@@ -133,6 +177,121 @@ export default defineComponent({
       // 如果没有尺寸信息，返回默认值
       return { width: 200, height: 200 }
     }
+
+    // 计算视频尺寸（从消息数据中获取）
+    const getVideoSize = (message: any) => {
+      if (message.msg.type === 3 && message.msg.videoMsg) {
+        const videoMsg = message.msg.videoMsg
+        if (videoMsg.width && videoMsg.height) {
+          // 视频使用和图片相同的尺寸计算规则
+          return calculateImageSize(videoMsg.width, videoMsg.height)
+        }
+      }
+      // 如果没有尺寸信息，返回默认值
+      return { width: 240, height: 135 }
+    }
+
+    // 格式化视频时长（秒 -> mm:ss）
+    const formatDuration = (seconds: number): string => {
+      const mins = Math.floor(seconds / 60)
+      const secs = seconds % 60
+      return `${mins}:${secs.toString().padStart(2, '0')}`
+    }
+
+    // 当前正在播放的语音消息ID（语音消息在当前进程播放）
+    const currentPlayingVoiceId = ref<string | null>(null)
+    let audioPlayer: HTMLAudioElement | null = null
+
+    // 处理视频播放（在独立进程播放）
+    const handleVideoPlay = (message: any) => {
+      console.log('播放视频:', message.msg.videoMsg.fileName)
+      // TODO: 创建新进程播放视频
+    }
+
+    // 处理语音消息播放（在当前进程播放，短语音）
+    const handleVoicePlay = async (message: any) => {
+      const voiceMsg = message.msg.voiceMsg
+      if (!voiceMsg?.fileName) {
+        return
+      }
+
+      // 停止之前播放的语音
+      if (audioPlayer) {
+        audioPlayer.pause()
+        audioPlayer = null
+      }
+
+      try {
+        // 创建音频播放器（在当前进程）
+        const { previewOnlineFileApi } = await import('renderModule/api/file')
+        const audioUrl = (previewOnlineFileApi as any)(voiceMsg.fileName)
+        audioPlayer = new Audio(audioUrl)
+        currentPlayingVoiceId.value = message.messageId
+
+        // 播放结束事件
+        audioPlayer.addEventListener('ended', () => {
+          currentPlayingVoiceId.value = null
+          audioPlayer = null
+        })
+
+        // 播放错误事件
+        audioPlayer.addEventListener('error', () => {
+          console.error('语音播放失败')
+          currentPlayingVoiceId.value = null
+          audioPlayer = null
+        })
+
+        // 开始播放
+        await audioPlayer.play()
+      }
+      catch (error) {
+        console.error('播放语音失败:', error)
+        currentPlayingVoiceId.value = null
+        audioPlayer = null
+      }
+    }
+
+    // 处理语音消息暂停
+    const handleVoicePause = (message: any) => {
+      if (currentPlayingVoiceId.value === message.messageId && audioPlayer) {
+        audioPlayer.pause()
+        audioPlayer = null
+        currentPlayingVoiceId.value = null
+      }
+    }
+
+    // 处理文件点击（文件消息）
+    const handleFileClick = (message: any) => {
+      console.log('打开文件:', message.msg.fileMsg.fileName)
+      // TODO: 打开文件或下载文件
+    }
+
+    // 判断是否是音频文件（仅用于 type=4 的文件消息）
+    const isAudioFile = (message: any): boolean => {
+      const fileName = message.msg.fileMsg?.fileName || ''
+      const audioExtensions = ['.mp3', '.wav', '.m4a', '.aac', '.ogg', '.flac', '.wma']
+      return audioExtensions.some(ext => fileName.toLowerCase().endsWith(ext))
+    }
+
+    // 获取文件名（仅用于 type=4）
+    const getFileName = (message: any): string => {
+      return message.msg.fileMsg?.fileName || '未知文件'
+    }
+
+    // 获取文件大小（仅用于 type=4）
+    const getFileSize = (message: any): number | null => {
+      return message.msg.fileMsg?.size || null
+    }
+
+    // 格式化文件大小
+    const formatFileSize = (bytes: number): string => {
+      if (bytes === 0) return '0 B'
+      const k = 1024
+      const sizes = ['B', 'KB', 'MB', 'GB']
+      const i = Math.floor(Math.log(bytes) / Math.log(k))
+      return `${(bytes / Math.pow(k, i)).toFixed(1)} ${sizes[i]}`
+    }
+
 
     // 将文本中的表情符号替换为图片
     const formatMessageWithEmojis = (text: string | undefined) => {
@@ -337,6 +496,17 @@ export default defineComponent({
       userInfo,
       showUserInfo,
       getImageSize,
+      getVideoSize,
+      formatDuration,
+      handleVideoPlay,
+      handleVoicePlay,
+      handleVoicePause,
+      handleFileClick,
+      isAudioFile,
+      getFileName,
+      getFileSize,
+      formatFileSize,
+      currentPlayingVoiceId,
       retrySend,
     }
   },
@@ -510,6 +680,158 @@ export default defineComponent({
           height: 100%;
           object-fit: cover;
           cursor: pointer;
+        }
+      }
+
+      .message-video {
+        max-width: 240px;
+        border-radius: 8px;
+        overflow: hidden;
+
+        .video-container {
+          position: relative;
+          background-color: #000;
+          border-radius: 8px;
+          overflow: hidden;
+          cursor: pointer;
+
+          .video-thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+          }
+
+          .video-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(0, 0, 0, 0.3);
+            transition: background-color 0.2s;
+
+            &:hover {
+              background-color: rgba(0, 0, 0, 0.4);
+
+              .play-button {
+                transform: scale(1.1);
+              }
+            }
+
+            .play-button {
+              width: 56px;
+              height: 56px;
+              background-color: rgba(255, 255, 255, 0.9);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              transition: transform 0.2s, background-color 0.2s;
+
+              svg {
+                width: 24px;
+                height: 24px;
+                color: #FF7D45;
+                margin-left: 2px; // 视觉居中调整
+              }
+
+              &:hover {
+                background-color: rgba(255, 255, 255, 1);
+              }
+            }
+
+            .video-duration {
+              position: absolute;
+              bottom: 8px;
+              right: 8px;
+              background-color: rgba(0, 0, 0, 0.6);
+              color: #fff;
+              padding: 2px 6px;
+              border-radius: 4px;
+              font-size: 12px;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+
+      .message-file {
+        min-width: 200px;
+        max-width: 300px;
+
+        .file-container {
+          display: flex;
+          align-items: center;
+          padding: 12px;
+          background-color: #fff;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.2s;
+          user-select: none;
+
+          &:hover {
+            background-color: #f5f5f5;
+          }
+
+          .file-icon {
+            width: 40px;
+            height: 40px;
+            margin-right: 12px;
+            color: #666;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            svg {
+              width: 100%;
+              height: 100%;
+            }
+          }
+
+          .file-info {
+            flex: 1;
+            min-width: 0;
+
+            .file-name {
+              font-size: 14px;
+              color: #2D3436;
+              overflow: hidden;
+              text-overflow: ellipsis;
+              white-space: nowrap;
+              margin-bottom: 4px;
+            }
+
+            .file-size {
+              font-size: 12px;
+              color: #999;
+            }
+          }
+
+          .file-play-btn {
+            width: 32px;
+            height: 32px;
+            margin-left: 8px;
+            color: #FF7D45;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+
+            &:hover {
+              background-color: rgba(255, 125, 69, 0.1);
+            }
+
+            svg {
+              width: 18px;
+              height: 18px;
+            }
+          }
         }
       }
     }

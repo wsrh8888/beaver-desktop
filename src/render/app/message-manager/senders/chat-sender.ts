@@ -40,7 +40,6 @@ class ChatSender {
     messageType: MessageType,
     chatType: string,
   ): Promise<string> {
-    console.error('sendMessage', conversationId, content, messageType)
 
     // 生成唯一的客户端消息ID
     const messageId = this.generateMessageId()
@@ -57,6 +56,7 @@ class ChatSender {
       msg: wsMessageContent,
     }
 
+    console.error('messageData11111111111', messageData)
     if (chatType === 'private') {
       await electron.websocket.chat.privateMessageSend(messageData)
     }

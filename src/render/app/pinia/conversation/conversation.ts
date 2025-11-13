@@ -2,6 +2,7 @@ import type { IConversationInfoRes } from 'commonModule/type/ajax/chat'
 import { defineStore } from 'pinia'
 import { useContactStore } from '../contact/contact'
 import { useUserStore } from '../user/user'
+import { useGroupStore } from '../group/group'
 
 /**
  * @description: 会话管理
@@ -28,10 +29,12 @@ export const useConversationStore = defineStore('useConversationStore', {
       const contactStore = useContactStore()
       const userStore = useUserStore()
       const currentUserId = userStore.userInfo.userId
+      const groupStore = useGroupStore()
+
 
       return this.conversations.map((conversation) => {
         // 如果是私聊，从 contactStore 获取最新的用户信息
-        if (conversation.conversationId.startsWith('private_')) {
+        if (conversation.chatType === 1) {
           const parts = conversation.conversationId.split('_')
           if (parts.length >= 3) {
             // 解析出对方的用户ID
@@ -47,6 +50,15 @@ export const useConversationStore = defineStore('useConversationStore', {
                 avatar: contactInfo.avatar || conversation.avatar,
                 nickname: contactInfo.nickName || conversation.nickname,
               }
+            }
+          }
+        } else if (conversation.chatType === 2) {
+          const groupInfo = groupStore.getGroupById(conversation.conversationId)
+          if (groupInfo) {
+            return {
+              ...conversation,
+              avatar: groupInfo.avatar || conversation.avatar,
+              nickname: groupInfo.title || conversation.nickname,
             }
           }
         }

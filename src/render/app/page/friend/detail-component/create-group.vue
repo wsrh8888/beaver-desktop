@@ -166,7 +166,7 @@ export default {
       try {
         const userIdList = selectedFriends.value.map(friend => friend.userId)
         const res = await createGroupApi({
-          name: groupName.value.trim(),
+          title: groupName.value.trim(),
           userIdList,
         })
 

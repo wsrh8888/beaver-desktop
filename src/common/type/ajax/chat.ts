@@ -4,14 +4,10 @@ export enum MessageType {
   IMAGE = 2,
   VIDEO = 3,
   FILE = 4,
-  VOICE = 5,
-  VOICE_CALL = 6,
-  VIDEO_CALL = 7,
-  WITHDRAW = 8,
-  REPLY = 9,
-  QUOTE = 10,
-  AT = 11,
-  TIP = 12,
+  VOICE = 5, // 语音消息（移动端录制的短语音）
+  EMOJI = 6, // 表情消息
+  NOTIFICATION = 7, // 通知消息（会话内的通知，如：xxx加入了群聊、xxx创建了群等）
+  AUDIO_FILE = 8, // 音频文件消息（用户上传的音频文件）
 }
 
 // 消息发送状态
@@ -37,10 +33,10 @@ export interface ITextMessage {
 }
 
 export interface IImageMessage {
-  fileName: string
-  width?: number
-  height?: number
-  size?: number
+  fileName: string // 图片文件ID
+  width?: number // 图片宽度（可选）
+  height?: number // 图片高度（可选）
+  size?: number // 文件大小（字节，可选）
 }
 
 export interface IMessage {
@@ -51,22 +47,41 @@ export interface IMessage {
   fileMsg?: IFileMessage | null
   voiceMsg?: IVoiceMessage | null
   emojiMsg?: IEmojiMessage | null
+  audioFileMsg?: IAudioFileMessage | null
   replyMsg?: IReplyMessage | null
 }
 
 // 视频消息
 export interface IVideoMessage {
   fileName: string // 视频文件ID
+  width?: number // 视频宽度（可选）
+  height?: number // 视频高度（可选）
+  duration?: number // 视频时长（秒，可选）
+  thumbnailKey?: string // 视频封面图文件ID（可选）
+  size?: number // 文件大小（字节，可选）
 }
 
 // 文件消息
 export interface IFileMessage {
   fileName: string // 文件ID
+  fileKey?: string // 文件ID（兼容字段）
+  size?: number // 文件大小（字节，可选）
+  mimeType?: string // MIME类型（可选，如 application/pdf）
 }
 
-// 语音消息
+// 语音消息（移动端录制的短语音）
 export interface IVoiceMessage {
   fileName: string // 语音文件ID
+  duration?: number // 语音时长（秒，可选）
+  size?: number // 文件大小（字节，可选）
+}
+
+// 音频文件消息（用户上传的音频文件）
+export interface IAudioFileMessage {
+  fileName: string // 音频文件ID
+  fileKey?: string // 文件ID（兼容字段）
+  duration?: number // 音频时长（秒，可选）
+  size?: number // 文件大小（字节，可选）
 }
 
 // 表情消息

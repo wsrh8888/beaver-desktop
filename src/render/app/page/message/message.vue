@@ -15,7 +15,6 @@
     <!-- 群聊详情 -->
     <GroupDetailsComponent
       :visible="currentDetailType === 'group'"
-      @update:visible="(val: boolean) => { if (!val) hideDetails() }"
       @close="hideDetails"
     />
 
@@ -23,7 +22,6 @@
     <PrivateDetailsComponent
       v-if="currentDetailType === 'private'"
       :visible="currentDetailType === 'private'"
-      @update:visible="(val: boolean) => { if (!val) hideDetails() }"
       @close="hideDetails"
     />
   </div>

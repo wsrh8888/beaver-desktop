@@ -157,10 +157,15 @@ export default {
     }
 
     // 处理弹窗菜单项点击
-    const handlePopupItemClick = (item: any) => {
+    const handlePopupItemClick = async (item: any) => {
       if (item.action === 'add-friend') {
-        // 打开独立的搜索窗口
-        electron.window.openWindow('search')
+        try {
+          // 打开独立的搜索窗口
+          await electron.window.openWindow('search')
+        }
+        catch (error) {
+          console.error('handlePopupItemClick error', error)
+        }
       }
       else if (item.action === 'create-group') {
         // 显示创建群聊弹窗

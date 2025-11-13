@@ -10,7 +10,7 @@ export const windowModule: IWindowModule = {
     ipcRenderManager.send(IEvent.RenderToMain, WinHook.CLOSE, { name, options })
   },
   openWindow: async (name: string, options?: IWindowOpenOptions): Promise<void> => {
-    return ipcRenderManager.invoke(IEvent.RenderToMain, WinHook.OPEN_WINDOW, { name, options })
+    return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WinHook.OPEN_WINDOW, { name, options })
   },
   minimize: () => {
     ipcRenderManager.send(IEvent.RenderToMain, WinHook.MINIMIZE)

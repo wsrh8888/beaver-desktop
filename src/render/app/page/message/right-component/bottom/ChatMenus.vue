@@ -98,15 +98,16 @@ export default defineComponent({
         for (const uploadResult of uploadResults) {
           let messageType: MessageType
           let content: any
-
+          console.error('1111111111111111111111', uploadResult)
           // 根据文件类型决定消息类型和内容
           switch (uploadResult.type) {
             case 'image':
               messageType = MessageType.IMAGE
               content = {
                 fileName: uploadResult.fileKey,
-                width: uploadResult.style.width,
-                height: uploadResult.style.height,
+                width: uploadResult.style?.width,
+                height: uploadResult.style?.height,
+                size: uploadResult.size, // 文件大小
               }
               break
 
@@ -114,13 +115,20 @@ export default defineComponent({
               messageType = MessageType.VIDEO
               content = {
                 fileName: uploadResult.fileKey,
+                width: uploadResult.style?.width,
+                height: uploadResult.style?.height,
+                duration: uploadResult.style?.duration,
+                thumbnailKey: uploadResult.thumbnailKey, // 视频封面图
+                size: uploadResult.size, // 文件大小
               }
               break
 
             case 'audio':
-              messageType = MessageType.VOICE
+              messageType = MessageType.AUDIO_FILE
               content = {
                 fileName: uploadResult.fileKey,
+                duration: uploadResult.style?.duration,
+                size: uploadResult.size, // 文件大小
               }
               break
 
@@ -129,6 +137,7 @@ export default defineComponent({
               messageType = MessageType.FILE
               content = {
                 fileName: uploadResult.fileKey,
+                size: uploadResult.size, // 文件大小
               }
               break
           }
@@ -225,7 +234,7 @@ export default defineComponent({
 
         // 统一使用 selectAndUploadFile，传入对应的 accept，返回数组
         const uploadResults = await selectAndUploadFile(acceptMap[toolType])
-
+        console.error('uploadResult11111111111s', uploadResults)
         // 发送消息（复用通用函数）
         await uploadAndSendMessage(uploadResults)
       }
