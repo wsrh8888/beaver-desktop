@@ -3,11 +3,7 @@
     <!-- 顶部蓝色区域：Audio标识 -->
     <div class="audio-header">
       <div class="audio-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M3 18v-6a9 9 0 0 1 18 0v6" />
-          <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z" />
-          <path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z" />
-        </svg>
+        <img :src="AudioIconSvg" alt="Audio" />
       </div>
       <span class="audio-label">Audio</span>
     </div>
@@ -20,17 +16,11 @@
       <div class="file-actions">
         <!-- 播放按钮 -->
         <div class="action-btn play-btn" @click.stop="handlePlay">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="5 3 19 12 5 21 5 3" />
-          </svg>
+          <img :src="playerSvg" alt="播放" />
         </div>
         <!-- 下载按钮 -->
         <div class="action-btn download-btn" @click.stop="handleDownload">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-            <polyline points="7 10 12 15 17 10" />
-            <line x1="12" y1="15" x2="12" y2="3" />
-          </svg>
+          <img :src="downloadSvg" alt="下载" />
         </div>
       </div>
     </div>
@@ -39,9 +29,14 @@
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
+import downloadSvg from 'renderModule/assets/image/chat/download.svg'
+import AudioIconSvg from 'renderModule/assets/image/chat/audio-icon.svg'
+import playerSvg from 'renderModule/assets/image/chat/play.svg'
 
 export default defineComponent({
   name: 'AudioFileMessage',
+  components: {
+  },
   props: {
     message: {
       type: Object,
@@ -88,6 +83,9 @@ export default defineComponent({
       formatFileSize,
       handlePlay,
       handleDownload,
+      downloadSvg,
+      AudioIconSvg,
+      playerSvg,
     }
   },
 })
@@ -150,9 +148,10 @@ export default defineComponent({
       position: relative;
       z-index: 1;
 
-      svg {
+      img {
         width: 100%;
         height: 100%;
+        object-fit: contain;
       }
     }
 
@@ -211,11 +210,11 @@ export default defineComponent({
         border-radius: 50%;
         cursor: pointer;
         transition: background-color 0.2s, transform 0.2s;
-        color: #666;
 
-        svg {
+        img {
           width: 18px;
           height: 18px;
+          object-fit: contain;
         }
 
         &:hover {
@@ -228,7 +227,9 @@ export default defineComponent({
         }
 
         &.play-btn {
-          color: #FF7D45;
+          img {
+            filter: brightness(0) saturate(100%) invert(60%) sepia(90%) saturate(2000%) hue-rotate(350deg) brightness(1.1) contrast(1);
+          }
 
           &:hover {
             background-color: rgba(255, 125, 69, 0.1);
@@ -236,7 +237,9 @@ export default defineComponent({
         }
 
         &.download-btn {
-          color: #666;
+          img {
+            filter: brightness(0) saturate(100%) invert(40%);
+          }
 
           &:hover {
             background-color: rgba(0, 0, 0, 0.05);
