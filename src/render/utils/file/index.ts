@@ -129,6 +129,59 @@ export const getVideoInfo = (file: File): Promise<VideoInfo> => {
 }
 
 /**
+ * @description: 从视频文件生成封面图（第一帧）
+ * @param {File} file 视频文件
+ * @param {number} time 截取时间点（秒），默认0（第一帧）
+ * @return {Promise<string>} 返回base64格式的图片数据URL
+ */
+export const getVideoThumbnail = (file: File, time: number = 0): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const video = document.createElement('video')
+    const canvas = document.createElement('canvas')
+    const ctx = canvas.getContext('2d')
+    const url = URL.createObjectURL(file)
+
+    if (!ctx) {
+      URL.revokeObjectURL(url)
+      reject(new Error('无法创建canvas上下文'))
+      return
+    }
+
+    video.addEventListener('loadedmetadata', () => {
+      // 设置canvas尺寸为视频尺寸
+      canvas.width = video.videoWidth
+      canvas.height = video.videoHeight
+
+      // 跳转到指定时间点
+      video.currentTime = time
+    })
+
+    video.addEventListener('seeked', () => {
+      try {
+        // 将当前帧绘制到canvas
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height)
+        // 转换为base64图片
+        const thumbnail = canvas.toDataURL('image/jpeg', 0.8)
+        URL.revokeObjectURL(url)
+        resolve(thumbnail)
+      }
+      catch (error) {
+        URL.revokeObjectURL(url)
+        reject(error)
+      }
+    })
+
+    video.addEventListener('error', () => {
+      URL.revokeObjectURL(url)
+      reject(new Error('视频加载失败'))
+    })
+
+    video.src = url
+    video.load()
+  })
+}
+
+/**
  * @description: 获取文件的完整信息（根据类型返回对应信息）
  * @param {File} file
  * @return {Promise<FileInfo>}

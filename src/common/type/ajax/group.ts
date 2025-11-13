@@ -131,7 +131,7 @@ export interface IGroupCreateReq {
   /**
    * @description: 群组名称，可选
    */
-  name?: string
+  title?: string
   /**
    * @description: 初始成员ID列表，可选
    */

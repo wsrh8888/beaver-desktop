@@ -1,5 +1,5 @@
 import { uploadFileApi } from 'renderModule/api/file'
-import { getAudioInfo, getFileType, getImageAttribute, getVideoInfo } from 'renderModule/utils/file/index'
+import { getAudioInfo, getFileType, getImageAttribute, getVideoInfo, getVideoThumbnail } from 'renderModule/utils/file/index'
 
 // 上传文件类型
 export type UploadFileType = 'image' | 'video' | 'audio' | 'file'
@@ -11,6 +11,7 @@ export interface UploadResult {
   type: UploadFileType
   originalName?: string
   size?: number
+  thumbnailKey?: string // 视频封面图文件ID（仅视频类型）
 }
 
 // 不同类型文件的样式信息
@@ -20,6 +21,21 @@ export interface UploadStyle {
   height?: number
   // 视频和音频共有
   duration?: number
+}
+
+/**
+ * @description: 将base64图片转换为File对象
+ */
+const base64ToFile = (base64: string, filename: string): File => {
+  const arr = base64.split(',')
+  const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/jpeg'
+  const bstr = atob(arr[1])
+  let n = bstr.length
+  const u8arr = new Uint8Array(n)
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n)
+  }
+  return new File([u8arr], filename, { type: mime })
 }
 
 /**
@@ -38,12 +54,29 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
   // 根据类型获取样式信息
   const style = await getFileStyle(file, fileType)
 
+  let thumbnailKey: string | undefined
+
+  // 如果是视频，生成并上传封面图
+  if (fileType === 'video') {
+    try {
+      const thumbnailBase64 = await getVideoThumbnail(file, 0)
+      const thumbnailFile = base64ToFile(thumbnailBase64, `${uploadResult.fileKey}_thumb.jpg`)
+      const thumbnailUploadResult = await uploadFileApi(thumbnailFile, `${uploadResult.fileKey}_thumb.jpg`)
+      thumbnailKey = thumbnailUploadResult.fileKey
+    }
+    catch (error) {
+      console.error('生成视频封面失败:', error)
+      // 封面生成失败不影响主文件上传
+    }
+  }
+
   return {
-    fileKey: uploadResult.fileName,
+    fileKey: uploadResult.fileKey,
     style,
     type: fileType,
     originalName: uploadResult.originalName,
     size: file.size,
+    thumbnailKey,
   }
 }
 

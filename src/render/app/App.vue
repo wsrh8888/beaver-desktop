@@ -1,12 +1,12 @@
 <template>
   <div class="app__container">
-    <!-- <HeaderComponent />
+    <HeaderComponent />
     <Sidebar class="app__sidebar app__drag" />
 
     <div class="app__content">
       <router-view />
     </div>
-    <GlobalComponent /> -->
+    <GlobalComponent />
   </div>
 </template>
 

@@ -6,18 +6,18 @@ import ajax from 'renderModule/utils/request/ajax'
 /**
  * @description: 预览文件
  */
-export const previewOnlineFileApi = (fileName: string) => {
-  return `${baseUrl}/api/file/preview/${fileName}`
+export const previewOnlineFileApi = (fileKey: string) => {
+  return `${baseUrl}/api/file/preview/${fileKey}`
 }
 
 /**
  * @description: 文件上传总入口
  */
-export const uploadFileApi = async (file: File, fileName?: string): Promise<IFileUploadResult> => {
+export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFileUploadResult> => {
   //  if(source === 'local') {
-  return await uploadToLocalApi(file, fileName)
+  return await uploadToLocalApi(file, fileKey)
   // } else if(source === 'qiniu') {
-  // return await uploadQiniuApi(file, fileName);
+  // return await uploadQiniuApi(file, fileKey);
   // }
   //  return Promise.reject(new Error('Invalid source'));
 }
@@ -25,13 +25,13 @@ export const uploadFileApi = async (file: File, fileName?: string): Promise<IFil
 /**
  * @description: 通用文件上传函数
  */
-export const uploadFileApiWithTarget = async (file: File, fileName?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
+export const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
   // 根据目标选择URL
   const baseEndpoint = target === 'qiniu' ? 'uploadQiniu' : 'uploadLocal'
   let uploadUrl = `${baseUrl}/api/file/${baseEndpoint}`
 
-  if (fileName) {
-    uploadUrl += `?fileName=${encodeURIComponent(fileName)}`
+  if (fileKey) {
+    uploadUrl += `?fileKey=${encodeURIComponent(fileKey)}`
   }
 
   // 获取文件信息
@@ -52,7 +52,7 @@ export const uploadFileApiWithTarget = async (file: File, fileName?: string, tar
   })
 
   return {
-    fileName: result.result.fileName,
+    fileKey: result.result.fileKey,
     originalName: result.result.originalName,
     fileInfo,
   }
@@ -61,9 +61,9 @@ export const uploadFileApiWithTarget = async (file: File, fileName?: string, tar
 /**
  * @description: 上传文件到本地
  */
-export const uploadToLocalApi = (file: File, fileName?: string) => uploadFileApiWithTarget(file, fileName, 'local')
+export const uploadToLocalApi = (file: File, fileKey?: string) => uploadFileApiWithTarget(file, fileKey, 'local')
 
 /**
  * @description: 上传文件到七牛云
  */
-export const uploadQiniuApi = (file: File, fileName?: string) => uploadFileApiWithTarget(file, fileName, 'qiniu')
+export const uploadQiniuApi = (file: File, fileKey?: string) => uploadFileApiWithTarget(file, fileKey, 'qiniu')

@@ -108,7 +108,7 @@ export const useMessageStore = defineStore('useMessageStore', {
         conversationId,
         limit: 30,
       })
-      console.log('11111111111111111111', result, {
+      console.error('cxcxcxcsdf', result, {
         conversationId,
         limit: 30,
       })

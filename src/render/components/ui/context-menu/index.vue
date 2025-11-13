@@ -256,11 +256,6 @@ export default defineComponent({
 })
 </script>
 
-<script lang="ts">
-// 导出类型
-export type { ContextMenuItem }
-</script>
-
 <style lang="less" scoped>
 .context-menu-trigger {
   display: inline-block;

@@ -79,6 +79,11 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
             type: MessageType.VOICE,
             voiceMsg: content,
           }
+        case MessageType.AUDIO_FILE:
+          return {
+            type: MessageType.AUDIO_FILE,
+            audioFileMsg: content,
+          }
         default:
           return {
             type: MessageType.TEXT,
@@ -106,47 +111,27 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
         case MessageType.IMAGE:
           return {
             type: MessageType.IMAGE,
-            imageMsg: message.imageMsg
-              ? {
-                  fileKey: message.imageMsg.fileName, // 转换为 WebSocket 格式的 fileKey
-                  width: message.imageMsg.width || 0,
-                  height: message.imageMsg.height || 0,
-                }
-              : null,
+            imageMsg: message.imageMsg,
           }
         case MessageType.VIDEO:
           return {
             type: MessageType.VIDEO,
-            videoMsg: message.videoMsg
-              ? {
-                  fileKey: message.videoMsg.fileName,
-                  width: 0,
-                  height: 0,
-                  duration: 0,
-                }
-              : null,
+            videoMsg: message.videoMsg,
           }
         case MessageType.FILE:
           return {
             type: MessageType.FILE,
-            fileMsg: message.fileMsg
-              ? {
-                  name: message.fileMsg.fileName,
-                  size: 0,
-                  url: '',
-                  type: '',
-                }
-              : null,
+            fileMsg: message.fileMsg,
           }
         case MessageType.VOICE:
           return {
             type: MessageType.VOICE,
-            voiceMsg: message.voiceMsg
-              ? {
-                  src: message.voiceMsg.fileName,
-                  duration: 0,
-                }
-              : null,
+            voiceMsg: message.voiceMsg,
+          }
+        case MessageType.AUDIO_FILE:
+          return {
+            type: MessageType.AUDIO_FILE,
+            audioFileMsg: message.audioFileMsg,
           }
         default:
           return {

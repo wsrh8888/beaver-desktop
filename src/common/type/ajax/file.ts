@@ -34,14 +34,14 @@ export interface IFileReq {
 
 // 文件上传响应（对应后端 FileRes）
 export interface IFileRes {
-  fileName: string
+  fileKey: string
   originalName: string
   fileInfo?: IFileInfo
 }
 
 // 文件上传结果类型（用于内部Promise返回）
 export interface IFileUploadResult {
-  fileName: string
+  fileKey: string
   originalName: string
   fileInfo?: IFileInfo
 }
