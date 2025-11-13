@@ -1,6 +1,10 @@
 // 群组信息
 export interface IGroupInfo {
   /**
+   * @description: 群组ID
+   */
+  groupId: string
+  /**
    * @description: 群组名称
    */
   title: string

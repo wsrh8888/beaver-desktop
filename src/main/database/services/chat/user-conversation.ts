@@ -57,101 +57,76 @@ export class ChatUserConversationService {
       .run()
   }
 
-  // 获取聚合后的最近聊天列表（包含会话元数据）
-  static async getAggregatedRecentChatList(header: any, params: IRecentChatReq) {
-    const userId = String(header.userId) // 确保userId是字符串类型
-    const { page = 1, limit = 50 } = params
+  // 更新会话设置（置顶、免打扰等）
+  static async updateSettings(userId: string, conversationId: string, settings: {
+    isPinned?: boolean
+    isMuted?: boolean
+    isHidden?: boolean
+  }) {
+    const updateData: any = {
+      updatedAt: Math.floor(Date.now() / 1000),
+    }
 
-    // 计算分页偏移量
-    const offset = (page - 1) * limit
+    if (settings.isPinned !== undefined) {
+      updateData.isPinned = settings.isPinned ? 1 : 0
+    }
+
+    if (settings.isMuted !== undefined) {
+      updateData.isMuted = settings.isMuted ? 1 : 0
+    }
+
+    if (settings.isHidden !== undefined) {
+      updateData.isHidden = settings.isHidden ? 1 : 0
+    }
+
+    return await this.db
+      .update(chatUserConversations)
+      .set(updateData)
+      .where(and(
+        eq(chatUserConversations.userId, userId as any),
+        eq(chatUserConversations.conversationId, conversationId as any),
+      ))
+      .run()
+  }
+
+  // 获取用户的基础会话数据（仅数据访问，不含业务逻辑）
+  static async getUserConversations(userId: string, params: { page?: number, limit?: number, offset?: number }) {
+    const { page = 1, limit = 50, offset } = params
+    const actualOffset = offset !== undefined ? offset : (page - 1) * limit
 
     // 获取用户的未隐藏会话列表（支持分页）
-    const conversations = await this.db.select().from(chatUserConversations).where(and(eq(chatUserConversations.userId, userId as any), eq(chatUserConversations.isHidden, 0 as any))).orderBy(chatUserConversations.updatedAt, 'desc').limit(limit).offset(offset).all()
+    return await this.db.select().from(chatUserConversations)
+      .where(and(
+        eq(chatUserConversations.userId, userId as any),
+        eq(chatUserConversations.isHidden, 0 as any)
+      ))
+      .orderBy(chatUserConversations.updatedAt, 'desc')
+      .limit(limit)
+      .offset(actualOffset)
+      .all()
+  }
 
-    if (conversations.length === 0) {
-      return {
-        count: 0,
-        list: [],
-      }
-    }
+  // 获取用户所有未隐藏的会话（用于排序和分页）
+  static async getAllUserConversations(userId: string) {
+    return await this.db.select().from(chatUserConversations)
+      .where(and(
+        eq(chatUserConversations.userId, userId as any),
+        eq(chatUserConversations.isHidden, 0 as any)
+      ))
+      .orderBy(chatUserConversations.updatedAt, 'desc')
+      .all()
+  }
 
-    // 获取对应的会话元数据
-    const conversationIds = conversations.map((conv: any) => conv.conversationId)
+  // 根据会话ID列表批量获取用户的会话设置
+  static async getUserConversationsByIds(userId: string, conversationIds: string[]) {
+    if (conversationIds.length === 0) return []
 
-    const conversationMetas = await ChatConversationService.getConversationsByIds(conversationIds)
-
-    // 创建会话元数据的映射
-    const metaMap = new Map()
-    conversationMetas.forEach((meta: any) => {
-      metaMap.set(meta.conversationId, meta)
-    })
-
-    // 提取私聊会话中的好友ID列表
-    const privateChatFriendIds: string[] = []
-    conversations.forEach((conv: any) => {
-      if (conv.conversationId.startsWith('private_')) {
-        const parts = conv.conversationId.split('_')
-        if (parts.length >= 3) {
-          // 找出对方用户ID（排除当前用户ID）
-          const userId1 = parts[1]
-          const userId2 = parts[2]
-          if (userId1 === userId) {
-            privateChatFriendIds.push(userId2)
-          }
-          else if (userId2 === userId) {
-            privateChatFriendIds.push(userId1)
-          }
-        }
-      }
-    })
-
-    // 获取好友详细信息（包含用户信息和备注）
-    const friendDetailsMap = await FriendService.getFriendDetails(userId, privateChatFriendIds)
-
-    // 聚合数据 - 使用蛇形命名法以匹配后端API格式
-    const list = conversations.map((conv: any) => {
-      const meta = metaMap.get(conv.conversationId)
-      let avatar = ''
-      let nickname = '未知用户'
-      let notice = ''
-
-      // 只有私聊会话才有好友详细信息
-      if (conv.conversationId.startsWith('private_')) {
-        const parts = conv.conversationId.split('_')
-        if (parts.length >= 3) {
-          const userId1 = parts[1]
-          const userId2 = parts[2]
-          const friendId = (userId1 === userId) ? userId2 : userId1
-
-          // 从好友详细信息中获取数据
-          const friendDetail = friendDetailsMap.get(friendId)
-          if (friendDetail) {
-            avatar = friendDetail.avatar
-            nickname = friendDetail.nickname
-            notice = friendDetail.notice
-          }
-        }
-      }
-
-      const msgPreview = meta?.lastMessage || ''
-
-      return {
-        conversationId: conv.conversationId,
-        avatar,
-        nickname,
-        msg_preview: msgPreview,
-        update_at: conv.updatedAt.toString(), // 数据库中已经是格式化的字符串
-        is_top: conv.isPinned === 1,
-        chatType: meta?.type || 1,
-        notice,
-        version: conv.version, // 会话配置版本号
-      }
-    })
-
-    return {
-      count: conversations.length,
-      list,
-    }
+    return await this.db.select().from(chatUserConversations)
+      .where(and(
+        eq(chatUserConversations.userId, userId as any),
+        inArray(chatUserConversations.conversationId, conversationIds as any)
+      ))
+      .all()
   }
 
   // 根据会话ID获取会话信息

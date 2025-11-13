@@ -85,31 +85,6 @@
               </label>
             </div>
           </div>
-
-          <!-- 生日 -->
-          <div class="form-item">
-            <div class="form-label">
-              生日
-            </div>
-            <input
-              v-model="formData.birthday"
-              class="form-input"
-              type="date"
-            >
-          </div>
-
-          <!-- 地区 -->
-          <div class="form-item">
-            <div class="form-label">
-              地区
-            </div>
-            <input
-              v-model="formData.region"
-              class="form-input"
-              type="text"
-              placeholder="请输入地区"
-            >
-          </div>
         </div>
 
         <!-- 底部按钮 -->
@@ -161,14 +136,12 @@ export default defineComponent({
       2: 'female',
     }
 
-    // 表单数据
+    // 表单数据（只包含数据库中存在的字段）
     const formData = ref({
       avatar: userStore.userInfo.avatar || '',
       nickName: userStore.userInfo.nickName || '',
       abstract: userStore.userInfo.abstract || '',
       gender: genderReverseMap[userStore.userInfo.gender] || 'unknown',
-      birthday: '', // 本地扩展字段，不保存到后端
-      region: '', // 本地扩展字段，不保存到后端
     })
 
     // 监听用户信息变化
@@ -178,8 +151,6 @@ export default defineComponent({
         nickName: newInfo.nickName || '',
         abstract: newInfo.abstract || '',
         gender: genderReverseMap[newInfo.gender] || 'unknown',
-        birthday: '',
-        region: '',
       }
     }, { deep: true })
 
@@ -290,8 +261,8 @@ export default defineComponent({
   width: 600px;
   max-height: 80vh;
   background: #FFFFFF;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
+  border-radius: 8px; // 按照规范：窗口圆角8px
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); // 按照规范：窗口阴影
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -301,13 +272,13 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 24px;
+  padding: 16px 24px; // 按照规范：间距使用8px基础单位
   border-bottom: 1px solid #EBEEF5;
 
   .header-title {
-    font-size: 18px;
-    font-weight: 600;
-    color: #2D3436;
+    font-size: 16px; // 按照规范：标题16px
+    font-weight: 500; // 按照规范：中粗500
+    color: #2D3436; // 按照规范：标题文本色
   }
 
   .close-btn {
@@ -326,22 +297,22 @@ export default defineComponent({
 .panel-content {
   flex: 1;
   overflow-y: auto;
-  padding: 24px;
+  padding: 24px; // 按照规范：间距24px
 }
 
 .avatar-section {
   display: flex;
   justify-content: center;
-  margin-bottom: 32px;
+  margin-bottom: 24px; // 按照规范：间距24px
 
   .avatar-wrapper {
     position: relative;
     width: 120px;
     height: 120px;
-    border-radius: 50%;
+    border-radius: 8px; // 按照规范：头像圆角8px（AI.md 4.2）
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.2s;
+    transition: transform 0.2s; // 按照规范：快速过渡200ms（AI.md 5.1）
 
     &:hover {
       transform: scale(1.05);
@@ -387,7 +358,7 @@ export default defineComponent({
 
       .avatar-text {
         color: #FFFFFF;
-        font-size: 12px;
+        font-size: 12px; // 按照规范：小文本12px
       }
     }
   }
@@ -395,82 +366,82 @@ export default defineComponent({
 
 .form-section {
   .form-item {
-    margin-bottom: 24px;
+    margin-bottom: 24px; // 按照规范：间距24px
 
     &:last-child {
       margin-bottom: 0;
     }
 
     .form-label {
-      font-size: 14px;
-      font-weight: 500;
-      color: #2D3436;
-      margin-bottom: 8px;
+      font-size: 14px; // 按照规范：副标题14px
+      font-weight: 500; // 按照规范：中粗500
+      color: #2D3436; // 按照规范：标题文本色
+      margin-bottom: 8px; // 按照规范：基础单位8px
     }
 
     .form-input {
       width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #EBEEF5;
-      border-radius: 6px;
-      font-size: 14px;
-      color: #2D3436;
-      transition: border-color 0.2s;
+      padding: 12px; // 按照规范：输入框内边距12px
+      border: 1px solid #EBEEF5; // 按照规范：分割线色
+      border-radius: 6px; // 按照规范：输入框圆角6px
+      font-size: 13px; // 按照规范：正文13px
+      color: #2D3436; // 按照规范：标题文本色
+      transition: border-color 0.2s; // 按照规范：快速过渡200ms
 
       &:focus {
         outline: none;
-        border-color: #FF7D45;
+        border-color: #FF7D45; // 按照规范：主色
       }
 
       &::placeholder {
-        color: #B2BEC3;
+        color: #B2BEC3; // 按照规范：辅助文本色
       }
     }
 
     .form-textarea {
       width: 100%;
-      padding: 10px 12px;
-      border: 1px solid #EBEEF5;
-      border-radius: 6px;
-      font-size: 14px;
-      color: #2D3436;
+      padding: 12px; // 按照规范：输入框内边距12px
+      border: 1px solid #EBEEF5; // 按照规范：分割线色
+      border-radius: 6px; // 按照规范：输入框圆角6px
+      font-size: 13px; // 按照规范：正文13px
+      color: #2D3436; // 按照规范：标题文本色
       resize: vertical;
-      transition: border-color 0.2s;
+      transition: border-color 0.2s; // 按照规范：快速过渡200ms
       font-family: inherit;
 
       &:focus {
         outline: none;
-        border-color: #FF7D45;
+        border-color: #FF7D45; // 按照规范：主色
       }
 
       &::placeholder {
-        color: #B2BEC3;
+        color: #B2BEC3; // 按照规范：辅助文本色
       }
     }
 
     .form-radio-group {
       display: flex;
-      gap: 16px;
+      gap: 16px; // 按照规范：间距16px
 
       .radio-item {
-        padding: 8px 20px;
-        border: 1px solid #EBEEF5;
-        border-radius: 6px;
+        padding: 8px 20px; // 按照规范：基础单位8px
+        border: 1px solid #EBEEF5; // 按照规范：分割线色
+        border-radius: 6px; // 按照规范：输入框圆角6px
         cursor: pointer;
-        transition: all 0.2s;
+        transition: all 0.2s; // 按照规范：快速过渡200ms
 
         &:hover {
-          border-color: #FF7D45;
+          border-color: #FF7D45; // 按照规范：主色
         }
 
         &.active {
-          border-color: #FF7D45;
-          background: rgba(255, 125, 69, 0.1);
-          color: #FF7D45;
+          border-color: #FF7D45; // 按照规范：主色
+          background: rgba(255, 125, 69, 0.1); // 按照规范：浅色变体10%透明度
+          color: #FF7D45; // 按照规范：主色
         }
 
         .radio-label {
-          font-size: 14px;
+          font-size: 14px; // 按照规范：副标题14px
           user-select: none;
         }
       }
@@ -481,9 +452,9 @@ export default defineComponent({
 .panel-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-  padding: 20px 24px;
-  border-top: 1px solid #EBEEF5;
-  margin-top: 24px;
+  gap: 12px; // 按照规范：间距12px (接近16px)
+  padding: 16px 24px; // 按照规范：间距使用8px基础单位
+  border-top: 1px solid #EBEEF5; // 按照规范：分割线色
+  margin-top: 24px; // 按照规范：间距24px
 }
 </style>

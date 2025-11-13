@@ -64,12 +64,24 @@ export class GroupMemberService {
     }
   }
 
-  // 获取群成员列表
+  // 获取群成员列表（纯数据库查询，不含业务逻辑）
   static async getGroupMembers(groupId: string): Promise<IDBGroupMember[]> {
     return await this.db.select().from(groupMembers).where(and(eq(groupMembers.groupId as any, groupId as any), eq(groupMembers.status as any, 1))).all()
   }
 
-  // 获取用户加入的群组列表（包含群组详细信息）
+  // 获取用户加入的群组成员记录（纯数据库查询，不含业务逻辑）
+  static async getUserMemberships(userId: string): Promise<IDBGroupMember[]> {
+    return await this.db
+      .select()
+      .from(groupMembers)
+      .where(and(
+        eq(groupMembers.userId as any, userId as any),
+        eq(groupMembers.status as any, 1),
+      ))
+      .all()
+  }
+
+  // 获取用户加入的群组列表（包含群组详细信息）- 已废弃，请使用业务层
   static async getUserGroups(userId: string): Promise<IGroupInfo[]> {
     // 1. 获取用户加入的群组成员记录
     const userMemberships = await this.db

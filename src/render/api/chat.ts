@@ -14,6 +14,7 @@ import type {
   IPinnedChatRes,
   IRecallMessageReq,
   IRecallMessageRes,
+  IRecentChatListReq,
   IRecentChatRes,
   ISendMsgReq,
   ISendMsgRes,
@@ -23,10 +24,11 @@ import ajax from 'renderModule/utils/request/ajax'
 /**
  * @description: 获取最新的聊天列表
  */
-export const getRecentChatListApi = () => {
+export const getRecentChatListApi = (params: IRecentChatListReq) => {
   return ajax<IRecentChatRes>({
     method: 'GET',
     url: `${baseUrl}/api/chat/getRecentChatList`,
+    params, // GET请求使用params传递查询参数
   })
 }
 /**

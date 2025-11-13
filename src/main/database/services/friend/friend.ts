@@ -1,24 +1,7 @@
-import type { IFriendInfo, IFriendListRes } from 'commonModule/type/ajax/friend'
-
 import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
 import dbManager from 'mainModule/database/db'
 import { friends } from 'mainModule/database/tables/friend/friend'
 import { users } from 'mainModule/database/tables/user/user'
-
-// 生成会话ID的辅助函数
-function generateConversationId(userId1: string, userId2: string): string {
-  // 确保 userId1 < userId2，保证唯一性
-  const sortedIds = [userId1, userId2].sort()
-  return `private_${sortedIds[0]}_${sortedIds[1]}`
-}
-
-interface UserInfo {
-  uuid: string
-  nickName: string
-  avatar: string | null
-  abstract: string | null
-  email: string | null
-}
 
 // 好友服务
 export class FriendService {
@@ -174,111 +157,22 @@ export class FriendService {
   }
 
   /**
-   * @description: 获取好友列表
+   * 获取好友关系记录（纯数据库查询，不含业务逻辑）
    */
-  static async getFriends(header: any, params: any): Promise<IFriendListRes> {
-    try {
-      // 从header中获取当前用户ID
-      const userId = header?.userId
+  static async getFriendRelations(userId: string, options?: { page?: number, limit?: number }): Promise<any[]> {
+    const { page = 1, limit = 20 } = options || {}
+    const offset = (page - 1) * limit
 
-      if (!userId) {
-        console.error('用户ID不能为空')
-        return { list: [] }
-      }
-
-      // 设置默认分页参数
-      const page = params.page || 1
-      const limit = params.limit || 20
-      const offset = (page - 1) * limit
-
-      // 步骤1: 查询好友关系记录
-      const friendRelations = await this.db
-        .select()
-        .from(friends)
-        .where(and(
-          or(eq(friends.sendUserId, userId), eq(friends.revUserId, userId)),
-          eq(friends.isDeleted, 0),
-        ))
-        .limit(limit)
-        .offset(offset)
-        .all()
-
-      if (friendRelations.length === 0) {
-        return { list: [] }
-      }
-
-      // 步骤2: 收集所有需要查询的用户ID
-      const userIds = new Set<string>()
-      friendRelations.forEach((relation: any) => {
-        if (relation.sendUserId === userId) {
-          userIds.add(relation.revUserId)
-        }
-        else {
-          userIds.add(relation.sendUserId)
-        }
-      })
-
-      // 步骤3: 查询所有好友的用户信息
-      const userIdsArray = Array.from(userIds)
-      let userInfos: UserInfo[] = []
-      if (userIdsArray.length > 0) {
-        // 构建查询条件
-        const conditions = userIdsArray.map(id => eq(users.uuid, id))
-        userInfos = await this.db
-          .select({
-            uuid: users.uuid,
-            nickName: users.nickName,
-            avatar: users.avatar,
-            abstract: users.abstract,
-            email: users.email,
-          })
-          .from(users)
-          .where(or(...conditions))
-          .all() as UserInfo[]
-      }
-
-      // 步骤4: 构建用户ID到用户信息的映射
-      const userMap = new Map<string, UserInfo>()
-      userInfos.forEach((user: any) => {
-        userMap.set(user.uuid, user)
-      })
-
-      // 步骤5: 构建好友列表
-      const friendList: IFriendInfo[] = friendRelations.map((relation: any) => {
-        // 确定好友的用户ID
-        const friendUserId = relation.sendUserId === userId
-          ? relation.revUserId
-          : relation.sendUserId
-
-        // 获取好友用户信息
-        const friendUser = userMap.get(friendUserId)
-
-        // 确定备注信息
-        const notice = relation.sendUserId === userId
-          ? relation.sendUserNotice
-          : relation.revUserNotice
-
-        return {
-          userId: friendUserId,
-          nickname: friendUser?.nickName || '',
-          avatar: friendUser?.avatar || '',
-          abstract: friendUser?.abstract || '',
-          notice: notice || '',
-          isFriend: true,
-          conversationId: generateConversationId(userId, friendUserId),
-          email: friendUser?.email || '',
-          source: relation.source || '',
-        }
-      })
-
-      return {
-        list: friendList,
-      }
-    }
-    catch (error) {
-      console.error('获取好友列表失败:', error)
-      return { list: [] }
-    }
+    return await this.db
+      .select()
+      .from(friends)
+      .where(and(
+        or(eq(friends.sendUserId, userId as any), eq(friends.revUserId, userId as any)),
+        eq(friends.isDeleted, 0 as any),
+      ))
+      .limit(limit)
+      .offset(offset)
+      .all()
   }
 
   static async getFriendsByVerRange(header: any, params: any): Promise<{ list: IFriendInfo[] }> {
