@@ -1,10 +1,15 @@
 import type { IWindowOpenOptions, IWinodwCloseOptions } from 'commonModule/type/preload/window'
+import { NotificationModule } from 'commonModule/type/preload/notification'
 import { WinHook } from 'commonModule/type/ipc/command'
 import { BrowserWindow } from 'electron'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import appApplication from 'mainModule/application/app'
 import loginApplication from 'mainModule/application/login'
 import searchApplication from 'mainModule/application/search'
 import verifyApplication from 'mainModule/application/verify'
+import imageApplication from 'mainModule/application/image'
+import videoApplication from 'mainModule/application/video'
+import audioApplication from 'mainModule/application/audio'
 import logger from 'mainModule/utils/log'
 
 export class WindowHandler {
@@ -95,12 +100,19 @@ export class WindowHandler {
    * 打开指定窗口
    */
   private static async handleOpen(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, name: string, options: IWindowOpenOptions): Promise<void> {
-    const unique = options.unique || true // 默认唯一
+    const unique = options.unique !== false // 默认唯一
+    const params = options.params || {}
     // 通过name搜素进程
     const window = BrowserWindow.getAllWindows().find(win => (win as any).__appName === name)
     if (window && unique) {
       window.show()
       window.focus()
+      
+      // 如果窗口已存在且有参数，通过notification发送更新命令
+      if (Object.keys(params).length > 0) {
+        this.updateWindowContent(name, params)
+      }
+      
       return Promise.resolve()
     }
     else {
@@ -122,18 +134,57 @@ export class WindowHandler {
           verifyApplication.createBrowserWindow()
           newWindow = (verifyApplication as any).win
           break
+        case 'image':
+          imageApplication.createBrowserWindow()
+          newWindow = (imageApplication as any).win
+          break
+        case 'video':
+          videoApplication.createBrowserWindow()
+          newWindow = (videoApplication as any).win
+          break
+        case 'audio':
+          audioApplication.createBrowserWindow()
+          newWindow = (audioApplication as any).win
+          break
       }
 
-      // 如果创建了新窗口，等待它准备好
+      // 如果创建了新窗口，等待它准备好，然后发送参数
       if (newWindow) {
         return new Promise((resolve) => {
           newWindow!.once('ready-to-show', () => {
-            resolve()
+            // 窗口准备好后，如果有参数，通过notification发送更新命令
+            if (Object.keys(params).length > 0) {
+              // 延迟一小段时间确保窗口完全加载
+              setTimeout(() => {
+                this.updateWindowContent(name, params)
+                resolve()
+              }, 100)
+            }
+            else {
+              resolve()
+            }
           })
         })
       }
 
       return Promise.resolve()
+    }
+  }
+
+  /**
+   * 更新窗口内容（通过notification）
+   */
+  private static updateWindowContent(name: string, params: Record<string, any>): void {
+    switch (name) {
+      case 'image':
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateImage', params)
+        break
+      case 'video':
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateVideo', params)
+        break
+      case 'audio':
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateAudio', params)
+        break
     }
   }
 }

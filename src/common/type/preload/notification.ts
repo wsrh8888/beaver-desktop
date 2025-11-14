@@ -17,6 +17,10 @@ export enum NotificationModule {
    * 搜索结果通知到验证窗口
    */
   SEARCH_TO_VERIFY = 'search:to:verify',
+  /**
+   * 媒体查看器更新通知
+   */
+  MEDIA_VIEWER = 'media:viewer',
 }
 
 export enum NotificationFriendCommand {
@@ -57,6 +61,24 @@ export enum NotificationConnectionCommand {
   STATUS_CHANGE = 'statusChange',
 }
 
+export enum NotificationMediaViewerCommand {
+  /**
+   * 更新图片查看器
+   * data: { url: string, list?: string[], index?: number }
+   */
+  UPDATE_IMAGE = 'updateImage',
+  /**
+   * 更新视频播放器
+   * data: { url: string, title?: string }
+   */
+  UPDATE_VIDEO = 'updateVideo',
+  /**
+   * 更新音频播放器
+   * data: { url: string, title?: string }
+   */
+  UPDATE_AUDIO = 'updateAudio',
+}
+
 export interface NotificationCommandMap {
   [NotificationModule.DATABASE_FRIEND]: NotificationFriendCommand
   [NotificationModule.DATABASE_USER]: NotificationUserCommand
@@ -64,6 +86,7 @@ export interface NotificationCommandMap {
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
   [NotificationModule.CONNECTION]: NotificationConnectionCommand
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
+  [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand
 }
 
 import type { TrayMenuItem } from './app'
