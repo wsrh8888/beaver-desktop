@@ -10,6 +10,10 @@ export interface IWindowOpenOptions {
    * @description: 是否唯一，默认唯一
    */
   unique?: boolean
+  /**
+   * @description: 窗口参数（用于传递数据）
+   */
+  params?: Record<string, any>
 }
 
 /**

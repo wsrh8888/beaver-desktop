@@ -83,6 +83,9 @@ export default defineConfig(({ command: _command }) => {
           updater: path.resolve(__dirname, 'updater.html'),
           search: path.resolve(__dirname, 'search.html'),
           verify: path.resolve(__dirname, 'verify.html'),
+          image: path.resolve(__dirname, 'image.html'),
+          video: path.resolve(__dirname, 'video.html'),
+          audio: path.resolve(__dirname, 'audio.html'),
         },
         output: {
           format: 'es', // 确保输出 ES 模块格式
