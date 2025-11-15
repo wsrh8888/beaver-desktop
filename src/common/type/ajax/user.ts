@@ -1,6 +1,6 @@
 export interface IUserInfoRes {
   userId: string
-  nickName: string
+  avatar: string
   avatar: string // 用户头像URL
   abstract: string // 用户个性签名
   phone?: string // 用户手机号
@@ -10,7 +10,7 @@ export interface IUserInfoRes {
 
 // 更新用户信息请求
 export interface IUpdateInfoReq {
-  nickName?: string // 新昵称
+  avatar?: string // 新昵称
   fileName?: string // 新头像URL
   abstract?: string // 新个性签名
   gender?: number // 性别：1-男 2-女 0-未知

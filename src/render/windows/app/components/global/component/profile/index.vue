@@ -1,10 +1,10 @@
 <template>
-  <div class="settings-overlay" @click.self="handleClose">
-    <div class="settings-panel" @click.stop>
+  <div class="profile-overlay" @click.self="handleClose">
+    <div class="profile-panel" @click.stop>
       <!-- 头部 -->
       <div class="panel-header">
         <div class="header-title">
-          编辑资料
+          个人资料
         </div>
         <BeaverButton type="text" circle class="close-btn" @click="handleClose">
           <template #icon>
@@ -15,7 +15,7 @@
 
       <!-- 内容区域 -->
       <div class="panel-content">
-        <!-- 头像区域 -->
+        <!-- 头像区域（顶部居中） -->
         <div class="avatar-section">
           <div class="avatar-wrapper" @click="handleAvatarClick">
             <BeaverImage
@@ -61,7 +61,7 @@
               class="form-textarea"
               placeholder="请输入个性签名"
               maxlength="100"
-              rows="3"
+              rows="2"
             />
           </div>
 
@@ -86,16 +86,16 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- 底部按钮 -->
-        <div class="panel-footer">
-          <BeaverButton type="default" @click="handleClose">
-            取消
-          </BeaverButton>
-          <BeaverButton type="primary" :loading="isSaving" @click="handleSave">
-            保存
-          </BeaverButton>
-        </div>
+      <!-- 底部按钮 -->
+      <div class="panel-footer">
+        <BeaverButton type="default" @click="handleClose">
+          取消
+        </BeaverButton>
+        <BeaverButton type="primary" :loading="isSaving" @click="handleSave">
+          保存
+        </BeaverButton>
       </div>
     </div>
   </div>
@@ -108,11 +108,11 @@ import cameraIcon from 'renderModule/assets/image/leftBar/settings/camera.svg'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
-import { selectAndUploadFile } from 'renderModule/utils/upload'
+import { selectAndUploadFile, uploadFile } from 'renderModule/utils/upload'
 import { defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
-  name: 'SettingsComponent',
+  name: 'ProfileComponent',
   components: {
     BeaverImage,
     BeaverButton,
@@ -167,10 +167,14 @@ export default defineComponent({
         return
 
       try {
-        // 上传头像
-        const uploadResults = await selectAndUploadFile('image/*', false)
-        if (uploadResults.length > 0) {
-          formData.value.avatar = uploadResults[0].fileKey
+        // 上传头像文件
+        const uploadResult = await uploadFile(file)
+        if (uploadResult && uploadResult.fileKey) {
+          formData.value.avatar = uploadResult.fileKey
+          Message.success('头像上传成功')
+        }
+        else {
+          Message.error('头像上传失败，请重试')
         }
       }
       catch (error) {
@@ -196,7 +200,7 @@ export default defineComponent({
         // 构建更新数据（只包含后端支持的字段）
         const updateData = {
           nickName: formData.value.nickName,
-          fileName: formData.value.avatar, // 后端使用 fileName 字段
+          avatar: formData.value.avatar, // 后端使用 fileName 字段
           abstract: formData.value.abstract,
           gender: genderMap[formData.value.gender],
         }
@@ -243,7 +247,7 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
-.settings-overlay {
+.profile-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -257,15 +261,13 @@ export default defineComponent({
   z-index: 2000;
 }
 
-.settings-panel {
-  width: 600px;
-  max-height: 80vh;
+.profile-panel {
+  width: 560px;
   background: #FFFFFF;
-  border-radius: 8px; // 按照规范：窗口圆角8px
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15); // 按照规范：窗口阴影
+  border-radius: 8px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .panel-header {
@@ -296,23 +298,22 @@ export default defineComponent({
 
 .panel-content {
   flex: 1;
-  overflow-y: auto;
-  padding: 24px; // 按照规范：间距24px
+  padding: 32px;
 }
 
 .avatar-section {
   display: flex;
   justify-content: center;
-  margin-bottom: 24px; // 按照规范：间距24px
+  margin-bottom: 32px;
 
   .avatar-wrapper {
     position: relative;
-    width: 120px;
-    height: 120px;
-    border-radius: 8px; // 按照规范：头像圆角8px（AI.md 4.2）
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
     overflow: hidden;
     cursor: pointer;
-    transition: transform 0.2s; // 按照规范：快速过渡200ms（AI.md 5.1）
+    transition: transform 0.2s;
 
     &:hover {
       transform: scale(1.05);
@@ -344,21 +345,21 @@ export default defineComponent({
 
       .avatar-icon {
         color: #FFFFFF;
-        margin-bottom: 8px;
+        margin-bottom: 4px;
         display: flex;
         align-items: center;
         justify-content: center;
 
         img {
-          width: 24px;
-          height: 24px;
+          width: 20px;
+          height: 20px;
           filter: brightness(0) invert(1);
         }
       }
 
       .avatar-text {
         color: #FFFFFF;
-        font-size: 12px; // 按照规范：小文本12px
+        font-size: 11px;
       }
     }
   }
@@ -366,82 +367,89 @@ export default defineComponent({
 
 .form-section {
   .form-item {
-    margin-bottom: 24px; // 按照规范：间距24px
+    display: flex;
+    align-items: center;
+    margin-bottom: 24px;
 
     &:last-child {
       margin-bottom: 0;
     }
 
     .form-label {
-      font-size: 14px; // 按照规范：副标题14px
-      font-weight: 500; // 按照规范：中粗500
-      color: #2D3436; // 按照规范：标题文本色
-      margin-bottom: 8px; // 按照规范：基础单位8px
+      width: 80px;
+      flex-shrink: 0;
+      font-size: 14px;
+      font-weight: 500;
+      color: #2D3436;
+      text-align: right;
+      padding-right: 16px;
     }
 
     .form-input {
-      width: 100%;
-      padding: 12px; // 按照规范：输入框内边距12px
-      border: 1px solid #EBEEF5; // 按照规范：分割线色
-      border-radius: 6px; // 按照规范：输入框圆角6px
-      font-size: 13px; // 按照规范：正文13px
-      color: #2D3436; // 按照规范：标题文本色
-      transition: border-color 0.2s; // 按照规范：快速过渡200ms
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #EBEEF5;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #2D3436;
+      transition: border-color 0.2s;
 
       &:focus {
         outline: none;
-        border-color: #FF7D45; // 按照规范：主色
+        border-color: #FF7D45;
       }
 
       &::placeholder {
-        color: #B2BEC3; // 按照规范：辅助文本色
+        color: #B2BEC3;
       }
     }
 
     .form-textarea {
-      width: 100%;
-      padding: 12px; // 按照规范：输入框内边距12px
-      border: 1px solid #EBEEF5; // 按照规范：分割线色
-      border-radius: 6px; // 按照规范：输入框圆角6px
-      font-size: 13px; // 按照规范：正文13px
-      color: #2D3436; // 按照规范：标题文本色
-      resize: vertical;
-      transition: border-color 0.2s; // 按照规范：快速过渡200ms
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid #EBEEF5;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #2D3436;
+      resize: none;
+      transition: border-color 0.2s;
       font-family: inherit;
+      line-height: 1.5;
 
       &:focus {
         outline: none;
-        border-color: #FF7D45; // 按照规范：主色
+        border-color: #FF7D45;
       }
 
       &::placeholder {
-        color: #B2BEC3; // 按照规范：辅助文本色
+        color: #B2BEC3;
       }
     }
 
     .form-radio-group {
+      flex: 1;
       display: flex;
-      gap: 16px; // 按照规范：间距16px
+      gap: 16px;
 
       .radio-item {
-        padding: 8px 20px; // 按照规范：基础单位8px
-        border: 1px solid #EBEEF5; // 按照规范：分割线色
-        border-radius: 6px; // 按照规范：输入框圆角6px
+        padding: 8px 20px;
+        border: 1px solid #EBEEF5;
+        border-radius: 6px;
         cursor: pointer;
-        transition: all 0.2s; // 按照规范：快速过渡200ms
+        transition: all 0.2s;
 
         &:hover {
-          border-color: #FF7D45; // 按照规范：主色
+          border-color: #FF7D45;
         }
 
         &.active {
-          border-color: #FF7D45; // 按照规范：主色
-          background: rgba(255, 125, 69, 0.1); // 按照规范：浅色变体10%透明度
-          color: #FF7D45; // 按照规范：主色
+          border-color: #FF7D45;
+          background: rgba(255, 125, 69, 0.1);
+          color: #FF7D45;
         }
 
         .radio-label {
-          font-size: 14px; // 按照规范：副标题14px
+          font-size: 14px;
           user-select: none;
         }
       }
@@ -452,9 +460,9 @@ export default defineComponent({
 .panel-footer {
   display: flex;
   justify-content: flex-end;
-  gap: 12px; // 按照规范：间距12px (接近16px)
-  padding: 16px 24px; // 按照规范：间距使用8px基础单位
-  border-top: 1px solid #EBEEF5; // 按照规范：分割线色
-  margin-top: 24px; // 按照规范：间距24px
+  gap: 12px;
+  padding: 16px 24px;
+  border-top: 1px solid #EBEEF5;
+  flex-shrink: 0;
 }
 </style>

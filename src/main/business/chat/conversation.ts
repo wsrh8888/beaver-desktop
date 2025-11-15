@@ -10,6 +10,7 @@ import { ChatConversationService } from 'mainModule/database/services/chat/conve
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { GroupService } from 'mainModule/database/services/group/group'
+import { formatConversationTime } from 'mainModule/utils/time'
 
 /**
  * 会话业务逻辑
@@ -149,7 +150,7 @@ export class ConversationBusiness {
         avatar,
         nickname,
         msg_preview: conv.lastMessage || '',
-        update_at: conv.updatedAt?.toString() || '',
+        update_at: formatConversationTime(conv.updatedAt),
         is_top: conv.isPinned === 1,
         chatType: conv.type || 1,
         notice,

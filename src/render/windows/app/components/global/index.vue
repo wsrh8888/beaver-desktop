@@ -1,19 +1,19 @@
 <template>
   <!-- 全局组件容器 -->
   <Teleport v-if="currentComponent" to="body">
-    <UserInfoComponent v-if="currentComponent === 'userinfo'" @close="hideComponent" />
+    <ProfileComponent v-if="currentComponent === 'profile'" @close="hideComponent" />
   </Teleport>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
 import { useGlobalStore } from '../../pinia/view/global/index'
-import SettingsComponent from './component/settings/index.vue'
+import ProfileComponent from './component/profile/index.vue'
 
 export default defineComponent({
   name: 'GlobalComponent',
   components: {
-    SettingsComponent,
+    ProfileComponent,
   },
   setup() {
     const globalStore = useGlobalStore()

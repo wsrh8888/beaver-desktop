@@ -25,7 +25,7 @@ export const outsideList = [
 
 export const userInfoMenuList = [
   {
-    key: 'settings',
+    key: 'profile',
     label: '个人资料',
     icon: settingsIcon,
   },
