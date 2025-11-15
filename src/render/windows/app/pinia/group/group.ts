@@ -1,36 +1,32 @@
 import type { IGroupInfo } from 'commonModule/type/ajax/group'
 import { defineStore } from 'pinia'
-import {
-  getGroupInfoApi,
-} from 'renderModule/api/group'
+import { getGroupInfoApi } from 'renderModule/api/group'
 
 /**
  * @description: 群组信息管理
  */
 export const useGroupStore = defineStore('groupStore', {
   state: (): {
-    groupList: IGroupInfo[]
+    _groupList: IGroupInfo[]
   } => ({
     /**
-     * @description: 群组列表，保持有序
+     * @description: 群组列表，保持有序（私有）
      */
-    groupList: [],
+    _groupList: [],
   }),
 
   getters: {
+    /**
+     * @description: 获取群组列表
+     */
     getGroupList: (state) => {
-      return state.groupList.map((group) => {
-        console.error('dddddddddddddddddddddddddddddddddddd', group)
-        return {
-          ...group,
-        }
-      })
+      return state._groupList
     },
     /**
-     * @description: 根据群组ID获取群组信息
+     * @description: 根据会话ID获取群组信息
      */
-    getGroupById: state => (groupId: string): IGroupInfo | undefined => {
-      return state.groupList.find(group => group.conversationId === groupId)
+    getGroupById: state => (conversationId: string): IGroupInfo | undefined => {
+      return state._groupList.find(group => group.conversationId === conversationId)
     },
   },
 
@@ -39,7 +35,7 @@ export const useGroupStore = defineStore('groupStore', {
      * @description: 重置群组列表
      */
     reset() {
-      this.groupList = []
+      this._groupList = []
     },
 
     /**
@@ -50,8 +46,7 @@ export const useGroupStore = defineStore('groupStore', {
         page: 1,
         limit: 100,
       })
-      console.error('111111111111', result)
-      this.groupList = result?.list || []
+      this._groupList = result?.list || []
     },
 
     /**
@@ -61,10 +56,10 @@ export const useGroupStore = defineStore('groupStore', {
       return getGroupInfoApi({ groupId }).then((res) => {
         if (res.code === 0) {
           const groupInfo = res.result
-          const index = this.groupList.findIndex(g => g.conversationId === groupId)
+          const index = this._groupList.findIndex(g => g.conversationId === groupId)
           if (index !== -1) {
             // 更新现有群组信息
-            this.groupList[index] = { ...this.groupList[index], ...groupInfo }
+            this._groupList[index] = { ...this._groupList[index], ...groupInfo }
           }
         }
         return res
@@ -78,7 +73,7 @@ export const useGroupStore = defineStore('groupStore', {
      * @description: 移除群组
      */
     removeGroup(groupId: string) {
-      this.groupList = this.groupList.filter(group => group.conversationId !== groupId)
+      this._groupList = this._groupList.filter(group => group.conversationId !== groupId)
     },
   },
 })

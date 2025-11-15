@@ -492,7 +492,7 @@ export interface IGetGroupListReq {
 
 // 群组数据同步
 export interface IGroupSyncReq {
-  groupIds: string[]
+  groups: IGroupVersionSyncItem[]
 }
 
 export interface IGroupSyncRes {

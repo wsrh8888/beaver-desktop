@@ -110,12 +110,10 @@ class ConversationMetaSync {
           await ChatConversationService.upsert(conv)
         }
 
-        // 更新同步状态
+        // 更新同步状态（使用响应中的版本号）
         for (const conv of response.result.conversations) {
-          // 从版本映射中获取版本号
-          const version = versionMap.get(conv.conversationId)
-          if (version !== undefined) {
-            await ChatSyncStatusService.upsertConversationSyncStatus(conv.conversationId, version)
+          if (conv.version !== undefined) {
+            await ChatSyncStatusService.upsertConversationSyncStatus(conv.conversationId, conv.version)
           }
         }
       }

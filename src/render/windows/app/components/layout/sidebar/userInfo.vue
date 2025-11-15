@@ -161,7 +161,7 @@ export default defineComponent({
           break
         case 'about':
           // 显示关于全局组件
-          globalStore.setComponent('update')
+          globalStore.setComponent('about')
           handleClose()
           break
         case 'logout':

@@ -29,13 +29,13 @@
               {{ chat.nickname }}
             </div>
             <div class="chat-time">
-              {{ chat.update_at }}
+              {{ chat.updateAt }}
             </div>
           </div>
           <div class="chat-preview">
-            <span class="preview-text">{{ chat.msg_preview }}</span>
-            <div v-if="chat.unread_count" class="unread-badge">
-              {{ chat.unread_count }}
+            <span class="preview-text">{{ chat.msgPreview }}</span>
+            <div v-if="chat.unreadCount" class="unread-badge">
+              {{ chat.unreadCount }}
             </div>
           </div>
         </div>

@@ -3,38 +3,41 @@
     <div v-if="visible" class="messagebox-overlay" @click="handleOverlayClick">
       <div class="messagebox-wrapper" @click.stop>
         <div class="messagebox" :class="{ 'is-center': center }">
-          <!-- 关闭按钮 -->
-          <button v-if="showClose" class="messagebox-close" @click="handleCancel">
-            <img :src="closeIcon" alt="关闭">
-          </button>
-
-          <!-- 图标 -->
-          <div v-if="type" class="messagebox-icon" :class="`messagebox-icon--${type}`">
-            <img
-              v-if="type === 'success'"
-              :src="successIcon"
-              alt="成功"
-            >
-            <img
-              v-else-if="type === 'warning'"
-              :src="warningIcon"
-              alt="警告"
-            >
-            <img
-              v-else-if="type === 'error'"
-              :src="errorIcon"
-              alt="错误"
-            >
-            <img
-              v-else
-              :src="infoIcon"
-              alt="信息"
-            >
-          </div>
-
-          <!-- 标题 -->
-          <div v-if="title" class="messagebox-title">
-            {{ title }}
+          <!-- 标题栏：图标 + 标题 + 关闭按钮 -->
+          <div v-if="title || type" class="messagebox-header">
+            <div class="messagebox-header-left">
+              <!-- 图标 -->
+              <div v-if="type" class="messagebox-icon" :class="`messagebox-icon--${type}`">
+                <img
+                  v-if="type === 'warning'"
+                  :src="warningIcon"
+                  alt="警告"
+                >
+                <img
+                  v-else-if="type === 'success'"
+                  :src="successIcon"
+                  alt="成功"
+                >
+                <img
+                  v-else-if="type === 'error'"
+                  :src="errorIcon"
+                  alt="错误"
+                >
+                <img
+                  v-else
+                  :src="infoIcon"
+                  alt="信息"
+                >
+              </div>
+              <!-- 标题 -->
+              <div v-if="title" class="messagebox-title">
+                {{ title }}
+              </div>
+            </div>
+            <!-- 关闭按钮 -->
+            <button v-if="showClose" class="messagebox-close" @click="handleCancel">
+              <img :src="closeIcon" alt="关闭">
+            </button>
           </div>
 
           <!-- 内容 -->
@@ -61,22 +64,22 @@
 
           <!-- 按钮 -->
           <div class="messagebox-buttons">
-            <button
+            <BeaverButton
               v-if="showCancelButton"
-              class="messagebox-button messagebox-cancel"
-              :class="{ 'is-round': roundButton }"
+              type="default"
+              :round="roundButton"
               @click="handleCancel"
             >
               {{ cancelButtonText }}
-            </button>
-            <button
+            </BeaverButton>
+            <BeaverButton
               v-if="showConfirmButton"
-              class="messagebox-button messagebox-confirm"
-              :class="{ [`messagebox-confirm--${type}`]: type, 'is-round': roundButton }"
+              type="primary"
+              :round="roundButton"
               @click="handleConfirm"
             >
               {{ confirmButtonText }}
-            </button>
+            </BeaverButton>
           </div>
         </div>
       </div>
@@ -86,14 +89,18 @@
 
 <script lang="ts">
 import { defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import BeaverButton from '../button/index.vue'
 import closeIcon from './assets/close.svg'
 import errorIcon from './assets/error.svg'
 import infoIcon from './assets/info.svg'
 import successIcon from './assets/success.svg'
-import warningIcon from './assets/warning.svg'
+import warningIcon from './assets/warning-circle.svg'
 
 export default defineComponent({
   name: 'MessageBox',
+  components: {
+    BeaverButton,
+  },
   props: {
     visible: {
       type: Boolean,
@@ -153,7 +160,7 @@ export default defineComponent({
     },
     inputType: {
       type: String,
-      default: 'text',
+      default: undefined,
     },
     inputPlaceholder: {
       type: String,
@@ -174,7 +181,7 @@ export default defineComponent({
     const inputValue = ref('')
     const inputErrorMessage = ref('')
 
-    const isPrompt = props.inputType !== undefined && props.inputType !== null
+    const isPrompt = props.inputType !== undefined && props.inputType !== null && props.inputType !== ''
 
     // 处理确认
     const handleConfirm = () => {
@@ -272,22 +279,35 @@ export default defineComponent({
 
 .messagebox {
   background: #FFFFFF;
-  border-radius: 8px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.12);
-  padding: 24px;
+  border-radius: 4px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
   min-width: 420px;
   max-width: 90vw;
   position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 
   &.is-center {
     text-align: center;
   }
 }
 
+.messagebox-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 20px 10px;
+
+  .messagebox-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+  }
+}
+
 .messagebox-close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
   width: 32px;
   height: 32px;
   border: none;
@@ -299,6 +319,7 @@ export default defineComponent({
   justify-content: center;
   color: #909399;
   transition: all 0.2s;
+  flex-shrink: 0;
 
   &:hover {
     background: #F5F7FA;
@@ -312,54 +333,65 @@ export default defineComponent({
 }
 
 .messagebox-icon {
-  width: 48px;
-  height: 48px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 16px;
-  font-size: 24px;
+  flex-shrink: 0;
+  overflow: hidden;
 
   img {
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
+  }
+
+  svg {
+    width: 28px;
+    height: 28px;
   }
 
   &--success {
     background: #F0F9FF;
-    color: #67C23A;
+    
+    img {
+      filter: brightness(0) saturate(100%) invert(67%) sepia(90%) saturate(400%) hue-rotate(60deg) brightness(95%) contrast(90%);
+    }
   }
 
   &--warning {
     background: #FDF6EC;
-    color: #E6A23C;
   }
 
   &--error {
     background: #FEF0F0;
-    color: #F56C6C;
+    
+    img {
+      filter: brightness(0) saturate(100%) invert(50%) sepia(90%) saturate(2000%) hue-rotate(330deg) brightness(95%) contrast(90%);
+    }
   }
 
   &--info {
     background: #F4F4F5;
-    color: #909399;
+    
+    img {
+      filter: brightness(0) saturate(100%) invert(60%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%);
+    }
   }
 }
 
 .messagebox-title {
   font-size: 18px;
   font-weight: 500;
-  color: #2D3436;
-  margin-bottom: 12px;
-  padding-left: 0;
-  padding-right: 0;
+  color: #303133;
+  line-height: 1;
 }
 
 .messagebox-content {
   font-size: 14px;
   color: #606266;
-  margin-bottom: 20px;
+  padding: 0 20px 20px;
   line-height: 1.5;
 }
 
@@ -390,65 +422,8 @@ export default defineComponent({
 .messagebox-buttons {
   display: flex;
   justify-content: flex-end;
-  gap: 12px;
-}
-
-.messagebox-button {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-
-  &.is-round {
-    border-radius: 20px;
-  }
-
-  &.messagebox-cancel {
-    background: #FFFFFF;
-    color: #606266;
-    border: 1px solid #DCDFE6;
-
-    &:hover {
-      color: #FF7D45;
-      border-color: #FF7D45;
-    }
-  }
-
-  &.messagebox-confirm {
-    background: #FF7D45;
-    color: #FFFFFF;
-
-    &:hover {
-      background: #FF6B2E;
-    }
-
-    &--success {
-      background: #67C23A;
-
-      &:hover {
-        background: #5DAE34;
-      }
-    }
-
-    &--warning {
-      background: #E6A23C;
-
-      &:hover {
-        background: #CF9236;
-      }
-    }
-
-    &--error {
-      background: #F56C6C;
-
-      &:hover {
-        background: #DD6161;
-      }
-    }
-  }
+  gap: 10px;
+  padding: 0 20px 20px;
 }
 
 // 动画
