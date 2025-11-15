@@ -4,9 +4,13 @@ import path from 'node:path'
 import { CacheType } from 'commonModule/type/cache/cache'
 import { UpdateCommand } from 'commonModule/type/ipc/command'
 import { shell } from 'electron'
-import { getCachePath } from 'mainModule/utils/config'
-import { calculateFileMd5, downloadFile } from 'mainModule/utils/download/index'
+import { downloadFile } from 'mainModule/utils/download/index'
 import logger from 'mainModule/utils/log'
+import updater from 'mainModule/application/updater'
+import { cacheTypeToFilePath } from 'mainModule/cache/config'
+import { previewOnlineFileApi } from 'mainModule/api/file'
+import { mediaCacheService } from 'mainModule/database/services/media/media'
+import { getRootPath } from 'mainModule/config'
 
 export class UpdaterHandler {
   /**
@@ -35,35 +39,43 @@ export class UpdaterHandler {
    */
   private static async handleDownloadUpdate(event: Electron.IpcMainEvent, data: IDownloadOptions) {
     try {
-      const { url, md5, version } = data
-      logger.info({ text: '开始下载更新', data: { url, md5, version } }, 'UpdaterHandler')
+      const { fileKey, md5, version } = data
+      logger.info({ text: '开始下载更新', data: { fileKey, md5, version } }, 'UpdaterHandler')
 
-      // 获取升级缓存目录
-      const updateDir = getCachePath(CacheType.UPDATE_PACKAGE)
+      // 获取升级缓存目录（绝对路径）
+      const cacheRoot = path.join(getRootPath(), 'cache')
+      const updateDir = path.join(cacheRoot, cacheTypeToFilePath[CacheType.PUBLIC_UPDATE])
 
-      // 使用版本号_MD5作为文件名，既直观又唯一
-      const fileName = `${version}_${md5}.exe`
+      // 构建完整的文件路径（直接使用 fileKey 作为文件名）
+      const filePath = path.join(updateDir, fileKey)
 
       // 使用通用下载工具下载文件
-      const filePath = await downloadFile(
-        url,
-        updateDir,
-        fileName,
+      const downloadedFile = await downloadFile(
+        previewOnlineFileApi(fileKey), // 下载URL
+        filePath, // 完整文件路径
         (progress: number) => {
           event.sender.send(UpdateCommand.DOWNLOAD_PROGRESS, progress)
-        },
+        }, // 进度回调
       )
 
       // 验证MD5
-      const fileMd5 = await calculateFileMd5(filePath)
-      if (fileMd5 !== md5) {
-        logger.error({ text: 'MD5校验失败', data: { fileMd5, md5 } }, 'UpdaterHandler')
+      if (downloadedFile.md5 !== md5) {
+        logger.error({ text: 'MD5校验失败', data: { fileMd5: downloadedFile.md5, expectedMd5: md5 } }, 'UpdaterHandler')
         // 删除下载的文件
-        fs.unlinkSync(filePath)
+        fs.unlinkSync(downloadedFile.path)
         throw new Error('MD5校验失败')
       }
 
-      logger.info({ text: '下载完成', data: { filePath } }, 'UpdaterHandler')
+      // 保存下载记录到数据库
+      try {
+        await mediaCacheService.upsert(fileKey, downloadedFile.path, CacheType.PUBLIC_UPDATE, downloadedFile.size)
+        logger.info({ text: '下载记录已保存到数据库', data: { fileKey, filePath: downloadedFile.path, fileSize: downloadedFile.size } }, 'UpdaterHandler')
+      } catch (error) {
+        logger.error({ text: '保存下载记录失败', data: error }, 'UpdaterHandler')
+        // 保存失败不影响下载结果，只记录错误
+      }
+
+      logger.info({ text: '下载完成', data: { filePath: downloadedFile.path } }, 'UpdaterHandler')
     }
     catch (error) {
       logger.error({ text: '下载失败', data: (error as any)?.message || error }, 'UpdaterHandler')
@@ -77,13 +89,13 @@ export class UpdaterHandler {
    */
   private static async handleStartUpdate(event: Electron.IpcMainEvent, data: IDownloadOptions) {
     try {
-      const { url, md5, version } = data
-      logger.info({ text: '开始升级', data: { url, md5, version } }, 'UpdaterHandler')
+      const { fileKey, md5, version } = data
+      logger.info({ text: '开始升级', data: { fileKey, md5, version } }, 'UpdaterHandler')
 
-      // 根据data中的信息构建文件路径
-      const updateDir = getCachePath(CacheType.UPDATE_PACKAGE)
-      const fileName = `${version}_${md5}.exe`
-      const filePath = path.join(updateDir, fileName)
+      // 根据data中的信息构建文件路径（绝对路径）
+      const cacheRoot = path.join(getRootPath(), 'cache')
+      const updateDir = path.join(cacheRoot, cacheTypeToFilePath[CacheType.PUBLIC_UPDATE])
+      const filePath = path.join(updateDir, fileKey)
 
       // 检查文件是否存在
       if (!fs.existsSync(filePath)) {

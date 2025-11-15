@@ -10,6 +10,7 @@ import verifyApplication from 'mainModule/application/verify'
 import imageApplication from 'mainModule/application/image'
 import videoApplication from 'mainModule/application/video'
 import audioApplication from 'mainModule/application/audio'
+import updateApplication from 'mainModule/application/updater'
 import logger from 'mainModule/utils/log'
 
 export class WindowHandler {
@@ -100,7 +101,7 @@ export class WindowHandler {
    * 打开指定窗口
    */
   private static async handleOpen(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, name: string, options: IWindowOpenOptions): Promise<void> {
-    const unique = options.unique !== false // 默认唯一
+    const unique = options.unique || true // 默认唯一
     const params = options.params || {}
     // 通过name搜素进程
     const window = BrowserWindow.getAllWindows().find(win => (win as any).__appName === name)
@@ -146,6 +147,10 @@ export class WindowHandler {
           audioApplication.createBrowserWindow()
           newWindow = (audioApplication as any).win
           break
+        case 'updater':
+          updateApplication.createBrowserWindow()
+          newWindow = (updateApplication as any).win
+          break
       }
 
       // 如果创建了新窗口，等待它准备好，然后发送参数
@@ -184,6 +189,12 @@ export class WindowHandler {
         break
       case 'audio':
         sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateAudio', params)
+        break
+      case 'updater':
+        console.log('更新窗口内容', name, params)
+        console.log('更新窗口内容', name, params)
+        console.log('更新窗口内容', name, params)
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateInfo', params)
         break
     }
   }

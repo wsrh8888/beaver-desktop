@@ -60,7 +60,7 @@ export default defineComponent({
 
     // 监听notification更新
     const handleNotification = (payload: any) => {
-      if (payload.command === 'updateVideo' && payload.data) {
+      if (payload.command === 'updateInfo' && payload.data) {
         updateVideo(payload.data)
       }
     }

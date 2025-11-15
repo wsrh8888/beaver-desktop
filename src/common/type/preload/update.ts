@@ -3,9 +3,9 @@
  */
 export interface IDownloadOptions {
   /**
-   * @description: 下载地址
+   * @description: 文件Key（包含MD5和后缀名）
    */
-  url: string
+  fileKey: string
   /**
    * @description: 文件MD5值用于校验
    */

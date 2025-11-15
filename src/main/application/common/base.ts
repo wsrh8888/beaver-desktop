@@ -43,6 +43,7 @@ export default class ApplicationBase {
       env: process.custom.ENV,
       token: store.get('userInfo')?.token,
       devicedId: process.custom.DEVICE_ID,
+      version: process.custom.VERSION,
     }
   }
 }

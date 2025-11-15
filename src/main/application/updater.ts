@@ -11,12 +11,10 @@ class Updater extends ApplicationBase implements Application {
 
   public createBrowserWindow(): BrowserWindow {
     this.win = new BrowserWindow({
-      width: 450,
-      height: 350,
-      frame: true, // 有标题栏，可以拖动
+      width: 480,
+      height: 450,
+      frame: false, // 无边框设计
       resizable: false,
-      skipTaskbar: true, // 不在任务栏显示
-      alwaysOnTop: true, // 置顶显示
       webPreferences: {
         preload: path.join(__dirname, './preload/electron.js'), // 复用你的预加载脚本
         nodeIntegration: false,

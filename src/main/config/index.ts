@@ -25,8 +25,20 @@ export function initCustom() {
     ENV: 'prod',
     TOOLS: false,
     DEVICE_ID: deviceId,
+    VERSION: getVersion()
   }
 }
+
+
+const getVersion = () => {
+  // 判断跟目录是否存在god.txt
+  if (fs.existsSync(path.resolve(getExePath(), 'version'))) {
+    // 读取文件内容
+    return fs.readFileSync(path.resolve(getExePath(), 'version'), 'utf-8').trim()
+  }
+  return '1.0.0.0'
+}
+
 
 export function loadConfigs() {
   const configPaths = [
@@ -52,9 +64,10 @@ function loadConfigFile(configPath: string) {
   }
 }
 
-export function setupMiniAppDirectory() {
-  const rootPath = path.resolve(getRootPath(), 'mini-app')
-  if (!fs.existsSync(rootPath)) {
-    fs.mkdirSync(rootPath)
+
+export const getExePath = () => {
+  if (process.env.NODE_ENV === 'development') {
+    return path.resolve(__dirname, '../')
   }
+  return path.resolve(__dirname, '../../../')
 }

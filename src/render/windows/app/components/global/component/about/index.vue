@@ -20,7 +20,7 @@
 
         <!-- 版本号 -->
         <div class="app-version">
-          版本 {{ appVersion }}
+          版本 {{ electron?.app.version }}
         </div>
 
         <!-- 检查更新按钮 -->
@@ -36,6 +36,7 @@
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import { defineComponent } from 'vue'
 import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global/index'
+import { useUpdateStore } from 'renderModule/windows/app/pinia/update/index'
 
 export default defineComponent({
   name: 'AboutComponent',
@@ -45,22 +46,24 @@ export default defineComponent({
   emits: ['close'],
   setup(props, { emit }) {
     const globalStore = useGlobalStore()
+    const updateStore = useUpdateStore()
 
-    // 获取应用版本号（可以从 package.json 或 IPC 获取）
-    const appVersion = '1.1.0' // TODO: 从实际版本号获取
 
     const handleClose = () => {
       globalStore.setComponent(null)
       emit('close')
     }
 
-    const handleCheckUpdate = () => {
-      // TODO: 实现检查更新逻辑
-      console.log('检查更新')
+    const handleCheckUpdate = async () => {
+      await updateStore.checkUpdate()
+
+      // 如果有更新，打开升级窗口
+      if (updateStore.updateInfo.hasUpdate) {
+        updateStore.startUpdate()
+      }
     }
 
     return {
-      appVersion,
       handleClose,
       handleCheckUpdate,
     }

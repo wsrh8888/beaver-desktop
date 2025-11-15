@@ -9,71 +9,70 @@ import fs from 'node:fs'
 import path from 'node:path'
 import head from 'commonModule/utils/request/head'
 
+export interface DownloadedFileInfo {
+  path: string
+  size: number
+  md5: string
+}
+
 /**
- * 下载文件到指定目录
+ * 下载文件到指定路径
  */
 export async function downloadFile(
   url: string,
-  targetDir: string,
-  fileName: string,
-  onProgress: (progress: number) => void,
-): Promise<string> {
+  filePath: string,
+  onProgress?: (progress: number) => void,
+): Promise<DownloadedFileInfo> {
   // 确保目标目录存在
+  const targetDir = path.dirname(filePath)
   if (!fs.existsSync(targetDir)) {
     fs.mkdirSync(targetDir, { recursive: true })
   }
 
-  const filePath = path.join(targetDir, fileName)
-
-  // 先使用HEAD请求探测资源信息
-  const headResponse = await head({
-    method: 'HEAD',
+  // 直接使用GET请求下载文件
+  const response = await head({
+    method: 'GET',
     url,
+    responseType: 'stream',
   })
 
-  // 检查HEAD请求是否成功
-  if ('status' in headResponse && headResponse.status === 200) {
-    const totalBytes = Number.parseInt((headResponse as any).headers['content-length'] || '0', 10)
+  // 检查GET请求是否成功
+  if ('status' in response && response.status === 200) {
+    const totalBytes = Number.parseInt((response as any).headers['content-length'] || '0', 10)
     let downloadedBytes = 0
+    const hash = crypto.createHash('md5')
 
-    // 使用GET请求下载文件
-    const response = await head({
-      method: 'GET',
-      url,
-      responseType: 'stream',
-    })
+    const file = fs.createWriteStream(filePath);
 
-    // 检查GET请求是否成功
-    if ('status' in response && response.status === 200) {
-      const file = fs.createWriteStream(filePath);
+    (response as any).data.on('data', (chunk: Buffer) => {
+      hash.update(chunk)
+      downloadedBytes += chunk.length
+      const progress = totalBytes > 0 ? Math.round((downloadedBytes / totalBytes) * 100) : 0
+      onProgress?.(progress)
+    });
 
-      (response as any).data.on('data', (chunk: Buffer) => {
-        downloadedBytes += chunk.length
-        const progress = totalBytes > 0 ? Math.round((downloadedBytes / totalBytes) * 100) : 0
-        onProgress(progress)
-      });
+    (response as any).data.pipe(file)
 
-      (response as any).data.pipe(file)
-
-      return new Promise<string>((resolve, reject) => {
-        file.on('finish', () => {
-          file.close()
-          onProgress(100)
-          resolve(filePath)
-        })
-
-        file.on('error', (err) => {
-          fs.unlink(filePath, () => {}) // 删除不完整的文件
-          reject(err)
+    return new Promise<DownloadedFileInfo>((resolve, reject) => {
+      file.on('finish', () => {
+        file.close()
+        onProgress?.(100)
+        const calculatedMd5 = hash.digest('hex')
+        resolve({
+          path: filePath,
+          size: downloadedBytes,
+          md5: calculatedMd5,
         })
       })
-    }
-    else {
-      throw new Error('GET请求失败')
-    }
+
+      file.on('error', (err) => {
+        fs.unlink(filePath, () => {}) // 删除不完整的文件
+        reject(err)
+      })
+    })
   }
   else {
-    throw new Error('HEAD请求失败，无法获取资源信息')
+    throw new Error('GET请求失败')
   }
 }
 

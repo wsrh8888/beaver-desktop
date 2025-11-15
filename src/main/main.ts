@@ -4,7 +4,7 @@ import logger from 'mainModule/utils/log'
 import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
 import trayHandler from './application/tray'
 import cacheManager from './cache'
-import { initCustom, loadConfigs, setupMiniAppDirectory } from './config'
+import { initCustom, loadConfigs } from './config'
 import ipcManager from './ipc'
 import { AuthHandler } from './ipc/render-to-main/auth'
 import messageManager from './message-manager'
@@ -66,7 +66,6 @@ class Main {
   }
 
   beforeAppReady() {
-    setupMiniAppDirectory()
     messageManager.init()
     ipcManager.init()
 
