@@ -78,6 +78,8 @@ import userInfo from './userInfo.vue'
 import { getMenuItems, MessageContentType } from './data'
 import { copyToClipboard, hasTextSelected } from './copy'
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { updateReadSeqApi } from 'renderModule/api/chat'
 
 export default defineComponent({
   components: {
@@ -115,12 +117,53 @@ export default defineComponent({
     })
 
     // 判断messageViewStore.currentChatId的值是否发生变化
-    watch(() => messageViewStore.currentChatId, () => {
-      if (messageViewStore.currentChatId) {
-        console.error('messageViewStore.currentChatId 发生变化', messageViewStore.currentChatId)
-        messageStore.init(messageViewStore.currentChatId)
+    watch(() => messageViewStore.currentChatId, async (newConversationId) => {
+      if (newConversationId) {
+        console.log('会话切换:', newConversationId)
+        
+        // 初始化消息
+        await messageStore.init(newConversationId)
+        
+        // 等待消息加载完成后，更新已读数
+        // 使用 nextTick 确保消息已经加载到 store 中
+        await nextTick()
+        await updateReadSeqWhenEnterConversation(newConversationId)
       }
     })
+    
+    /**
+     * @description: 进入会话时自动更新已读数
+     * 大厂IM的做法：用户进入会话时，自动将已读数更新到当前会话的最大seq
+     */
+    const updateReadSeqWhenEnterConversation = async (conversationId: string) => {
+      try {
+        // 1. 检查是否有未读消息
+        const conversationStore = useConversationStore()
+        const conversation = conversationStore.getConversationInfo(conversationId)
+        
+        if (!conversation || conversation.unread_count === 0) {
+          return // 没有未读消息，不需要更新
+        }
+        
+        // 2. 从消息中获取 maxSeq（消息已经在 watch 中加载了）
+        const messages = messageStore.getChatHistory(conversationId)
+        
+        if (!messages || messages.length === 0) {
+          return // 消息还未加载，等待下次再试
+        }
+        
+        const maxSeq = Math.max(...messages.map((m: any) => m.seq || 0))
+        
+        // 3. 如果有有效的 maxSeq，调用接口更新已读数
+        if (maxSeq > 0) {
+          await updateReadSeqApi({ conversationId, readSeq: maxSeq })
+          console.log(`[ChatContent] 更新已读数: conversationId=${conversationId}, readSeq=${maxSeq}`)
+        }
+      }
+      catch (error) {
+        console.error('[ChatContent] 更新已读数失败:', error)
+      }
+    }
 
     // 处理右键菜单
     const handleContextMenu = (event: MouseEvent, message: any) => {

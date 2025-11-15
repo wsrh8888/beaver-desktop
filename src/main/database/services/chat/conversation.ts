@@ -113,7 +113,7 @@ export class ChatConversationService {
   static async updateLastMessage(conversationId: string, lastMessage: string, maxSeq?: number) {
     const updateData: any = {
       lastMessage,
-      updatedAt: new Date().toISOString(),
+      updatedAt: Math.floor(Date.now() / 1000), // 使用秒级时间戳
     }
     if (maxSeq !== undefined) {
       updateData.maxSeq = maxSeq

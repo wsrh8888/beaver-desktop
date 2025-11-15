@@ -2,8 +2,9 @@ import type { IDBChatMessage } from 'commonModule/type/database/chat'
 import type { IPrivateMessageReceiveBody, IPrivateMessageSyncBody } from 'commonModule/type/ws/message-types'
 import { SendStatus } from 'commonModule/type/database/chat'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
+import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
 import { MessageService } from 'mainModule/database/services/chat/message'
-import { messageBusiness } from 'mainModule/business/chat/message'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
@@ -103,19 +104,52 @@ export class MessageReceiver extends BaseReceiver<IDBChatMessage> {
       if (currentUserMessageIds.length > 0) {
         // 构建 messageId -> seq 的映射
         const seqMap = new Map<string, number>()
+        // 按会话分组，记录每个会话的最大seq（用于更新userReadSeq）
+        const conversationMaxSeqMap = new Map<string, number>()
+        
         for (const msg of currentUserMessages) {
           if (msg.seq !== undefined && msg.seq !== null) {
             seqMap.set(msg.messageId, msg.seq)
+            // 记录每个会话的最大seq
+            const currentMaxSeq = conversationMaxSeqMap.get(msg.conversationId) || 0
+            conversationMaxSeqMap.set(msg.conversationId, Math.max(currentMaxSeq, msg.seq))
           }
         }
 
         // 批量更新这些消息的send_status为"已发送"，同时更新seq值
         await MessageService.batchUpdateSendStatus(currentUserMessageIds, SendStatus.SENT, seqMap)
+
+        // 3. 自动更新发送者的userReadSeq到最新seq（自己发送的消息应该自动标记为已读）
+        // 这样未读数就不会包含自己发送的消息
+        // 使用 batchCreate 确保记录存在（支持 upsert）
+        const userConversationUpdates = Array.from(conversationMaxSeqMap.entries()).map(([conversationId, maxSeq]) => ({
+          userId: currentUserId,
+          conversationId,
+          userReadSeq: maxSeq,
+          version: Date.now(),
+          updatedAt: Math.floor(Date.now() / 1000),
+        }))
+        
+        if (userConversationUpdates.length > 0) {
+          try {
+            await ChatUserConversationService.batchCreate(userConversationUpdates)
+            logger.info({
+              text: '自动更新发送者已读序列号',
+              data: { count: userConversationUpdates.length, userId: currentUserId },
+            }, this.receiverName)
+          }
+          catch (error) {
+            logger.error({
+              text: '更新发送者已读序列号失败',
+              data: { error: (error as Error).message },
+            }, this.receiverName)
+          }
+        }
       }
     }
 
-    // 3. 批量更新会话最后消息（通过Business层）
-    await messageBusiness.processNewMessages({ messages })
+    // 4. 批量更新会话最后消息
+    await this.batchUpdateConversationLastMessages(messages)
   }
 
   private transformMessageMsg(msg: any) {

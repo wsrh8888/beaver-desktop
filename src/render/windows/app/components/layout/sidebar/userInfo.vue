@@ -154,9 +154,9 @@ export default defineComponent({
 
     const handleMenuClick = (menu: typeof userInfoMenuList[0]) => {
       switch (menu.key) {
-        case 'settings':
-          // 显示设置全局组件
-          globalStore.setComponent('settings')
+        case 'profile':
+          // 显示个人资料全局组件
+          globalStore.setComponent('profile')
           handleClose()
           break
         case 'about':

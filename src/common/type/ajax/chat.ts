@@ -433,3 +433,14 @@ export interface IUserConversationSettingById {
   createAt: number // 创建时间戳
   updateAt: number // 更新时间戳
 }
+
+// 更新已读序列号请求
+export interface IUpdateReadSeqReq {
+  conversationId: string // 会话ID
+  readSeq: number // 已读序列号（用户已读到的消息seq）
+}
+
+// 更新已读序列号响应
+export interface IUpdateReadSeqRes {
+  success: boolean // 是否成功
+}

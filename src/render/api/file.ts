@@ -2,6 +2,7 @@ import type { IFileRes, IFileUploadResult } from 'commonModule/type/ajax/file'
 import { baseUrl } from 'commonModule/config'
 import { getFileInfo } from 'renderModule/utils/file/index'
 import ajax from 'renderModule/utils/request/ajax'
+import Message from 'renderModule/components/ui/message'
 
 /**
  * @description: 预览文件
@@ -50,6 +51,10 @@ export const uploadFileApiWithTarget = async (file: File, fileKey?: string, targ
       'Content-Type': 'multipart/form-data',
     },
   })
+  if(result.code !== 0) {
+    Message.error(result.msg)
+    return Promise.reject(new Error(result.message))
+  }
 
   return {
     fileKey: result.result.fileKey,

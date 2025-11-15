@@ -18,6 +18,8 @@ import type {
   IRecentChatRes,
   ISendMsgReq,
   ISendMsgRes,
+  IUpdateReadSeqReq,
+  IUpdateReadSeqRes,
 } from 'commonModule/type/ajax/chat'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -126,5 +128,16 @@ export const forwardMessageApi = (data: IForwardMessageReq) => {
     method: 'POST',
     data,
     url: `${baseUrl}/api/chat/forward`,
+  })
+}
+
+/**
+ * @description: 更新会话已读序列号
+ */
+export const updateReadSeqApi = (data: IUpdateReadSeqReq) => {
+  return ajax<IUpdateReadSeqRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/updateReadSeq`,
   })
 }

@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 
 // 全局组件类型
-export type GlobalComponentType = 'userinfo' | 'settings' | 'update' | null
+export type GlobalComponentType = 'userinfo' | 'profile' | 'settings' | 'update' | null
 
 /**
  * @description: 全局组件状态管理
