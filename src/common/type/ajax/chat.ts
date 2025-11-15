@@ -47,6 +47,7 @@ export interface IMessage {
   fileMsg?: IFileMessage | null
   voiceMsg?: IVoiceMessage | null
   emojiMsg?: IEmojiMessage | null
+  notificationMsg?: INotificationMessage | null
   audioFileMsg?: IAudioFileMessage | null
   replyMsg?: IReplyMessage | null
 }
@@ -89,6 +90,12 @@ export interface IEmojiMessage {
   fileName: string // 表情图片文件ID
   emojiId: number // 表情ID
   packageId: number // 表情包ID
+}
+
+// 通知消息（会话内的通知，如：xxx加入了群聊、xxx创建了群等）
+export interface INotificationMessage {
+  type: number // 通知类型：1=好友欢迎 2=创建群 3=加入群 4=退出群 5=踢出成员 6=转让群主等
+  actors: string[] // 相关用户ID列表
 }
 
 // 回复消息
@@ -142,15 +149,19 @@ export interface IConversationInfoRes {
   /**
    * @description: 消息预览
    */
-  msg_preview: string
+  msgPreview: string
   /**
-   * @description: 消息时间
+   * @description: 消息时间（格式化后的字符串，前端计算属性，可选）
    */
-  update_at: string
+  updateAt?: string
+  /**
+   * @description: 消息时间戳（原始时间戳，秒级，用于排序和格式化）
+   */
+  updatedAt: number
   /**
    * @description: 是否置顶
    */
-  is_top: boolean
+  isTop: boolean
   /**
    * @description: 会话ID
    */
@@ -170,11 +181,11 @@ export interface IConversationInfoRes {
   /**
    * @description: 未读消息数量
    */
-  unread_count: number
+  unreadCount: number
   /**
    * @description: 是否免打扰
    */
-  is_muted: boolean
+  isMuted: boolean
 }
 
 // 最近聊天列表请求

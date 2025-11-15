@@ -102,12 +102,10 @@ class UserConversationSync {
         // 批量插入用户会话关系数据
         await ChatUserConversationService.batchCreate(userConversations)
 
-        // 更新同步状态
+        // 更新同步状态（使用响应中的版本号）
         for (const uc of response.result.userConversationSettings) {
-          // 从版本映射中获取版本号
-          const version = versionMap.get(uc.conversationId)
-          if (version !== undefined) {
-            await ChatSyncStatusService.upsertUserConversationSyncStatus(uc.conversationId, version)
+          if (uc.version !== undefined) {
+            await ChatSyncStatusService.upsertUserConversationSyncStatus(uc.conversationId, uc.version)
           }
         }
       }

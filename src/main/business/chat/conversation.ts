@@ -1,8 +1,6 @@
 import type {
   IRecentChatReq,
   IRecentChatRes,
-  ICreateConversationReq,
-  IConversationInfoReq,
   IConversationInfoRes
 } from 'commonModule/type/ajax/chat'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
@@ -10,7 +8,6 @@ import { ChatConversationService } from 'mainModule/database/services/chat/conve
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { GroupService } from 'mainModule/database/services/group/group'
-import { formatConversationTime } from 'mainModule/utils/time'
 
 /**
  * 会话业务逻辑
@@ -149,14 +146,14 @@ export class ConversationBusiness {
         conversationId: conv.conversationId,
         avatar,
         nickname,
-        msg_preview: conv.lastMessage || '',
-        update_at: formatConversationTime(conv.updatedAt),
-        is_top: conv.isPinned === 1,
+        msgPreview: conv.lastMessage || '',
+        updatedAt: conv.updatedAt, // 原始时间戳（秒级），前端负责格式化
+        isTop: conv.isPinned === 1,
         chatType: conv.type || 1,
         notice,
         version: conv.version || 0,
-        unread_count: unreadCount,
-        is_muted: conv.isMuted === 1,
+        unreadCount: unreadCount,
+        isMuted: conv.isMuted === 1,
       }
     })
 

@@ -1,4 +1,4 @@
-import type { IChatHistory } from 'commonModule/type/ajax/chat'
+import type { IChatHistory, IConversationInfoRes } from 'commonModule/type/ajax/chat'
 import { defineStore } from 'pinia'
 
 import Logger from 'renderModule/utils/logger'
@@ -281,11 +281,16 @@ export const useMessageStore = defineStore('useMessageStore', {
       // 查找现有会话
       const existingConversation = conversationStore.getConversationInfo(conversationId)
       if (existingConversation) {
-        // 创建更新的会话对象，包含新的消息预览和时间
-        const updatedConversation = {
+        // 获取消息的时间戳（用于排序和格式化）
+        const messageTimestamp = message.create_at ? new Date(message.create_at).getTime() : Date.now()
+        // 转换为秒级时间戳（与数据库保持一致）
+        const messageTimestampSeconds = Math.floor(messageTimestamp / 1000)
+
+        // 创建更新的会话对象，包含新的消息预览和时间戳
+        const updatedConversation: IConversationInfoRes = {
           ...existingConversation,
-          msg_preview: message.msg?.textMsg?.content || `${message.sender?.nickname} 发来新消息`,
-          update_at: message.create_at, // 使用消息的创建时间
+          msgPreview: message.msg?.textMsg?.content || `${message.sender?.nickname} 发来新消息`,
+          updatedAt: messageTimestampSeconds, // 保存原始时间戳（秒级），前端 getter 会格式化
         }
 
         // 更新会话

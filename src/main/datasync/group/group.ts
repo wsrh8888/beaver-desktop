@@ -50,12 +50,19 @@ class GroupSync {
     const localVersions = await GroupSyncStatusService.getModuleVersions('info', groupIds)
     const localVersionMap = new Map(localVersions.map(v => [v.groupId, v.version]))
 
-    // 过滤出需要更新的群组（本地不存在或版本号更旧的数据）
-    const needUpdateGroups = groupVersions.filter((groupVersion) => {
+    // 过滤出需要更新的群组，并使用本地版本号（而不是服务器版本号）
+    const needUpdateGroups: Array<{ groupId: string, version: number }> = []
+    for (const groupVersion of groupVersions) {
       const localVersion = localVersionMap.get(groupVersion.groupId) || 0
       // 如果服务器版本更新，则需要更新
-      return localVersion < groupVersion.version
-    })
+      if (localVersion < groupVersion.version) {
+        // 使用本地版本号，这样服务器才能返回 version > localVersion 的变更
+        needUpdateGroups.push({
+          groupId: groupVersion.groupId,
+          version: localVersion, // 使用本地版本号，而不是服务器版本号
+        })
+      }
+    }
 
     return needUpdateGroups
   }

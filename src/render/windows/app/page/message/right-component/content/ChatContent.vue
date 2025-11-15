@@ -35,6 +35,11 @@
           v-else-if="message.msg.type === 8"
           :message="message"
         />
+        <!-- 通知消息组件（type=7 的系统通知消息） -->
+        <NotificationMessage
+          v-else-if="message.msg.type === 7 && message.msg.notificationMsg"
+          :message="message"
+        />
         <!-- 发送状态指示器 -->
         <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.userInfo.userId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
@@ -73,12 +78,14 @@ import AudioFileMessage from './components/AudioFileMessage.vue'
 import TextMessage from './components/TextMessage.vue'
 import ImageMessage from './components/ImageMessage.vue'
 import VideoMessage from './components/VideoMessage.vue'
+import NotificationMessage from './components/NotificationMessage.vue'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import userInfo from './userInfo.vue'
 import { getMenuItems, MessageContentType } from './data'
 import { copyToClipboard, hasTextSelected } from './copy'
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
 import { updateReadSeqApi } from 'renderModule/api/chat'
 
 export default defineComponent({
@@ -90,6 +97,7 @@ export default defineComponent({
     TextMessage,
     ImageMessage,
     VideoMessage,
+    NotificationMessage,
   },
   setup() {
     const userInfo = ref({
@@ -124,6 +132,18 @@ export default defineComponent({
         // 初始化消息
         await messageStore.init(newConversationId)
         
+        // 判断是否是群聊，如果是则初始化群成员
+        const conversationStore = useConversationStore()
+        const conversation = conversationStore.getConversationInfo(newConversationId)
+        if (conversation && conversation.chatType === 2) {
+          // 群聊：从 conversationId 提取 groupId
+          const groupId = newConversationId.startsWith('group_')
+            ? newConversationId.split('_').slice(1).join('_')
+            : newConversationId
+          const groupMemberStore = useGroupMemberStore()
+          await groupMemberStore.init(groupId)
+        }
+        
         // 等待消息加载完成后，更新已读数
         // 使用 nextTick 确保消息已经加载到 store 中
         await nextTick()
@@ -141,7 +161,7 @@ export default defineComponent({
         const conversationStore = useConversationStore()
         const conversation = conversationStore.getConversationInfo(conversationId)
         
-        if (!conversation || conversation.unread_count === 0) {
+        if (!conversation || conversation.unreadCount === 0) {
           return // 没有未读消息，不需要更新
         }
         

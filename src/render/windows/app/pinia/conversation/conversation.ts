@@ -1,4 +1,6 @@
 import type { IConversationInfoRes } from 'commonModule/type/ajax/chat'
+import type { IConversationItem } from 'commonModule/type/pinia/conversation'
+import { formatConversationTime } from 'commonModule/utils/time/time'
 import { defineStore } from 'pinia'
 import { useContactStore } from '../contact/contact'
 import { useUserStore } from '../user/user'
@@ -10,9 +12,9 @@ import { useGroupStore } from '../group/group'
 export const useConversationStore = defineStore('useConversationStore', {
   state: () => ({
     /**
-     * @description: 会话列表（有序数组）
+     * @description: 会话列表（有序数组，使用 Store 内部类型）
      */
-    conversations: [] as IConversationInfoRes[],
+    conversations: [] as IConversationItem[],
 
     /**
      * @description: 分页加载状态
@@ -32,7 +34,18 @@ export const useConversationStore = defineStore('useConversationStore', {
       const groupStore = useGroupStore()
 
 
-      return this.conversations.map((conversation) => {
+      return this.conversations.map((conversation: IConversationItem) => {
+        // 格式化时间：从 updatedAt（秒级）转换为格式化字符串
+        const formattedTime = conversation.updatedAt
+          ? formatConversationTime(conversation.updatedAt)
+          : ''
+
+        // 转换为组件使用的类型，包含格式化后的时间
+        let result: IConversationInfoRes = {
+          ...conversation,
+          updateAt: formattedTime,
+        }
+
         // 如果是私聊，从 contactStore 获取最新的用户信息
         if (conversation.chatType === 1) {
           const parts = conversation.conversationId.split('_')
@@ -45,33 +58,44 @@ export const useConversationStore = defineStore('useConversationStore', {
             // 从 contactStore 获取最新的用户信息
             const contactInfo = contactStore.getContact(otherUserId)
             if (contactInfo) {
-              return {
-                ...conversation,
+              result = {
+                ...result,
                 avatar: contactInfo.avatar || conversation.avatar,
-                nickname: contactInfo.nickName || conversation.nickname,
+                // contactInfo 可能没有 nickName 字段，保持原有 nickname
+                nickname: conversation.nickname,
               }
             }
           }
         } else if (conversation.chatType === 2) {
           const groupInfo = groupStore.getGroupById(conversation.conversationId)
           if (groupInfo) {
-            return {
-              ...conversation,
+            result = {
+              ...result,
               avatar: groupInfo.avatar || conversation.avatar,
               nickname: groupInfo.title || conversation.nickname,
             }
           }
         }
 
-        // 群聊或其他类型保持原样
-        return conversation
+        return result
       })
     },
 
     getConversationInfo: state => (conversationId: string) => {
-      const conversation = state.conversations.find((c: IConversationInfoRes) => c.conversationId === conversationId)
+      const conversation = state.conversations.find((c: IConversationItem) => c.conversationId === conversationId)
       if (!conversation)
         return null
+
+      // 格式化时间：从 updatedAt（秒级）转换为格式化字符串
+      const formattedTime = conversation.updatedAt
+        ? formatConversationTime(conversation.updatedAt)
+        : ''
+
+      // 转换为组件使用的类型，包含格式化后的时间
+      let result: IConversationInfoRes = {
+        ...conversation,
+        updateAt: formattedTime,
+      }
 
       const contactStore = useContactStore()
       const userStore = useUserStore()
@@ -89,17 +113,17 @@ export const useConversationStore = defineStore('useConversationStore', {
           // 从 contactStore 获取最新的用户信息
           const contactInfo = contactStore.getContact(otherUserId)
           if (contactInfo) {
-            return {
-              ...conversation,
+            result = {
+              ...result,
               avatar: contactInfo.avatar || conversation.avatar,
-              nickname: contactInfo.nickName || conversation.nickname,
+              // contactInfo 可能没有 nickName 字段，保持原有 nickname
+              nickname: conversation.nickname,
             }
           }
         }
       }
 
-      // 群聊或其他类型保持原样
-      return conversation
+      return result
     },
 
   },
@@ -128,11 +152,17 @@ export const useConversationStore = defineStore('useConversationStore', {
       })
 
       if (result.list && result.list.length > 0) {
+        // 转换为 Store 内部类型（移除 updateAt，只保留 updatedAt）
+        const conversationItems: IConversationItem[] = result.list.map((conv: IConversationInfoRes) => {
+          const { updateAt, ...rest } = conv
+          return rest as IConversationItem
+        })
+
         // 后端已经按时间排序，这里只需要处理置顶排序
-        this.conversations = result.list.sort((a: IConversationInfoRes, b: IConversationInfoRes) => {
+        this.conversations = conversationItems.sort((a: IConversationItem, b: IConversationItem) => {
           // 置顶的排在前面
-          if (a.is_top !== b.is_top) {
-            return b.is_top ? 1 : -1
+          if (a.isTop !== b.isTop) {
+            return b.isTop ? 1 : -1
           }
           // 时间排序由后端保证，这里保持原有顺序
           return 0
@@ -168,10 +198,16 @@ export const useConversationStore = defineStore('useConversationStore', {
         })
 
         if (result.list && result.list.length > 0) {
+          // 转换为 Store 内部类型（移除 updateAt，只保留 updatedAt）
+          const conversationItems: IConversationItem[] = result.list.map((conv: IConversationInfoRes) => {
+            const { updateAt, ...rest } = conv
+            return rest as IConversationItem
+          })
+
           // 对新数据进行置顶排序，然后追加到列表末尾
-          const sortedNewConversations = result.list.sort((a: IConversationInfoRes, b: IConversationInfoRes) => {
-            if (a.is_top !== b.is_top) {
-              return b.is_top ? 1 : -1
+          const sortedNewConversations = conversationItems.sort((a: IConversationItem, b: IConversationItem) => {
+            if (a.isTop !== b.isTop) {
+              return b.isTop ? 1 : -1
             }
             return 0 // 时间排序由后端保证
           })
@@ -199,26 +235,28 @@ export const useConversationStore = defineStore('useConversationStore', {
      * @description: 添加或更新会话（新消息时调用，插入到顶部）
      */
     upsertConversation(conversation: IConversationInfoRes) {
-      const index = this.conversations.findIndex((c: IConversationInfoRes) => c.conversationId === conversation.conversationId)
+      // 转换为 Store 内部类型（移除 updateAt，只保留 updatedAt）
+      const { updateAt, ...conversationItem } = conversation
+      const item: IConversationItem = conversationItem as IConversationItem
+
+      const index = this.conversations.findIndex((c: IConversationItem) => c.conversationId === item.conversationId)
 
       if (index !== -1) {
-        // 更新现有会话，保持位置（除非是置顶变化）
-        this.conversations[index] = conversation
+        // 更新现有会话
+        this.conversations[index] = item
 
         // 更新最大版本号
-        this.currentMaxVersion = Math.max(this.currentMaxVersion, conversation.version)
+        this.currentMaxVersion = Math.max(this.currentMaxVersion, item.version)
 
-        // 如果置顶状态改变，需要重新排序
-        if (this.conversations[index].is_top !== conversation.is_top) {
-          this.resortConversations()
-        }
+        // 更新会话后，需要重新排序（确保最新消息的会话排到顶部）
+        this.resortConversations()
       }
       else {
         // 新会话插入到顶部
-        this.conversations.unshift(conversation)
+        this.conversations.unshift(item)
 
         // 更新最大版本号
-        this.currentMaxVersion = Math.max(this.currentMaxVersion, conversation.version)
+        this.currentMaxVersion = Math.max(this.currentMaxVersion, item.version)
       }
     },
 
@@ -226,16 +264,14 @@ export const useConversationStore = defineStore('useConversationStore', {
      * @description: 重新排序会话列表
      */
     resortConversations() {
-      this.conversations.sort((a: IConversationInfoRes, b: IConversationInfoRes) => {
+      this.conversations.sort((a: IConversationItem, b: IConversationItem) => {
         // 置顶的排在前面
-        if (a.is_top !== b.is_top) {
-          return b.is_top ? 1 : -1
+        if (a.isTop !== b.isTop) {
+          return b.isTop ? 1 : -1
         }
 
-        // 按最后更新时间倒序
-        const timeA = new Date(a.update_at).getTime()
-        const timeB = new Date(b.update_at).getTime()
-        return timeB - timeA
+        // 按最后更新时间倒序（直接使用 updatedAt 字段）
+        return (b.updatedAt || 0) - (a.updatedAt || 0)
       })
     },
   },

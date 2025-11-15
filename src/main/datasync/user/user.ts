@@ -70,17 +70,25 @@ export class UserSyncModule {
       return []
     }
 
-    // 构建服务器版本映射
-    const serverVersions = userVersions.reduce((acc: Record<string, number>, item: any) => {
-      acc[item.userId] = item.version
-      return acc
-    }, {})
+    // 获取所有本地用户同步状态
+    const localStatuses = await UserSyncStatusService.getAllUsersSyncStatus()
+    const localVersionMap = new Map(localStatuses.map(s => [s.userId, s.userVersion || 0]))
 
-    // 获取需要同步的用户ID列表
-    const usersNeedSync = await UserSyncStatusService.getUsersNeedSync(serverVersions)
+    // 过滤出需要更新的用户，并使用本地版本号（而不是服务器版本号）
+    const needUpdateUsers: Array<{ userId: string, version: number }> = []
+    for (const userVersion of userVersions) {
+      const localVersion = localVersionMap.get(userVersion.userId) || 0
+      // 如果服务器版本更新，则需要更新
+      if (localVersion < userVersion.version) {
+        // 使用本地版本号，这样服务器才能返回 version > localVersion 的变更
+        needUpdateUsers.push({
+          userId: userVersion.userId,
+          version: localVersion, // 使用本地版本号，而不是服务器版本号
+        })
+      }
+    }
 
-    // 返回完整的用户版本对象
-    return userVersions.filter(item => usersNeedSync.includes(item.userId))
+    return needUpdateUsers
   }
 
   // 同步用户数据

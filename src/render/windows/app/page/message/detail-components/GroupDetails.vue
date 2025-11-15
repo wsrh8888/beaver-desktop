@@ -11,7 +11,7 @@
         <!-- 群基本信息 -->
         <div class="group-info">
           <div class="group-avatar-container">
-            <div v-if="groupInfo" class="group-avatar">
+            <div v-if="groupInfo" class="group-avatar" @click="handleAvatarClick">
               <BeaverImage
                 v-if="groupInfo.avatar"
                 :file-name="groupInfo.avatar"
@@ -19,32 +19,18 @@
                 image-class="group-avatar-image"
               />
               <span v-else>{{ groupInfo.title }}</span>
+              <div class="avatar-edit-icon">
+                <img src="renderModule/assets/image/group/edit.svg" alt="编辑">
+              </div>
             </div>
-            <div class="avatar-edit-icon" @click="handleEditAvatar">
-              <img src="renderModule/assets/image/group/edit.svg" alt="编辑">
-            </div>
+            <input ref="avatarInputRef" type="file" accept="image/*" style="display: none" @change="handleAvatarChange">
           </div>
           <div class="group-name-container">
-            <div class="group-name-wrapper">
-              <div
-                class="group-name"
-                :class="{ editing: isEditingName }"
-                @click="startEditName"
-              >
-                {{ groupInfo?.title || '群聊' }}
-              </div>
-              <input
-                ref="nameInput"
-                v-model="editedName"
-                type="text"
-                class="group-name-input"
-                :class="{ active: isEditingName }"
-                @blur="saveGroupName"
-                @keyup.enter="saveGroupName"
-              >
+            <div class="group-name">
+              {{ groupInfo ? groupInfo.title : '群聊' }}
             </div>
             <div v-if="groupInfo" class="group-id">
-              群ID: {{ groupInfo.conversationId }}
+              群ID: {{ groupInfo.groupId }}
             </div>
           </div>
         </div>
@@ -54,9 +40,13 @@
           <div class="members-header">
             <div>
               <span class="members-title">群成员</span>
-              <span v-if="groupMembers" class="members-count">({{ groupMembers.length }}人)</span>
+              <span v-if="groupInfo" class="members-count">({{ groupInfo.memberCount }}人)</span>
             </div>
-            <button class="add-member" @click="handleAddMember">
+            <button
+              v-if="canManageMembers"
+              class="add-member"
+              @click="handleAddMember"
+            >
               <img src="renderModule/assets/image/group/add.svg" alt="添加">
               添加成员
             </button>
@@ -67,6 +57,7 @@
               v-for="member in displayedMembers"
               :key="member.userId"
               class="member-item"
+              @contextmenu.prevent="handleMemberContextMenu($event, member)"
             >
               <div class="member-avatar">
                 <BeaverImage
@@ -75,14 +66,21 @@
                   alt="成员头像"
                   image-class="member-avatar-image"
                 />
+                <button
+                  v-if="canManageMembers && currentUserId !== member.userId"
+                  class="member-remove-btn"
+                  @click.stop="handleRemoveMember(member.userId)"
+                >
+                  <img src="renderModule/assets/image/create-group/remove.svg" alt="删除">
+                </button>
               </div>
               <div class="member-name">
-                {{ member.displayName || member.nickname }}
+                {{ member.nickName || member.userId }}
               </div>
             </div>
           </div>
 
-          <div v-if="groupMembers && groupMembers.length > 8" class="show-more" @click="toggleShowAllMembers">
+          <div v-if="groupMembers && groupMembers.length > 16" class="show-more" @click="toggleShowAllMembers">
             {{ showAllMembers ? '收起成员列表' : '查看更多成员' }}
             <img
               src="renderModule/assets/image/group/expand.svg"
@@ -100,10 +98,20 @@
 
           <div class="settings-item">
             <div class="setting-label">
-              群聊置顶
+              置顶
             </div>
             <label class="switch">
-              <input v-model="settings.top" type="checkbox">
+              <input v-model="settings.isTop" type="checkbox" @change="handleSettingsChange">
+              <span class="slider" />
+            </label>
+          </div>
+
+          <div class="settings-item">
+            <div class="setting-label">
+              消息免打扰
+            </div>
+            <label class="switch">
+              <input v-model="settings.isMuted" type="checkbox" @change="handleSettingsChange">
               <span class="slider" />
             </label>
           </div>
@@ -117,22 +125,35 @@
 
     <!-- 覆盖层 -->
     <div class="overlay" :class="{ active: isVisible }" @click="closeDetails" />
+
+    <!-- 添加群成员弹窗 -->
+    <AddGroupMember
+      v-if="showAddMemberModal"
+      :group-member-ids="groupMembers.map(m => m.userId)"
+      @close="showAddMemberModal = false"
+      @confirm="handleAddMemberConfirm"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { updateGroupInfoApi } from 'renderModule/api/group'
+import { addGroupMemberApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-// import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue'
+import Message from 'renderModule/components/ui/message'
+import { uploadFile } from 'renderModule/utils/upload'
+import { computed, defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'GroupDetails',
   components: {
     BeaverImage,
+    AddGroupMember,
   },
   props: {
     visible: {
@@ -142,25 +163,42 @@ export default defineComponent({
   },
   emits: ['update:visible', 'close'],
   setup(props, { emit }) {
-    // const conversationStore = useConversationStore()
     const groupStore = useGroupStore()
     const groupMemberStore = useGroupMemberStore()
-    // const _userStore = useUserStore()
     const messageViewStore = useMessageViewStore()
+    const conversationStore = useConversationStore()
+    const userStore = useUserStore()
 
     const isVisible = ref(props.visible)
-    const isEditingName = ref(false)
-    const editedName = ref('')
-    const nameInput = ref<HTMLInputElement | null>(null)
     const showAllMembers = ref(false)
+    const showAddMemberModal = ref(false)
+    const avatarInputRef = ref<HTMLInputElement | null>(null)
+    const currentUserId = computed(() => userStore.userInfo.userId)
+
+    // 获取当前用户在群中的角色
+    const currentUserRole = computed(() => {
+      if (!groupId.value || !currentUserId.value)
+        return 0
+      const member = groupMembers.value.find(m => m.userId === currentUserId.value)
+      return member?.role || 0
+    })
+
+    // 判断是否可以管理成员（群主或管理员）
+    // role: 1=群主, 2=管理员, 3=普通成员
+    const canManageMembers = computed(() => {
+      return currentUserRole.value === 1 || currentUserRole.value === 2
+    })
 
     // 监听visible属性变化
     watch(() => props.visible, (newVal) => {
       isVisible.value = newVal
       if (newVal && groupInfo.value) {
-        editedName.value = groupInfo.value.title || ''
-        // 如果打开详情面板，加载群成员
-        loadGroupMembers()
+        // 初始化设置值
+        const conversation = conversationStore.getConversationInfo(groupInfo.value.conversationId)
+        if (conversation) {
+          settings.value.isTop = conversation.isTop
+          settings.value.isMuted = conversation.isMuted
+        }
       }
     })
 
@@ -173,12 +211,21 @@ export default defineComponent({
       return groupStore.getGroupById(currentId)
     })
 
+    // 从 conversationId 提取 groupId
+    const groupId = computed(() => {
+      if (!groupInfo.value)
+        return ''
+      const conversationId = groupInfo.value.conversationId
+      return conversationId.startsWith('group_')
+        ? conversationId.split('_').slice(1).join('_')
+        : conversationId
+    })
+
     // 群组成员列表 - 从store获取
     const groupMembers = computed(() => {
-      const currentId = messageViewStore.currentChatId
-      if (!currentId)
+      if (!groupId.value)
         return []
-      return groupMemberStore.getMembersByGroupId(currentId)
+      return groupMemberStore.getMembersByGroupId(groupId.value)
     })
 
     // 显示的成员列表（受showAllMembers控制）
@@ -190,22 +237,23 @@ export default defineComponent({
 
     // 群组设置
     const settings = ref({
-      mute: false,
-      top: false,
-      favorite: false,
-      showNickname: true,
+      isTop: false,
+      isMuted: false,
     })
 
-    // 加载群成员
-    const loadGroupMembers = async () => {
+    // 处理设置变更
+    const handleSettingsChange = async () => {
       if (!groupInfo.value)
         return
 
-      try {
-        await groupMemberStore.getGroupMembersApi(groupInfo.value.conversationId, true)
-      }
-      catch (error) {
-        console.error('Failed to load group members:', error)
+      // 更新本地会话信息
+      const conversation = conversationStore.getConversationInfo(groupInfo.value.conversationId)
+      if (conversation) {
+        conversationStore.upsertConversation({
+          ...conversation,
+          isTop: settings.value.isTop,
+          isMuted: settings.value.isMuted,
+        })
       }
     }
 
@@ -216,146 +264,162 @@ export default defineComponent({
       emit('close')
     }
 
-    // 开始编辑群名称
-    const startEditName = () => {
-      if (!groupInfo.value)
-        return
-
-      isEditingName.value = true
-      editedName.value = groupInfo.value.title || ''
-
-      nextTick(() => {
-        if (nameInput.value) {
-          nameInput.value.focus()
-          nameInput.value.select()
-        }
-      })
-    }
-
-    // 保存群名称
-    const saveGroupName = async () => {
-      if (!groupInfo.value || !editedName.value.trim()) {
-        isEditingName.value = false
-        return
-      }
-
-      if (editedName.value !== groupInfo.value.title) {
-        try {
-          await updateGroupInfoApi({
-            groupId: groupInfo.value.conversationId,
-            title: editedName.value.trim(),
-          })
-
-          // 更新本地群组信息
-          groupStore.updateGroupInfo(groupInfo.value.conversationId)
-        }
-        catch (error) {
-          console.error('Failed to update group name:', error)
-        }
-      }
-
-      isEditingName.value = false
-    }
-
-    // 编辑头像
-    const handleEditAvatar = () => {
-      // 实际项目中这里会打开文件选择对话框
-      console.log('Edit avatar clicked')
-    }
-
-    // 添加成员
-    const handleAddMember = () => {
-      // 实际项目中这里会打开添加成员对话框
-      console.log('Add member clicked')
-    }
-
     // 切换显示所有成员
     const toggleShowAllMembers = () => {
       showAllMembers.value = !showAllMembers.value
     }
 
-    // 退出群聊
-    const handleLeaveGroup = async () => {
-      if (!groupInfo.value)
-        return
-      console.log('退出群聊')
+    // 点击头像
+    const handleAvatarClick = () => {
+      avatarInputRef.value?.click()
     }
 
-    // 保存群设置
-    watch(settings, async (newSettings) => {
-      if (!groupInfo.value)
+    // 头像文件变化
+    const handleAvatarChange = async (e: Event) => {
+      const target = e.target as HTMLInputElement
+      const file = target.files?.[0]
+      if (!file)
         return
 
       try {
-        await updateGroupInfoApi({
-          groupId: groupInfo.value.conversationId,
-          ...newSettings,
-        })
+        // 上传头像文件
+        const uploadResult = await uploadFile(file)
+        if (uploadResult && uploadResult.fileKey) {
+          // 更新群组信息
+          await updateGroupInfoApi({
+            groupId: groupId.value,
+            avatar: uploadResult.fileKey,
+          })
+          // 更新本地群组信息
+          await groupStore.updateGroupInfo(groupInfo.value!.conversationId)
+          Message.success('头像上传成功')
+        }
+        else {
+          Message.error('头像上传失败，请重试')
+        }
       }
       catch (error) {
-        console.error('Failed to update group settings:', error)
+        console.error('头像上传失败:', error)
+        Message.error('头像上传失败，请重试')
       }
-    }, { deep: true })
+      finally {
+        // 清空 input，以便可以重复选择同一文件
+        if (avatarInputRef.value) {
+          avatarInputRef.value.value = ''
+        }
+      }
+    }
 
-    onMounted(() => {
-      if (isVisible.value && groupInfo.value) {
-        loadGroupMembers()
+    // 添加成员
+    const handleAddMember = () => {
+      if (!canManageMembers.value) {
+        Message.warning('只有群主和管理员可以添加成员')
+        return
       }
-    })
+      showAddMemberModal.value = true
+    }
+
+    // 确认添加成员
+    const handleAddMemberConfirm = async (userIds: string[]) => {
+      if (!groupId.value || userIds.length === 0)
+        return
+
+        const result = await addGroupMemberApi({
+          groupId: groupId.value,
+          userIds,
+        })
+        if (result.code === 0) {
+          Message.success('添加成员成功')
+          // 重新加载群成员列表
+          await groupMemberStore.init(groupId.value)
+        }
+        else {
+          Message.error(result.msg)
+        }
+    }
+
+    // 成员右键菜单
+    const handleMemberContextMenu = (_event: MouseEvent, member: any) => {
+      // 如果是群主或管理员，可以删除成员
+      if (canManageMembers.value && currentUserId.value !== member.userId) {
+        // 显示删除确认
+        if (confirm(`确定要移除成员 ${member.nickName || member.userId} 吗？`)) {
+          handleRemoveMember(member.userId)
+        }
+      }
+    }
+
+    // 移除成员
+    const handleRemoveMember = async (memberId: string) => {
+      if (!groupId.value)
+        return
+
+      try {
+        await removeGroupMemberApi({
+          groupId: groupId.value,
+          userIds: [memberId],
+        })
+        // 从本地移除
+        groupMemberStore.removeMembers(groupId.value, [memberId])
+        Message.success('移除成员成功')
+      }
+      catch (error) {
+        console.error('移除成员失败:', error)
+        Message.error('移除成员失败，请重试')
+      }
+    }
+
+    // 退出群聊
+    const handleLeaveGroup = async () => {
+      if (!groupId.value)
+        return
+
+      if (!confirm('确定要退出该群聊吗？')) {
+        return
+      }
+
+      try {
+        await quitGroupApi({
+          groupId: groupId.value,
+        })
+        Message.success('已退出群聊')
+        // 关闭详情面板
+        closeDetails()
+        // TODO: 可能需要更新会话列表，移除该群聊
+      }
+      catch (error) {
+        console.error('退出群聊失败:', error)
+        Message.error('退出群聊失败，请重试')
+      }
+    }
 
     return {
       isVisible,
       groupInfo,
       groupMembers,
       displayedMembers,
-      isEditingName,
-      editedName,
-      nameInput,
       settings,
       showAllMembers,
       closeDetails,
-      startEditName,
-      saveGroupName,
-      handleEditAvatar,
-      handleAddMember,
       toggleShowAllMembers,
+      handleSettingsChange,
+      avatarInputRef,
+      handleAvatarClick,
+      handleAvatarChange,
+      handleAddMember,
+      handleAddMemberConfirm,
+      handleMemberContextMenu,
+      handleRemoveMember,
       handleLeaveGroup,
+      showAddMemberModal,
+      canManageMembers,
+      currentUserId,
     }
   },
 })
 </script>
 
 <style lang="less" scoped>
-:root {
-  /* 主色系 */
-  --primary: #FF7D45;
-  --primary-dark: #E86835;
-  --primary-light: #FFE6D9;
-
-  /* 辅助色 */
-  --auxiliary-blue: #4A6FA1;
-  --light-blue: #D9E6FF;
-  --accent-yellow: #FFD166;
-
-  /* 文本色 */
-  --title-text: #2D3436;
-  --body-text: #636E72;
-  --auxiliary-text: #B2BEC3;
-  --white-text: #FFFFFF;
-
-  /* 功能色 */
-  --bg-color: #FFFFFF;
-  --secondary-bg: #F9FAFB;
-  --divider: #EBEEF5;
-  --success: #4CAF50;
-  --warning: #FFC107;
-  --error: #FF5252;
-  --info: #2196F3;
-
-  /* 基础单位 */
-  --base-unit: 8px;
-}
-
 /* 群详情侧边栏 */
 .group-details-sidebar {
   position: fixed;
@@ -419,7 +483,6 @@ export default defineComponent({
   overflow-y: auto;
   padding: 24px 16px;
 
-  /* 自定义滚动条样式 */
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -466,34 +529,46 @@ export default defineComponent({
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s;
 
-  img {
+  &:hover {
+    transform: scale(1.05);
+
+    .avatar-edit-icon {
+      opacity: 1;
+    }
+  }
+
+  .group-avatar-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
-}
 
-.avatar-edit-icon {
-  position: absolute;
-  bottom: -2px;
-  right: -2px;
-  width: 24px;
-  height: 24px;
-  background-color: #FF7D45;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 2;
-  border: 2px solid #FFFFFF;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  .avatar-edit-icon {
+    position: absolute;
+    bottom: -2px;
+    right: -2px;
+    width: 24px;
+    height: 24px;
+    background-color: #FF7D45;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 2;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    opacity: 0;
+    transition: opacity 0.2s;
 
-  img {
-    width: 14px;
-    height: 14px;
-    fill: #FFFFFF;
+    img {
+      width: 14px;
+      height: 14px;
+      fill: #FFFFFF;
+    }
   }
 }
 
@@ -501,53 +576,16 @@ export default defineComponent({
   flex: 1;
 }
 
-.group-name-wrapper {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
 .group-name {
   font-size: 20px;
   font-weight: 600;
   color: #2D3436;
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  margin: -4px -8px;
-  transition: background-color 0.2s;
-}
-
-.group-name:hover {
-  background-color: #F9FAFB;
-}
-
-.group-name-input {
-  font-size: 20px;
-  font-weight: 600;
-  color: #2D3436;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid #FF7D45;
-  padding: 4px 0;
-  margin: 0;
-  width: 100%;
-  outline: none;
-  display: none;
-}
-
-.group-name-input.active {
-  display: block;
-}
-
-.group-name.editing {
-  display: none;
+  margin-bottom: 8px;
 }
 
 .group-id {
   font-size: 13px;
   color: #B2BEC3;
-  margin-top: 4px;
 }
 
 /* 群成员 */
@@ -597,16 +635,15 @@ export default defineComponent({
     margin-right: 6px;
     fill: #636E72;
   }
-}
 
-.add-member:hover {
-  background-color: #EBEEF5;
+  &:hover {
+    background-color: #EBEEF5;
+  }
 }
 
 .members-grid {
   display: flex;
   flex-wrap: wrap;
-  // gap: px;
   width: 100%;
 }
 
@@ -616,6 +653,7 @@ export default defineComponent({
   align-items: center;
   width: 60px;
   flex-shrink: 0;
+  margin-bottom: 16px;
 }
 
 .member-avatar {
@@ -631,19 +669,54 @@ export default defineComponent({
   font-size: 15px;
   margin-bottom: 6px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.2s ease, background-color 0.2s ease;
   overflow: hidden;
-  cursor: pointer;
+  position: relative;
 
-  img {
+  .member-avatar-image {
     width: 100%;
     height: 100%;
     object-fit: cover;
   }
+
+  .member-remove-btn {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    background-color: #FF5252;
+    border: 2px solid #FFFFFF;
+    cursor: pointer;
+    padding: 0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    transition: transform 0.2s;
+
+    img {
+      width: 10px;
+      height: 10px;
+      filter: brightness(0) invert(1);
+    }
+
+    &:hover {
+      transform: scale(1.1);
+    }
+  }
 }
 
-.member-item:hover .member-avatar {
-  transform: translateY(-1px);
+.member-item:hover .member-avatar .member-remove-btn {
+  display: flex;
+}
+
+.member-item {
+  cursor: pointer;
+
+  &:hover .member-avatar {
+    transform: translateY(-1px);
+  }
 }
 
 .member-name {
@@ -679,10 +752,10 @@ export default defineComponent({
     fill: #4A6FA1;
     margin-left: 6px;
   }
-}
 
-.show-more:hover {
-  background-color: #F9FAFB;
+  &:hover {
+    background-color: #F9FAFB;
+  }
 }
 
 /* 群设置 */
@@ -703,10 +776,10 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: space-between;
-}
 
-.settings-item:last-child {
-  border-bottom: none;
+  &:last-child {
+    border-bottom: none;
+  }
 }
 
 .setting-label {
@@ -778,11 +851,11 @@ input:checked + .slider:before {
   cursor: pointer;
   margin-top: 24px;
   transition: all 0.2s;
-}
 
-.leave-group:hover {
-  background-color: #E86835;
-  color: #FFFFFF;
+  &:hover {
+    background-color: #E86835;
+    color: #FFFFFF;
+  }
 }
 
 /* 覆盖层 */
