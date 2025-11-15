@@ -14,6 +14,10 @@ declare namespace NodeJS {
        * @description: 设备唯一标识
        */
       DEVICE_ID: string
+      /**
+       * @description: 应用版本
+       */
+      VERSION: string
     }
   }
 }

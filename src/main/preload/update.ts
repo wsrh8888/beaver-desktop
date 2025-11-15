@@ -32,7 +32,7 @@ export const updateModule: IUpdateModule = {
     // 注册新的进度回调
     ipcRenderManager.on(UpdateCommand.DOWNLOAD_PROGRESS, progressHandler)
 
-    // 开始下载，传递options参数
+    // 开始下载，传递options参数（fileKey作为下载地址）
     ipcRenderManager.send(IEvent.RenderToMain, UpdateCommand.DOWNLOAD_UPDATE, options)
   },
 

@@ -4,6 +4,7 @@ import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useFriendVerifyStore } from '../friend/friend_verify'
+import { useUpdateStore } from '../update/index'
 
 /**
  * 连接状态类型
@@ -58,16 +59,18 @@ export const useAppStore = defineStore('useAppStore', {
       const _friendVerifyStore = useFriendVerifyStore()
       const conversationStore = useConversationStore()
       const groupStore = useGroupStore()
+      const updateStore = useUpdateStore()
 
       try {
         // 1. 初始化用户信息
         await userStore.init()
 
-        // 2. 并行初始化好友和会话数据
+        // 2. 并行初始化好友、会话数据和更新检查
         const promises = [
           friendStore.init(),
           conversationStore.init(),
           groupStore.init(),
+          updateStore.init(), // 初始化更新检查（静默检查，不阻塞UI）
         ]
 
         await Promise.all(promises)

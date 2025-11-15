@@ -21,6 +21,12 @@
         </div>
       </div>
     </div>
+    <!-- 更新图标 -->
+    <div v-if="updateStore?.updateInfo?.hasUpdate" class="update-icon app__no_drag" @click="handleUpdateClick">
+      <img src="renderModule/assets/image/update/update.svg" alt="更新">
+      <span class="update-badge"></span>
+    </div>
+
     <div class="main-logo">
       <img src="commonModule/assets/img/logo/logo.png" alt="Beaver Logo">
     </div>
@@ -32,6 +38,7 @@
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import { useUpdateStore } from 'renderModule/windows/app/pinia/update/index'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
@@ -47,16 +54,26 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const userStore = useUserStore()
+    const updateStore = useUpdateStore()
 
     const userInfo = computed(() => userStore.userInfo)
     const showUserInfo = ref(false)
     const avatarRef = ref<HTMLElement | null>(null)
 
     const handleClick = (path: string) => {
-      console.error(path)
-      nextTick(() => {
-        router.push({ path })
-      })
+      if (path === 'update') {
+        // 打开更新窗口
+        updateStore.startDownload()
+      } else {
+        console.error(path)
+        nextTick(() => {
+          router.push({ path })
+        })
+      }
+    }
+
+    const handleUpdateClick = () => {
+      updateStore.startUpdate()
     }
 
     const handleAvatarClick = () => {
@@ -68,7 +85,9 @@ export default {
       CacheType,
       userInfo,
       route,
+      updateStore,
       handleClick,
+      handleUpdateClick,
       handleAvatarClick,
       outsideList,
       showUserInfo,
@@ -187,6 +206,41 @@ export default {
     font-weight: 500;
     padding: 0 4px;
     box-shadow: 0 2px 4px rgba(255, 82, 82, 0.2);
+  }
+
+  .update-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #FF7D45;
+    border: 2px solid #FFFFFF;
+    box-shadow: 0 1px 3px rgba(255, 125, 69, 0.3);
+  }
+
+  .update-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    margin-bottom: 36px;
+    position: relative;
+    transition: all 0.2s;
+    background: rgba(255, 125, 69, 0.1);
+
+    &:hover {
+      background: rgba(255, 125, 69, 0.2);
+    }
+
+    img {
+      width: 20px;
+      height: 20px;
+    }
   }
 
   .user-avatar-nav {

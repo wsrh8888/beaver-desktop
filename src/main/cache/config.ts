@@ -52,4 +52,5 @@ export const cacheTypeToFilePath: Record<CacheType, string> = {
   [CacheType.USER_DB]: '/users/[userId]/db',
   [CacheType.USER_LOGS]: '/users/[userId]/logs',
   [CacheType.PUBLIC_LOGS]: '/logs',
+  [CacheType.PUBLIC_UPDATE]: '/update',
 }

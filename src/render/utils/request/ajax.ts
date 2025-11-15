@@ -44,6 +44,7 @@ baseRequest.interceptors.request.use(
       timestamp: `${moment().format('YYYY-MM-DD HH:mm:ss.SSS')}`,
       env: electron.app.env,
       deviceId: electron.app.devicedId,
+      version: electron.app.version,
       token: cachedToken,
       ...(config.headers || {}),
     } as any

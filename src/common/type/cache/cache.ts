@@ -6,6 +6,7 @@ export enum CacheType {
   USER_DB = 'user_db',
   USER_LOGS = 'user_logs',
   PUBLIC_LOGS = 'public_logs',
+  PUBLIC_UPDATE = 'public_update',
 }
 
 /**

@@ -44,4 +44,9 @@ export interface IAppModule {
    * @example 'test', 'prod'
    */
   env: 'prod' | 'test' | 'dev'
+
+  /**
+   * @description: 应用的版本。
+   */
+  version: string
 }
