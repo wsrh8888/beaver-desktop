@@ -43,3 +43,19 @@ export interface IPrivateMessageSendBody {
   messageId: string // 客户端消息ID
   msg: IMessageMsg
 }
+
+// 表更新数据格式
+export interface ITableUpdate {
+  table: 'messages' | 'conversations' | 'user_conversations'
+  conversationId?: string
+  userId?: string
+  data: Array<{
+    seq?: number
+    version?: number
+  }>
+}
+
+// WebSocket 消息体 - 基于表的更新通知
+export interface ITableUpdatesBody {
+  tableUpdates: ITableUpdate[]
+}

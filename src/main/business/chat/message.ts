@@ -4,15 +4,35 @@ import type {
   IChatMessageVerRangeRes
 } from 'commonModule/type/ajax/chat'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
+import { BaseBusiness, type QueueItem } from '../base/base'
+import { chatSyncApi } from 'mainModule/api/chat'
 import { MessageService } from 'mainModule/database/services/chat/message'
 import { UserService } from 'mainModule/database/services/user/user'
+import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
+
+/**
+ * 消息同步队列项
+ */
+interface MessageSyncItem extends QueueItem {
+  conversationId: string
+  minVersion: number
+  maxVersion: number
+}
 
 /**
  * 消息业务逻辑
  * 对应 chat_messages 表
  * 负责消息的处理、状态更新等业务逻辑
  */
-export class MessageBusiness {
+export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
+  protected readonly businessName = 'MessageBusiness'
+
+  constructor() {
+    super({
+      queueSizeLimit: 20, // 消息同步请求较多
+      delayMs: 1000,
+    })
+  }
   /**
    * 获取聊天历史
    */
@@ -127,6 +147,113 @@ export class MessageBusiness {
     return {
       list: formattedMessages,
     }
+  }
+
+
+  /**
+   * 通过版本区间从服务端同步消息数据
+   * 直接使用WS推送的版本范围，不查询本地数据
+   */
+  async syncMessagesByVersionRange(conversationId: string, minVersion: number, maxVersion: number) {
+    try {
+      // 直接使用WS推送的版本范围作为seq范围（假设版本号对应seq）
+      const fromSeq = minVersion
+      const toSeq = maxVersion
+
+      // 调用现有的chatSyncApi按seq范围获取数据
+      const response = await chatSyncApi({
+        conversationId,
+        fromSeq,
+        toSeq,
+        limit: 100, // 限制每次同步的数量
+      })
+
+      if (response.result?.messages && response.result.messages.length > 0) {
+        // 处理同步到的消息数据
+        await this.handleSyncedMessages(response.result.messages)
+
+        console.log(`消息同步成功: conversationId=${conversationId}, range=[${minVersion}, ${maxVersion}], count=${response.result.messages.length}`)
+      } else {
+        console.log(`消息已同步: conversationId=${conversationId}, range=[${minVersion}, ${maxVersion}]`)
+      }
+
+    } catch (error) {
+      console.error('通过版本区间同步消息失败:', error)
+    }
+  }
+
+  /**
+   * 通过单个版本号从服务端同步消息数据
+   * 将同步请求加入队列，1秒后批量处理
+   */
+  async syncMessagesByVersion(conversationId: string, version: number) {
+    this.addToQueue({
+      key: conversationId,
+      data: { conversationId, version },
+      timestamp: Date.now(),
+      conversationId,
+      minVersion: version,
+      maxVersion: version,
+    })
+  }
+
+  /**
+   * 批量处理消息同步请求
+   */
+  protected async processBatchRequests(items: MessageSyncItem[]): Promise<void> {
+    // 按 conversationId 聚合版本范围
+    const conversationMap = new Map<string, { minVersion: number, maxVersion: number }>()
+
+    for (const item of items) {
+      const existing = conversationMap.get(item.conversationId)
+      if (existing) {
+        existing.minVersion = Math.min(existing.minVersion, item.minVersion)
+        existing.maxVersion = Math.max(existing.maxVersion, item.maxVersion)
+      } else {
+        conversationMap.set(item.conversationId, {
+          minVersion: item.minVersion,
+          maxVersion: item.maxVersion,
+        })
+      }
+    }
+
+    // 批量同步消息数据
+    for (const [conversationId, versionRange] of conversationMap) {
+      await this.syncMessagesByVersionRange(conversationId, versionRange.minVersion, versionRange.maxVersion)
+    }
+  }
+
+  /**
+   * 处理同步到的消息数据
+   */
+  private async handleSyncedMessages(messages: any[]) {
+    if (messages.length === 0) return
+
+    console.log('同步到消息数据:', messages.length, '条')
+
+    // 格式化消息数据，转换为数据库格式
+    const formattedMessages = messages.map(msg => ({
+      messageId: msg.messageId,
+      conversationId: msg.conversationId,
+      conversationType: msg.conversationType,
+      sendUserId: msg.sendUserId,
+      msgType: msg.msgType,
+      targetMessageId: msg.targetMessageId || null, // 引用消息ID（撤回/删除等）
+      msgPreview: msg.msgPreview,
+      msg: msg.msg,
+      seq: msg.seq,
+      // sendStatus: 默认值1（已发送）- 服务端同步的消息
+      sendStatus: 1,
+      createdAt: msg.createAt,
+      updatedAt: Math.floor(Date.now() / 1000),
+    }))
+
+
+
+    // 批量保存到本地数据库
+    await MessageService.batchCreate(formattedMessages)
+
+    console.log('消息数据保存成功:', formattedMessages.length, '条')
   }
 }
 
