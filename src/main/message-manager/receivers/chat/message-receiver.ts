@@ -1,8 +1,6 @@
-import type { ITableUpdatesBody } from 'commonModule/type/ws/message-types'
 import { messageBusiness } from 'mainModule/business/chat/message'
 import { conversationBusiness } from 'mainModule/business/chat/conversation'
 import { userConversationBusiness } from 'mainModule/business/chat/user-conversation'
-import logger from 'mainModule/utils/log'
 
 /**
  * @description: 消息接收器 - 处理messages表的操作
@@ -10,30 +8,12 @@ import logger from 'mainModule/utils/log'
  */
 export class MessageReceiver {
 
-  /**
-   * 主入口 - 处理消息接收
-   * 通过switch判断消息类型，分别处理不同类型的消息
-   */
-  async handle(wsMessage: any) {
-    const { data } = wsMessage
-
-    switch (data?.type) {
-      case 'private_message_receive':
-      case 'group_message_receive':
-        // 处理基于表的更新通知 - 私聊和群聊都使用相同的逻辑
-        await this.handleTableUpdates(data.body as ITableUpdatesBody)
-        break
-
-      default:
-        logger.warn({ text: '未知消息类型', data: { type: data?.type } }, 'MessageReceiver')
-    }
-  }
 
   /**
-   * 处理基于表的更新通知
-   * 遍历 tableUpdates，根据表类型调用对应的业务模块
+   * 处理消息更新通知
+   * 只处理 messages 表的更新
    */
-  private async handleTableUpdates(tableUpdatesBody: ITableUpdatesBody) {
+  async handleTableUpdates(tableUpdatesBody: any) {
     const { tableUpdates } = tableUpdatesBody
 
     // 第一层循环：遍历所有的表更新
@@ -59,16 +39,13 @@ export class MessageReceiver {
           break
 
         case 'user_conversations':
-          // 第三层循环：遍历data数组中的每个版本数据
-          for (const dataItem of update.data) {
-            if (update.userId && dataItem?.version) {
-              await userConversationBusiness.syncUserConversationsByVersionRange(update.userId, dataItem.version, dataItem.version)
-            }
-          }
+          // 对于聚合消息中的用户会话更新，也使用队列处理
+          await userConversationBusiness.handleTableUpdates([update])
           break
 
         default:
-          logger.warn({ text: '未知的表类型', data: { table: update.table } }, 'MessageReceiver')
+          // 忽略未知表的更新
+          break
       }
     }
   }

@@ -1,13 +1,13 @@
 import { BaseBusiness, type QueueItem } from '../base/base'
 import { getUserConversationSettingsListByIdsApi } from 'mainModule/api/chat'
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
-import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
 
 /**
  * 用户会话同步队列项
  */
 interface UserConversationSyncItem extends QueueItem {
   userId: string
+  conversationId?: string
   minVersion: number
   maxVersion: number
 }
@@ -29,52 +29,44 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
 
 
 
+
   /**
-   * 通过版本区间从服务端同步用户会话数据
-   * 直接使用WS推送的版本范围，不查询本地数据
+   * 通过版本同步特定用户会话数据
+   * 直接同步指定的 conversationId，提高效率
    */
-  async syncUserConversationsByVersionRange(userId: string, minVersion: number, maxVersion: number) {
+  async syncUserConversationByVersion(userId: string, conversationId: string, version: number) {
     try {
-      // 直接使用WS推送的用户ID和版本范围
-      // 获取该用户的所有会话设置（当前API设计不支持按版本过滤，所以获取所有）
-
-      // 获取本地用户的所有会话ID
-      const localUserConversations = await ChatUserConversationService.getAllUserConversations(userId)
-      const conversationIds = localUserConversations.map((uc: any) => uc.conversationId)
-
-      if (conversationIds.length === 0) {
-        console.log(`用户会话已同步: userId=${userId}, versionRange=[${minVersion}, ${maxVersion}]`)
-        return
-      }
-
-      // 调用现有的getUserConversationSettingsListByIdsApi获取用户会话设置数据
+      // 获取指定会话的设置数据
       const response = await getUserConversationSettingsListByIdsApi({
-        conversationIds,
+        conversationIds: [conversationId],
       })
 
       if (response.result?.userConversationSettings && response.result.userConversationSettings.length > 0) {
-        // 批量插入用户会话关系数据
-        const userConversations = response.result.userConversationSettings.map(uc => ({
-          userId: uc.userId,
-          conversationId: uc.conversationId,
-          isHidden: uc.isHidden ? 1 : 0,
-          isPinned: uc.isPinned ? 1 : 0,
-          isMuted: uc.isMuted ? 1 : 0,
-          userReadSeq: uc.userReadSeq,
-          version: uc.version,
-          createdAt: uc.createAt,
-          updatedAt: uc.updateAt,
-        }))
+        const userConversationData = response.result.userConversationSettings[0]
 
-        await ChatUserConversationService.batchCreate(userConversations)
+        // 更新或插入用户会话关系数据
+        const userConversation = {
+          userId: userConversationData.userId,
+          conversationId: userConversationData.conversationId,
+          isHidden: userConversationData.isHidden ? 1 : 0,
+          isPinned: userConversationData.isPinned ? 1 : 0,
+          isMuted: userConversationData.isMuted ? 1 : 0,
+          userReadSeq: userConversationData.userReadSeq,
+          version: userConversationData.version,
+          createdAt: userConversationData.createAt,
+          updatedAt: userConversationData.updateAt,
+        }
 
-        console.log(`用户会话同步成功: userId=${userId}, versionRange=[${minVersion}, ${maxVersion}], count=${userConversations.length}`)
+        // 使用插入或更新的方式来同步单个用户会话
+        await ChatUserConversationService.batchCreate([userConversation])
+
+        console.log(`用户会话同步成功: userId=${userId}, conversationId=${conversationId}, version=${version}`)
       } else {
-        console.log(`用户会话已同步: userId=${userId}, versionRange=[${minVersion}, ${maxVersion}]`)
+        console.log(`用户会话已同步: userId=${userId}, conversationId=${conversationId}, version=${version}`)
       }
 
     } catch (error) {
-      console.error('通过版本区间同步用户会话失败:', error)
+      console.error('通过版本同步特定用户会话失败:', error)
     }
   }
 
@@ -82,14 +74,18 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
    * 处理用户会话表的更新通知
    * 将同步请求加入队列，1秒后批量处理
    */
-  async handleTableUpdates(updates: any[]) {
-    for (const update of updates) {
-      if (update.userId && update.data[0]?.version) {
+  async handleTableUpdates(updates: any[] | any) {
+    // 确保updates是数组格式
+    const updatesArray = Array.isArray(updates) ? updates : [updates]
+
+    for (const update of updatesArray) {
+      if (update.userId && update.conversationId && update.data[0]?.version) {
         this.addToQueue({
-          key: update.userId,
-          data: { userId: update.userId, version: update.data[0].version },
+          key: `${update.userId}:${update.conversationId}`,
+          data: { userId: update.userId, conversationId: update.conversationId, version: update.data[0].version },
           timestamp: Date.now(),
           userId: update.userId,
+          conversationId: update.conversationId,
           minVersion: update.data[0].version,
           maxVersion: update.data[0].version,
         })
@@ -101,29 +97,37 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
    * 批量处理用户会话同步请求
    */
   protected async processBatchRequests(items: UserConversationSyncItem[]): Promise<void> {
-    // 按 userId 聚合版本范围
-    const userMap = new Map<string, { minVersion: number, maxVersion: number }>()
+    // 按 (userId, conversationId) 组合聚合最新版本
+    const syncMap = new Map<string, { userId: string, conversationId: string, version: number }>()
 
     for (const item of items) {
-      const existing = userMap.get(item.userId)
+      // 使用 userId 和 conversationId 的组合作为键
+      const key = `${item.userId}:${item.conversationId}`
+      const existing = syncMap.get(key)
+
       if (existing) {
-        existing.minVersion = Math.min(existing.minVersion, item.minVersion)
-        existing.maxVersion = Math.max(existing.maxVersion, item.maxVersion)
+        // 保留最新版本
+        existing.version = Math.max(existing.version, item.maxVersion)
       } else {
-        userMap.set(item.userId, {
-          minVersion: item.minVersion,
-          maxVersion: item.maxVersion,
+        syncMap.set(key, {
+          userId: item.userId,
+          conversationId: item.conversationId!,
+          version: item.maxVersion,
         })
       }
     }
 
     // 批量同步用户会话数据
-    for (const [userId, versionRange] of userMap) {
-      await this.syncUserConversationsByVersionRange(userId, versionRange.minVersion, versionRange.maxVersion)
+    for (const syncItem of syncMap.values()) {
+      await this.syncUserConversationByVersion(
+        syncItem.userId,
+        syncItem.conversationId,
+        syncItem.version
+      )
     }
 
     // 发送表更新通知
-    const userIds = Array.from(userMap.keys())
+    const userIds = Array.from(new Set(Array.from(syncMap.values()).map(item => item.userId)))
     this.notifyUserConversationTableUpdate(userIds)
   }
 
@@ -131,7 +135,8 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
    * 发送用户会话设置表更新通知
    */
   private notifyUserConversationTableUpdate(userIds: string[]) {
-   
+    // TODO: 实现前端UI更新通知
+    console.log('用户会话表更新通知:', userIds)
   }
 
 

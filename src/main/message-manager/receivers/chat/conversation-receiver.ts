@@ -1,34 +1,37 @@
-import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
-import logger from 'mainModule/utils/log'
 import { conversationBusiness } from 'mainModule/business/chat/conversation'
-
-/**
- * 会话操作数据接口
- */
-interface ConversationOperationData {
-  operation: string
-  conversationId: string
-  data?: any
-  timestamp: number
-}
+import logger from 'mainModule/utils/log'
 
 /**
  * @description: 会话接收器 - 处理conversations表的操作
+ * 不使用批量处理框架，直接在handle方法中处理消息
  */
-export class ConversationReceiver  {
-  protected readonly receiverName = 'ConversationReceiver'
-
-  constructor() {
-    // 会话操作需要快速响应
-
-  }
+export class ConversationReceiver {
 
   /**
-   * 批量处理会话操作
+   * 处理会话更新通知
+   * 只处理 conversations 表的更新
    */
-  protected async processBatchMessages(messages: ConversationOperationData[]): Promise<void> {
-    // 调用business层处理WS消息
-    await conversationBusiness.handleWSConversationUpdates(messages)
-  }
+  async handleTableUpdates(tableUpdatesBody: any) {
+    const { tableUpdates } = tableUpdatesBody
 
+    // 第一层循环：遍历所有的表更新
+    for (const update of tableUpdates) {
+      // 第二层循环：在switch中处理每种表类型
+      switch (update.table) {
+        case 'conversations':
+          // 第三层循环：遍历data数组中的每个版本数据
+          for (const dataItem of update.data) {
+            if (update.conversationId && dataItem?.version) {
+              await conversationBusiness.syncConversationByVersion(update.conversationId, dataItem.version)
+            }
+          }
+          break
+
+        // 可以扩展处理其他表，但这里只负责conversations
+        default:
+          // 不处理其他表的更新
+          break
+      }
+    }
+  }
 }
