@@ -4,6 +4,7 @@ import type {
   IConversationInfoRes
 } from 'commonModule/type/ajax/chat'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
+import type { IConversationItem } from 'commonModule/type/pinia/conversation'
 import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
 import { FriendService } from 'mainModule/database/services/friend/friend'
@@ -174,6 +175,78 @@ export class ConversationBusiness {
 
     // 调用服务层
     await ChatConversationService.updateLastMessage(conversationId, lastMessage, maxSeq)
+  }
+
+  /**
+   * 获取单个会话信息（包含用户设置和会话元数据）
+   */
+  async getConversationInfo(header: ICommonHeader, params: any): Promise<IConversationItem | null> {
+    const { userId } = header
+    const { conversationId } = params
+
+    // 1. 获取用户会话设置
+    const userConversation = await ChatUserConversationService.getConversationInfo(header, params)
+    if (!userConversation) {
+      return null
+    }
+
+    // 2. 获取会话元数据
+    const conversationMetas = await ChatConversationService.getConversationsByIds([conversationId])
+    if (conversationMetas.length === 0) {
+      return null
+    }
+    const meta = conversationMetas[0]
+
+    // 3. 获取头像和昵称信息
+    let avatar = ''
+    let nickname = ''
+    let notice = ''
+
+    if (meta.type === 1) { // 私聊：从好友信息获取显示数据
+      const parts = conversationId.split('_')
+      if (parts.length >= 3) {
+        const userId1 = parts[1]
+        const userId2 = parts[2]
+        const friendId = (userId1 === userId) ? userId2 : userId1
+
+        const friendDetailsMap = await FriendService.getFriendDetails(userId, [friendId])
+        const friendDetail = friendDetailsMap.get(friendId)
+        if (friendDetail) {
+          avatar = friendDetail?.avatar || ''
+          nickname = friendDetail?.nickname || ''
+          notice = friendDetail.notice || ''
+        }
+      }
+    } else if (meta.type === 2) { // 群聊：从群组信息获取显示数据
+      const parts = conversationId.split('_')
+      if (parts.length >= 2 && parts[0] === 'group') {
+        const groupId = parts.slice(1).join('_') // 支持groupId中包含下划线的情况
+        const groupDetails = await GroupService.getGroupsByUuids([groupId])
+        if (groupDetails.length > 0) {
+          const groupDetail = groupDetails[0]
+          avatar = groupDetail.avatar || ''
+          nickname = groupDetail.title || ''
+          notice = groupDetail.notice || ''
+        }
+      }
+    }
+
+    // 4. 合并数据
+    const mergedConversation: IConversationItem = {
+      conversationId: userConversation.conversationId,
+      avatar,
+      nickname,
+      msgPreview: meta.lastMessage || '',
+      updatedAt: meta.updatedAt || 0,
+      isTop: userConversation.isPinned === 1,
+      chatType: meta.type || 1,
+      notice,
+      version: userConversation.version || 0,
+      unreadCount: 0, // 暂时设为0，后续可以计算
+      isMuted: userConversation.isMuted === 1,
+    }
+
+    return mergedConversation
   }
 }
 

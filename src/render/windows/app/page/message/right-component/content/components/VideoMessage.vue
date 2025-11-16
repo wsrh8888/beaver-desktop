@@ -28,6 +28,7 @@ import { previewOnlineFileApi } from 'renderModule/api/file'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
+import { CacheType } from 'commonModule/type/cache/cache'
 
 export default defineComponent({
   name: 'VideoMessage',
@@ -64,14 +65,17 @@ export default defineComponent({
 
     // 处理视频播放
     const handleVideoPlay = async () => {
-      const fileName = props.message.msg.videoMsg?.fileName
-      if (!fileName) return
+      const fileKey = props.message.msg.videoMsg?.fileKey
+      if (!fileKey) {
+        console.error('视频文件ID不能为空', props.message)
+        return
+      }
 
       try {
         // 获取视频URL（优先使用缓存，否则使用在线URL）
-        let videoUrl = previewOnlineFileApi(fileName)
+        let videoUrl = previewOnlineFileApi(fileKey)
         try {
-          const cachedUrl = await electron.cache.get('user_avatar', fileName)
+          const cachedUrl = await electron.cache.get(CacheType.USER_VIDEO, fileKey)
           if (cachedUrl) {
             videoUrl = cachedUrl
           }
@@ -79,13 +83,14 @@ export default defineComponent({
         catch {
           // 缓存获取失败，使用在线URL
         }
+        console.error('videoUrl', videoUrl)
         
         // 打开视频播放器窗口
         await electron.window.openWindow('video', {
           unique: true,
           params: {
             url: videoUrl,
-            title: fileName,
+            title: fileKey,
           },
         })
       }

@@ -87,9 +87,14 @@ export default {
     const handleSendMessage = () => {
       if (friendInfo.value?.userId) {
         // 设置当前聊天会话ID
-        messageViewStore.setCurrentChat(friendInfo.value.conversationId)
+        console.error('friendInfo.value.conversationId', friendInfo)
+        
         // 跳转到聊天页面
         routerHelper.push('/message')
+        setTimeout(() => {
+          messageViewStore.setCurrentChat(friendInfo.value.conversationId)
+        }, 100)
+
       }
     }
 

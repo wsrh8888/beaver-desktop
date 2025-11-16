@@ -4,6 +4,7 @@ import { conversationBusiness } from 'mainModule/business/chat/conversation'
 import { messageBusiness } from 'mainModule/business/chat/message'
 import { store } from 'mainModule/store'
 import { ICommonHeader } from 'commonModule/type/ajax/common'
+import { IConversationItem } from 'commonModule/type/pinia/conversation'
 
 export class ChatHandler {
   /**
@@ -18,7 +19,7 @@ export class ChatHandler {
       case DataChatCommand.GET_RECENT_CHAT_LIST:
         return await conversationBusiness.getAggregatedRecentChatList(header, data)
       case DataChatCommand.GET_CONVERSATION_INFO:
-        return await ChatUserConversationService.getConversationInfo(header, data)
+        return await conversationBusiness.getConversationInfo(header, data)
       case DataChatCommand.GET_CHAT_HISTORY:
         return await messageBusiness.getChatHistory(header, data)
       case DataChatCommand.GET_CHAT_MESSAGES_BY_SEQ_RANGE:

@@ -101,7 +101,7 @@
               置顶
             </div>
             <label class="switch">
-              <input v-model="settings.isTop" type="checkbox" @change="handleSettingsChange">
+              <input v-model="topEnabled" type="checkbox" @change="handleSettingsChange('top')">
               <span class="slider" />
             </label>
           </div>
@@ -111,7 +111,7 @@
               消息免打扰
             </div>
             <label class="switch">
-              <input v-model="settings.isMuted" type="checkbox" @change="handleSettingsChange">
+              <input v-model="muteEnabled" type="checkbox" @change="handleSettingsChange('mute')">
               <span class="slider" />
             </label>
           </div>
@@ -138,6 +138,7 @@
 
 <script lang="ts">
 import { addGroupMemberApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
+import { hideChatApi, muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
@@ -189,17 +190,33 @@ export default defineComponent({
       return currentUserRole.value === 1 || currentUserRole.value === 2
     })
 
+    // 聊天设置状态 - 从conversation store获取当前会话的设置
+    const topEnabled = ref(false)
+    const muteEnabled = ref(false)
+
+    // 从conversation store获取当前会话的信息
+    const currentConversationInfo = computed(() => {
+      const currentId = messageViewStore.currentChatId
+      if (!currentId) return null
+
+      // 使用现成的getConversationInfo getter
+      return conversationStore.getConversationInfo(currentId)
+    })
+
+    // 监听会话信息变化，初始化设置状态
+    watch(currentConversationInfo, (info) => {
+      if (info) {
+        topEnabled.value = info.isTop || false
+        muteEnabled.value = info.isMuted || false
+      } else {
+        topEnabled.value = false
+        muteEnabled.value = false
+      }
+    }, { immediate: true })
+
     // 监听visible属性变化
     watch(() => props.visible, (newVal) => {
       isVisible.value = newVal
-      if (newVal && groupInfo.value) {
-        // 初始化设置值
-        const conversation = conversationStore.getConversationInfo(groupInfo.value.conversationId)
-        if (conversation) {
-          settings.value.isTop = conversation.isTop
-          settings.value.isMuted = conversation.isMuted
-        }
-      }
     })
 
     // 获取当前群组信息
@@ -235,24 +252,17 @@ export default defineComponent({
       return showAllMembers.value ? groupMembers.value : groupMembers.value.slice(0, 16)
     })
 
-    // 群组设置
-    const settings = ref({
-      isTop: false,
-      isMuted: false,
-    })
-
     // 处理设置变更
-    const handleSettingsChange = async () => {
-      if (!groupInfo.value)
-        return
-
-      // 更新本地会话信息
-      const conversation = conversationStore.getConversationInfo(groupInfo.value.conversationId)
-      if (conversation) {
-        conversationStore.upsertConversation({
-          ...conversation,
-          isTop: settings.value.isTop,
-          isMuted: settings.value.isMuted,
+    const handleSettingsChange = async (setting: string) => {
+      if (setting === 'mute') {
+        await muteChatApi({
+          conversationId: messageViewStore.currentChatId!,
+          isMuted: muteEnabled.value,
+        })
+      } else if (setting === 'top') {
+        await pinnedChatApi({
+          conversationId: messageViewStore.currentChatId!,
+          isPinned: topEnabled.value,
         })
       }
     }
@@ -398,7 +408,8 @@ export default defineComponent({
       groupInfo,
       groupMembers,
       displayedMembers,
-      settings,
+      topEnabled,
+      muteEnabled,
       showAllMembers,
       closeDetails,
       toggleShowAllMembers,

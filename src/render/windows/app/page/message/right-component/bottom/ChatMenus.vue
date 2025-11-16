@@ -104,7 +104,7 @@ export default defineComponent({
             case 'image':
               messageType = MessageType.IMAGE
               content = {
-                fileName: uploadResult.fileKey,
+                fileKey: uploadResult.fileKey,
                 width: uploadResult.style?.width,
                 height: uploadResult.style?.height,
                 size: uploadResult.size, // 文件大小
@@ -114,7 +114,7 @@ export default defineComponent({
             case 'video':
               messageType = MessageType.VIDEO
               content = {
-                fileName: uploadResult.fileKey,
+                fileKey: uploadResult.fileKey,
                 width: uploadResult.style?.width,
                 height: uploadResult.style?.height,
                 duration: uploadResult.style?.duration,
@@ -126,7 +126,7 @@ export default defineComponent({
             case 'audio':
               messageType = MessageType.AUDIO_FILE
               content = {
-                fileName: uploadResult.fileKey,
+                fileKey: uploadResult.fileKey,
                 duration: uploadResult.style?.duration,
                 size: uploadResult.size, // 文件大小
               }
@@ -136,7 +136,7 @@ export default defineComponent({
             default:
               messageType = MessageType.FILE
               content = {
-                fileName: uploadResult.fileKey,
+                fileKey: uploadResult.fileKey,
                 size: uploadResult.size, // 文件大小
               }
               break

@@ -23,6 +23,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import { NotificationModule, NotificationMediaViewerCommand } from 'commonModule/type/preload/notification'
 
 export default defineComponent({
   name: 'VideoPlayer',
@@ -38,6 +39,8 @@ export default defineComponent({
   },
   setup() {
     const videoRef = ref<HTMLVideoElement | null>(null)
+    const videoUrl = ref('')
+    const videoTitle = ref('')
 
     const handleLoadedMetadata = () => {
       if (videoRef.value) {
@@ -51,6 +54,15 @@ export default defineComponent({
 
     const handleVideoError = (e: Event) => {
       console.error('视频加载失败', e)
+    }
+
+    // 监听notification更新
+    const handleNotification = (payload: any) => {
+      if (payload.command === NotificationMediaViewerCommand.UPDATE_VIDEO && payload.data) {
+        videoUrl.value = payload.data.url || ''
+        videoTitle.value = payload.data.title || ''
+        console.log('收到视频更新通知:', payload.data)
+      }
     }
 
     // 键盘事件
@@ -88,14 +100,18 @@ export default defineComponent({
 
     onMounted(() => {
       window.addEventListener('keydown', handleKeyDown)
+      electron?.notification.on(NotificationModule.MEDIA_VIEWER, handleNotification)
     })
 
     onUnmounted(() => {
       window.removeEventListener('keydown', handleKeyDown)
+      electron?.notification.off(NotificationModule.MEDIA_VIEWER, handleNotification)
     })
 
     return {
       videoRef,
+      videoUrl,
+      videoTitle,
       handleLoadedMetadata,
       handleVideoError,
     }

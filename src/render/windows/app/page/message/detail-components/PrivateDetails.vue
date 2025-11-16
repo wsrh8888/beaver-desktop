@@ -12,12 +12,8 @@
         <div class="user-info">
           <div class="user-avatar-container">
             <div v-if="userInfo" class="user-avatar">
-              <BeaverImage
-                v-if="userInfo?.avatar"
-                :file-name="userInfo?.avatar"
-                alt="用户头像"
-                image-class="user-avatar-image"
-              />
+              <BeaverImage v-if="userInfo?.avatar" :file-name="userInfo?.avatar" alt="用户头像"
+                image-class="user-avatar-image" />
             </div>
           </div>
           <div class="user-name-container">
@@ -80,7 +76,7 @@
               消息免打扰
             </div>
             <label class="switch">
-              <input v-model="settings.mute" type="checkbox">
+              <input v-model="muteEnabled" type="checkbox" @change="handleSettingsChange('mute')">
               <span class="slider" />
             </label>
           </div>
@@ -90,14 +86,14 @@
               置顶聊天
             </div>
             <label class="switch">
-              <input v-model="settings.top" type="checkbox">
+              <input v-model="topEnabled" type="checkbox" @change="handleSettingsChange('top')">
               <span class="slider" />
             </label>
           </div>
         </div>
 
-        <button class="delete-chat" @click="handleDeleteChat">
-          删除聊天
+        <button class="delete-chat" @click="handleSettingsChange('hide')">
+          移除会话
         </button>
       </div>
     </div>
@@ -110,8 +106,10 @@
 <script lang="ts">
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, defineComponent, ref, watch } from 'vue'
+import { hideChatApi, muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
 
 export default defineComponent({
   name: 'PrivateDetails',
@@ -128,15 +126,45 @@ export default defineComponent({
   setup(props, { emit }) {
     const friendStore = useFriendStore()
     const messageViewStore = useMessageViewStore()
+    const conversationStore = useConversationStore()
 
     const isVisible = ref(props.visible)
 
-    // 聊天设置 - 只保留实际有用的
-    const settings = ref({
-      mute: false,
-      top: false,
+    // 聊天设置状态 - 使用ref来支持双向绑定
+    const muteEnabled = ref(false)
+    const topEnabled = ref(false)
+
+    // 从conversation store获取当前会话的信息
+    const currentConversationInfo = computed(() => {
+      const currentId = messageViewStore.currentChatId
+      if (!currentId) return null
+
+      // 使用现成的getConversationInfo getter
+      return conversationStore.getConversationInfo(currentId)
     })
 
+    // 监听会话ID变化，确保会话数据存在
+    watch(() => messageViewStore.currentChatId, async (newConversationId) => {
+      if (newConversationId) {
+        try {
+          // 确保会话存在，如果不存在会自动从数据库/服务端获取
+          await conversationStore.initConversationById(newConversationId)
+        } catch (error) {
+          console.error('初始化会话失败:', error)
+        }
+      }
+    }, { immediate: true })
+
+    // 监听会话信息变化，初始化设置状态
+    watch(currentConversationInfo, (info) => {
+      if (info) {
+        muteEnabled.value = info.isMuted || false
+        topEnabled.value = info.isTop || false
+      } else {
+        muteEnabled.value = false
+        topEnabled.value = false
+      }
+    }, { immediate: true })
     // 监听visible属性变化
     watch(() => props.visible, (newVal) => {
       isVisible.value = newVal
@@ -158,23 +186,49 @@ export default defineComponent({
       emit('close')
     }
 
-    // 处理删除聊天
-    const handleDeleteChat = () => {
-      // 使用更用户友好的确认方式
-      // const confirmed = confirm('确定要删除与该用户的聊天记录吗？')
-      // if (confirmed) {
-      //   console.log('删除聊天功能开发中')
-      //   closeDetails()
-      // }
-      console.log('删除聊天功能开发中')
+
+    const handleSettingsChange = async (setting: string) => {
+      if (!messageViewStore.currentChatId) return
+
+      try {
+        if (setting === 'mute') {
+          await muteChatApi({
+            conversationId: messageViewStore.currentChatId,
+            isMuted: muteEnabled.value,
+          })
+          console.log('免打扰设置已更新')
+        } else if (setting === 'top') {
+          await pinnedChatApi({
+            conversationId: messageViewStore.currentChatId,
+            isPinned: topEnabled.value,
+          })
+          console.log('置顶设置已更新')
+        } else if (setting === 'hide') {
+          await hideChatApi({
+            conversationId: messageViewStore.currentChatId,
+            isHidden: true,
+          })
+          console.log('会话已隐藏')
+          closeDetails()
+        }
+      } catch (error) {
+        console.error('更新会话设置失败:', error)
+        // 失败时恢复原来的状态
+        if (setting === 'mute') {
+          muteEnabled.value = currentConversationInfo.value?.isMuted || false
+        } else if (setting === 'top') {
+          topEnabled.value = currentConversationInfo.value?.isTop || false
+        }
+      }
     }
 
     return {
       isVisible,
+      handleSettingsChange,
       userInfo,
-      settings,
+      muteEnabled,
+      topEnabled,
       closeDetails,
-      handleDeleteChat,
     }
   },
 })
@@ -415,15 +469,15 @@ export default defineComponent({
         }
       }
 
-      input:checked + .slider {
+      input:checked+.slider {
         background-color: #FF7D45;
       }
 
-      input:focus + .slider {
+      input:focus+.slider {
         box-shadow: 0 0 1px #FF7D45;
       }
 
-      input:checked + .slider:before {
+      input:checked+.slider:before {
         transform: translateX(22px);
       }
     }

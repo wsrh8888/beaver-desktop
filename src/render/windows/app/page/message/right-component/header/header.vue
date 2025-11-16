@@ -28,7 +28,7 @@
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, watch } from 'vue'
 
 export default defineComponent({
   components: {
@@ -44,7 +44,13 @@ export default defineComponent({
       console.log('currentId', currentId)
       return currentId ? conversationStore.getConversationInfo(currentId) : {}
     })
-    // 判断当前会话类型
+    watch(() => messageViewStore.currentChatId, async (newConversationId) => {
+      // 判断当前会话类型
+      if (newConversationId) {
+        console.error('会话变了', newConversationId)
+        conversationStore.initConversationById(newConversationId)
+      }
+    })
     const chatType = computed(() => {
       if (!friendInfo.value)
         return null
