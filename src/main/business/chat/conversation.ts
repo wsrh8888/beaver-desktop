@@ -5,17 +5,37 @@ import type {
 } from 'commonModule/type/ajax/chat'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IConversationItem } from 'commonModule/type/pinia/conversation'
+import { BaseBusiness, type QueueItem } from '../base/base'
+import { getConversationsListByIdsApi } from 'mainModule/api/chat'
 import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { GroupService } from 'mainModule/database/services/group/group'
+import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
+
+/**
+ * 会话同步队列项
+ */
+interface ConversationSyncItem extends QueueItem {
+  conversationId: string
+  minVersion: number
+  maxVersion: number
+}
 
 /**
  * 会话业务逻辑
  * 对应 chat_conversations 表
  * 负责会话的创建、更新、查询等业务逻辑
  */
-export class ConversationBusiness {
+export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
+  protected readonly businessName = 'ConversationBusiness'
+
+  constructor() {
+    super({
+      queueSizeLimit: 30, // 会话同步请求较少
+      delayMs: 1000,
+    })
+  }
   /**
    * 获取聚合后的最近聊天列表
    */
@@ -247,6 +267,125 @@ export class ConversationBusiness {
     }
 
     return mergedConversation
+  }
+
+  /**
+   * 处理来自WS的会话更新
+   */
+  async handleWSConversationUpdates(updates: any[]) {
+    if (updates.length === 0) return
+
+    // 检查参数类型：如果是字符串数组（conversationIds），则从服务端同步
+    if (typeof updates[0] === 'string') {
+      await this.syncConversationsFromServer(updates as string[])
+      return
+    }
+
+    // 批量更新数据库（兼容旧格式）
+    for (const update of updates) {
+      switch (update.operation) {
+        case 'conversation_create':
+          await ChatConversationService.create(update.data)
+          break
+        case 'conversation_update':
+          await ChatConversationService.upsert({ conversationId: update.conversationId, ...update.data })
+          break
+      }
+    }
+
+    // 发送表更新通知
+    await this.notifyConversationTableUpdate(updates)
+  }
+
+  /**
+   * 从服务端同步会话数据 - 兼容旧方法
+   */
+  async syncConversationsFromServer(conversationIds: string[]) {
+    for (const conversationId of conversationIds) {
+      await this.syncConversationsByVersionRange(conversationId, 0, Number.MAX_SAFE_INTEGER)
+    }
+  }
+
+  /**
+   * 通过版本区间从服务端同步会话数据
+   * 直接使用WS推送的版本范围，不查询本地数据
+   */
+  async syncConversationsByVersionRange(conversationId: string, minVersion: number, maxVersion: number) {
+    try {
+      // 直接使用WS推送的版本范围
+      // 如果需要同步特定版本范围的数据，这里可以根据版本号来获取
+
+      // 调用现有的getConversationsListByIdsApi获取会话数据
+      const response = await getConversationsListByIdsApi({
+        conversationIds: [conversationId],
+      })
+
+      if (response.result?.conversations && response.result.conversations.length > 0) {
+        const conversationData = response.result.conversations[0]
+
+        // 更新本地数据库
+        await ChatConversationService.upsert(conversationData)
+
+        console.log(`会话同步成功: conversationId=${conversationId}, versionRange=[${minVersion}, ${maxVersion}]`)
+      } else {
+        console.log(`会话未找到: conversationId=${conversationId}`)
+      }
+
+    } catch (error) {
+      console.error('通过版本区间同步会话失败:', error)
+    }
+  }
+
+  /**
+   * 通过单个版本号从服务端同步会话数据
+   * 将同步请求加入队列，1秒后批量处理
+   */
+  async syncConversationByVersion(conversationId: string, version: number) {
+    this.addToQueue({
+      key: conversationId,
+      data: { conversationId, version },
+      timestamp: Date.now(),
+      conversationId,
+      minVersion: version,
+      maxVersion: version,
+    })
+  }
+
+  /**
+   * 批量处理会话同步请求
+   */
+  protected async processBatchRequests(items: ConversationSyncItem[]): Promise<void> {
+    // 按 conversationId 聚合版本范围
+    const conversationMap = new Map<string, { minVersion: number, maxVersion: number }>()
+
+    for (const item of items) {
+      const existing = conversationMap.get(item.conversationId)
+      if (existing) {
+        existing.minVersion = Math.min(existing.minVersion, item.minVersion)
+        existing.maxVersion = Math.max(existing.maxVersion, item.maxVersion)
+      } else {
+        conversationMap.set(item.conversationId, {
+          minVersion: item.minVersion,
+          maxVersion: item.maxVersion,
+        })
+      }
+    }
+
+    // 批量同步会话数据
+    for (const [conversationId, versionRange] of conversationMap) {
+      await this.syncConversationsByVersionRange(conversationId, versionRange.minVersion, versionRange.maxVersion)
+    }
+
+    // 发送表更新通知
+    const conversationIds = Array.from(conversationMap.keys())
+    this.notifyConversationTableUpdate(conversationIds)
+  }
+
+  /**
+   * 发送会话表更新通知
+   */
+  private notifyConversationTableUpdate(conversationIds: string[]) {
+   
   }
 }
 

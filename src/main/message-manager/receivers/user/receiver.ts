@@ -1,4 +1,3 @@
-import { BaseReceiver } from '../../base/base-receiver'
 
 /**
  * 用户资料数据接口
@@ -12,15 +11,12 @@ interface UserProfileData {
 /**
  * @description: 用户资料接收器 - 主进程版本
  */
-export class UserReceiver extends BaseReceiver<UserProfileData> {
+export class UserReceiver  {
   protected readonly receiverName = 'UserReceiver'
 
   constructor() {
     // 用户资料更新的批处理参数
-    super({
-      batchSize: 10, // 用户资料更新较少，批量小一些
-      delayMs: 200, // 更快响应
-    })
+    
   }
 
   /**
@@ -56,13 +52,6 @@ export class UserReceiver extends BaseReceiver<UserProfileData> {
    */
   handleUserProfile(wsMessage: any) {
     // 调用基类的 handle 方法
-    this.handle({
-      messageId: `user_profile_${wsMessage.content?.data?.userId}_${Date.now()}`,
-      data: {
-        userId: wsMessage.content?.data?.userId,
-        profile: wsMessage.content?.data,
-        timestamp: Date.now(),
-      },
-    })
+   
   }
 }

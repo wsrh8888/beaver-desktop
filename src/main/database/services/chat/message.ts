@@ -1,4 +1,4 @@
-import { and, desc, eq, gte, inArray, lt, lte } from 'drizzle-orm'
+import { and, desc, eq, gte, inArray, lt, lte, sql } from 'drizzle-orm'
 import { chats } from 'mainModule/database/tables/chat/message'
 import dbManager from '../../db'
 
@@ -13,13 +13,22 @@ export class MessageService {
     return await this.db.insert(chats).values(messageData).run()
   }
 
-  // 批量创建消息（一次性插入所有消息，忽略重复数据）
+  // 批量创建消息（一次性插入所有消息，如果重复则更新关键字段）
   static async batchCreate(messages: any[]) {
     if (messages.length === 0)
       return
 
-    // 一次性批量插入所有消息，如果messageId重复则忽略（避免重复插入）
-    return await this.db.insert(chats).values(messages).onConflictDoNothing({ target: chats.messageId }).run()
+    // 一次性批量插入所有消息，如果messageId重复则更新关键字段（seq, sendStatus等）
+    return await this.db.insert(chats).values(messages).onConflictDoUpdate({
+      target: chats.messageId,
+      set: {
+        seq: sql.raw(`excluded.seq`),
+        sendStatus: sql.raw(`excluded.send_status`),
+        msgPreview: sql.raw(`excluded.msg_preview`),
+        msg: sql.raw(`excluded.msg`),
+        updatedAt: sql.raw(`excluded.updated_at`),
+      },
+    }).run()
   }
 
   // 批量更新消息的发送状态（用于收到服务器消息后，更新本地已发送消息的状态）

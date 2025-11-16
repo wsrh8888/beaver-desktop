@@ -2,7 +2,6 @@ import { ChatConversationService } from 'mainModule/database/services/chat/conve
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
-import { BaseReceiver } from '../../base/base-receiver'
 
 /**
  * 会话操作数据接口
@@ -18,15 +17,12 @@ interface ConversationOperationData {
 /**
  * @description: 会话操作接收器 - 处理会话相关的操作
  */
-export class ConversationReceiver extends BaseReceiver<ConversationOperationData> {
+export class ConversationReceiver {
   protected readonly receiverName = 'ConversationReceiver'
 
   constructor() {
     // 会话操作需要快速响应
-    super({
-      batchSize: 10, // 会话操作较少
-      delayMs: 100, // 快速响应
-    })
+   
   }
 
   /**

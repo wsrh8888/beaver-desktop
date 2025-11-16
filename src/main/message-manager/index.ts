@@ -122,6 +122,11 @@ class MessageManager {
    * @param wsMessage WebSocket 消息
    */
   private handleWsMessage(wsMessage: any) {
+    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxx')
+    console.log(JSON.parse(JSON.stringify(wsMessage)))
+
     // 如果正在数据同步，加入消息队列
     if (this.isDataSyncing) {
       this.messageQueue.push(wsMessage)

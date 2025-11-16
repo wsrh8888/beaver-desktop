@@ -1,4 +1,3 @@
-import { BaseReceiver } from '../../base/base-receiver'
 
 /**
  * 好友操作数据接口
@@ -14,15 +13,12 @@ interface FriendOperationData {
 /**
  * @description: 好友操作接收器 - 主进程版本
  */
-export class FriendReceiver extends BaseReceiver<FriendOperationData> {
+export class FriendReceiver {
   protected readonly receiverName = 'FriendReceiver'
 
   constructor() {
     // 好友操作的批处理参数
-    super({
-      batchSize: 5, // 好友操作较少
-      delayMs: 100, // 快速响应
-    })
+   
   }
 
   /**
@@ -58,15 +54,6 @@ export class FriendReceiver extends BaseReceiver<FriendOperationData> {
    */
   handleFriendOperation(wsMessage: any) {
     // 调用基类的 handle 方法
-    this.handle({
-      messageId: `friend_op_${wsMessage.content?.data?.operation}_${Date.now()}`,
-      data: {
-        operation: wsMessage.content?.data?.operation,
-        friendId: wsMessage.content?.data?.friendId,
-        userId: wsMessage.content?.data?.userId,
-        data: wsMessage.content?.data,
-        timestamp: Date.now(),
-      },
-    })
+   
   }
 }

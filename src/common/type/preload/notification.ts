@@ -44,13 +44,17 @@ export enum NotificationSearchToVerifyCommand {
 
 export enum NotificationChatCommand {
   /**
-   * 新消息通知 - 合并通知，避免频繁发送
+   * 会话表更新 - conversations表有变更
    */
-  NEW_MESSAGES = 'newMessages',
+  CONVERSATION_UPDATE = 'conversationUpdate',
   /**
-   * 消息状态更新
+   * 消息表更新 - messages表有变更
    */
-  MESSAGE_STATUS_UPDATE = 'messageStatusUpdate',
+  MESSAGE_UPDATE = 'messageUpdate',
+  /**
+   * 用户会话设置表更新 - user_conversations表有变更
+   */
+  USER_CONVERSATION_UPDATE = 'userConversationUpdate',
 }
 
 export enum NotificationConnectionCommand {
@@ -79,6 +83,9 @@ export enum NotificationMediaViewerCommand {
   UPDATE_AUDIO = 'updateAudio',
 }
 
+/**
+ * 主进程更新通知渲染进程
+ */
 export interface NotificationCommandMap {
   [NotificationModule.DATABASE_FRIEND]: NotificationFriendCommand
   [NotificationModule.DATABASE_USER]: NotificationUserCommand

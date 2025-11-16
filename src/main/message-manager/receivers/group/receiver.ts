@@ -1,4 +1,3 @@
-import { BaseReceiver } from '../../base/base-receiver'
 
 /**
  * 群组操作数据接口
@@ -14,15 +13,11 @@ interface GroupOperationData {
 /**
  * @description: 群组操作接收器 - 主进程版本
  */
-export class GroupReceiver extends BaseReceiver<GroupOperationData> {
+export class GroupReceiver  {
   protected readonly receiverName = 'GroupReceiver'
 
   constructor() {
-    // 群组操作的批处理参数
-    super({
-      batchSize: 5, // 群组操作较少
-      delayMs: 100, // 快速响应
-    })
+    
   }
 
   /**
@@ -58,15 +53,6 @@ export class GroupReceiver extends BaseReceiver<GroupOperationData> {
    */
   handleGroupOperation(wsMessage: any) {
     // 调用基类的 handle 方法
-    this.handle({
-      messageId: `group_op_${wsMessage.content?.data?.operation}_${Date.now()}`,
-      data: {
-        operation: wsMessage.content?.data?.operation,
-        groupId: wsMessage.content?.data?.groupId,
-        userId: wsMessage.content?.data?.userId,
-        data: wsMessage.content?.data,
-        timestamp: Date.now(),
-      },
-    })
+   
   }
 }
