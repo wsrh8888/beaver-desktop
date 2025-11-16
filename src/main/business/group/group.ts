@@ -1,16 +1,36 @@
+import { BaseBusiness, type QueueItem } from '../base/base'
 import type { IGroupListRes, IGroupJoinRequestListRes, IGetGroupListReq, IGetGroupMembersReq, IGroupMemberListRes, IGroupJoinRequestListReq } from 'commonModule/type/ajax/group'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { GroupMemberService } from 'mainModule/database/services/group/group-member'
 import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
 import { GroupService } from 'mainModule/database/services/group/group'
 import { UserService } from 'mainModule/database/services/user/user'
+import { groupSyncApi } from 'mainModule/api/group'
+
+/**
+ * 群组同步队列项
+ */
+interface GroupSyncItem extends QueueItem {
+  userId: string
+  groupId?: string
+  version: number
+}
 
 /**
  * 群组业务逻辑
- * 对应 groups 和 group_members 表
+ * 对应 groups 表
  * 负责群组管理的业务逻辑
  */
-export class GroupBusiness {
+export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
+  protected readonly businessName = 'GroupBusiness'
+
+  constructor() {
+    super({
+      queueSizeLimit: 25, // 群组同步请求适中
+      delayMs: 1000,
+    })
+  }
+
   /**
    * 获取用户加入的群组列表
    */
@@ -135,6 +155,68 @@ export class GroupBusiness {
     })
 
     return { list, count: total }
+  }
+
+  /**
+   * 处理群组表的更新通知
+   * 将同步请求加入队列，1秒后批量处理
+   */
+  async handleTableUpdates(userId: string, version: number, groupId?: string) {
+    this.addToQueue({
+      key: userId,
+      data: { userId, groupId, version },
+      timestamp: Date.now(),
+      userId,
+      groupId,
+      version,
+    })
+  }
+
+  /**
+   * 批量处理群组同步请求
+   */
+  protected async processBatchRequests(items: GroupSyncItem[]): Promise<void> {
+    // 构造同步请求参数
+    const groupsToSync = items.map(item => ({
+      groupId: item.groupId || '', // 如果没有groupId，可能需要特殊处理
+      version: item.version,
+    })).filter(item => item.groupId) // 只同步有groupId的项
+
+    if (groupsToSync.length === 0) {
+      console.log('群组同步完成: noValidGroupIds=true')
+      return
+    }
+
+    try {
+      const response = await groupSyncApi({
+        groups: groupsToSync,
+      })
+
+      if (response.result?.groups && response.result.groups.length > 0) {
+        // 更新本地数据库，转换数据类型
+        for (const group of response.result.groups) {
+          const groupData = {
+            groupId: group.groupId,
+            title: group.title,
+            avatar: group.fileName || '', // 使用 fileName 作为头像
+            creatorId: group.creatorId,
+            notice: '', // 同步API中没有notice字段
+            joinType: group.joinType || 0,
+            status: group.isDeleted ? 0 : 1, // 转换为状态：0删除 1正常
+            version: group.version || 0,
+            createdAt: Math.floor(group.createAt / 1000), // 转换为秒级时间戳
+            updatedAt: Math.floor(group.updateAt / 1000),
+          }
+          await GroupService.upsert(groupData)
+        }
+
+        console.log(`群组数据同步成功: count=${response.result.groups.length}`)
+      } else {
+        console.log('群组数据同步完成: noUpdates=true')
+      }
+    } catch (error) {
+      console.error('同步群组数据失败:', error)
+    }
   }
 }
 

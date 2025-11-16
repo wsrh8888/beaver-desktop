@@ -1,59 +1,25 @@
 
-/**
- * 好友操作数据接口
- */
-interface FriendOperationData {
-  operation: string
-  friendId: string
-  userId: string
-  data?: any
-  timestamp: number
-}
+import { friendBusiness } from 'mainModule/business/friend/friend'
 
 /**
- * @description: 好友操作接收器 - 主进程版本
+ * @description: 好友操作接收器 - 处理friends表的操作
+ * 不使用批量处理框架，直接在handle方法中处理消息
  */
 export class FriendReceiver {
-  protected readonly receiverName = 'FriendReceiver'
-
-  constructor() {
-    // 好友操作的批处理参数
-   
-  }
 
   /**
-   * 处理单个好友操作
+   * 处理好友表更新通知
+   * 只处理 friends 表的更新
    */
-  protected async processMessage(operationData: FriendOperationData): Promise<void> {
-    // TODO: 实现好友操作处理逻辑
-    // 1. 保存到本地数据库
-    // 2. 通知渲染进程更新UI
+  async handleTableUpdates(tableUpdatesBody: any) {
+    const { tableUpdates } = tableUpdatesBody
 
-    // 示例实现
-    console.log('处理好友操作:', operationData.operation, operationData.friendId)
-  }
+    // 过滤出只包含 friends 的更新，逐个处理
+    const friendUpdates = tableUpdates.filter((update: any) => update.table === 'friends')
 
-  /**
-   * 批量处理好友操作
-   */
-  protected async processBatchMessages(messages: FriendOperationData[]): Promise<void> {
-    // TODO: 实现批量好友操作处理
-    // 可以批量更新数据库，或调用批量API
-
-    // 示例实现
-    console.log(`批量处理 ${messages.length} 个好友操作`)
-
-    // 如果不需要真正的批量处理，可以逐个处理
-    for (const operationData of messages) {
-      await this.processMessage(operationData)
+    for (const update of friendUpdates) {
+      // 使用business的队列处理机制，避免频繁请求
+      await friendBusiness.handleTableUpdates(update.userId, update.data[0].version, update.data[0]?.uuid)
     }
-  }
-
-  /**
-   * 兼容旧接口
-   */
-  handleFriendOperation(wsMessage: any) {
-    // 调用基类的 handle 方法
-   
   }
 }

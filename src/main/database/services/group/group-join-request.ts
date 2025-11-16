@@ -16,6 +16,22 @@ export class GroupJoinRequestService {
     return await this.db.insert(groupJoinRequests).values(requestData).run()
   }
 
+  // 创建或更新入群申请（upsert操作）
+  static async upsert(requestData: any): Promise<any> {
+    return await this.db.insert(groupJoinRequests)
+      .values(requestData)
+      .onConflictDoUpdate({
+        target: groupJoinRequests.id,
+        set: {
+          status: requestData.status,
+          handledBy: requestData.handledBy,
+          handledAt: requestData.handledAt,
+          version: requestData.version,
+        },
+      })
+      .run()
+  }
+
   // 批量创建入群申请（支持插入或更新）
   static async batchCreate(requestsData: any[]): Promise<void> {
     if (requestsData.length === 0)

@@ -1,58 +1,29 @@
 
-/**
- * 群组操作数据接口
- */
-interface GroupOperationData {
-  operation: string
-  groupId: string
-  userId: string
-  data?: any
-  timestamp: number
-}
+import { groupBusiness } from 'mainModule/business/group/group'
 
 /**
- * @description: 群组操作接收器 - 主进程版本
+ * @description: 群组接收器 - 处理 groups 表的操作
  */
-export class GroupReceiver  {
-  protected readonly receiverName = 'GroupReceiver'
-
-  constructor() {
-    
-  }
-
+export class GroupReceiver {
   /**
-   * 处理单个群组操作
+   * 处理群组表更新通知
+   * 只处理 groups 表的更新
    */
-  protected async processMessage(operationData: GroupOperationData): Promise<void> {
-    // TODO: 实现群组操作处理逻辑
-    // 1. 保存到本地数据库
-    // 2. 通知渲染进程更新UI
+  async handleTableUpdates(tableUpdatesBody: any) {
+    // group 模块的 tableUpdatesBody 直接就是单个表的更新结构
+    // { table: "groups", data: [{ groupId: "...", version: 1 }, ...] }
 
-    // 示例实现
-    console.log('处理群组操作:', operationData.operation, operationData.groupId)
-  }
-
-  /**
-   * 批量处理群组操作
-   */
-  protected async processBatchMessages(messages: GroupOperationData[]): Promise<void> {
-    // TODO: 实现批量群组操作处理
-    // 可以批量更新数据库，或调用批量API
-
-    // 示例实现
-    console.log(`批量处理 ${messages.length} 个群组操作`)
-
-    // 如果不需要真正的批量处理，可以逐个处理
-    for (const operationData of messages) {
-      await this.processMessage(operationData)
+    // 检查是否是 groups 表的更新
+    if (tableUpdatesBody.table !== 'groups') {
+      console.warn('GroupReceiver 收到非 groups 表的更新', tableUpdatesBody)
+      return
     }
-  }
 
-  /**
-   * 兼容旧接口
-   */
-  handleGroupOperation(wsMessage: any) {
-    // 调用基类的 handle 方法
-   
+    // 处理每条数据记录
+    for (const dataItem of tableUpdatesBody.data) {
+      if (dataItem?.version) {
+        await groupBusiness.handleTableUpdates(tableUpdatesBody.userId || '', dataItem.version, dataItem?.groupId)
+      }
+    }
   }
 }

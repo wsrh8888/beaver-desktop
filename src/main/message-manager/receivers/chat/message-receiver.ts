@@ -40,7 +40,11 @@ export class MessageReceiver {
 
         case 'user_conversations':
           // 对于聚合消息中的用户会话更新，也使用队列处理
-          await userConversationBusiness.handleTableUpdates([update])
+          for (const dataItem of update.data) {
+            if (update.userId && update.conversationId && dataItem?.version) {
+              await userConversationBusiness.handleTableUpdates(update.userId, update.conversationId, dataItem.version)
+            }
+          }
           break
 
         default:

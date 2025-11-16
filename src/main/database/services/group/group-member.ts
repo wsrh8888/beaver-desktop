@@ -16,6 +16,22 @@ export class GroupMemberService {
     return await this.db.insert(groupMembers).values(memberData).run()
   }
 
+  // 创建或更新群成员（upsert操作）
+  static async upsert(memberData: any): Promise<any> {
+    return await this.db.insert(groupMembers)
+      .values(memberData)
+      .onConflictDoUpdate({
+        target: [groupMembers.groupId, groupMembers.userId],
+        set: {
+          role: memberData.role,
+          status: memberData.status,
+          joinTime: memberData.joinTime,
+          version: memberData.version,
+        },
+      })
+      .run()
+  }
+
   // 批量创建群成员（支持插入或更新）
   static async batchCreate(membersData: any[]): Promise<void> {
     if (membersData.length === 0)

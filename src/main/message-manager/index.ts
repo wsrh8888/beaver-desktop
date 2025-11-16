@@ -4,16 +4,14 @@ import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 import WsManager from 'mainModule/ws-manager/index'
 import { chatMessageRouter } from './receivers/chat/inedx'
-import { FriendReceiver } from './receivers/friend/receiver'
-import { GroupReceiver } from './receivers/group/receiver'
+import { friendMessageRouter } from './receivers/friend/index'
+import { groupMessageRouter } from './receivers/group/index'
 import { UserReceiver } from './receivers/user/receiver'
 
 /**
  * @description: 消息管理器 - 主进程版本，负责消息的发送、接收和状态管理
  */
 class MessageManager {
-  public friendReceiver = new FriendReceiver()
-  public groupReceiver = new GroupReceiver()
   public userReceiver = new UserReceiver()
   private isDataSyncing = false
   private messageQueue: any[] = []
@@ -169,10 +167,10 @@ class MessageManager {
         chatMessageRouter.processChatMessage(wsMessage.content)
         break
       case 'FRIEND_OPERATION':
-        this.friendReceiver.handleFriendOperation(wsMessage)
+        friendMessageRouter.processFriendMessage(wsMessage.content)
         break
       case 'GROUP_OPERATION':
-        this.groupReceiver.handleGroupOperation(wsMessage)
+        groupMessageRouter.processGroupMessage(wsMessage.content)
         break
       case 'USER_PROFILE':
         this.userReceiver.handleUserProfile(wsMessage)

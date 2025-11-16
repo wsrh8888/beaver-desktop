@@ -13,12 +13,16 @@ export class UserConversationReceiver {
   async handleTableUpdates(tableUpdatesBody: any) {
     const { tableUpdates } = tableUpdatesBody
 
-    // 过滤出只包含 user_conversations 的更新
+    // 过滤出只包含 user_conversations 的更新，逐个处理
     const userConversationUpdates = tableUpdates.filter((update: any) => update.table === 'user_conversations')
 
-    if (userConversationUpdates.length > 0) {
+    for (const update of userConversationUpdates) {
       // 使用business的队列处理机制，避免频繁请求
-      await userConversationBusiness.handleTableUpdates(userConversationUpdates)
+      for (const dataItem of update.data) {
+        if (update.userId && update.conversationId && dataItem?.version) {
+          await userConversationBusiness.handleTableUpdates(update.userId, update.conversationId, dataItem.version)
+        }
+      }
     }
   }
 }
