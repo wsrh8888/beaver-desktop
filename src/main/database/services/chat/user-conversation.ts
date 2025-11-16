@@ -136,7 +136,6 @@ export class ChatUserConversationService {
     return await this.db.select().from(chatUserConversations).where(and(
       eq(chatUserConversations.userId, userId as any),
       eq(chatUserConversations.conversationId, conversationId as any),
-      eq(chatUserConversations.isHidden, 0 as any),
     )).get()
   }
 

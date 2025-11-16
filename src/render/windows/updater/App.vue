@@ -256,6 +256,7 @@ export default defineComponent({
       handleRestart,
       handleClose,
       toggleAutoUpdate,
+      
     }
   }
 })

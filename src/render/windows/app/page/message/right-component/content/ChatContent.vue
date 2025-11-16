@@ -126,6 +126,7 @@ export default defineComponent({
 
     // 判断messageViewStore.currentChatId的值是否发生变化
     watch(() => messageViewStore.currentChatId, async (newConversationId) => {
+      console.error('会话变了', newConversationId, messageViewStore.currentChatId)
       if (newConversationId) {
         console.log('会话切换:', newConversationId)
         

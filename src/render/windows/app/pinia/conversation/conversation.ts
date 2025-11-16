@@ -5,6 +5,7 @@ import { defineStore } from 'pinia'
 import { useContactStore } from '../contact/contact'
 import { useUserStore } from '../user/user'
 import { useGroupStore } from '../group/group'
+import { getRecentChatInfoApi } from 'renderModule/api/chat'
 
 /**
  * @description: 会话管理
@@ -167,6 +168,7 @@ export const useConversationStore = defineStore('useConversationStore', {
           // 时间排序由后端保证，这里保持原有顺序
           return 0
         })
+        console.log('conversations', this.conversations)
 
         // 记录当前最大版本号，用于增量同步
         this.currentMaxVersion = Math.max(...result.list.map(c => c.version))
@@ -273,6 +275,66 @@ export const useConversationStore = defineStore('useConversationStore', {
         // 按最后更新时间倒序（直接使用 updatedAt 字段）
         return (b.updatedAt || 0) - (a.updatedAt || 0)
       })
+    },
+
+    /**
+     * @description: 通过会话ID初始化会话（确保会话存在）
+     * 优先级：本地store -> 主进程数据库 -> 服务端API
+     */
+    async initConversationById(conversationId: string) {
+      // 1. 先检查本地store是否已存在
+      const existingConversation = this.conversations.find((c: IConversationItem) => c.conversationId === conversationId)
+      if (existingConversation) {
+        return existingConversation
+      }
+
+      // 2. 本地不存在，从主进程数据库查询（包含隐藏的会话）
+      try {
+        const localResult = await electron.database.chat.getConversationInfo({
+          conversationId,
+        })
+
+        if (localResult) {
+          // 主进程有数据，添加到store并移到顶部
+          this.upsertConversation(localResult)
+          this.moveConversationToTop(conversationId)
+          return localResult
+        }
+      } catch (error) {
+        console.warn('从主进程获取会话信息失败:', error)
+      }
+
+      // 3. 主进程也没有，从服务端获取
+      try {
+        const serverResult = await getRecentChatInfoApi({
+          conversationId,
+        })
+
+        if (serverResult && serverResult.result) {
+          // 服务端有数据，添加到store并移到顶部
+          this.upsertConversation(serverResult.result)
+          this.moveConversationToTop(conversationId)
+          return serverResult.result
+        }
+      } catch (error) {
+        console.error('从服务端获取会话信息失败:', error)
+        throw error
+      }
+
+      // 4. 都没有找到
+      throw new Error(`会话 ${conversationId} 不存在`)
+    },
+
+    /**
+     * @description: 将指定会话移到列表顶部
+     */
+    moveConversationToTop(conversationId: string) {
+      const index = this.conversations.findIndex((c: IConversationItem) => c.conversationId === conversationId)
+      if (index > 0) {
+        // 找到会话，移到顶部
+        const [conversation] = this.conversations.splice(index, 1)
+        this.conversations.unshift(conversation)
+      }
     },
   },
 })

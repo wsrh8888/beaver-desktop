@@ -10,6 +10,10 @@ import type {
   IEditMessageRes,
   IForwardMessageReq,
   IForwardMessageRes,
+  IHideChatReq,
+  IHideChatRes,
+  IMuteChatReq,
+  IMuteChatRes,
   IPinnedChatReq,
   IPinnedChatRes,
   IRecallMessageReq,
@@ -139,5 +143,27 @@ export const updateReadSeqApi = (data: IUpdateReadSeqReq) => {
     method: 'POST',
     data,
     url: `${baseUrl}/api/chat/updateReadSeq`,
+  })
+}
+
+/**
+ * @description: 设置会话免打扰
+ */
+export const muteChatApi = (data: IMuteChatReq) => {
+  return ajax<IMuteChatRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/muteChat`,
+  })
+}
+
+/**
+ * @description: 隐藏/显示会话
+ */
+export const hideChatApi = (data: IHideChatReq) => {
+  return ajax<IHideChatRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/hideChat`,
   })
 }

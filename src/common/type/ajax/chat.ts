@@ -455,3 +455,21 @@ export interface IUpdateReadSeqReq {
 export interface IUpdateReadSeqRes {
   success: boolean // 是否成功
 }
+
+// 免打扰会话请求
+export interface IMuteChatReq {
+  conversationId: string // 会话id
+  isMuted: boolean // true表示免打扰 false表示取消免打扰
+}
+
+// 免打扰会话响应
+export interface IMuteChatRes {}
+
+// 隐藏会话请求
+export interface IHideChatReq {
+  conversationId: string // 会话id
+  isHidden: boolean // true表示隐藏 false表示显示
+}
+
+// 隐藏会话响应
+export interface IHideChatRes {}
