@@ -19,6 +19,9 @@
             <div class="user-name">
               {{ userInfo.nickName || '用户' }}
             </div>
+            <div class="user-id">
+              ID: {{ userInfo.userId }}
+            </div>
           </div>
 
           <!-- 菜单列表 -->
@@ -259,6 +262,15 @@ export default defineComponent({
     font-size: 16px;
     font-weight: 600;
     text-align: center;
+  }
+
+  .user-id {
+    font-size: 14px;
+    opacity: 0.9;
+    text-align: center;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    margin-top: 2px;
   }
 }
 

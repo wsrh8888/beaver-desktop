@@ -17,10 +17,6 @@ export enum DataGroupCommand {
    * @description: 获取用户管理的群组申请列表
    */
   GET_GROUP_JOIN_REQUEST_LIST = 'group:getGroupJoinRequestList',
-  /**
-   * @description: 获取所有群组申请列表
-   */
-  GET_ALL_GROUP_JOIN_REQUESTS = 'group:getAllGroupJoinRequests',
 }
 
 export enum DataChatCommand {

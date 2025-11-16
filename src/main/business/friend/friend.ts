@@ -1,7 +1,9 @@
+import { BaseBusiness, type QueueItem } from '../base/base'
 import type { IFriendListReq, IFriendListRes, IFriendInfo } from 'commonModule/type/ajax/friend'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { UserService } from 'mainModule/database/services/user/user'
+import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
 
 // 生成会话ID的辅助函数
 function generateConversationId(userId1: string, userId2: string): string {
@@ -11,11 +13,28 @@ function generateConversationId(userId1: string, userId2: string): string {
 }
 
 /**
+ * 好友同步队列项
+ */
+interface FriendSyncItem extends QueueItem {
+  userId: string
+  uuid?: string
+  version: number
+}
+
+/**
  * 好友业务逻辑
  * 对应 friends 表
  * 负责好友管理的业务逻辑
  */
-export class FriendBusiness {
+export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
+  protected readonly businessName = 'FriendBusiness'
+
+  constructor() {
+    super({
+      queueSizeLimit: 25, // 好友同步请求适中
+      delayMs: 1000,
+    })
+  }
   /**
    * 获取好友列表
    */
@@ -81,6 +100,58 @@ export class FriendBusiness {
 
     return {
       list: friendList,
+    }
+  }
+
+  /**
+   * 处理好友表的更新通知
+   * 将同步请求加入队列，1秒后批量处理
+   */
+  async handleTableUpdates(userId: string, version: number, uuid?: string) {
+    this.addToQueue({
+      key: userId,
+      data: { userId, uuid, version },
+      timestamp: Date.now(),
+      userId,
+      uuid,
+      version,
+    })
+  }
+
+  /**
+   * 批量处理好友同步请求
+   */
+  protected async processBatchRequests(items: FriendSyncItem[]): Promise<void> {
+    // 检查是否有具体的 uuid
+    const uuids = items.map(item => item.uuid).filter((uuid): uuid is string => Boolean(uuid))
+
+    try {
+      const response = await getFriendsListByUuidsApi({
+        uuids,
+      })
+
+      if (response.result.friends && response.result.friends.length > 0) {
+        // 更新本地数据库，转换数据类型
+        for (const friend of response.result.friends) {
+          const friendData = {
+            uuid: friend.uuid,
+            sendUserId: friend.sendUserId,
+            revUserId: friend.revUserId,
+            sendUserNotice: friend.sendUserNotice || '',
+            revUserNotice: friend.revUserNotice || '',
+            source: friend.source || '',
+            isDeleted: friend.isDeleted ? 1 : 0, // 转换为整数
+            version: friend.version || 0,
+            createdAt: Math.floor(friend.createAt / 1000), // 转换为秒级时间戳
+            updatedAt: Math.floor(friend.updateAt / 1000),
+          }
+          await FriendService.upsert(friendData)
+        }
+
+        console.log(`好友数据精确同步成功: uuids=${uuids.join(',')}, count=${response.result.friends.length}`)
+      }
+    } catch (error) {
+      console.error('精确同步好友数据失败:', error)
     }
   }
 }

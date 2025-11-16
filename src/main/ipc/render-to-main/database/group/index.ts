@@ -23,7 +23,6 @@ export class GroupHandler {
       case DataGroupCommand.GET_GROUP_MEMBERS:
         return await groupBusiness.getGroupMembers(header, data)
       case DataGroupCommand.GET_GROUP_JOIN_REQUEST_LIST:
-      case DataGroupCommand.GET_ALL_GROUP_JOIN_REQUESTS:
         // 合并为同一个方法：获取用户相关的群组申请（包括用户申请的 + 别人申请用户管理的群组）
         return await groupBusiness.getGroupJoinRequests(header, data)
       default:

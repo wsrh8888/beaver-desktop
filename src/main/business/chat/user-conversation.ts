@@ -74,23 +74,16 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
    * 处理用户会话表的更新通知
    * 将同步请求加入队列，1秒后批量处理
    */
-  async handleTableUpdates(updates: any[] | any) {
-    // 确保updates是数组格式
-    const updatesArray = Array.isArray(updates) ? updates : [updates]
-
-    for (const update of updatesArray) {
-      if (update.userId && update.conversationId && update.data[0]?.version) {
-        this.addToQueue({
-          key: `${update.userId}:${update.conversationId}`,
-          data: { userId: update.userId, conversationId: update.conversationId, version: update.data[0].version },
-          timestamp: Date.now(),
-          userId: update.userId,
-          conversationId: update.conversationId,
-          minVersion: update.data[0].version,
-          maxVersion: update.data[0].version,
-        })
-      }
-    }
+  async handleTableUpdates(userId: string, conversationId: string, version: number) {
+    this.addToQueue({
+      key: `${userId}:${conversationId}`,
+      data: { userId, conversationId, version },
+      timestamp: Date.now(),
+      userId,
+      conversationId,
+      minVersion: version,
+      maxVersion: version,
+    })
   }
 
   /**
