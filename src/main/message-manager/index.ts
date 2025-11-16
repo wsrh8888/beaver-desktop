@@ -3,9 +3,7 @@ import { dataSyncManager } from 'mainModule/datasync/manager.ts'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 import WsManager from 'mainModule/ws-manager/index'
-import { ConversationReceiver } from './receivers/chat/conversation-receiver'
-import { MessageReceiver } from './receivers/chat/message-receiver'
-import { UserConversationReceiver } from './receivers/chat/user-conversation-receiver'
+import { chatMessageRouter } from './receivers/chat/inedx'
 import { FriendReceiver } from './receivers/friend/receiver'
 import { GroupReceiver } from './receivers/group/receiver'
 import { UserReceiver } from './receivers/user/receiver'
@@ -14,9 +12,6 @@ import { UserReceiver } from './receivers/user/receiver'
  * @description: 消息管理器 - 主进程版本，负责消息的发送、接收和状态管理
  */
 class MessageManager {
-  public messageReceiver = new MessageReceiver()
-  public conversationReceiver = new ConversationReceiver()
-  public userConversationReceiver = new UserConversationReceiver()
   public friendReceiver = new FriendReceiver()
   public groupReceiver = new GroupReceiver()
   public userReceiver = new UserReceiver()
@@ -171,7 +166,7 @@ class MessageManager {
     console.log('处理消息', JSON.stringify(wsMessage), source)
     switch (wsMessage.command) {
       case 'CHAT_MESSAGE':
-        this.messageReceiver.handle(wsMessage.content)
+        chatMessageRouter.processChatMessage(wsMessage.content)
         break
       case 'FRIEND_OPERATION':
         this.friendReceiver.handleFriendOperation(wsMessage)
