@@ -4,6 +4,8 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { UserService } from 'mainModule/database/services/user/user'
 import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationFriendCommand } from 'commonModule/type/preload/notification'
 
 // 生成会话ID的辅助函数
 function generateConversationId(userId1: string, userId2: string): string {
@@ -149,10 +151,32 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
         }
 
         console.log(`好友数据精确同步成功: uuids=${uuids.join(',')}, count=${response.result.friends.length}`)
+
+        // 发送通知到render进程，告知好友数据已更新
+        sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_UPDATE, {
+          updatedFriends: response.result.friends.map((friend: any) => ({
+            uuid: friend.uuid,
+            sendUserId: friend.sendUserId,
+            revUserId: friend.revUserId,
+            version: friend.version,
+          })),
+        })
       }
     } catch (error) {
       console.error('精确同步好友数据失败:', error)
     }
+  }
+
+  /**
+   * 根据用户ID列表批量获取好友信息
+   */
+  async getFriendsByUserIds(_header: ICommonHeader, params: { userIds: string[] }): Promise<{ list: IFriendInfo[] }> {
+    const { userIds } = params
+
+    // 调用服务层批量获取好友信息
+    const friends = await FriendService.getFriendsByUserIds(userIds)
+
+    return { list: friends }
   }
 }
 

@@ -70,6 +70,50 @@ export const useGroupStore = defineStore('groupStore', {
     },
 
     /**
+     * @description: 直接更新群组信息（用于推送通知）
+     */
+    upsertGroup(groupData: IGroupInfo) {
+      const index = this._groupList.findIndex(g => g.conversationId === groupData.conversationId)
+      if (index !== -1) {
+        // 更新现有群组
+        this._groupList[index] = { ...this._groupList[index], ...groupData }
+      } else {
+        // 添加新群组
+        this._groupList.push(groupData)
+      }
+    },
+
+    /**
+     * @description: 根据群组ID列表批量更新群组信息
+     */
+    async updateGroupsByIds(groupIds: string[]) {
+      if (groupIds.length === 0) {
+        return
+      }
+
+      try {
+        // 通过electron.database批量获取指定的群组信息
+        const result = await electron.database.group.getGroupsBatch({ groupIds })
+
+        // 更新group store
+        for (const group of result.list) {
+          this.upsertGroup({
+            conversationId: group.conversationId,
+            title: group.title,
+            avatar: group.avatar,
+            memberCount: group.memberCount,
+            version: group.version,
+          } as any)
+        }
+
+        return result.list
+      } catch (error) {
+        console.error('批量更新群组信息失败:', error)
+        throw error
+      }
+    },
+
+    /**
      * @description: 移除群组
      */
     removeGroup(groupId: string) {

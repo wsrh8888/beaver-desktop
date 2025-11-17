@@ -80,6 +80,45 @@ export const useGroupMemberStore = defineStore('groupMemberStore', {
     },
 
     /**
+     * @description: 根据群组ID列表批量更新群成员信息
+     */
+    async updateMembersByGroupIds(groupIds: string[]) {
+      if (groupIds.length === 0) {
+        return
+      }
+
+      try {
+        // 使用批量API一次性获取所有群组的成员信息
+        const result = await electron.database.group.getGroupMembersBatch({ groupIds })
+
+        // 清除旧的缓存并设置新的成员数据
+        for (const groupId of groupIds) {
+          this.memberMap.delete(groupId)
+        }
+
+        // 按群组ID分组设置成员数据
+        const membersByGroup = new Map<string, any[]>()
+        for (const member of result.list) {
+          const groupId = (member as any).groupId
+          if (!membersByGroup.has(groupId)) {
+            membersByGroup.set(groupId, [])
+          }
+          membersByGroup.get(groupId)!.push(member)
+        }
+
+        // 设置新的成员数据
+        for (const [groupId, members] of membersByGroup) {
+          this.memberMap.set(groupId, members)
+        }
+
+        return groupIds
+      } catch (error) {
+        console.error('批量更新群成员信息失败:', error)
+        throw error
+      }
+    },
+
+    /**
      * @description: 移除群成员
      * @param {string} groupId - 群组ID
      * @param {string[]} memberIds - 要移除的成员ID列表

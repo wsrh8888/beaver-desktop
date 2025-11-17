@@ -1,6 +1,8 @@
 import { BaseBusiness, type QueueItem } from '../base/base'
 import { getFriendVerifiesListByIdsApi } from 'mainModule/api/friened'
 import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationFriendCommand } from 'commonModule/type/preload/notification'
 
 /**
  * 好友验证同步队列项
@@ -74,6 +76,16 @@ export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
         // 批量创建/更新本地数据库
         await FriendVerifyService.batchCreate(friendVerifies)
         console.log(`好友验证同步成功: count=${friendVerifies.length}`)
+
+        // 发送通知到render进程，告知好友验证数据已更新
+        sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_VALID_UPDATE, {
+          updatedVerifies: friendVerifies.map((verify: any) => ({
+            uuid: verify.uuid,
+            sendUserId: verify.sendUserId,
+            revUserId: verify.revUserId,
+            version: verify.version,
+          })),
+        })
       }
     } catch (error) {
       console.error('批量同步好友验证数据失败:', error)

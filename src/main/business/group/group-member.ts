@@ -1,6 +1,8 @@
 import { BaseBusiness, type QueueItem } from '../base/base'
 import { groupMemberSyncApi } from 'mainModule/api/group'
 import { GroupMemberService } from 'mainModule/database/services/group/group-member'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 
 /**
  * 群成员同步队列项
@@ -76,6 +78,15 @@ export class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
         }
 
         console.log(`群成员数据同步成功: count=${response.result.groupMembers.length}`)
+
+        // 发送通知到render进程，告知群成员数据已更新
+        sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_MEMBER_UPDATE, {
+          updatedMembers: response.result.groupMembers.map((member: any) => ({
+            groupId: member.groupId,
+            userId: member.userId,
+            version: member.version,
+          })),
+        })
       } else {
         console.log('群成员数据同步完成: noUpdates=true')
       }

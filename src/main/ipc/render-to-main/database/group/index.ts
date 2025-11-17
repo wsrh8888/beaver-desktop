@@ -20,8 +20,12 @@ export class GroupHandler {
     switch (command) {
       case DataGroupCommand.GET_GROUP_LIST:
         return await groupBusiness.getGroupList(header, data)
+      case DataGroupCommand.GET_GROUPS_BATCH:
+        return await groupBusiness.getGroupsBatch(header, data)
       case DataGroupCommand.GET_GROUP_MEMBERS:
         return await groupBusiness.getGroupMembers(header, data)
+      case DataGroupCommand.GET_GROUP_MEMBERS_BATCH:
+        return await groupBusiness.getGroupMembersBatch(header, data)
       case DataGroupCommand.GET_GROUP_JOIN_REQUEST_LIST:
         // 合并为同一个方法：获取用户相关的群组申请（包括用户申请的 + 别人申请用户管理的群组）
         return await groupBusiness.getGroupJoinRequests(header, data)

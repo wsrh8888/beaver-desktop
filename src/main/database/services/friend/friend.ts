@@ -126,6 +126,27 @@ export class FriendService {
     return friendDetailsMap
   }
 
+  // 根据用户ID列表批量查询好友信息
+  static async getFriendsByUserIds(userIds: string[]): Promise<IFriendInfo[]> {
+    if (userIds.length === 0) {
+      return []
+    }
+
+    const friends = await this.db
+      .select()
+      .from(friendsTable)
+      .where(inArray(friendsTable.userId, userIds as any))
+      .all()
+
+    return friends.map((friend: any) => ({
+      userId: friend.userId,
+      nickname: friend.nickname,
+      avatar: friend.avatar,
+      conversationId: friend.conversationId,
+      version: friend.version,
+    }))
+  }
+
   // 根据friendshipIds批量查询本地好友关系
   static async getFriendsByIds(friendshipIds: string[]): Promise<Map<string, any>> {
     if (friendshipIds.length === 0) {

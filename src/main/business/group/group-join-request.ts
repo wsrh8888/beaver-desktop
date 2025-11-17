@@ -1,6 +1,8 @@
 import { BaseBusiness, type QueueItem } from '../base/base'
 import { groupJoinRequestSyncApi } from 'mainModule/api/group'
 import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 
 /**
  * 群加入请求同步队列项
@@ -79,6 +81,16 @@ export class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncI
         }
 
         console.log(`群加入请求数据同步成功: count=${response.result.groupJoinRequests.length}`)
+
+        // 发送通知到render进程，告知群加入请求数据已更新
+        sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_VALID_UPDATE, {
+          updatedRequests: response.result.groupJoinRequests.map((request: any) => ({
+            id: request.id,
+            groupId: request.groupId,
+            applicantUserId: request.applicantUserId,
+            version: request.version,
+          })),
+        })
       } else {
         console.log('群加入请求数据同步完成: noUpdates=true')
       }

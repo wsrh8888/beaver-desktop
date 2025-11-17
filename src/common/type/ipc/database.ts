@@ -1,6 +1,7 @@
 export enum DataUserCommand {
 
   GET_USER_INFO = 'user:getUserInfo',
+  GET_USERS_BASIC_INFO = 'user:getUsersBasicInfo',
 }
 
 export enum DataFriendCommand {
@@ -8,11 +9,15 @@ export enum DataFriendCommand {
   GET_VALID_LIST = 'friend:getValidList',
   GET_FRIENDS_BY_VER_RANGE = 'friend:getFriendsByVerRange',
   GET_VALID_BY_VER_RANGE = 'friend:getValidByVerRange',
+  GET_FRIENDS_BY_USER_IDS = 'friend:getFriendsByUserIds',
+  GET_VALID_BY_USER_IDS = 'friend:getValidByUserIds',
 }
 
 export enum DataGroupCommand {
   GET_GROUP_LIST = 'group:getGroupList',
+  GET_GROUPS_BATCH = 'group:getGroupsBatch',
   GET_GROUP_MEMBERS = 'group:getGroupMembers',
+  GET_GROUP_MEMBERS_BATCH = 'group:getGroupMembersBatch',
   /**
    * @description: 获取用户管理的群组申请列表
    */

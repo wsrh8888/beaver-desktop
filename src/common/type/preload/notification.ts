@@ -1,5 +1,20 @@
+
+
+/**
+ * 主进程通知渲染进程
+ */
 export enum NotificationModule {
+  /**
+   * 群组通知
+   */
+  DATABASE_GROUP = 'database:group',
+  /**
+   * 好友通知
+   */
   DATABASE_FRIEND = 'database:friend',
+  /**
+   * 用户通知
+   */
   DATABASE_USER = 'database:user',
   /**
    * 数据同步状态通知
@@ -23,13 +38,40 @@ export enum NotificationModule {
   MEDIA_VIEWER = 'media:viewer',
 }
 
+
+
 export enum NotificationFriendCommand {
-  GET_FRIENDS = 'getFriends',
-  GET_VALID_LIST = 'getValidList',
+  /**
+   * 好友更新
+   */
+  FRIEND_UPDATE = 'friendUpdate',
+  /**
+   * 好友验证更新
+   */
+  FRIEND_VALID_UPDATE = 'friendValidUpdate',
+
+}
+
+export enum NotificationGroupCommand {
+  /**
+   * 群组更新
+   */
+  GROUP_UPDATE = 'groupUpdate',
+  /**
+   * 群组成员更新
+   */
+  GROUP_MEMBER_UPDATE = 'groupMemberUpdate',
+  /**
+   * 群组验证更新
+   */
+  GROUP_VALID_UPDATE = 'groupValidUpdate',
 }
 
 export enum NotificationUserCommand {
-  GET_USER_INFO = 'getUserInfo',
+  /**
+   * 用户更新
+   */
+  USER_UPDATE = 'userUpdate',
 }
 
 export enum NotificationDataSyncCommand {
@@ -89,6 +131,7 @@ export enum NotificationMediaViewerCommand {
 export interface NotificationCommandMap {
   [NotificationModule.DATABASE_FRIEND]: NotificationFriendCommand
   [NotificationModule.DATABASE_USER]: NotificationUserCommand
+  [NotificationModule.DATABASE_GROUP]: NotificationGroupCommand
   [NotificationModule.DATABASE_DATASYNC]: NotificationDataSyncCommand
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
   [NotificationModule.CONNECTION]: NotificationConnectionCommand

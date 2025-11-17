@@ -1,7 +1,7 @@
 import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from '../ajax/chat'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
-import type { IGetGroupListReq, IGetGroupMembersReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
-import type { IUserInfoRes } from '../ajax/user'
+import type { IGetGroupListReq, IGetGroupsBatchReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
+import type { IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from '../ajax/user'
 
 /**
  * @description: 数据库模块接口 - 按业务分类
@@ -12,6 +12,7 @@ export interface IDatabaseModule {
    */
   user: {
     getUserInfo(): Promise<IUserInfoRes | null>
+    getUsersBasicInfo(params: IUserSyncByIdsReq): Promise<IUserSyncByIdsRes>
   }
 
   /**
@@ -34,6 +35,14 @@ export interface IDatabaseModule {
      * 获取好友验证列表 by 版本范围
      */
     getValidByVerRange(params: IValidVerRangeReq): Promise<IValidListRes>
+    /**
+     * 根据用户ID列表获取好友信息
+     */
+    getFriendsByUserIds(params: { userIds: string[] }): Promise<IFriendListRes>
+    /**
+     * 根据用户ID列表获取验证记录
+     */
+    getValidByUserIds(params: { userIds: string[] }): Promise<IValidListRes>
   }
 
   /**
@@ -63,7 +72,9 @@ export interface IDatabaseModule {
   }
   group: {
     getGroupList(params: IGetGroupListReq): Promise<IGroupListRes>
+    getGroupsBatch(params: IGetGroupsBatchReq): Promise<IGroupListRes>
     getGroupMembers(params: IGetGroupMembersReq): Promise<IGroupMemberListRes>
+    getGroupMembersBatch(params: IGetGroupMembersBatchReq): Promise<IGroupMemberListRes>
     getGroupJoinRequestList(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
     getAllGroupJoinRequests(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
   }

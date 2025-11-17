@@ -12,6 +12,7 @@ import { ChatUserConversationService } from 'mainModule/database/services/chat/u
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { GroupService } from 'mainModule/database/services/group/group'
 import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
 /**
  * 会话同步队列项
@@ -385,7 +386,9 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
    * 发送会话表更新通知
    */
   private notifyConversationTableUpdate(conversationIds: string[]) {
-   
+    sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.CONVERSATION_UPDATE, {
+      updatedConversations: conversationIds,
+    })
   }
 }
 

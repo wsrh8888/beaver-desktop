@@ -3,6 +3,8 @@ import { datasyncGetSyncFriendVerifiesApi } from 'mainModule/api/datasync'
 import { getFriendVerifiesListByIdsApi } from 'mainModule/api/friened'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationFriendCommand } from 'commonModule/type/preload/notification'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
 
@@ -85,6 +87,8 @@ export class FriendVerifySyncModule {
       return
     }
 
+    const syncedVerifies: Array<{ uuid: string, version: number }> = []
+
     // 分批获取好友验证数据（避免一次性获取过多数据）
     const batchSize = 50
     for (let i = 0; i < uuids.length; i += batchSize) {
@@ -110,7 +114,20 @@ export class FriendVerifySyncModule {
 
         // 批量插入好友验证数据
         await FriendVerifyService.batchCreate(friendVerifies)
+
+        // 收集同步的数据用于通知
+        syncedVerifies.push(...friendVerifies.map(verify => ({
+          uuid: verify.uuid,
+          version: verify.version,
+        })))
       }
+    }
+
+    // 发送通知到render进程，告知好友验证数据已同步
+    if (syncedVerifies.length > 0) {
+      sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_VALID_UPDATE, {
+        updatedVerifies: syncedVerifies,
+      })
     }
   }
 

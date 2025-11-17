@@ -78,9 +78,51 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
             userId: item.userId,
             nickName: item.nickname,
             avatar: item.avatar,
-          })
+          } as any)
         }
       })
+    },
+
+    /**
+     * @description: 根据用户ID列表更新好友验证数据
+     */
+    async updateVerifiesByUserIds(updatedVerifies: Array<{ uuid: string, version: number }>) {
+      if (updatedVerifies.length === 0) {
+        return
+      }
+
+      try {
+        // 提取用户ID列表
+        const userIds = updatedVerifies.map(v => v.uuid)
+
+        // 使用用户ID列表查询获取最新的验证数据
+        const result = await electron.database.friend.getValidByUserIds({
+          userIds
+        })
+
+        // 更新friend verify store
+        for (const verify of result.list) {
+          const index = this.friendVerifyList.findIndex(v => v.userId === verify.userId)
+          if (index !== -1) {
+            this.friendVerifyList[index] = verify
+          } else {
+            this.friendVerifyList.push(verify)
+          }
+
+          // 同步到contact store
+          const contactStore = useContactStore()
+          contactStore.updateContact(verify.userId, {
+            userId: verify.userId,
+            nickName: verify.nickname,
+            avatar: verify.avatar,
+          } as any)
+        }
+
+        return result.list
+      } catch (error) {
+        console.error('根据用户ID列表更新好友验证信息失败:', error)
+        throw error
+      }
     },
   },
 })

@@ -3,6 +3,8 @@ import { groupSyncApi } from 'mainModule/api/group'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupService } from 'mainModule/database/services/group/group'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 import logger from 'mainModule/utils/log'
 
 // 群资料同步器（对应服务器group表）
@@ -97,6 +99,14 @@ class GroupSync {
       for (const group of localGroups) {
         await GroupSyncStatusService.upsertSyncStatus('info', group.groupId, group.version)
       }
+
+      // 发送通知到render进程，告知群组数据已同步
+      sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_UPDATE, {
+        updatedGroups: localGroups.map(group => ({
+          groupId: group.groupId,
+          version: group.version,
+        })),
+      })
     }
   }
 }

@@ -9,6 +9,7 @@ import { chatSyncApi } from 'mainModule/api/chat'
 import { MessageService } from 'mainModule/database/services/chat/message'
 import { UserService } from 'mainModule/database/services/user/user'
 import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
 /**
  * 消息同步队列项
@@ -221,6 +222,12 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     for (const [conversationId, versionRange] of conversationMap) {
       await this.syncMessagesByVersionRange(conversationId, versionRange.minVersion, versionRange.maxVersion)
     }
+
+    // 发送消息表更新通知
+    const conversationIds = Array.from(conversationMap.keys())
+    sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.MESSAGE_UPDATE, {
+      updatedConversations: conversationIds,
+    })
   }
 
   /**

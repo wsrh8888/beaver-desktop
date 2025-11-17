@@ -1,6 +1,8 @@
 import { BaseBusiness, type QueueItem } from '../base/base'
 import { getUserConversationSettingsListByIdsApi } from 'mainModule/api/chat'
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
+import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
 /**
  * 用户会话同步队列项
@@ -128,8 +130,9 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
    * 发送用户会话设置表更新通知
    */
   private notifyUserConversationTableUpdate(userIds: string[]) {
-    // TODO: 实现前端UI更新通知
-    console.log('用户会话表更新通知:', userIds)
+    sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.USER_CONVERSATION_UPDATE, {
+      updatedUsers: userIds,
+    })
   }
 
 

@@ -1,12 +1,12 @@
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from 'commonModule/type/ajax/friend'
-import type { IUserInfoRes } from 'commonModule/type/ajax/user'
+import type { IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
 import type { IConversationInfoReq, IConversationInfoRes, IChatHistoryReq, IChatHistoryRes, IRecentChatRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IChatConversationVerRangeReq, IChatConversationVerRangeRes, IRecentChatReq } from 'commonModule/type/ajax/chat'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
 import { DataFriendCommand, DataUserCommand, DataChatCommand, DataGroupCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
-import { IGetGroupListReq, IGetGroupMembersReq, IGroupListRes, IGroupMemberListRes, IGroupJoinRequestListReq, IGroupJoinRequestListRes } from 'commonModule/type/ajax/group'
+import { IGetGroupListReq, IGetGroupsBatchReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGroupListRes, IGroupMemberListRes, IGroupJoinRequestListReq, IGroupJoinRequestListRes } from 'commonModule/type/ajax/group'
 
 export const databaseModule: IDatabaseModule = {
   // 用户相关
@@ -14,6 +14,12 @@ export const databaseModule: IDatabaseModule = {
     getUserInfo: async (): Promise<IUserInfoRes | null> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.USER, {
         command: DataUserCommand.GET_USER_INFO,
+      })
+    },
+    getUsersBasicInfo: async (params: IUserSyncByIdsReq): Promise<IUserSyncByIdsRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.USER, {
+        command: DataUserCommand.GET_USERS_BASIC_INFO,
+        data: params,
       })
     },
   },
@@ -39,6 +45,18 @@ export const databaseModule: IDatabaseModule = {
     getValidByVerRange: async (params: IValidVerRangeReq): Promise<IValidListRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.FRIEND, {
         command: DataFriendCommand.GET_VALID_BY_VER_RANGE,
+        data: params,
+      })
+    },
+    getFriendsByUserIds: async (params: { userIds: string[] }): Promise<IFriendListRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.FRIEND, {
+        command: DataFriendCommand.GET_FRIENDS_BY_USER_IDS,
+        data: params,
+      })
+    },
+    getValidByUserIds: async (params: { userIds: string[] }): Promise<IValidListRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.FRIEND, {
+        command: DataFriendCommand.GET_VALID_BY_USER_IDS,
         data: params,
       })
     },
@@ -82,9 +100,21 @@ export const databaseModule: IDatabaseModule = {
         data: params,
       })
     },
+    getGroupsBatch: async (params: IGetGroupsBatchReq): Promise<IGroupListRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
+        command: DataGroupCommand.GET_GROUPS_BATCH,
+        data: params,
+      })
+    },
     getGroupMembers: async (params: IGetGroupMembersReq): Promise<IGroupMemberListRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
         command: DataGroupCommand.GET_GROUP_MEMBERS,
+        data: params,
+      })
+    },
+    getGroupMembersBatch: async (params: IGetGroupMembersBatchReq): Promise<IGroupMemberListRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
+        command: DataGroupCommand.GET_GROUP_MEMBERS_BATCH,
         data: params,
       })
     },

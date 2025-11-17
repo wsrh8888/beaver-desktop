@@ -3,6 +3,8 @@ import { groupJoinRequestSyncApi } from 'mainModule/api/group'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('datasync-群申请')
@@ -87,6 +89,16 @@ class GroupJoinRequestSync {
       for (const request of requests) {
         await GroupSyncStatusService.upsertSyncStatus('requests', request.groupId, request.version)
       }
+
+      // 发送通知到render进程，告知入群申请数据已同步
+      sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_VALID_UPDATE, {
+        syncedRequests: requests.map((request: any) => ({
+          id: request.id,
+          groupId: request.groupId,
+          applicantUserId: request.applicantUserId,
+          version: request.version,
+        })),
+      })
     }
   }
 }
