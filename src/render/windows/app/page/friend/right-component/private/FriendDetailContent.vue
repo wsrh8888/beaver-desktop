@@ -29,8 +29,8 @@
         <span class="info-value">{{ friendInfo?.userId || '未知' }}</span>
       </div>
       <div class="info-item">
-        <span class="info-label">邮箱：</span>
-        <span class="info-value">{{ friendInfo?.email || '未设置' }}</span>
+        <span class="info-label">来源：</span>
+        <span class="info-value">{{ friendInfo?.source || '' }}</span>
       </div>
     </div>
 
