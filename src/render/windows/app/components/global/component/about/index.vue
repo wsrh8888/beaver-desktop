@@ -20,7 +20,7 @@
 
         <!-- 版本号 -->
         <div class="app-version">
-          版本 {{ electron?.app.version }}
+          版本 {{ currentVersion }}
         </div>
 
         <!-- 检查更新按钮 -->
@@ -34,7 +34,7 @@
 
 <script lang="ts">
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
-import { defineComponent } from 'vue'
+import { computed, defineComponent } from 'vue'
 import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global/index'
 import { useUpdateStore } from 'renderModule/windows/app/pinia/update/index'
 
@@ -63,9 +63,12 @@ export default defineComponent({
       }
     }
 
+    const currentVersion = computed(() => electron?.app.version)
+
     return {
       handleClose,
       handleCheckUpdate,
+      currentVersion
     }
   },
 })
