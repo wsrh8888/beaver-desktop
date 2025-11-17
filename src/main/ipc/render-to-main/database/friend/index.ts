@@ -2,6 +2,7 @@ import { DataFriendCommand } from 'commonModule/type/ipc/database'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
 import { friendBusiness } from 'mainModule/business/friend/friend'
+import { friendVerifyBusiness } from 'mainModule/business/friend/friend-verify'
 import { store } from 'mainModule/store'
 import { ICommonHeader } from 'commonModule/type/ajax/common'
 
@@ -23,10 +24,10 @@ export class FriendHandler {
         return await FriendService.getFriendsByVerRange(header, data)
       case DataFriendCommand.GET_VALID_BY_VER_RANGE:
         return await FriendVerifyService.getValidByVerRange(header, data)
-      case DataFriendCommand.GET_FRIENDS_BY_USER_IDS:
-        return await friendBusiness.getFriendsByUserIds(header, data)
-      case DataFriendCommand.GET_VALID_BY_USER_IDS:
-        return await FriendVerifyService.getValidByUserIds(data.userIds)
+      case DataFriendCommand.GET_FRIENDS_BY_UUID:
+        return await friendBusiness.getFriendsByUuid(header, data)
+      case DataFriendCommand.GET_VALID_BY_UUID:
+        return await friendVerifyBusiness.getValidByUuid(data.uuids)
       default:
         throw new Error('好友数据库命令处理失败')
     }

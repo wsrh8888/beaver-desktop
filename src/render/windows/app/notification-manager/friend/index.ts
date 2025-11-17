@@ -5,6 +5,8 @@ import { NotificationModule } from 'commonModule/type/preload/notification'
 // 导入好友模块的通知处理器
 import friendNotificationManager from './friend'
 import friendVerifyNotificationManager from './friend-verify'
+import Logger from 'renderModule/utils/logger'
+const logger = new Logger('好友模块通知路由器')
 
 /**
  * @description: 好友模块通知路由器
@@ -14,6 +16,11 @@ class FriendNotificationRouter {
    * 处理好友模块的所有通知
    */
   async handleNotification(params: INotificationPayload<NotificationModule.DATABASE_FRIEND>) {
+    logger.info({
+      text: '收到好友模块通知',
+      data: params,
+    })
+
     switch (params.command) {
       case NotificationFriendCommand.FRIEND_UPDATE:
         await friendNotificationManager.processFriendUpdate(params.data)

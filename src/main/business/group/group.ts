@@ -275,7 +275,7 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
           const groupData = {
             groupId: group.groupId,
             title: group.title,
-            avatar: group.fileName || '', // 使用 fileName 作为头像
+            avatar: group.avatar || '', // 使用 fileName 作为头像
             creatorId: group.creatorId,
             notice: '', // 同步API中没有notice字段
             joinType: group.joinType || 0,

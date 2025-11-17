@@ -6,6 +6,8 @@ import { NotificationModule } from 'commonModule/type/preload/notification'
 import groupNotificationManager from './group'
 import groupMemberNotificationManager from './group-member'
 import groupJoinRequestNotificationManager from './group-join-request'
+import Logger from 'renderModule/utils/logger'
+const logger = new Logger('群组模块通知路由器')
 
 /**
  * @description: 群组模块通知路由器
@@ -15,6 +17,10 @@ class GroupNotificationRouter {
    * 处理群组模块的所有通知
    */
   async handleNotification(params: INotificationPayload<NotificationModule.DATABASE_GROUP>) {
+    logger.info({
+      text: '收到群组模块通知',
+      data: params,
+    })
     switch (params.command) {
       case NotificationGroupCommand.GROUP_UPDATE:
         await groupNotificationManager.processGroupUpdate(params.data)

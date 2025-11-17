@@ -1,3 +1,4 @@
+import { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
 import dbManager from 'mainModule/database/db'
 import { friends } from 'mainModule/database/tables/friend/friend'
@@ -126,25 +127,83 @@ export class FriendService {
     return friendDetailsMap
   }
 
-  // 根据用户ID列表批量查询好友信息
-  static async getFriendsByUserIds(userIds: string[]): Promise<IFriendInfo[]> {
-    if (userIds.length === 0) {
+  // 根据好友关系UUID列表批量查询好友信息
+  static async getFriendsByUuid(uuids: string[], currentUserId: string): Promise<IFriendInfo[]> {
+    if (uuids.length === 0) {
       return []
     }
 
-    const friends = await this.db
+    const friendRecords = await this.db
       .select()
-      .from(friendsTable)
-      .where(inArray(friendsTable.userId, userIds as any))
+      .from(friends)
+      .where(inArray(friends.uuid, uuids as any))
       .all()
 
-    return friends.map((friend: any) => ({
-      userId: friend.userId,
-      nickname: friend.nickname,
-      avatar: friend.avatar,
-      conversationId: friend.conversationId,
-      version: friend.version,
-    }))
+    if (friendRecords.length === 0) {
+      return []
+    }
+
+    // 收集需要查询的用户ID
+    const userIds = new Set<string>()
+    friendRecords.forEach((record: any) => {
+      userIds.add(record.sendUserId)
+      userIds.add(record.revUserId)
+    })
+
+    // 查询用户信息
+    const userIdsArray = Array.from(userIds)
+    const conditions = userIdsArray.map(id => eq(users.uuid, id))
+    const userInfos = await this.db
+      .select({
+        uuid: users.uuid,
+        nickName: users.nickName,
+        avatar: users.avatar,
+        abstract: users.abstract,
+        email: users.email,
+      })
+      .from(users)
+      .where(or(...conditions))
+      .all()
+
+    // 构建用户映射
+    const userMap = new Map<string, any>()
+    userInfos.forEach((user: any) => {
+      userMap.set(user.uuid, user)
+    })
+
+    // 生成会话ID的辅助函数
+    const generateConversationId = (userId1: string, userId2: string): string => {
+      const sortedIds = [userId1, userId2].sort()
+      return `private_${sortedIds[0]}_${sortedIds[1]}`
+    }
+
+    // 构建好友列表
+    return friendRecords.map((record: any) => {
+      // 确定好友的用户ID
+      const friendUserId = record.sendUserId === currentUserId
+        ? record.revUserId
+        : record.sendUserId
+
+      // 获取好友用户信息
+      const friendUser = userMap.get(friendUserId)
+
+      // 确定备注信息
+      const notice = record.sendUserId === currentUserId
+        ? record.sendUserNotice || ''
+        : record.revUserNotice || ''
+
+      return {
+        userId: friendUserId,
+        nickname: friendUser?.nickName || '',
+        avatar: friendUser?.avatar || '',
+        abstract: friendUser?.abstract || '',
+        notice,
+        isFriend: true,
+        conversationId: generateConversationId(currentUserId, friendUserId),
+        email: friendUser?.email || '',
+        source: record.source || '',
+      }
+    })
   }
 
   // 根据friendshipIds批量查询本地好友关系
