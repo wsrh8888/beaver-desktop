@@ -3,6 +3,8 @@ import { datasyncGetSyncChatMessagesApi } from 'mainModule/api/datasync'
 import { MessageService } from 'mainModule/database/services/chat/message'
 import { ChatSyncStatusService } from 'mainModule/database/services/chat/sync-status'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
 
@@ -95,6 +97,16 @@ class MessageSync {
 
       // 更新消息同步状态
       await ChatSyncStatusService.upsertMessageSyncStatus(conversationId, serverSeq)
+    }
+
+    // 发送通知到render进程，告知消息数据已同步
+    if (conversationsWithSeq.length > 0) {
+      sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.MESSAGE_UPDATE, {
+        syncedConversations: conversationsWithSeq.map(item => ({
+          conversationId: item.conversationId,
+          syncedSeq: item.serverSeq,
+        })),
+      })
     }
   }
 

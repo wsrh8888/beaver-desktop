@@ -1,4 +1,4 @@
-import { GroupReceiver } from './receiver'
+import { GroupReceiver } from './group'
 import { GroupJoinRequestReceiver } from './group-join-request-receiver'
 import { GroupMemberReceiver } from './group-member-receiver'
 

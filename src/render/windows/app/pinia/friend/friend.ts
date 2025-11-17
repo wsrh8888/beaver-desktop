@@ -129,9 +129,51 @@ export const useFriendStore = defineStore('friendStore', {
             userId: friend.userId,
             nickName: friend.nickname,
             avatar: friend.avatar,
-          })
+          } as any)
         }
       })
+    },
+
+    /**
+     * @description: 根据用户ID列表更新好友数据
+     */
+    async updateFriendsByUserIds(updatedFriends: Array<{ uuid: string, version: number }>) {
+      if (updatedFriends.length === 0) {
+        return
+      }
+
+      try {
+        // 提取用户ID列表
+        const userIds = updatedFriends.map(f => f.uuid)
+
+        // 使用用户ID列表查询获取最新的好友数据
+        const result = await electron.database.friend.getFriendsByUserIds({
+          userIds
+        })
+
+        // 更新friend store
+        for (const friend of result.list) {
+          const index = this.friendList.findIndex(f => f.userId === friend.userId)
+          if (index !== -1) {
+            this.friendList[index] = friend
+          } else {
+            this.friendList.push(friend)
+          }
+
+          // 同步到contact store
+          const contactStore = useContactStore()
+          contactStore.updateContact(friend.userId, {
+            userId: friend.userId,
+            nickName: friend.nickname,
+            avatar: friend.avatar,
+          } as any)
+        }
+
+        return result.list
+      } catch (error) {
+        console.error('根据用户ID列表更新好友信息失败:', error)
+        throw error
+      }
     },
   },
 })

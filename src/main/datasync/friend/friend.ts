@@ -3,6 +3,8 @@ import { datasyncGetSyncFriendsApi } from 'mainModule/api/datasync'
 import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { FriendService } from 'mainModule/database/services/friend/friend'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationFriendCommand } from 'commonModule/type/preload/notification'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
 
@@ -86,6 +88,8 @@ export class FriendSyncModule {
       return
     }
 
+    const syncedFriends: Array<{ uuid: string, version: number }> = []
+
     // 分批获取好友数据（避免一次性获取过多数据）
     const batchSize = 50
     for (let i = 0; i < friendshipIds.length; i += batchSize) {
@@ -110,7 +114,20 @@ export class FriendSyncModule {
         }))
 
         await FriendService.batchCreate(friends)
+
+        // 收集同步的数据用于通知
+        syncedFriends.push(...friends.map(friend => ({
+          uuid: friend.uuid,
+          version: friend.version,
+        })))
       }
+    }
+
+    // 发送通知到render进程，告知好友数据已同步
+    if (syncedFriends.length > 0) {
+      sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_UPDATE, {
+        updatedFriends: syncedFriends,
+      })
     }
   }
 

@@ -85,6 +85,30 @@ export class UserService {
     }
   }
 
+  // 根据用户ID获取用户基本信息（包括版本号）
+  static async getUserBasicInfo(userId: string): Promise<{ userId: string, version: number } | null> {
+    try {
+      const userData = await this.db
+        .select({
+          userId: users.uuid,
+          version: users.version,
+        })
+        .from(users)
+        .where(eq(users.uuid, userId))
+        .limit(1)
+
+      if (userData.length === 0) {
+        return null
+      }
+
+      return userData[0]
+    }
+    catch (error) {
+      console.error('获取用户基本信息失败:', error)
+      return null
+    }
+  }
+
   // 批量获取用户基本信息（用于消息发送者信息）
   static async getUsersBasicInfo(userIds: string[]): Promise<Array<{ userId: string, nickName: string, avatar: string }>> {
     if (userIds.length === 0) {

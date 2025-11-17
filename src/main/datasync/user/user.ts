@@ -4,6 +4,8 @@ import { userSyncApi } from 'mainModule/api/user'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { UserSyncStatusService } from 'mainModule/database/services/user/sync-status'
 import { UserService } from 'mainModule/database/services/user/user'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationUserCommand } from 'commonModule/type/preload/notification'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
@@ -122,6 +124,14 @@ export class UserSyncModule {
         userVersion: user.version,
       }))
       await UserSyncStatusService.batchUpsertUserSyncStatus(statusUpdates)
+
+      // 发送通知到render进程，告知用户数据已同步
+      sendMainNotification('*', NotificationModule.DATABASE_USER, NotificationUserCommand.USER_UPDATE, {
+        updatedUsers: usersModels.map(user => ({
+          userId: user.uuid,
+          version: user.version,
+        })),
+      })
     }
   }
 }

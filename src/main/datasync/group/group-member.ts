@@ -3,6 +3,8 @@ import { groupMemberSyncApi } from 'mainModule/api/group'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupMemberService } from 'mainModule/database/services/group/group-member'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 import Logger from 'mainModule/utils/logger/index'
 
 const logger = new Logger('数据同步-group-member')
@@ -93,6 +95,15 @@ class GroupMemberSync {
       for (const member of members) {
         await GroupSyncStatusService.upsertSyncStatus('members', member.groupId, member.version)
       }
+
+      // 发送通知到render进程，告知群成员数据已同步
+      sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_MEMBER_UPDATE, {
+        updatedMembers: members.map((member: any) => ({
+          groupId: member.groupId,
+          userId: member.userId,
+          version: member.version,
+        })),
+      })
     }
   }
 }

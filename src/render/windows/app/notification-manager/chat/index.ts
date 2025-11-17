@@ -1,0 +1,34 @@
+import type { INotificationPayload } from 'commonModule/type/preload/notification'
+import { NotificationChatCommand } from 'commonModule/type/preload/notification'
+import { NotificationModule } from 'commonModule/type/preload/notification'
+
+// 导入聊天模块的通知处理器
+import conversationNotificationManager from './conversation'
+import messageNotificationManager from './message'
+import userConversationNotificationManager from './user-conversation'
+
+/**
+ * @description: 聊天模块通知路由器
+ */
+class ChatNotificationRouter {
+  /**
+   * 处理聊天模块的所有通知
+   */
+  async handleNotification(params: INotificationPayload<NotificationModule.DATABASE_CHAT>) {
+    switch (params.command) {
+      case NotificationChatCommand.CONVERSATION_UPDATE:
+        await conversationNotificationManager.processConversationUpdate(params.data)
+        break
+      case NotificationChatCommand.MESSAGE_UPDATE:
+        await messageNotificationManager.processMessageUpdate(params.data)
+        break
+      case NotificationChatCommand.USER_CONVERSATION_UPDATE:
+        await userConversationNotificationManager.processUserConversationUpdate(params.data)
+        break
+      default:
+        console.warn('未知的聊天通知命令:', params.command)
+    }
+  }
+}
+
+export const chatNotificationRouter = new ChatNotificationRouter()

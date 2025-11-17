@@ -23,6 +23,10 @@ export class FriendHandler {
         return await FriendService.getFriendsByVerRange(header, data)
       case DataFriendCommand.GET_VALID_BY_VER_RANGE:
         return await FriendVerifyService.getValidByVerRange(header, data)
+      case DataFriendCommand.GET_FRIENDS_BY_USER_IDS:
+        return await friendBusiness.getFriendsByUserIds(header, data)
+      case DataFriendCommand.GET_VALID_BY_USER_IDS:
+        return await FriendVerifyService.getValidByUserIds(data.userIds)
       default:
         throw new Error('好友数据库命令处理失败')
     }

@@ -484,10 +484,26 @@ export interface IGetGroupMembersReq {
   limit?: number
 }
 
+// 批量获取群成员请求
+export interface IGetGroupMembersBatchReq {
+  /**
+   * @description: 群组ID列表
+   */
+  groupIds: string[]
+}
+
 // 获取群组列表请求
 export interface IGetGroupListReq {
   page?: number
   limit?: number
+}
+
+// 批量获取群组请求
+export interface IGetGroupsBatchReq {
+  /**
+   * @description: 群组ID列表
+   */
+  groupIds: string[]
 }
 
 // 群组数据同步

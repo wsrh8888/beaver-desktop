@@ -231,4 +231,28 @@ export class FriendVerifyService {
       return { list: [] }
     }
   }
+
+  // 根据用户ID列表批量查询验证记录
+  static async getValidByUserIds(userIds: string[]): Promise<IValidInfo[]> {
+    if (userIds.length === 0) {
+      return []
+    }
+
+    const validRecords = await this.db
+      .select()
+      .from(friendVerifies)
+      .where(inArray(friendVerifies.userId, userIds as any))
+      .all()
+
+    return validRecords.map((record: any) => ({
+      id: record.id,
+      message: record.message,
+      avatar: record.avatar,
+      flag: record.flag,
+      nickname: record.nickname,
+      userId: record.userId,
+      status: record.status,
+      createdAt: record.createdAt,
+    }))
+  }
 }

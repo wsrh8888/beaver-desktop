@@ -6,13 +6,12 @@ import WsManager from 'mainModule/ws-manager/index'
 import { chatMessageRouter } from './receivers/chat/inedx'
 import { friendMessageRouter } from './receivers/friend/index'
 import { groupMessageRouter } from './receivers/group/index'
-import { UserReceiver } from './receivers/user/receiver'
+import { userMessageRouter } from './receivers/user/index'
 
 /**
  * @description: 消息管理器 - 主进程版本，负责消息的发送、接收和状态管理
  */
 class MessageManager {
-  public userReceiver = new UserReceiver()
   private isDataSyncing = false
   private messageQueue: any[] = []
 
@@ -173,7 +172,7 @@ class MessageManager {
         groupMessageRouter.processGroupMessage(wsMessage.content)
         break
       case 'USER_PROFILE':
-        this.userReceiver.handleUserProfile(wsMessage)
+        userMessageRouter.processUserMessage(wsMessage.content)
         break
       case 'HEARTBEAT':
         break

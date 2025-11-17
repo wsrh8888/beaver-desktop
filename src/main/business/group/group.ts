@@ -1,11 +1,13 @@
 import { BaseBusiness, type QueueItem } from '../base/base'
-import type { IGroupListRes, IGroupJoinRequestListRes, IGetGroupListReq, IGetGroupMembersReq, IGroupMemberListRes, IGroupJoinRequestListReq } from 'commonModule/type/ajax/group'
+import type { IGroupListRes, IGroupJoinRequestListRes, IGetGroupListReq, IGetGroupsBatchReq, IGetGroupMembersReq, IGetGroupMembersBatchReq, IGroupMemberListRes, IGroupJoinRequestListReq } from 'commonModule/type/ajax/group'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { GroupMemberService } from 'mainModule/database/services/group/group-member'
 import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
 import { GroupService } from 'mainModule/database/services/group/group'
 import { UserService } from 'mainModule/database/services/user/user'
 import { groupSyncApi } from 'mainModule/api/group'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 
 /**
  * 群组同步队列项
@@ -78,6 +80,42 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
   }
 
   /**
+   * 批量获取多个群组的详细信息
+   */
+  async getGroupsBatch(_header: ICommonHeader, params: IGetGroupsBatchReq): Promise<IGroupListRes> {
+    const { groupIds } = params
+
+    // 调用服务层批量获取群组信息
+    const groups = await GroupService.getGroupsByUuids(groupIds)
+
+    // 业务逻辑：获取每个群组的成员数量
+    const memberCounts = new Map<string, number>()
+    for (const groupId of groupIds) {
+      const members = await GroupMemberService.getGroupMembers(groupId)
+      memberCounts.set(groupId, members.length)
+    }
+
+    // 业务逻辑：组装返回数据
+    const list = groups.map((group: any) => {
+      const memberCount = memberCounts.get(group.groupId) || 0
+
+      return {
+        groupId: group.groupId,
+        title: group.title || '',
+        avatar: group.avatar || '',
+        memberCount,
+        conversationId: `group_${group.groupId}`, // conversationId格式：group_${groupId}
+        version: group.version || 0,
+      }
+    })
+
+    return {
+      list,
+      count: list.length,
+    }
+  }
+
+  /**
    * 获取群组成员列表
    */
   async getGroupMembers(_header: ICommonHeader, params: IGetGroupMembersReq): Promise<IGroupMemberListRes> {
@@ -96,6 +134,45 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
       const userInfo = userInfoMap.get(member.userId)
       return {
         userId: member.userId,
+        nickName: userInfo?.nickName || '',
+        avatar: userInfo?.avatar || '',
+        role: member.role || 0,
+        status: member.status || 1,
+        joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
+        version: member.version || 0,
+      }
+    })
+
+    return {
+      list,
+      count: list.length,
+    }
+  }
+
+  /**
+   * 批量获取多个群组的成员列表
+   */
+  async getGroupMembersBatch(_header: ICommonHeader, params: IGetGroupMembersBatchReq): Promise<IGroupMemberListRes> {
+    const { groupIds } = params
+
+    // 调用服务层批量获取群组成员（纯数据库查询）
+    const allMembers = []
+    for (const groupId of groupIds) {
+      const members = await GroupMemberService.getGroupMembers(groupId)
+      allMembers.push(...members)
+    }
+
+    // 业务逻辑：获取所有成员的用户信息
+    const userIds = allMembers.map((m: any) => m.userId).filter((id: string) => id)
+    const userInfos = await UserService.getUsersBasicInfo(userIds)
+    const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
+
+    // 业务逻辑：格式化数据
+    const list = allMembers.map((member: any) => {
+      const userInfo = userInfoMap.get(member.userId)
+      return {
+        userId: member.userId,
+        groupId: member.groupId,
         nickName: userInfo?.nickName || '',
         avatar: userInfo?.avatar || '',
         role: member.role || 0,
@@ -211,6 +288,14 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
         }
 
         console.log(`群组数据同步成功: count=${response.result.groups.length}`)
+
+        // 发送通知到render进程，告知群组数据已更新
+        sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_UPDATE, {
+          updatedGroups: response.result.groups.map((group: any) => ({
+            groupId: group.groupId,
+            version: group.version,
+          })),
+        })
       } else {
         console.log('群组数据同步完成: noUpdates=true')
       }
