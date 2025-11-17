@@ -168,13 +168,14 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
   }
 
   /**
-   * 根据用户ID列表批量获取好友信息
+   * 根据好友关系UUID列表批量获取好友信息
    */
-  async getFriendsByUserIds(_header: ICommonHeader, params: { userIds: string[] }): Promise<{ list: IFriendInfo[] }> {
-    const { userIds } = params
+  async getFriendsByUuid(header: ICommonHeader, params: { uuids: string[] }): Promise<{ list: IFriendInfo[] }> {
+    const { uuids } = params
+    const { userId } = header
 
     // 调用服务层批量获取好友信息
-    const friends = await FriendService.getFriendsByUserIds(userIds)
+    const friends = await FriendService.getFriendsByUuid(uuids, userId)
 
     return { list: friends }
   }

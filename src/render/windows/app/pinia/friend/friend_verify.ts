@@ -95,9 +95,9 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
         // 提取用户ID列表
         const userIds = updatedVerifies.map(v => v.uuid)
 
-        // 使用用户ID列表查询获取最新的验证数据
-        const result = await electron.database.friend.getValidByUserIds({
-          userIds
+        // 使用验证记录UUID列表查询获取最新的验证数据
+        const result = await electron.database.friend.getValidByUuid({
+          uuids: userIds
         })
 
         // 更新friend verify store

@@ -387,7 +387,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
    */
   private notifyConversationTableUpdate(conversationIds: string[]) {
     sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.CONVERSATION_UPDATE, {
-      updatedConversations: conversationIds,
+      conversationIds: conversationIds,
     })
   }
 }

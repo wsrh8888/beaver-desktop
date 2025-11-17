@@ -7,6 +7,7 @@ export { messageBusiness } from './chat/message'
 
 // Friend模块
 export { friendBusiness } from './friend/friend'
+export { friendVerifyBusiness } from './friend/friend-verify'
 
 // Group模块
 export { groupBusiness } from './group/group'

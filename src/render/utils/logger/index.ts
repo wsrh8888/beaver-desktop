@@ -20,7 +20,7 @@ class Logger {
 
   sendLog = (level: 'info' | 'warn' | 'error', msg: ILogger) => {
     const conmmonLog = console[level]
-    conmmonLog(level, msg)
+    conmmonLog(level, JSON.stringify(msg))
     window.electron.logger[level](msg, this.logName)
   }
 }

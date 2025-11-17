@@ -223,11 +223,13 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       await this.syncMessagesByVersionRange(conversationId, versionRange.minVersion, versionRange.maxVersion)
     }
 
-    // 发送消息表更新通知
-    const conversationIds = Array.from(conversationMap.keys())
-    sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.MESSAGE_UPDATE, {
-      updatedConversations: conversationIds,
-    })
+    // 发送消息表更新通知 - 为每个更新的会话发送通知
+    for (const [conversationId, versionRange] of conversationMap) {
+      sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.MESSAGE_UPDATE, {
+        conversationId: conversationId,
+        seq: versionRange.maxVersion, // 使用最大版本号作为最新序列号
+      })
+    }
   }
 
   /**

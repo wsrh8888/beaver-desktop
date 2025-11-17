@@ -6,7 +6,8 @@ import { NotificationModule } from 'commonModule/type/preload/notification'
 import conversationNotificationManager from './conversation'
 import messageNotificationManager from './message'
 import userConversationNotificationManager from './user-conversation'
-
+import Logger from 'renderModule/utils/logger'
+const logger = new Logger('聊天模块通知路由器')
 /**
  * @description: 聊天模块通知路由器
  */
@@ -15,6 +16,10 @@ class ChatNotificationRouter {
    * 处理聊天模块的所有通知
    */
   async handleNotification(params: INotificationPayload<NotificationModule.DATABASE_CHAT>) {
+    logger.info({
+      text: '收到聊天模块通知',
+      data: params,
+    })
     switch (params.command) {
       case NotificationChatCommand.CONVERSATION_UPDATE:
         await conversationNotificationManager.processConversationUpdate(params.data)

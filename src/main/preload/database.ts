@@ -48,15 +48,15 @@ export const databaseModule: IDatabaseModule = {
         data: params,
       })
     },
-    getFriendsByUserIds: async (params: { userIds: string[] }): Promise<IFriendListRes> => {
+    getFriendsByUuid: async (params: { uuids: string[] }): Promise<IFriendListRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.FRIEND, {
-        command: DataFriendCommand.GET_FRIENDS_BY_USER_IDS,
+        command: DataFriendCommand.GET_FRIENDS_BY_UUID,
         data: params,
       })
     },
-    getValidByUserIds: async (params: { userIds: string[] }): Promise<IValidListRes> => {
+    getValidByUuid: async (params: { uuids: string[] }): Promise<IValidListRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.FRIEND, {
-        command: DataFriendCommand.GET_VALID_BY_USER_IDS,
+        command: DataFriendCommand.GET_VALID_BY_UUID,
         data: params,
       })
     },

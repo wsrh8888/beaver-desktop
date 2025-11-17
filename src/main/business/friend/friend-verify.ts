@@ -3,6 +3,7 @@ import { getFriendVerifiesListByIdsApi } from 'mainModule/api/friened'
 import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { NotificationModule, NotificationFriendCommand } from 'commonModule/type/preload/notification'
+import { store } from 'mainModule/store'
 
 /**
  * 好友验证同步队列项
@@ -26,6 +27,18 @@ export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
       queueSizeLimit: 25, // 好友验证同步请求适中
       delayMs: 1000,
     })
+  }
+
+  /**
+   * 根据验证记录UUID列表批量查询验证记录
+   */
+  async getValidByUuid(uuids: string[]): Promise<{ list: any[] }> {
+    const userStore = store.get('userInfo')
+    if (!userStore?.userId) {
+      throw new Error('用户未登录')
+    }
+
+    return await FriendVerifyService.getValidByUuid(uuids, userStore.userId)
   }
 
   /**

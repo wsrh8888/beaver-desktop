@@ -518,7 +518,7 @@ export interface IGroupSyncRes {
 export interface IGroupSyncItem {
   groupId: string
   title: string
-  fileName: string
+  avatar: string
   creatorId: string
   joinType: number
   isDeleted: boolean

@@ -232,27 +232,66 @@ export class FriendVerifyService {
     }
   }
 
-  // 根据用户ID列表批量查询验证记录
-  static async getValidByUserIds(userIds: string[]): Promise<IValidInfo[]> {
-    if (userIds.length === 0) {
-      return []
+  // 根据验证记录UUID列表批量查询验证记录
+  static async getValidByUuid(uuids: string[], currentUserId: string): Promise<{ list: IValidInfo[] }> {
+    if (uuids.length === 0) {
+      return { list: [] }
     }
 
     const validRecords = await this.db
       .select()
       .from(friendVerifies)
-      .where(inArray(friendVerifies.userId, userIds as any))
+      .where(inArray(friendVerifies.uuid, uuids as any))
       .all()
 
-    return validRecords.map((record: any) => ({
-      id: record.id,
-      message: record.message,
-      avatar: record.avatar,
-      flag: record.flag,
-      nickname: record.nickname,
-      userId: record.userId,
-      status: record.status,
-      createdAt: record.createdAt,
-    }))
+    if (validRecords.length === 0) {
+      return { list: [] }
+    }
+
+    // 收集需要查询的用户ID
+    const userIds = new Set<string>()
+    validRecords.forEach((record: any) => {
+      userIds.add(record.sendUserId)
+      userIds.add(record.revUserId)
+    })
+
+    // 查询用户信息
+    const userIdsArray = Array.from(userIds)
+    const conditions = userIdsArray.map(id => eq(users.uuid, id))
+    const userInfos = await this.db
+      .select({
+        uuid: users.uuid,
+        nickName: users.nickName,
+        avatar: users.avatar,
+      })
+      .from(users)
+      .where(or(...conditions))
+      .all()
+
+    // 构建用户映射
+    const userMap = new Map<string, any>()
+    userInfos.forEach((user: any) => {
+      userMap.set(user.uuid, user)
+    })
+
+    // 构建验证列表
+    const validList = validRecords.map((record: any) => {
+      // 确定对方用户ID和用户信息
+      const otherUserId = record.sendUserId === currentUserId ? record.revUserId : record.sendUserId
+      const otherUser = userMap.get(otherUserId)
+
+      return {
+        id: record.uuid,
+        userId: otherUserId,
+        nickname: otherUser?.nickName || '',
+        avatar: otherUser?.avatar || '',
+        message: record.message || '',
+        flag: record.sendUserId === currentUserId ? 'send' : 'receive', // 发送或接收标识
+        status: record.sendUserId === currentUserId ? record.sendStatus : record.revStatus,
+        createdAt: new Date(record.createdAt * 1000).toISOString(),
+      }
+    })
+
+    return { list: validList }
   }
 }
