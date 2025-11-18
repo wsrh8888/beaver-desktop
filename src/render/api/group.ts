@@ -1,7 +1,32 @@
-import { baseUrl } from "commonModule/config"
-import { IGroupAnnouncementReq, IGroupCreateReq, IGroupCreateRes, IGroupDeleteReq, IGroupFileDeleteReq, IGroupFileListReq, IGroupFileListRes, IGroupFileUploadReq, IGroupFileUploadRes, IGroupInfoReq, IGroupInfoRes, IGroupInviteReq, IGroupJoinReq, IGroupListRes, IGroupMemberAddReq, IGroupMemberListRes, IGroupMemberRemoveReq, IGroupMuteListReq, IGroupMuteListRes, IGroupMuteReq, IGroupQuitReq, IGroupSettingsReq, ITransferOwnerReq, IUpdateDisplayNameReq, IUpdateGroupInfoReq, IUpdateMemberRoleReq } from "commonModule/type/ajax/group"
-import { ajax } from "commonModule/utils/axios/request"
-
+import type {
+  IGetGroupListReq,
+  IGetGroupMembersReq,
+  IGroupAnnouncementReq,
+  IGroupAnnouncementRes,
+  IGroupCreateReq,
+  IGroupCreateRes,
+  IGroupDeleteReq,
+  IGroupInfoReq,
+  IGroupInfoRes,
+  IGroupInviteReq,
+  IGroupJoinReq,
+  IGroupJoinRequestHandleReq,
+  IGroupJoinRequestHandleRes,
+  IGroupJoinRequestListReq,
+  IGroupJoinRequestListRes,
+  IGroupListRes,
+  IGroupMemberAddReq,
+  IGroupMemberListRes,
+  IGroupMemberRemoveReq,
+  IGroupQuitReq,
+  IGroupSearchRes,
+  ISearchGroupReq,
+  ITransferOwnerReq,
+  IUpdateGroupInfoReq,
+  IUpdateMemberRoleReq,
+} from 'commonModule/type/ajax/group'
+import { baseUrl } from 'commonModule/config'
+import ajax from 'renderModule/utils/request/ajax'
 
 /**
  * @description: 创建群组
@@ -10,7 +35,7 @@ export const createGroupApi = (data: IGroupCreateReq) => {
   return ajax<IGroupCreateRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/create`
+    url: `${baseUrl}/api/group/create`,
   })
 }
 
@@ -18,10 +43,10 @@ export const createGroupApi = (data: IGroupCreateReq) => {
  * @description: 删除群组
  */
 export const deleteGroupApi = (data: IGroupDeleteReq) => {
-  return ajax<{}>({
-    method: 'POST',
+  return ajax<Record<string, never>>({
+    method: 'DELETE',
     data,
-    url: `${baseUrl}/api/group/delete/${data.groupId}`
+    url: `${baseUrl}/api/group/delete/${data.groupId}`,
   })
 }
 
@@ -29,10 +54,10 @@ export const deleteGroupApi = (data: IGroupDeleteReq) => {
  * @description: 移除群成员
  */
 export const removeGroupMemberApi = (data: IGroupMemberRemoveReq) => {
-  return ajax<{}>({
+  return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/memberRemove`
+    url: `${baseUrl}/api/group/memberRemove`,
   })
 }
 
@@ -40,21 +65,21 @@ export const removeGroupMemberApi = (data: IGroupMemberRemoveReq) => {
  * @description: 添加群成员
  */
 export const addGroupMemberApi = (data: IGroupMemberAddReq) => {
-  return ajax<{}>({
+  return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/memberAdd`
+    url: `${baseUrl}/api/group/memberAdd`,
   })
 }
 
 /**
  * @description: 获取群组列表
  */
-export const getGroupListApi = (data) => {
+export const getGroupListApi = (data: IGetGroupListReq) => {
   return ajax<IGroupListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/group_mine`
+    url: `${baseUrl}/api/group/group_mine`,
   })
 }
 
@@ -62,21 +87,21 @@ export const getGroupListApi = (data) => {
  * @description: 更新群组信息
  */
 export const updateGroupInfoApi = (data: IUpdateGroupInfoReq) => {
-  return ajax<{}>({
+  return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/update`
+    url: `${baseUrl}/api/group/update`,
   })
 }
 
 /**
  * @description: 获取群成员列表
  */
-export const getGroupMembersApi = (data: { groupId: string; page?: number; limit?: number }) => {
+export const getGroupMembersApi = (data: IGetGroupMembersReq) => {
   return ajax<IGroupMemberListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/members`
+    url: `${baseUrl}/api/group/members`,
   })
 }
 
@@ -84,10 +109,10 @@ export const getGroupMembersApi = (data: { groupId: string; page?: number; limit
  * @description: 更新群成员角色
  */
 export const updateMemberRoleApi = (data: IUpdateMemberRoleReq) => {
-  return ajax<{}>({
+  return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/member/role`
+    url: `${baseUrl}/api/group/member/role`,
   })
 }
 
@@ -95,21 +120,10 @@ export const updateMemberRoleApi = (data: IUpdateMemberRoleReq) => {
  * @description: 更新群公告
  */
 export const updateGroupAnnouncementApi = (data: IGroupAnnouncementReq) => {
-  return ajax<{}>({
+  return ajax<IGroupAnnouncementRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/announcement`
-  })
-}
-
-/**
- * @description: 邀请成员
- */
-export const inviteGroupMembersApi = (data: IGroupInviteReq) => {
-  return ajax<{}>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/group/invite`
+    url: `${baseUrl}/api/group/announcement`,
   })
 }
 
@@ -117,65 +131,21 @@ export const inviteGroupMembersApi = (data: IGroupInviteReq) => {
  * @description: 申请加入群组
  */
 export const joinGroupApi = (data: IGroupJoinReq) => {
-  return ajax<{}>({
+  return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/join`
+    url: `${baseUrl}/api/group/join`,
   })
 }
 
 /**
- * @description: 更新群组设置
+ * @description: 邀请用户加入群组
  */
-export const updateGroupSettingsApi = (data: IGroupSettingsReq) => {
-  return ajax<{}>({
+export const inviteGroupMemberApi = (data: IGroupInviteReq) => {
+  return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/settings`
-  })
-}
-
-/**
- * @description: 群成员禁言管理
- */
-export const groupMuteApi = (data: IGroupMuteReq) => {
-  return ajax<{}>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/group/mute`
-  })
-}
-
-/**
- * @description: 上传群文件
- */
-export const uploadGroupFileApi = (data: IGroupFileUploadReq) => {
-  return ajax<IGroupFileUploadRes>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/group/file/upload`
-  })
-}
-
-/**
- * @description: 获取群文件列表
- */
-export const getGroupFileListApi = (data: IGroupFileListReq) => {
-  return ajax<IGroupFileListRes>({
-    method: 'GET',
-    data,
-    url: `${baseUrl}/api/group/file/list`
-  })
-}
-
-/**
- * @description: 删除群文件
- */
-export const deleteGroupFileApi = (data: IGroupFileDeleteReq) => {
-  return ajax<{}>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/group/file/delete`
+    url: `${baseUrl}/api/group/invite`,
   })
 }
 
@@ -183,10 +153,10 @@ export const deleteGroupFileApi = (data: IGroupFileDeleteReq) => {
  * @description: 退出群组
  */
 export const quitGroupApi = (data: IGroupQuitReq) => {
-  return ajax<{}>({
+  return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/quit`
+    url: `${baseUrl}/api/group/quit`,
   })
 }
 
@@ -194,32 +164,10 @@ export const quitGroupApi = (data: IGroupQuitReq) => {
  * @description: 转让群主
  */
 export const transferGroupOwnerApi = (data: ITransferOwnerReq) => {
-  return ajax<{}>({
+  return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/transfer`
-  })
-}
-
-/**
- * @description: 获取禁言成员列表
- */
-export const getGroupMuteListApi = (data: IGroupMuteListReq) => {
-  return ajax<IGroupMuteListRes>({
-    method: 'GET',
-    data,
-    url: `${baseUrl}/api/group/mute/list`
-  })
-}
-
-/**
- * @description: 更新群内显示名称
- */
-export const updateDisplayNameApi = (data: IUpdateDisplayNameReq) => {
-  return ajax<{}>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/group/member/displayName`
+    url: `${baseUrl}/api/group/transfer`,
   })
 }
 
@@ -230,7 +178,39 @@ export const getGroupInfoApi = (data: IGroupInfoReq) => {
   return ajax<IGroupInfoRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/groupInfo`
+    url: `${baseUrl}/api/group/groupInfo`,
   })
 }
 
+/**
+ * @description: 搜索群聊
+ */
+export const searchGroupApi = (data: ISearchGroupReq) => {
+  return ajax<IGroupSearchRes>({
+    method: 'GET',
+    params: data,
+    url: `${baseUrl}/api/group/search`,
+  })
+}
+
+/**
+ * @description: 获取用户管理的群组申请列表
+ */
+export const getGroupJoinRequestListApi = (data: IGroupJoinRequestListReq) => {
+  return ajax<IGroupJoinRequestListRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/joinRequest-list`,
+  })
+}
+
+/**
+ * @description: 处理群组申请
+ */
+export const handleGroupJoinRequestApi = (data: IGroupJoinRequestHandleReq) => {
+  return ajax<IGroupJoinRequestHandleRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/joinRequest-handle`,
+  })
+}

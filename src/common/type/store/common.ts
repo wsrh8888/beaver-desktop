@@ -1,7 +1,5 @@
-
-
 export interface IConversationInfo {
-  conversationId: string;
+  conversationId: string
   title: string
-  avatar: string;
+  avatar: string
 }

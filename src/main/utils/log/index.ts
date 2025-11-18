@@ -1,54 +1,71 @@
-import log4js from 'log4js'
-import moment from 'moment'
-import { getRootPath } from 'mainModule/utils/config'
+import type { ILogger } from 'commonModule/type/logger'
 import path from 'node:path'
+import { CacheType } from 'commonModule/type/cache/cache'
+import log4js from 'log4js'
+import { cacheTypeToFilePath } from 'mainModule/cache/config'
+import { getCachePath } from 'mainModule/config'
+import moment from 'moment'
 
-class Logger {
-  private filePath: string
+class Log {
   constructor() {
-    this.filePath = getRootPath()
-    this.init()
   }
 
-  init() {
+  init(userId?: string) {
     const dateStr = moment().format('YYYY-MM-DD')
+
+    // 根据是否有userId决定使用哪个日志路径
+    const logPath = userId
+      ? cacheTypeToFilePath[CacheType.USER_LOGS].replace('[userId]', userId)
+      : cacheTypeToFilePath[CacheType.PUBLIC_LOGS]
+
+    const fullLogPath = path.join(getCachePath(), logPath, `${dateStr}.log`)
+
     log4js.configure({
       appenders: {
-        out: { type: 'stdout' }, // 设置是否在控制台打印日志
-        info: { type: 'file', filename: `${path.resolve(this.filePath)}/logs/${dateStr}.log` },
-        error: { type: 'file', filename: `${path.resolve(this.filePath)}logs/${dateStr}.log` }
+        out: { type: 'stdout' },
+        main: { type: 'file', filename: fullLogPath },
       },
       categories: {
-        default: { appenders: ['out', 'info'], level: 'info' } // 去掉'out'。控制台不打印日志
-      }
+        default: { appenders: ['out', 'main'], level: 'info' },
+      },
     })
   }
-
 
   formatLog(level: string, msg: string) {
     return {
       contents: {
-        level: level,
-        message: `${msg}`
+        level,
+        message: `${msg}`,
       },
-      time: new Date().getTime()
+      time: new Date().getTime(),
     }
   }
+
   transformName(source: string, name = '') {
-   return `[${source}${name ? `-${name}` : ''}] `
-  }
-  info(msg: string, source = 'main', name = '') {
-    return log4js.getLogger('info').info(this.transformName(source, name) + msg)
+    return `[${source}${name ? `-${name}` : ''}] `
   }
 
-  warn(msg: string, source = 'main', name = '') {
-    return log4js.getLogger('warn').warn(this.transformName(source, name) + msg)
+  info(msg: ILogger, moduleName = '', source = 'main') {
+    const message = JSON.stringify(msg)
+    console.log('info', this.transformName(source, moduleName) + message)
+
+    // return log4js.getLogger('info').info(this.transformName(source, moduleName) + message)
   }
 
-  error(msg: string, source = 'main', name = '') {
-    return log4js.getLogger('error').error(this.transformName(source, name) + msg)
+  warn(msg: ILogger, moduleName = '', source = 'main') {
+    const message = JSON.stringify(msg)
+    console.warn('warn', this.transformName(source, moduleName) + message)
+
+    // return log4js.getLogger('warn').warn(this.transformName(source, moduleName) + message)
   }
-  
+
+  error(msg: ILogger, moduleName = '', source = 'main') {
+    const message = JSON.stringify(msg)
+
+    console.error('error', this.transformName(source, moduleName) + message)
+
+    // return log4js.getLogger('error').error(this.transformName(source, moduleName) + message)
+  }
 }
 
-export default new Logger()
+export default new Log()

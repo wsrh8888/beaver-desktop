@@ -2,22 +2,22 @@
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
-    "skipLibCheck": true,
+    "baseUrl": "./",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
-    "noEmit": true,
-    "baseUrl": "./",
     "paths": {
     },
+    "strict": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "skipLibCheck": true
   },
+  "include": ["vite.config.ts", "package.json", "electron"],
   "exclude": [
     "node_modules",
     "logs",
     "dist",
     "dist-electron",
     "release"
-  ],
-  "include": ["vite.config.ts", "package.json", "electron"]
+  ]
 }

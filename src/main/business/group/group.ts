@@ -1,0 +1,310 @@
+import { BaseBusiness, type QueueItem } from '../base/base'
+import type { IGroupListRes, IGroupJoinRequestListRes, IGetGroupListReq, IGetGroupsBatchReq, IGetGroupMembersReq, IGetGroupMembersBatchReq, IGroupMemberListRes, IGroupJoinRequestListReq } from 'commonModule/type/ajax/group'
+import type { ICommonHeader } from 'commonModule/type/ajax/common'
+import { GroupMemberService } from 'mainModule/database/services/group/group-member'
+import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
+import { GroupService } from 'mainModule/database/services/group/group'
+import { UserService } from 'mainModule/database/services/user/user'
+import { groupSyncApi } from 'mainModule/api/group'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
+
+/**
+ * 群组同步队列项
+ */
+interface GroupSyncItem extends QueueItem {
+  userId: string
+  groupId?: string
+  version: number
+}
+
+/**
+ * 群组业务逻辑
+ * 对应 groups 表
+ * 负责群组管理的业务逻辑
+ */
+export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
+  protected readonly businessName = 'GroupBusiness'
+
+  constructor() {
+    super({
+      queueSizeLimit: 25, // 群组同步请求适中
+      delayMs: 1000,
+    })
+  }
+
+  /**
+   * 获取用户加入的群组列表
+   */
+  async getGroupList(header: ICommonHeader, _params: IGetGroupListReq): Promise<IGroupListRes> {
+    const { userId } = header
+
+    // 调用服务层获取用户加入的群组成员记录（纯数据库查询）
+    const userMemberships = await GroupMemberService.getUserMemberships(userId)
+
+    if (userMemberships.length === 0) {
+      return { list: [], count: 0 }
+    }
+
+    // 业务逻辑：提取群组ID列表
+    const groupIds = userMemberships.map((membership: any) => membership.groupId)
+
+    // 业务逻辑：获取这些群组的详细信息
+    const groupDetails = await GroupService.getGroupsByUuids(groupIds)
+
+    // 业务逻辑：获取每个群组的成员数量
+    const memberCounts = new Map<string, number>()
+    for (const groupId of groupIds) {
+      const members = await GroupMemberService.getGroupMembers(groupId)
+      memberCounts.set(groupId, members.length)
+    }
+
+    // 业务逻辑：组装返回数据
+    const list = groupDetails.map((group: any) => {
+      const memberCount = memberCounts.get(group.groupId) || 0
+
+      return {
+        groupId: group.groupId,
+        title: group.title || '',
+        avatar: group.avatar || '',
+        memberCount,
+        conversationId: `group_${group.groupId}`, // conversationId格式：group_${groupId}
+        version: group.version || 0,
+      }
+    })
+
+    return {
+      list,
+      count: list.length,
+    }
+  }
+
+  /**
+   * 批量获取多个群组的详细信息
+   */
+  async getGroupsBatch(_header: ICommonHeader, params: IGetGroupsBatchReq): Promise<IGroupListRes> {
+    const { groupIds } = params
+
+    // 调用服务层批量获取群组信息
+    const groups = await GroupService.getGroupsByUuids(groupIds)
+
+    // 业务逻辑：获取每个群组的成员数量
+    const memberCounts = new Map<string, number>()
+    for (const groupId of groupIds) {
+      const members = await GroupMemberService.getGroupMembers(groupId)
+      memberCounts.set(groupId, members.length)
+    }
+
+    // 业务逻辑：组装返回数据
+    const list = groups.map((group: any) => {
+      const memberCount = memberCounts.get(group.groupId) || 0
+
+      return {
+        groupId: group.groupId,
+        title: group.title || '',
+        avatar: group.avatar || '',
+        memberCount,
+        conversationId: `group_${group.groupId}`, // conversationId格式：group_${groupId}
+        version: group.version || 0,
+      }
+    })
+
+    return {
+      list,
+      count: list.length,
+    }
+  }
+
+  /**
+   * 获取群组成员列表
+   */
+  async getGroupMembers(_header: ICommonHeader, params: IGetGroupMembersReq): Promise<IGroupMemberListRes> {
+    const { groupId } = params
+
+    // 调用服务层获取群组成员（纯数据库查询）
+    const members = await GroupMemberService.getGroupMembers(groupId)
+
+    // 业务逻辑：获取成员的用户信息
+    const userIds = members.map((m: any) => m.userId).filter((id: string) => id)
+    const userInfos = await UserService.getUsersBasicInfo(userIds)
+    const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
+
+    // 业务逻辑：格式化数据
+    const list = members.map((member: any) => {
+      const userInfo = userInfoMap.get(member.userId)
+      return {
+        userId: member.userId,
+        nickName: userInfo?.nickName || '',
+        avatar: userInfo?.avatar || '',
+        role: member.role || 0,
+        status: member.status || 1,
+        joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
+        version: member.version || 0,
+      }
+    })
+
+    return {
+      list,
+      count: list.length,
+    }
+  }
+
+  /**
+   * 批量获取多个群组的成员列表
+   */
+  async getGroupMembersBatch(_header: ICommonHeader, params: IGetGroupMembersBatchReq): Promise<IGroupMemberListRes> {
+    const { groupIds } = params
+
+    // 调用服务层批量获取群组成员（纯数据库查询）
+    const allMembers = []
+    for (const groupId of groupIds) {
+      const members = await GroupMemberService.getGroupMembers(groupId)
+      allMembers.push(...members)
+    }
+
+    // 业务逻辑：获取所有成员的用户信息
+    const userIds = allMembers.map((m: any) => m.userId).filter((id: string) => id)
+    const userInfos = await UserService.getUsersBasicInfo(userIds)
+    const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
+
+    // 业务逻辑：格式化数据
+    const list = allMembers.map((member: any) => {
+      const userInfo = userInfoMap.get(member.userId)
+      return {
+        userId: member.userId,
+        groupId: member.groupId,
+        nickName: userInfo?.nickName || '',
+        avatar: userInfo?.avatar || '',
+        role: member.role || 0,
+        status: member.status || 1,
+        joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
+        version: member.version || 0,
+      }
+    })
+
+    return {
+      list,
+      count: list.length,
+    }
+  }
+
+  /**
+   * 获取用户相关的群组申请列表
+   * 包括：1. 用户申请的群组（我申请别人的群）
+   *       2. 别人申请用户管理的群组（别人申请我管理的群）
+   */
+  async getGroupJoinRequests(header: ICommonHeader, params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes> {
+    const { userId } = header
+    const { page = 1, limit = 20 } = params
+
+    // 调用服务层获取用户管理的群组（纯数据库查询）
+    const userMemberships = await GroupMemberService.getUserMemberships(userId)
+    const managedGroups = userMemberships.filter((m: any) => m.role === 1 || m.role === 2) // 1群主 2管理员
+    const managedGroupIds = managedGroups.map((g: any) => g.groupId)
+
+    // 调用服务层获取用户相关的所有群组申请记录（纯数据库查询）
+    // 包括：用户申请的 + 别人申请用户管理的群组
+    const requests = await GroupJoinRequestService.getUserRelatedJoinRequests(userId, managedGroupIds, { page, limit })
+    const total = await GroupJoinRequestService.getUserRelatedJoinRequestsCount(userId, managedGroupIds)
+
+    // 业务逻辑：获取所有申请者ID
+    const applicantIds = requests.map((r: any) => r.applicantUserId).filter((id: string) => id)
+
+    // 业务逻辑：批量获取申请者用户信息
+    const userInfos = await UserService.getUsersBasicInfo(applicantIds)
+    const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
+
+    // 业务逻辑：转换为API响应格式
+    const list = requests.map((request: any) => {
+      const userInfo = userInfoMap.get(request.applicantUserId)
+
+      return {
+        requestId: request.id as number,
+        groupId: request.groupId as string,
+        applicantId: request.applicantUserId as string,
+        applicantName: userInfo?.nickName || '',
+        applicantAvatar: userInfo?.avatar || '',
+        message: request.message || '',
+        status: request.status || 0,
+        createAt: request.createdAt || 0,
+        version: request.version || 0,
+      }
+    })
+
+    return { list, count: total }
+  }
+
+  /**
+   * 处理群组表的更新通知
+   * 将同步请求加入队列，1秒后批量处理
+   */
+  async handleTableUpdates(userId: string, version: number, groupId?: string) {
+    this.addToQueue({
+      key: userId,
+      data: { userId, groupId, version },
+      timestamp: Date.now(),
+      userId,
+      groupId,
+      version,
+    })
+  }
+
+  /**
+   * 批量处理群组同步请求
+   */
+  protected async processBatchRequests(items: GroupSyncItem[]): Promise<void> {
+    // 构造同步请求参数
+    const groupsToSync = items.map(item => ({
+      groupId: item.groupId || '', // 如果没有groupId，可能需要特殊处理
+      version: item.version,
+    })).filter(item => item.groupId) // 只同步有groupId的项
+
+    if (groupsToSync.length === 0) {
+      console.log('群组同步完成: noValidGroupIds=true')
+      return
+    }
+
+    try {
+      const response = await groupSyncApi({
+        groups: groupsToSync,
+      })
+
+      if (response.result?.groups && response.result.groups.length > 0) {
+        // 更新本地数据库，转换数据类型
+        for (const group of response.result.groups) {
+          const groupData = {
+            groupId: group.groupId,
+            title: group.title,
+            avatar: group.avatar || '', // 使用 fileName 作为头像
+            creatorId: group.creatorId,
+            notice: '', // 同步API中没有notice字段
+            joinType: group.joinType || 0,
+            status: group.isDeleted ? 0 : 1, // 转换为状态：0删除 1正常
+            version: group.version || 0,
+            createdAt: Math.floor(group.createAt / 1000), // 转换为秒级时间戳
+            updatedAt: Math.floor(group.updateAt / 1000),
+          }
+          await GroupService.upsert(groupData)
+        }
+
+        console.log(`群组数据同步成功: count=${response.result.groups.length}`)
+
+        // 发送通知到render进程，告知群组数据已更新
+        sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_UPDATE, {
+          updatedGroups: response.result.groups.map((group: any) => ({
+            groupId: group.groupId,
+            version: group.version,
+          })),
+        })
+      } else {
+        console.log('群组数据同步完成: noUpdates=true')
+      }
+    } catch (error) {
+      console.error('同步群组数据失败:', error)
+    }
+  }
+}
+
+// 导出单例实例
+export const groupBusiness = new GroupBusiness()
+

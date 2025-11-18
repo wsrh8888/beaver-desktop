@@ -1,4 +1,3 @@
-
-export interface Application  {
-    createBrowserWindow(url?: string): void
+export interface Application {
+  createBrowserWindow(): void
 }
