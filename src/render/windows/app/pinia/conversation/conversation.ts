@@ -31,7 +31,7 @@ export const useConversationStore = defineStore('useConversationStore', {
     getConversations(): IConversationInfoRes[] {
       const contactStore = useContactStore()
       const userStore = useUserStore()
-      const currentUserId = userStore.userInfo.userId
+      const currentUserId = userStore.getUserId
       const groupStore = useGroupStore()
 
       return this.conversations.map((conversation: IConversationItem) => {
@@ -100,7 +100,7 @@ export const useConversationStore = defineStore('useConversationStore', {
 
       const contactStore = useContactStore()
       const userStore = useUserStore()
-      const currentUserId = userStore.userInfo.userId
+      const currentUserId = userStore.getUserId
 
       // 如果是私聊，从 contactStore 获取最新的用户信息
       if (conversation.conversationId.startsWith('private_')) {

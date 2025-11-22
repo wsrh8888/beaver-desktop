@@ -85,6 +85,7 @@ export class UserBusiness extends BaseBusiness<UserSyncItem> {
 
         // 发送通知到render进程，告知用户数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_USER, NotificationUserCommand.USER_UPDATE, {
+          source: 'business', // 标识来源：实时业务同步
           updatedUsers: response.result.users.map((user: any) => ({
             userId: user.userId,
             version: user.version,

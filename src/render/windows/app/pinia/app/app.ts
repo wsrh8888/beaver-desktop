@@ -26,6 +26,22 @@ export const useAppStore = defineStore('useAppStore', {
   actions: {
 
     /**
+     * @description: 获取应用生命周期的初始状态
+     */
+    async getInitialLifecycleStatus() {
+      try {
+        const initialStatus = await window.electron.datasync.getAppLifecycleStatus()
+        this.updateLifecycleStatus(initialStatus.status)
+        return initialStatus.status
+      }
+      catch (error) {
+        console.error('获取应用初始状态失败:', error)
+        // 获取失败时保持默认状态
+        return this.lifecycleStatus
+      }
+    },
+
+    /**
      * @description: 启动应用初始化（应用启动时调用）
      */
     async initApp() {
@@ -37,6 +53,9 @@ export const useAppStore = defineStore('useAppStore', {
       const updateStore = useUpdateStore()
 
       try {
+        // 首先获取应用生命周期的初始状态
+        await this.getInitialLifecycleStatus()
+
         // 并行初始化各项数据
         const promises = [
           userStore.init(),

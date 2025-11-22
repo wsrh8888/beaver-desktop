@@ -46,6 +46,10 @@ export enum DataSyncCommand {
    * @description: 手动触发同步
    */
   MANUAL_SYNC = 'datasync:manualSync',
+  /**
+   * @description: 获取应用生命周期初始状态
+   */
+  GET_APP_LIFECYCLE_STATUS = 'datasync:getAppLifecycleStatus',
 }
 
 /**

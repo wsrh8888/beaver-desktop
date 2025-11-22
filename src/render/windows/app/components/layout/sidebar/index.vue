@@ -56,7 +56,7 @@ export default {
     const userStore = useUserStore()
     const updateStore = useUpdateStore()
 
-    const userInfo = computed(() => userStore.userInfo)
+    const userInfo = computed(() => userStore.getUserInfo)
     const showUserInfo = ref(false)
     const avatarRef = ref<HTMLElement | null>(null)
 

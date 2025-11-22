@@ -25,16 +25,8 @@ class DatabaseUserEventManager {
         const fetchedUsers = await contactStore.updateContactsByIds(userIds)
 
         logger.info({
-          text: `用户信息更新成功: count=${fetchedUsers?.length || 0}`,
+          text: `用户信息更新成功: count=${fetchedUsers?.length || 0}, source=${data.source || 'unknown'}`,
           data: { updatedUsers: data.updatedUsers, fetchedUsers },
-        })
-      }
-      // 兼容旧的数据格式
-      else if (data?.userId && data?.updates) {
-        await contactStore.updateContact(data.userId, data.updates)
-        logger.info({
-          text: `用户信息更新成功: userId=${data.userId}`,
-          data: { userId: data.userId, updates: data.updates },
         })
       }
       else {

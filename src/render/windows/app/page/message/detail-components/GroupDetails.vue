@@ -175,7 +175,7 @@ export default defineComponent({
     const showAllMembers = ref(false)
     const showAddMemberModal = ref(false)
     const avatarInputRef = ref<HTMLInputElement | null>(null)
-    const currentUserId = computed(() => userStore.userInfo.userId)
+    const currentUserId = computed(() => userStore.getUserId)
 
     // 获取当前用户在群中的角色
     const currentUserRole = computed(() => {

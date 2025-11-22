@@ -8,8 +8,15 @@ import { userDatasync } from './user'
 
 // 数据同步管理器
 export class DataSyncManager {
+  private isSyncing = false
+
   constructor() {
     // 不需要初始化，直接使用导出的实例
+  }
+
+  // 获取当前同步状态
+  getStatus() {
+    return this.isSyncing ? 'syncing' : 'idle'
   }
 
   // 自动同步
@@ -17,6 +24,7 @@ export class DataSyncManager {
     logger.info({ text: '开始自动同步' }, 'DataSyncManager')
 
     try {
+      this.isSyncing = true
       sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
         status: 'syncing',
         timestamp: Date.now(),
@@ -26,6 +34,7 @@ export class DataSyncManager {
       await friendDatasync.checkAndSync()
       await groupDatasync.checkAndSync()
 
+      this.isSyncing = false
       // 通知前端：同步完成，系统就绪
       sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
         status: 'ready',
@@ -34,6 +43,7 @@ export class DataSyncManager {
       logger.info({ text: '数据同步完成' }, 'DataSyncManager')
     }
     catch {
+      this.isSyncing = false
       sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
         status: 'sync_error',
       })
