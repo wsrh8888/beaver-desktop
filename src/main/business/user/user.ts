@@ -1,8 +1,9 @@
-import { BaseBusiness, type QueueItem } from '../base/base'
-import { UserService } from 'mainModule/database/services/user/user'
-import { userSyncApi } from 'mainModule/api/user'
-import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import type { QueueItem } from '../base/base'
 import { NotificationModule, NotificationUserCommand } from 'commonModule/type/preload/notification'
+import { userSyncApi } from 'mainModule/api/user'
+import { UserService } from 'mainModule/database/services/user/user'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { BaseBusiness } from '../base/base'
 
 /**
  * 用户同步队列项
@@ -89,10 +90,12 @@ export class UserBusiness extends BaseBusiness<UserSyncItem> {
             version: user.version,
           })),
         })
-      } else {
+      }
+      else {
         console.log('用户数据同步完成: noUpdates=true')
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('同步用户数据失败:', error)
     }
   }

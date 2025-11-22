@@ -36,7 +36,7 @@ export default defineComponent({
     }
 
     // 更新图片内容
-    const updateImage = (data: { url?: string; list?: string[]; index?: number }) => {
+    const updateImage = (data: { url?: string, list?: string[], index?: number }) => {
       if (data.url) {
         imageUrl.value = data.url
       }
@@ -62,7 +62,7 @@ export default defineComponent({
         imageList.value = JSON.parse(decodeURIComponent(list))
       }
       if (index) {
-        currentIndex.value = parseInt(index, 10)
+        currentIndex.value = Number.parseInt(index, 10)
       }
     }
 
@@ -158,4 +158,3 @@ export default defineComponent({
   justify-content: center;
 }
 </style>
-

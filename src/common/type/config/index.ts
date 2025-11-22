@@ -11,7 +11,6 @@ export interface DatabaseConfig {
 export interface IConfig {
   baseUrl: string
   wsUrl: string
-  database: DatabaseConfig
 }
 
 export interface IConfigs {

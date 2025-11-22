@@ -137,17 +137,17 @@
 </template>
 
 <script lang="ts">
-import { addGroupMemberApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
 import { hideChatApi, muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
-import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
-import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
-import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
-import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
-import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
+import { addGroupMemberApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { uploadFile } from 'renderModule/utils/upload'
+import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
+import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
@@ -197,7 +197,8 @@ export default defineComponent({
     // 从conversation store获取当前会话的信息
     const currentConversationInfo = computed(() => {
       const currentId = messageViewStore.currentChatId
-      if (!currentId) return null
+      if (!currentId)
+        return null
 
       // 使用现成的getConversationInfo getter
       return conversationStore.getConversationInfo(currentId)
@@ -208,7 +209,8 @@ export default defineComponent({
       if (info) {
         topEnabled.value = info.isTop || false
         muteEnabled.value = info.isMuted || false
-      } else {
+      }
+      else {
         topEnabled.value = false
         muteEnabled.value = false
       }
@@ -259,7 +261,8 @@ export default defineComponent({
           conversationId: messageViewStore.currentChatId!,
           isMuted: muteEnabled.value,
         })
-      } else if (setting === 'top') {
+      }
+      else if (setting === 'top') {
         await pinnedChatApi({
           conversationId: messageViewStore.currentChatId!,
           isPinned: topEnabled.value,
@@ -334,18 +337,18 @@ export default defineComponent({
       if (!groupId.value || userIds.length === 0)
         return
 
-        const result = await addGroupMemberApi({
-          groupId: groupId.value,
-          userIds,
-        })
-        if (result.code === 0) {
-          Message.success('添加成员成功')
-          // 重新加载群成员列表
-          await groupMemberStore.init(groupId.value)
-        }
-        else {
-          Message.error(result.msg)
-        }
+      const result = await addGroupMemberApi({
+        groupId: groupId.value,
+        userIds,
+      })
+      if (result.code === 0) {
+        Message.success('添加成员成功')
+        // 重新加载群成员列表
+        await groupMemberStore.init(groupId.value)
+      }
+      else {
+        Message.error(result.msg)
+      }
     }
 
     // 成员右键菜单

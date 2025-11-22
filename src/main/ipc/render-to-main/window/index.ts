@@ -1,16 +1,16 @@
 import type { IWindowOpenOptions, IWinodwCloseOptions } from 'commonModule/type/preload/window'
-import { NotificationModule } from 'commonModule/type/preload/notification'
 import { WinHook } from 'commonModule/type/ipc/command'
+import { NotificationModule } from 'commonModule/type/preload/notification'
 import { BrowserWindow } from 'electron'
-import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import appApplication from 'mainModule/application/app'
+import audioApplication from 'mainModule/application/audio'
+import imageApplication from 'mainModule/application/image'
 import loginApplication from 'mainModule/application/login'
 import searchApplication from 'mainModule/application/search'
-import verifyApplication from 'mainModule/application/verify'
-import imageApplication from 'mainModule/application/image'
-import videoApplication from 'mainModule/application/video'
-import audioApplication from 'mainModule/application/audio'
 import updateApplication from 'mainModule/application/updater'
+import verifyApplication from 'mainModule/application/verify'
+import videoApplication from 'mainModule/application/video'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
 export class WindowHandler {
@@ -108,12 +108,12 @@ export class WindowHandler {
     if (window && unique) {
       window.show()
       window.focus()
-      
+
       // 如果窗口已存在且有参数，通过notification发送更新命令
       if (Object.keys(params).length > 0) {
         this.updateWindowContent(name, params)
       }
-      
+
       return Promise.resolve()
     }
     else {

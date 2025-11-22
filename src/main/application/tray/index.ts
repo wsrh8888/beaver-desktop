@@ -1,5 +1,5 @@
-import type { BrowserWindow } from 'electron'
 import type { TrayMenuItem } from 'commonModule/type/preload/app'
+import type { BrowserWindow } from 'electron'
 import path from 'node:path'
 import { app, Menu, nativeImage, Tray } from 'electron'
 import { __dirname } from 'mainModule/config'
@@ -37,7 +37,7 @@ class TrayHandler {
     this.unreadCount = count
     app.setBadgeCount(count > 0 ? count : 0)
     this.updateTooltip()
-    
+
     if (count > 0 && !this.isFlashing) {
       this.startFlashing()
     }
@@ -92,7 +92,7 @@ class TrayHandler {
 
     this.createContextMenu()
     this.updateTooltip()
-    
+
     // 更新 popup 内容（如果正在显示）
     if (this.popupWindow && this.popupWindow.isVisible()) {
       this.popupWindow.updateContent({
@@ -125,7 +125,7 @@ class TrayHandler {
   private updateTooltip() {
     if (!this.tray)
       return
-    
+
     // 如果有未读消息（闪烁时），不显示tooltip；否则显示应用名称
     if (this.recentMessages.length > 0) {
       this.tray.setToolTip('')
@@ -145,7 +145,7 @@ class TrayHandler {
     this.isFlashing = true
     this.flashState = false
     const emptyIcon = nativeImage.createEmpty()
-    
+
     this.flashTimer = setInterval(() => {
       if (!this.tray || !this.normalIcon)
         return

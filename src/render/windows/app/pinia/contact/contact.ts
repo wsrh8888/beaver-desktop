@@ -58,7 +58,8 @@ export const useContactStore = defineStore('useContactStore', {
         }
 
         return result.users
-      } catch (error) {
+      }
+      catch (error) {
         console.error('批量更新联系人信息失败:', error)
         throw error
       }

@@ -1,9 +1,10 @@
-import { BaseBusiness, type QueueItem } from '../base/base'
+import type { QueueItem } from '../base/base'
+import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getFriendVerifiesListByIdsApi } from 'mainModule/api/friened'
 import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationFriendCommand } from 'commonModule/type/preload/notification'
 import { store } from 'mainModule/store'
+import { BaseBusiness } from '../base/base'
 
 /**
  * 好友验证同步队列项
@@ -100,7 +101,8 @@ export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
           })),
         })
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('批量同步好友验证数据失败:', error)
     }
   }

@@ -6,7 +6,6 @@ import logger from 'mainModule/utils/log'
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
 export class ConversationReceiver {
-
   /**
    * 处理会话更新通知
    * 只处理 conversations 表的更新

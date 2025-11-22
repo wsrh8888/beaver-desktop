@@ -1,8 +1,9 @@
-import { BaseBusiness, type QueueItem } from '../base/base'
+import type { QueueItem } from '../base/base'
+import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getUserConversationSettingsListByIdsApi } from 'mainModule/api/chat'
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
-import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { BaseBusiness } from '../base/base'
 
 /**
  * 用户会话同步队列项
@@ -28,9 +29,6 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
       delayMs: 1000,
     })
   }
-
-
-
 
   /**
    * 通过版本同步特定用户会话数据
@@ -63,11 +61,12 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
         await ChatUserConversationService.batchCreate([userConversation])
 
         console.log(`用户会话同步成功: userId=${userId}, conversationId=${conversationId}, version=${version}`)
-      } else {
+      }
+      else {
         console.log(`用户会话已同步: userId=${userId}, conversationId=${conversationId}, version=${version}`)
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       console.error('通过版本同步特定用户会话失败:', error)
     }
   }
@@ -103,7 +102,8 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
       if (existing) {
         // 保留最新版本
         existing.version = Math.max(existing.version, item.maxVersion)
-      } else {
+      }
+      else {
         syncMap.set(key, {
           userId: item.userId,
           conversationId: item.conversationId!,
@@ -117,7 +117,7 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
       await this.syncUserConversationByVersion(
         syncItem.userId,
         syncItem.conversationId,
-        syncItem.version
+        syncItem.version,
       )
     }
 
@@ -134,8 +134,6 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
       updatedUsers: userIds,
     })
   }
-
-
 }
 
 // 导出单例实例

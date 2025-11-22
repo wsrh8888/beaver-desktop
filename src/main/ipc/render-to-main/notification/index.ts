@@ -1,8 +1,8 @@
 import type { SystemNotificationOptions, TrayUpdateOptions } from 'commonModule/type/preload/notification'
 import { NotificationCommand } from 'commonModule/type/ipc/command'
+import trayHandler from 'mainModule/application/tray'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import notificationManager from 'mainModule/notification'
-import trayHandler from 'mainModule/application/tray'
 import logger from 'mainModule/utils/log'
 
 export class NotificationHandler {

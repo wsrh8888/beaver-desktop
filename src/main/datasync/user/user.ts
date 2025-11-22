@@ -1,11 +1,11 @@
 import { SyncStatus } from 'commonModule/type/datasync'
+import { NotificationModule, NotificationUserCommand } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncAllUsersApi } from 'mainModule/api/datasync'
 import { userSyncApi } from 'mainModule/api/user'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { UserSyncStatusService } from 'mainModule/database/services/user/sync-status'
 import { UserService } from 'mainModule/database/services/user/user'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationUserCommand } from 'commonModule/type/preload/notification'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 

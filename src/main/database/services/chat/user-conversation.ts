@@ -95,38 +95,29 @@ export class ChatUserConversationService {
     const actualOffset = offset !== undefined ? offset : (page - 1) * limit
 
     // 获取用户的未隐藏会话列表（支持分页）
-    return await this.db.select().from(chatUserConversations)
-      .where(and(
-        eq(chatUserConversations.userId, userId as any),
-        eq(chatUserConversations.isHidden, 0 as any)
-      ))
-      .orderBy(chatUserConversations.updatedAt, 'desc')
-      .limit(limit)
-      .offset(actualOffset)
-      .all()
+    return await this.db.select().from(chatUserConversations).where(and(
+      eq(chatUserConversations.userId, userId as any),
+      eq(chatUserConversations.isHidden, 0 as any),
+    )).orderBy(chatUserConversations.updatedAt, 'desc').limit(limit).offset(actualOffset).all()
   }
 
   // 获取用户所有未隐藏的会话（用于排序和分页）
   static async getAllUserConversations(userId: string) {
-    return await this.db.select().from(chatUserConversations)
-      .where(and(
-        eq(chatUserConversations.userId, userId as any),
-        eq(chatUserConversations.isHidden, 0 as any)
-      ))
-      .orderBy(chatUserConversations.updatedAt, 'desc')
-      .all()
+    return await this.db.select().from(chatUserConversations).where(and(
+      eq(chatUserConversations.userId, userId as any),
+      eq(chatUserConversations.isHidden, 0 as any),
+    )).orderBy(chatUserConversations.updatedAt, 'desc').all()
   }
 
   // 根据会话ID列表批量获取用户的会话设置
   static async getUserConversationsByIds(userId: string, conversationIds: string[]) {
-    if (conversationIds.length === 0) return []
+    if (conversationIds.length === 0)
+      return []
 
-    return await this.db.select().from(chatUserConversations)
-      .where(and(
-        eq(chatUserConversations.userId, userId as any),
-        inArray(chatUserConversations.conversationId, conversationIds as any)
-      ))
-      .all()
+    return await this.db.select().from(chatUserConversations).where(and(
+      eq(chatUserConversations.userId, userId as any),
+      inArray(chatUserConversations.conversationId, conversationIds as any),
+    )).all()
   }
 
   // 根据会话ID获取会话信息

@@ -35,7 +35,7 @@ export default defineComponent({
     }
 
     // 更新音频内容
-    const updateAudio = (data: { url?: string; title?: string }) => {
+    const updateAudio = (data: { url?: string, title?: string }) => {
       if (data.url) {
         audioUrl.value = data.url
       }
@@ -149,4 +149,3 @@ export default defineComponent({
   padding: 24px;
 }
 </style>
-

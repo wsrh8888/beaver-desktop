@@ -11,7 +11,7 @@
       <!-- 播放按钮遮罩层 -->
       <div class="video-overlay" @click="handleVideoPlay">
         <div class="play-button">
-          <img :src="playerSvg" alt="播放" />
+          <img :src="playerSvg" alt="播放">
         </div>
         <!-- 视频时长 -->
         <div v-if="message.msg.videoMsg.duration" class="video-duration">
@@ -23,12 +23,12 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { CacheType } from 'commonModule/type/cache/cache'
 import { previewOnlineFileApi } from 'renderModule/api/file'
+import playerSvg from 'renderModule/assets/image/chat/play.svg'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
-import playerSvg from 'renderModule/assets/image/chat/play.svg'
-import { CacheType } from 'commonModule/type/cache/cache'
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'VideoMessage',
@@ -57,7 +57,8 @@ export default defineComponent({
     // 格式化视频时长（秒 -> mm:ss）
     const formattedDuration = computed(() => {
       const duration = props.message.msg.videoMsg?.duration
-      if (!duration) return ''
+      if (!duration)
+        return ''
       const mins = Math.floor(duration / 60)
       const secs = duration % 60
       return `${mins}:${secs.toString().padStart(2, '0')}`
@@ -84,7 +85,7 @@ export default defineComponent({
           // 缓存获取失败，使用在线URL
         }
         console.error('videoUrl', videoUrl)
-        
+
         // 打开视频播放器窗口
         await electron.window.openWindow('video', {
           unique: true,
@@ -186,4 +187,3 @@ export default defineComponent({
   }
 }
 </style>
-

@@ -1,4 +1,4 @@
-import { NotificationConnectionCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { NotificationAppLifecycleCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { dataSyncManager } from 'mainModule/datasync/manager.ts'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
@@ -35,17 +35,11 @@ class MessageManager {
   private async onWsConnect() {
     logger.info({ text: 'WebSocket 连接成功，开始数据同步' }, 'MessageManager')
 
-    // 通知前端：连接成功
-    sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
-      status: 'connected',
-      timestamp: Date.now(),
-    })
-
     try {
       this.isDataSyncing = true
 
-      // 通知前端：开始同步
-      sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+      // 通知前端：开始同步（跳过中间状态）
+      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
         status: 'syncing',
         timestamp: Date.now(),
       })
@@ -58,7 +52,7 @@ class MessageManager {
       this.processMessageQueue()
 
       // 通知前端：同步完成，系统就绪
-      sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
         status: 'ready',
         timestamp: Date.now(),
         messageCount: this.messageQueue.length,
@@ -70,7 +64,7 @@ class MessageManager {
       this.isDataSyncing = false
 
       // 通知前端：同步失败
-      sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
         status: 'error',
         timestamp: Date.now(),
         error: (error as Error).message,
@@ -86,7 +80,7 @@ class MessageManager {
    */
   private onWsDisconnect() {
     // 通知前端：连接断开
-    sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+    sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
       status: 'disconnected',
       timestamp: Date.now(),
     })
@@ -99,7 +93,7 @@ class MessageManager {
    */
   private onWsError(error: any) {
     // 通知前端：连接错误
-    sendMainNotification('*', NotificationModule.CONNECTION, NotificationConnectionCommand.STATUS_CHANGE, {
+    sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
       status: 'error',
       timestamp: Date.now(),
       error: error?.message || error,

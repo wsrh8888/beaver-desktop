@@ -40,7 +40,6 @@ class ChatSender {
     messageType: MessageType,
     chatType: string,
   ): Promise<string> {
-
     // 生成唯一的客户端消息ID
     const messageId = this.generateMessageId()
 

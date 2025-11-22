@@ -25,7 +25,8 @@ class DatabaseFriendVerifyEventManager {
           text: `好友验证表更新处理完成，根据用户ID列表更新了 ${fetchedVerifies?.length || 0} 个验证记录`,
           data: { updatedVerifies: data.updatedVerifies, fetchedVerifies },
         })
-      } else {
+      }
+      else {
         console.warn('好友验证信息更新缺少必要参数', { data })
       }
     }

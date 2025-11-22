@@ -1,8 +1,8 @@
-
-
 /**
  * 主进程通知渲染进程
  */
+import type { TrayMenuItem } from './app'
+
 export enum NotificationModule {
   /**
    * 群组通知
@@ -25,9 +25,11 @@ export enum NotificationModule {
    */
   DATABASE_CHAT = 'database:chat',
   /**
-   * 连接状态通知
+   * 应用生命周期状态通知
+   * 简化的状态流：连接 -> 同步 -> 就绪
    */
-  CONNECTION = 'connection',
+  APP_LIFECYCLE = 'app:lifecycle',
+
   /**
    * 搜索结果通知到验证窗口
    */
@@ -37,8 +39,6 @@ export enum NotificationModule {
    */
   MEDIA_VIEWER = 'media:viewer',
 }
-
-
 
 export enum NotificationFriendCommand {
   /**
@@ -99,10 +99,13 @@ export enum NotificationChatCommand {
   USER_CONVERSATION_UPDATE = 'userConversationUpdate',
 }
 
-export enum NotificationConnectionCommand {
+export enum NotificationAppLifecycleCommand {
   /**
-   * 连接状态变更 - 统一的状态变更通知
-   * data: { status: 'connected' | 'disconnected' | 'error' | 'syncing' | 'ready' }
+   * 应用生命周期状态变更 - 统一的状态变更通知
+   * data: {
+   *   status: AppLifecycleStatus,
+   *   progress?: number // 0-100，仅在syncing状态使用
+   * }
    */
   STATUS_CHANGE = 'statusChange',
 }
@@ -126,6 +129,17 @@ export enum NotificationMediaViewerCommand {
 }
 
 /**
+ * 应用生命周期状态
+ * 简化的IM状态流：连接 -> 同步 -> 就绪
+ */
+export type AppLifecycleStatus =
+  | 'connecting'    // WebSocket连接中
+  | 'syncing'       // 数据同步中
+  | 'ready'         // 应用就绪（隐藏状态条）
+  | 'disconnected'  // 连接断开
+  | 'error'         // 错误状态
+
+/**
  * 主进程更新通知渲染进程
  */
 export interface NotificationCommandMap {
@@ -134,12 +148,10 @@ export interface NotificationCommandMap {
   [NotificationModule.DATABASE_GROUP]: NotificationGroupCommand
   [NotificationModule.DATABASE_DATASYNC]: NotificationDataSyncCommand
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
-  [NotificationModule.CONNECTION]: NotificationConnectionCommand
+  [NotificationModule.APP_LIFECYCLE]: NotificationAppLifecycleCommand
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
   [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand
 }
-
-import type { TrayMenuItem } from './app'
 
 export interface INotificationPayload<M extends NotificationModule> {
   command: NotificationCommandMap[M]

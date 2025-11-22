@@ -28,7 +28,8 @@ class DatabaseGroupMemberEventManager {
           text: `群成员表更新处理完成，重新加载了 ${updatedGroupIds?.length || 0} 个群组的成员信息`,
           data: { updatedMembers: data.updatedMembers, updatedGroupIds },
         })
-      } else {
+      }
+      else {
         console.warn('群成员信息更新缺少必要参数', { data })
       }
     }

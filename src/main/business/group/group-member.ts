@@ -1,8 +1,9 @@
-import { BaseBusiness, type QueueItem } from '../base/base'
+import type { QueueItem } from '../base/base'
+import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { groupMemberSyncApi } from 'mainModule/api/group'
 import { GroupMemberService } from 'mainModule/database/services/group/group-member'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
+import { BaseBusiness } from '../base/base'
 
 /**
  * 群成员同步队列项
@@ -87,10 +88,12 @@ export class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
             version: member.version,
           })),
         })
-      } else {
+      }
+      else {
         console.log('群成员数据同步完成: noUpdates=true')
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('同步群成员数据失败:', error)
     }
   }

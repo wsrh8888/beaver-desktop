@@ -1,8 +1,9 @@
-import { BaseBusiness, type QueueItem } from '../base/base'
+import type { QueueItem } from '../base/base'
+import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { groupJoinRequestSyncApi } from 'mainModule/api/group'
 import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
+import { BaseBusiness } from '../base/base'
 
 /**
  * 群加入请求同步队列项
@@ -91,10 +92,12 @@ export class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncI
             version: request.version,
           })),
         })
-      } else {
+      }
+      else {
         console.log('群加入请求数据同步完成: noUpdates=true')
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('同步群加入请求数据失败:', error)
     }
   }

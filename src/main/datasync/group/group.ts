@@ -1,10 +1,10 @@
+import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncGroupInfoApi } from 'mainModule/api/datasync'
 import { groupSyncApi } from 'mainModule/api/group'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupService } from 'mainModule/database/services/group/group'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 import logger from 'mainModule/utils/log'
 
 // 群资料同步器（对应服务器group表）

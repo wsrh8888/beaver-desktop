@@ -1,4 +1,4 @@
-import { IGetLatestVersionRes } from 'commonModule/type/ajax/update'
+import type { IGetLatestVersionRes } from 'commonModule/type/ajax/update'
 import { defineStore } from 'pinia'
 import { getLatestVersionApi } from 'renderModule/api/update'
 
@@ -8,7 +8,7 @@ import { getLatestVersionApi } from 'renderModule/api/update'
  */
 export const useUpdateStore = defineStore('update', {
   state: () => ({
-    updateInfo: {} as IGetLatestVersionRes
+    updateInfo: {} as IGetLatestVersionRes,
 
   }),
 
@@ -19,7 +19,8 @@ export const useUpdateStore = defineStore('update', {
     async init() {
       try {
         await this.checkUpdate()
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('初始化更新检查失败:', error)
       }
     },
@@ -30,7 +31,7 @@ export const useUpdateStore = defineStore('update', {
     async checkUpdate() {
       try {
         const response = await getLatestVersionApi({
-          appId: "87c9dc499cc34f32896a4537e66cf65e",
+          appId: '87c9dc499cc34f32896a4537e66cf65e',
           platformId: 1,
           archId: 1,
         })
@@ -38,7 +39,8 @@ export const useUpdateStore = defineStore('update', {
         if (response.code === 0) {
           this.updateInfo = response.result
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('检查更新异常:', error)
       }
     },
@@ -58,7 +60,7 @@ export const useUpdateStore = defineStore('update', {
           md5: this.updateInfo.md5,
           description: this.updateInfo.description,
           releaseNotes: this.updateInfo.releaseNotes,
-        }
+        },
       })
     },
   },

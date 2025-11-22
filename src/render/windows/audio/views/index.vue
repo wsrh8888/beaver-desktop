@@ -4,8 +4,8 @@
       <div class="player-header">
         <div class="audio-icon">
           <svg width="64" height="64" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M12 3V12M12 12C10.3431 12 9 13.3431 9 15C9 16.6569 10.3431 18 12 18C13.6569 18 15 16.6569 15 15C15 13.3431 13.6569 12 12 12Z" stroke="#FF7D45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            <path d="M19 10V14M17 12H21" stroke="#FF7D45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M12 3V12M12 12C10.3431 12 9 13.3431 9 15C9 16.6569 10.3431 18 12 18C13.6569 18 15 16.6569 15 15C15 13.3431 13.6569 12 12 12Z" stroke="#FF7D45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            <path d="M19 10V14M17 12H21" stroke="#FF7D45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
           </svg>
         </div>
         <div v-if="audioTitle" class="audio-title">
@@ -26,7 +26,7 @@
           @ended="handleEnded"
           @error="handleAudioError"
         />
-        
+
         <div class="progress-container">
           <div class="time-display">
             <span>{{ formatTime(currentTime) }}</span>
@@ -43,23 +43,23 @@
         <div class="control-buttons">
           <button class="control-btn" @click="togglePlay">
             <svg v-if="isPlaying" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <rect x="6" y="4" width="4" height="16" fill="currentColor"/>
-              <rect x="14" y="4" width="4" height="16" fill="currentColor"/>
+              <rect x="6" y="4" width="4" height="16" fill="currentColor" />
+              <rect x="14" y="4" width="4" height="16" fill="currentColor" />
             </svg>
             <svg v-else width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M8 5V19L19 12L8 5Z" fill="currentColor"/>
+              <path d="M8 5V19L19 12L8 5Z" fill="currentColor" />
             </svg>
           </button>
           <button class="control-btn" @click="seekBackward">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M11 18V6L4 12L11 18Z" fill="currentColor"/>
-              <path d="M18 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M11 18V6L4 12L11 18Z" fill="currentColor" />
+              <path d="M18 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
           </button>
           <button class="control-btn" @click="seekForward">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M13 18V6L20 12L13 18Z" fill="currentColor"/>
-              <path d="M6 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M13 18V6L20 12L13 18Z" fill="currentColor" />
+              <path d="M6 6V18" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
             </svg>
           </button>
         </div>
@@ -120,7 +120,8 @@ export default defineComponent({
     }
 
     const togglePlay = () => {
-      if (!audioRef.value) return
+      if (!audioRef.value)
+        return
 
       if (isPlaying.value) {
         audioRef.value.pause()
@@ -148,7 +149,8 @@ export default defineComponent({
     }
 
     const handleProgressClick = (e: MouseEvent) => {
-      if (!audioRef.value || !duration.value) return
+      if (!audioRef.value || !duration.value)
+        return
 
       const progressBar = e.currentTarget as HTMLElement
       const rect = progressBar.getBoundingClientRect()
@@ -162,7 +164,8 @@ export default defineComponent({
     }
 
     const formatTime = (seconds: number): string => {
-      if (isNaN(seconds) || !isFinite(seconds)) return '00:00'
+      if (isNaN(seconds) || !isFinite(seconds))
+        return '00:00'
       const mins = Math.floor(seconds / 60)
       const secs = Math.floor(seconds % 60)
       return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
@@ -364,4 +367,3 @@ export default defineComponent({
   font-size: 14px;
 }
 </style>
-

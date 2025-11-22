@@ -22,7 +22,7 @@ export class ConversationReceiver {
 
   constructor() {
     // 会话操作需要快速响应
-   
+
   }
 
   /**

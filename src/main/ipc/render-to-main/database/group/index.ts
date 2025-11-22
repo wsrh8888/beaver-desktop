@@ -1,8 +1,8 @@
+import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataGroupCommand } from 'commonModule/type/ipc/database'
 import { groupBusiness } from 'mainModule/business/group/group'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
-import { ICommonHeader } from 'commonModule/type/ajax/common'
 
 const loggerName = 'group-handler'
 

@@ -1,10 +1,10 @@
 import { SyncStatus } from 'commonModule/type/datasync'
+import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncFriendsApi } from 'mainModule/api/datasync'
 import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationFriendCommand } from 'commonModule/type/preload/notification'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
 

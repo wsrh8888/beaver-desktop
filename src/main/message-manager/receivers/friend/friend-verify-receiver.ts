@@ -5,7 +5,6 @@ import { friendVerifyBusiness } from 'mainModule/business/friend/friend-verify'
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
 export class FriendVerifyReceiver {
-
   /**
    * 处理好友验证表更新通知
    * 只处理 friend_verify 表的更新

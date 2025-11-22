@@ -1,4 +1,3 @@
-
 import { groupBusiness } from 'mainModule/business/group/group'
 
 /**

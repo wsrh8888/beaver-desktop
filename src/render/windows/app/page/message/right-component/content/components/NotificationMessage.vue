@@ -5,9 +5,9 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
 import { useContactStore } from 'renderModule/windows/app/pinia/contact/contact'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'NotificationMessage',
@@ -92,4 +92,3 @@ export default defineComponent({
   line-height: 1.5;
 }
 </style>
-

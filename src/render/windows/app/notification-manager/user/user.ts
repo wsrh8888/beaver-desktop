@@ -1,5 +1,5 @@
-import { useContactStore } from '../../pinia/contact/contact'
 import Logger from 'renderModule/utils/logger'
+import { useContactStore } from '../../pinia/contact/contact'
 
 const logger = new Logger('DatabaseUserEventManager')
 
@@ -36,7 +36,8 @@ class DatabaseUserEventManager {
           text: `用户信息更新成功: userId=${data.userId}`,
           data: { userId: data.userId, updates: data.updates },
         })
-      } else {
+      }
+      else {
         console.warn('用户信息更新缺少必要参数', { data })
       }
     }

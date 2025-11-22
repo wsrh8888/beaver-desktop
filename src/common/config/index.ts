@@ -4,41 +4,14 @@ const config: IConfigs = {
   dev: {
     baseUrl: 'http://127.0.0.1:20800',
     wsUrl: 'http://127.0.0.1:20800/api/ws/ws',
-    database: {
-      path: './data/beaver-dev.db',
-      pragmas: {
-        journal_mode: 'WAL',
-        synchronous: 'NORMAL',
-        busy_timeout: '30000',
-        cache_size: '5000',
-      },
-    },
   },
   test: {
     baseUrl: 'https://server-test.wsrh8888.com/beaver',
     wsUrl: 'https://serverr-test.wsrh8888.com/beaver/api/ws/ws',
-    database: {
-      path: './data/beaver-test.db',
-      pragmas: {
-        journal_mode: 'WAL',
-        synchronous: 'NORMAL',
-        busy_timeout: '30000',
-        cache_size: '10000',
-      },
-    },
   },
   prod: {
     baseUrl: 'https://server.wsrh8888.com/beaver',
     wsUrl: 'https://server.wsrh8888.com/beaver/api/ws/ws',
-    database: {
-      path: './data/beaver-prod.db',
-      pragmas: {
-        journal_mode: 'WAL',
-        synchronous: 'NORMAL',
-        busy_timeout: '30000',
-        cache_size: '10000',
-      },
-    },
   },
 }
 

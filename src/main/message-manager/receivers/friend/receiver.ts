@@ -1,4 +1,3 @@
-
 import { friendBusiness } from 'mainModule/business/friend/friend'
 
 /**
@@ -6,7 +5,6 @@ import { friendBusiness } from 'mainModule/business/friend/friend'
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
 export class FriendReceiver {
-
   /**
    * 处理好友表更新通知
    * 只处理 friends 表的更新

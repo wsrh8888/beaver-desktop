@@ -34,9 +34,9 @@
 
 <script lang="ts">
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
-import { computed, defineComponent } from 'vue'
-import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global/index'
 import { useUpdateStore } from 'renderModule/windows/app/pinia/update/index'
+import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global/index'
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'AboutComponent',
@@ -47,7 +47,6 @@ export default defineComponent({
   setup(props, { emit }) {
     const globalStore = useGlobalStore()
     const updateStore = useUpdateStore()
-
 
     const handleClose = () => {
       globalStore.setComponent(null)
@@ -68,7 +67,7 @@ export default defineComponent({
     return {
       handleClose,
       handleCheckUpdate,
-      currentVersion
+      currentVersion,
     }
   },
 })
@@ -156,4 +155,3 @@ export default defineComponent({
   font-weight: 500;
 }
 </style>
-

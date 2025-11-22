@@ -112,7 +112,8 @@ export const useGroupMemberStore = defineStore('groupMemberStore', {
         }
 
         return groupIds
-      } catch (error) {
+      }
+      catch (error) {
         console.error('批量更新群成员信息失败:', error)
         throw error
       }

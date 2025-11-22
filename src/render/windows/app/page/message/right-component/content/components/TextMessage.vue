@@ -3,8 +3,8 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
 import { emojiMap } from 'renderModule/windows/app/utils/emoji'
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'TextMessage',
@@ -56,4 +56,3 @@ export default defineComponent({
   user-select: none;
 }
 </style>
-

@@ -25,7 +25,8 @@ class DatabaseFriendEventManager {
           text: `好友表更新处理完成，根据用户ID列表更新了 ${fetchedFriends?.length || 0} 个好友`,
           data: { updatedFriends: data.updatedFriends, fetchedFriends },
         })
-      } else {
+      }
+      else {
         console.warn('好友信息更新缺少必要参数', { data })
       }
     }
