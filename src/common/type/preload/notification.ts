@@ -126,8 +126,7 @@ export type AppLifecycleStatus
   = | 'connecting' // WebSocket连接中
     | 'syncing' // 数据同步中
     | 'ready' // 应用就绪（隐藏状态条）
-    | 'disconnected' // 连接断开
-    | 'connect_error' // WebSocket连接错误
+    | 'connect_error' // WebSocket连接错误/断开
     | 'sync_error' // 数据同步错误
 
 /**

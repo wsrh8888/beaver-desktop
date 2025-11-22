@@ -23,10 +23,25 @@ class MessageManager {
     // 设置 WebSocket 事件回调
     WsManager.setEventCallbacks({
       onMessage: this.handleWsMessage.bind(this),
+      onConnecting: this.onWsConnecting.bind(this),
       onConnect: this.onWsConnect.bind(this),
       onDisconnect: this.onWsDisconnect.bind(this),
+      onReconnectFailed: this.onWsReconnectFailed.bind(this),
       onError: this.onWsError.bind(this),
     })
+  }
+
+  /**
+   * @description: WebSocket 开始连接回调
+   */
+  private onWsConnecting() {
+    // 通知前端：开始连接
+    sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
+      status: 'connecting',
+      timestamp: Date.now(),
+    })
+
+    logger.info({ text: 'WebSocket 开始连接' }, 'MessageManager')
   }
 
   /**
@@ -59,16 +74,29 @@ class MessageManager {
   }
 
   /**
-   * @description: WebSocket 断开连接回调
+   * @description: WebSocket 重连失败回调
    */
-  private onWsDisconnect() {
-    // 通知前端：连接断开
+  private onWsReconnectFailed() {
+    // 通知前端：连接失败（合并 disconnected 和 connect_error）
     sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
-      status: 'disconnected',
+      status: 'connect_error',
       timestamp: Date.now(),
     })
 
-    logger.info({ text: 'WebSocket 断开连接' }, 'MessageManager')
+    logger.info({ text: 'WebSocket 重连失败' }, 'MessageManager')
+  }
+
+  /**
+   * @description: WebSocket 断开连接回调
+   */
+  private onWsDisconnect() {
+    // 通知前端：开始重连
+    sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
+      status: 'connecting',
+      timestamp: Date.now(),
+    })
+
+    logger.info({ text: 'WebSocket 断开连接，开始重连' }, 'MessageManager')
   }
 
   /**
@@ -79,8 +107,6 @@ class MessageManager {
     sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
       status: 'connect_error',
       timestamp: Date.now(),
-      error: error?.message || error,
-      reason: 'connection_error',
     })
 
     logger.error({ text: 'WebSocket 错误', data: { error } }, 'MessageManager')

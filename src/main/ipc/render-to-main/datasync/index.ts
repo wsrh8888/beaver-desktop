@@ -37,7 +37,7 @@ export class DataSyncHandler {
         break
       case 'closed':
       default:
-        appStatus = 'disconnected'
+        appStatus = 'connecting'
         break
     }
 

@@ -2,16 +2,16 @@
   <div class="app-status">
     <!-- 消息列表顶部的状态条 -->
     <div v-if="isLoading" class="message-status-bar">
-      <div class="status-icon">
+      <div v-if="showStatusIcon" class="status-icon">
         <div class="mini-spinner" />
       </div>
       <div class="status-content">
         <div class="status-text">
           {{ lifecycleStatusText }}
         </div>
-        <!-- 重试按钮 - 在连接失败或同步失败时显示 -->
+        <!-- 重试按钮 - 在错误状态时显示 -->
         <button
-          v-if="appStore.lifecycleStatus === 'connect_error' || appStore.lifecycleStatus === 'sync_error'"
+          v-if="['connect_error', 'sync_error'].includes(appStore.lifecycleStatus)"
           class="retry-button"
           @click="handleRetry"
         >
@@ -48,15 +48,27 @@ const lifecycleStatusText = computed(() => {
     case 'connecting': return '连接中'
     case 'syncing': return '同步中'
     case 'ready': return '就绪'
-    case 'disconnected': return '未连接'
-    case 'connect_error': return '连接服务器失败'
+    case 'connect_error': return '连接失败'
     case 'sync_error': return '数据同步失败'
     default: return '未知状态'
   }
 })
 
+// 状态条显示 loading 图标的状态
+const showStatusIcon = computed(() => {
+  const currentStatus = appStore.lifecycleStatus
+
+  return [
+    'connecting', // 连接中显示loading
+    'syncing', // 同步中显示loading
+  ].includes(currentStatus)
+})
+
+// 聊天内容区域显示 loading 的状态（除了 ready 都显示）
 const isLoading = computed(() => {
-  return ['connecting', 'syncing', 'connect_error', 'sync_error'].includes(appStore.lifecycleStatus)
+  const currentStatus = appStore.lifecycleStatus
+
+  return currentStatus !== 'ready'
 })
 
 // 重试操作
@@ -65,7 +77,7 @@ const handleRetry = async () => {
     const currentStatus = appStore.lifecycleStatus
 
     if (currentStatus === 'connect_error') {
-      // 连接错误：重新连接WebSocket
+      // 连接错误或断开连接：重新连接WebSocket
       appStore.updateLifecycleStatus('connecting')
       await window.electron.websocket.reconnect()
       console.log('重新连接WebSocket')
@@ -73,15 +85,11 @@ const handleRetry = async () => {
     else if (currentStatus === 'sync_error') {
       // 同步错误：重新执行数据同步
       appStore.updateLifecycleStatus('syncing')
-      const result = await window.electron.datasync.manualSync()
-      if (result) {
-        console.log('手动同步成功')
-      }
+      await window.electron.datasync.manualSync()
     }
   }
   catch (error) {
     console.error('重试失败:', error)
-    // 错误状态会通过通知自动更新
   }
 }
 </script>
