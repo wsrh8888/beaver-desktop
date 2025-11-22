@@ -1,12 +1,22 @@
 <template>
   <div class="app-status">
     <!-- 消息列表顶部的状态条 -->
-    <div v-if="appStore.isLoading" class="message-status-bar">
+    <div v-if="isLoading" class="message-status-bar">
       <div class="status-icon">
         <div class="mini-spinner" />
       </div>
-      <div class="status-text">
-        {{ appStore.lifecycleStatusText }}
+      <div class="status-content">
+        <div class="status-text">
+          {{ lifecycleStatusText }}
+        </div>
+        <!-- 重试按钮 - 在连接失败或同步失败时显示 -->
+        <button
+          v-if="appStore.lifecycleStatus === 'connect_error' || appStore.lifecycleStatus === 'sync_error'"
+          class="retry-button"
+          @click="handleRetry"
+        >
+          {{ appStore.lifecycleStatus === 'connect_error' ? '重连' : '重试' }}
+        </button>
       </div>
     </div>
 
@@ -21,27 +31,59 @@
         <div class="loading-text">
           正在同步数据...
         </div>
-        <!-- 同步进度 -->
-        <div v-if="appStore.syncProgress > 0" class="sync-progress">
-          <div class="progress-bar">
-            <div
-              class="progress-fill"
-              :style="{ width: `${appStore.syncProgress}%` }"
-            />
-          </div>
-          <div class="progress-text">
-            {{ appStore.syncProgress }}%
-          </div>
-        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useAppStore } from '../../../pinia/app/app'
 
 const appStore = useAppStore()
+
+// 组件内部的状态转换逻辑
+const lifecycleStatusText = computed(() => {
+  switch (appStore.lifecycleStatus) {
+    case 'connecting': return '连接中'
+    case 'syncing': return '同步中'
+    case 'ready': return '就绪'
+    case 'disconnected': return '未连接'
+    case 'connect_error': return '连接服务器失败'
+    case 'sync_error': return '数据同步失败'
+    default: return '未知状态'
+  }
+})
+
+const isLoading = computed(() => {
+  return ['connecting', 'syncing', 'connect_error', 'sync_error'].includes(appStore.lifecycleStatus)
+})
+
+// 重试操作
+const handleRetry = async () => {
+  try {
+    const currentStatus = appStore.lifecycleStatus
+
+    if (currentStatus === 'connect_error') {
+      // 连接错误：重新连接WebSocket
+      appStore.updateLifecycleStatus('connecting')
+      await window.electron.websocket.reconnect()
+      console.log('重新连接WebSocket')
+    }
+    else if (currentStatus === 'sync_error') {
+      // 同步错误：重新执行数据同步
+      appStore.updateLifecycleStatus('syncing')
+      const result = await window.electron.datasync.manualSync()
+      if (result) {
+        console.log('手动同步成功')
+      }
+    }
+  }
+  catch (error) {
+    console.error('重试失败:', error)
+    // 错误状态会通过通知自动更新
+  }
+}
 </script>
 
 <style scoped>
@@ -86,6 +128,32 @@ const appStore = useAppStore()
 .status-text {
   font-weight: 500;
   white-space: nowrap;
+}
+
+.status-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.retry-button {
+  padding: 4px 8px;
+  background: #FF7D45;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s ease;
+
+  &:hover {
+    background: #E86835;
+  }
+
+  &:active {
+    background: #D55A2B;
+  }
 }
 
 /* 聊天内容区域的loading状态 */

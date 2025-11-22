@@ -1,6 +1,5 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataChatCommand } from 'commonModule/type/ipc/database'
-import { IConversationItem } from 'commonModule/type/pinia/conversation'
 import { conversationBusiness } from 'mainModule/business/chat/conversation'
 import { messageBusiness } from 'mainModule/business/chat/message'
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'

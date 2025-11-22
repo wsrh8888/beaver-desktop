@@ -17,10 +17,6 @@ export enum NotificationModule {
    */
   DATABASE_USER = 'database:user',
   /**
-   * 数据同步状态通知
-   */
-  DATABASE_DATASYNC = 'database:datasync',
-  /**
    * 聊天消息通知
    */
   DATABASE_CHAT = 'database:chat',
@@ -74,12 +70,6 @@ export enum NotificationUserCommand {
   USER_UPDATE = 'userUpdate',
 }
 
-export enum NotificationDataSyncCommand {
-  DATABASE_DATASYNC_START = 'database:datasync:start',
-  DATABASE_DATASYNC_COMPLETE = 'database:datasync:complete',
-  DATABASE_DATASYNC_ERROR = 'database:datasync:error',
-}
-
 export enum NotificationSearchToVerifyCommand {
   SEARCH_TO_VERIFY = 'searchToVerify',
 }
@@ -130,14 +120,15 @@ export enum NotificationMediaViewerCommand {
 
 /**
  * 应用生命周期状态
- * 简化的IM状态流：连接 -> 同步 -> 就绪
+ * 细化的IM状态流：连接 -> 同步 -> 就绪，支持不同类型的错误
  */
-export type AppLifecycleStatus =
-  | 'connecting'    // WebSocket连接中
-  | 'syncing'       // 数据同步中
-  | 'ready'         // 应用就绪（隐藏状态条）
-  | 'disconnected'  // 连接断开
-  | 'error'         // 错误状态
+export type AppLifecycleStatus
+  = | 'connecting' // WebSocket连接中
+    | 'syncing' // 数据同步中
+    | 'ready' // 应用就绪（隐藏状态条）
+    | 'disconnected' // 连接断开
+    | 'connect_error' // WebSocket连接错误
+    | 'sync_error' // 数据同步错误
 
 /**
  * 主进程更新通知渲染进程
@@ -146,7 +137,6 @@ export interface NotificationCommandMap {
   [NotificationModule.DATABASE_FRIEND]: NotificationFriendCommand
   [NotificationModule.DATABASE_USER]: NotificationUserCommand
   [NotificationModule.DATABASE_GROUP]: NotificationGroupCommand
-  [NotificationModule.DATABASE_DATASYNC]: NotificationDataSyncCommand
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
   [NotificationModule.APP_LIFECYCLE]: NotificationAppLifecycleCommand
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand

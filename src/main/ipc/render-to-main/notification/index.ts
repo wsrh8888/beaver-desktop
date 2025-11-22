@@ -1,4 +1,4 @@
-import type { SystemNotificationOptions, TrayUpdateOptions } from 'commonModule/type/preload/notification'
+import type { SystemNotificationOptions } from 'commonModule/type/preload/notification'
 import { NotificationCommand } from 'commonModule/type/ipc/command'
 import trayHandler from 'mainModule/application/tray'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'

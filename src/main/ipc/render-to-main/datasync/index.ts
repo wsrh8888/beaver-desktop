@@ -1,16 +1,15 @@
 import { DataSyncCommand } from 'commonModule/type/ipc/command'
 import { dataSyncManager } from 'mainModule/datasync/manager'
-// import logger from 'mainModule/utils/log'
 
-// const loggerName = 'datasync-handler'
-// 数据同步处理器 - 简化版
+// 数据同步处理器
 export class DataSyncHandler {
   // 处理IPC命令
-  static async handle(command: DataSyncCommand, _data: any = {}): Promise<any> {
+  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataSyncCommand, _data: any = {}): Promise<any> {
+    console.log('11111111111111111111111111', command, _data)
     switch (command) {
-      case DataSyncCommand.INITIALIZE:
+      case DataSyncCommand.MANUAL_SYNC:
         await dataSyncManager.autoSync()
-        break
+        return { success: true }
       default:
         return null
     }

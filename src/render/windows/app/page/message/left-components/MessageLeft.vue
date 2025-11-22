@@ -11,8 +11,10 @@
     </div>
 
     <div class="chat-list">
-      <div v-for="chat in chatList" :key="chat.conversationId" class="chat-item"
-        :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)">
+      <div
+        v-for="chat in chatList" :key="chat.conversationId" class="chat-item"
+        :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)"
+      >
         <div class="chat-avatar">
           <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickname" />
         </div>

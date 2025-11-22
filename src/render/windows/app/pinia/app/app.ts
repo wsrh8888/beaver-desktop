@@ -17,34 +17,10 @@ export const useAppStore = defineStore('useAppStore', {
      * @description: 应用生命周期状态
      */
     lifecycleStatus: 'connecting' as AppLifecycleStatus,
-
-    /**
-     * @description: 同步进度 (0-100)
-     */
-    syncProgress: 0 as number,
   }),
 
   getters: {
-    /**
-     * @description: 生命周期状态文本
-     */
-    lifecycleStatusText: (state) => {
-      switch (state.lifecycleStatus) {
-        case 'connecting': return '连接中'
-        case 'syncing': return '同步中'
-        case 'ready': return '就绪'
-        case 'disconnected': return '未连接'
-        case 'error': return '连接错误'
-        default: return '未知状态'
-      }
-    },
-
-    /**
-     * @description: 是否正在加载中（显示状态条）
-     */
-    isLoading: (state) => {
-      return ['connecting', 'syncing'].includes(state.lifecycleStatus)
-    },
+    // 全局store只保留核心状态，UI相关的转换逻辑移到组件内部
   },
 
   actions: {
@@ -81,13 +57,8 @@ export const useAppStore = defineStore('useAppStore', {
     /**
      * @description: 更新应用生命周期状态
      */
-    updateLifecycleStatus(status: AppLifecycleStatus, progress?: number) {
+    updateLifecycleStatus(status: AppLifecycleStatus) {
       this.lifecycleStatus = status
-      if (progress !== undefined) {
-        this.syncProgress = progress
-      }
-
-      console.log(`应用状态: ${this.lifecycleStatusText}${progress !== undefined ? ` (${progress}%)` : ''}`)
     },
 
   },

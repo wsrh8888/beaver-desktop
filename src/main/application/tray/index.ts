@@ -209,7 +209,13 @@ class TrayHandler {
       return
 
     const menuItems: Electron.MenuItemConstructorOptions[] = [
-      { label: '打开海狸', click: () => { this.win!.show(); this.win!.focus() } },
+      {
+        label: '打开海狸',
+        click: () => {
+          this.win!.show()
+          this.win!.focus()
+        },
+      },
       { label: '退出海狸', click: () => app.quit() },
     ]
 

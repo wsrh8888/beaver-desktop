@@ -137,10 +137,11 @@
 </template>
 
 <script lang="ts">
-import { hideChatApi, muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
+import { muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
 import { addGroupMemberApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
+import MessageBox from 'renderModule/components/ui/messagebox'
 import { uploadFile } from 'renderModule/utils/upload'
 import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
@@ -356,9 +357,13 @@ export default defineComponent({
       // 如果是群主或管理员，可以删除成员
       if (canManageMembers.value && currentUserId.value !== member.userId) {
         // 显示删除确认
-        if (confirm(`确定要移除成员 ${member.nickName || member.userId} 吗？`)) {
-          handleRemoveMember(member.userId)
-        }
+        MessageBox.confirm(`确定要移除成员 ${member.nickName || member.userId} 吗？`, '确认操作')
+          .then(() => {
+            handleRemoveMember(member.userId)
+          })
+          .catch(() => {
+            // 用户取消操作
+          })
       }
     }
 
@@ -387,9 +392,7 @@ export default defineComponent({
       if (!groupId.value)
         return
 
-      if (!confirm('确定要退出该群聊吗？')) {
-        return
-      }
+      await MessageBox.confirm('确定要退出该群聊吗？', '确认操作')
 
       try {
         await quitGroupApi({

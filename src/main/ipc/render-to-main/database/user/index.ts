@@ -1,4 +1,3 @@
-import type { IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
 import { DataUserCommand } from 'commonModule/type/ipc/database'
 import { UserService } from 'mainModule/database/services/user/user'
 import logger from 'mainModule/utils/log'

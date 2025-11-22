@@ -39,6 +39,16 @@ export enum LoggerCommand {
 }
 
 /**
+ * @description: 数据同步相关的Command
+ */
+export enum DataSyncCommand {
+  /**
+   * @description: 手动触发同步
+   */
+  MANUAL_SYNC = 'datasync:manualSync',
+}
+
+/**
  * @description: 存储相关的Command
  */
 export enum StorageCommand {
@@ -154,24 +164,6 @@ export enum AuthCommand {
 }
 
 /**
- * @description: 数据同步相关的Command - 简化版
- */
-export enum DataSyncCommand {
-  /**
-   * @description: 初始化数据同步
-   */
-  INITIALIZE = 'datasync:initialize',
-  /**
-   * @description: 手动触发同步
-   */
-  MANUAL_SYNC = 'datasync:manualSync',
-  /**
-   * @description: 获取同步状态
-   */
-  GET_SYNC_STATUS = 'datasync:getSyncStatus',
-}
-
-/**
  * @description: WebSocket相关的Command
  */
 export enum WebSocketCommand {
@@ -183,6 +175,10 @@ export enum WebSocketCommand {
    * @description: 断开WebSocket连接
    */
   DISCONNECT = 'websocket:disconnect',
+  /**
+   * @description: 重新连接WebSocket
+   */
+  RECONNECT = 'websocket:reconnect',
   /**
    * @description: 发送消息
    */

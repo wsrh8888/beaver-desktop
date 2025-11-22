@@ -3,6 +3,7 @@ import { appModule } from './app'
 import { authModule } from './auth'
 import { cacheModule } from './cache'
 import { databaseModule } from './database'
+import { datasyncModule } from './datasync'
 import { loggerModule } from './logger'
 import { notificationModule } from './notification'
 import { storageModule } from './storage'
@@ -20,6 +21,7 @@ const electronAPI: ElectronAPP = {
   update: updateModule,
   cache: cacheModule,
   websocket: websocketModule,
+  datasync: datasyncModule,
   database: databaseModule,
   notification: notificationModule,
   auth: authModule,

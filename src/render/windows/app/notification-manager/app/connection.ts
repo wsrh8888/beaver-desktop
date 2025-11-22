@@ -1,5 +1,5 @@
-import { useAppStore } from '../../pinia/app/app'
 import Logger from 'renderModule/utils/logger'
+import { useAppStore } from '../../pinia/app/app'
 
 const logger = new Logger('应用生命周期通知处理器')
 
@@ -13,11 +13,11 @@ class AppLifecycleNotificationManager {
   async handleLifecycleStatusChange(data: any) {
     logger.info({
       text: '处理应用生命周期状态变更',
-      data: data,
+      data,
     })
 
     const appStore = useAppStore()
-    appStore.updateLifecycleStatus(data.status, data.progress)
+    appStore.updateLifecycleStatus(data.status)
   }
 }
 

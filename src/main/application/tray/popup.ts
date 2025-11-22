@@ -162,7 +162,7 @@ export class PopupWindow {
     this.window.webContents.on('console-message', (_event, _level, message) => {
       if (message.startsWith('TRAY_CLICK:')) {
         const index = Number.parseInt(message.split(':')[1])
-        if (!isNaN(index) && index >= 0 && index < options.messages.length) {
+        if (!Number.isNaN(index) && index >= 0 && index < options.messages.length) {
           this.hide()
           options.onMessageClick?.(index)
         }

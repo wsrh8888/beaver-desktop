@@ -39,10 +39,6 @@ class MessageManager {
       this.isDataSyncing = true
 
       // 通知前端：开始同步（跳过中间状态）
-      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
-        status: 'syncing',
-        timestamp: Date.now(),
-      })
 
       // 开始数据同步，并等待同步完成
       await dataSyncManager.autoSync()
@@ -51,25 +47,12 @@ class MessageManager {
       // 处理队列中的所有消息
       this.processMessageQueue()
 
-      // 通知前端：同步完成，系统就绪
-      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
-        status: 'ready',
-        timestamp: Date.now(),
-        messageCount: this.messageQueue.length,
-      })
-
       logger.info({ text: 'WebSocket 连接成功，消息管理器已准备就绪' }, 'MessageManager')
     }
     catch (error) {
       this.isDataSyncing = false
 
       // 通知前端：同步失败
-      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
-        status: 'error',
-        timestamp: Date.now(),
-        error: (error as Error).message,
-        reason: 'sync_failed',
-      })
 
       logger.error({ text: '数据同步失败', data: { error: (error as any)?.message } }, 'MessageManager')
     }
@@ -94,7 +77,7 @@ class MessageManager {
   private onWsError(error: any) {
     // 通知前端：连接错误
     sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
-      status: 'error',
+      status: 'connect_error',
       timestamp: Date.now(),
       error: error?.message || error,
       reason: 'connection_error',

@@ -22,7 +22,7 @@ export function formatConversationTime(timestamp: number | string | null | undef
 
   // 转换为数字时间戳
   let ts = typeof timestamp === 'string' ? Number.parseInt(timestamp, 10) : timestamp
-  if (isNaN(ts) || ts <= 0) {
+  if (Number.isNaN(ts) || ts <= 0) {
     return ''
   }
 
@@ -36,7 +36,7 @@ export function formatConversationTime(timestamp: number | string | null | undef
   const now = new Date()
 
   // 检查日期是否有效
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return ''
   }
 

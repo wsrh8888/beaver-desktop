@@ -1,5 +1,4 @@
 import { conversationBusiness } from 'mainModule/business/chat/conversation'
-import logger from 'mainModule/utils/log'
 
 /**
  * @description: 会话接收器 - 处理conversations表的操作

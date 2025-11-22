@@ -1,4 +1,4 @@
-import { NotificationDataSyncCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { NotificationAppLifecycleCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 import { chatDatasync } from './chat'
@@ -15,26 +15,28 @@ export class DataSyncManager {
   // 自动同步
   async autoSync() {
     logger.info({ text: '开始自动同步' }, 'DataSyncManager')
-    // 通知渲染进程：同步开始
-    sendMainNotification('*', NotificationModule.DATABASE_DATASYNC, NotificationDataSyncCommand.DATABASE_DATASYNC_START)
 
     try {
+      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
+        status: 'syncing',
+        timestamp: Date.now(),
+      })
       await userDatasync.checkAndSync()
       await chatDatasync.checkAndSync()
       await friendDatasync.checkAndSync()
       await groupDatasync.checkAndSync()
 
-      // 通知渲染进程：同步完成
-      sendMainNotification('*', NotificationModule.DATABASE_DATASYNC, NotificationDataSyncCommand.DATABASE_DATASYNC_COMPLETE)
-    }
-    catch (error) {
-      // 通知渲染进程：同步失败
-      sendMainNotification('*', NotificationModule.DATABASE_DATASYNC, NotificationDataSyncCommand.DATABASE_DATASYNC_ERROR, {
-        message: '数据同步失败',
-        error: (error as any)?.message,
+      // 通知前端：同步完成，系统就绪
+      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
+        status: 'ready',
       })
 
-      throw error
+      logger.info({ text: '数据同步完成' }, 'DataSyncManager')
+    }
+    catch {
+      sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
+        status: 'sync_error',
+      })
     }
   }
 }

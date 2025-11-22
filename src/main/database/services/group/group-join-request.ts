@@ -231,9 +231,6 @@ export class GroupJoinRequestService {
       .offset(offset)
       .all()
 
-    // 获取所有申请者ID
-    const applicantIds = requests.map((r: IDBGroupJoinRequest) => r.applicantUserId as string).filter((id: string) => id)
-
     // 批量获取申请者用户信息（业务逻辑，已移至业务层）
     // const userInfos = await UserService.getUsersBasicInfo(applicantIds)
     // const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
@@ -301,9 +298,6 @@ export class GroupJoinRequestService {
       .limit(limit)
       .offset(offset)
       .all()
-
-    // 获取所有申请者ID
-    const applicantIds = requests.map((r: IDBGroupJoinRequest) => r.applicantUserId as string).filter((id: string) => id)
 
     // 批量获取申请者用户信息（业务逻辑，已移至业务层）
     // const userInfos = await UserService.getUsersBasicInfo(applicantIds)

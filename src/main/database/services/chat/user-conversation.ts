@@ -1,9 +1,6 @@
-import type { IRecentChatReq } from 'commonModule/type/ajax/chat'
 import { and, eq, gte, lte } from 'drizzle-orm'
 import { chatUserConversations } from 'mainModule/database/tables/chat/user-conversation'
 import dbManager from '../../db'
-import { FriendService } from '../friend/friend'
-import { ChatConversationService } from './conversation'
 
 // 用户会话服务
 export class ChatUserConversationService {
