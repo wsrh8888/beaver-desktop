@@ -12,7 +12,7 @@ export interface TrayMenuItem {
    * @description: 未读数量
    */
   count?: number
-  
+
   /**
    * @description: 类型，这个通知是什么类型的通知， 是聊天消息通知，还是系统消息通知，还是其他通知
    */

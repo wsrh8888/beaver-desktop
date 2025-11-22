@@ -1,12 +1,12 @@
-import type { INotificationPayload } from 'commonModule/type/preload/notification'
+import type { INotificationPayload, NotificationModule } from 'commonModule/type/preload/notification'
 import { NotificationGroupCommand } from 'commonModule/type/preload/notification'
-import { NotificationModule } from 'commonModule/type/preload/notification'
 
+import Logger from 'renderModule/utils/logger'
 // 导入群组模块的通知处理器
 import groupNotificationManager from './group'
-import groupMemberNotificationManager from './group-member'
 import groupJoinRequestNotificationManager from './group-join-request'
-import Logger from 'renderModule/utils/logger'
+import groupMemberNotificationManager from './group-member'
+
 const logger = new Logger('群组模块通知路由器')
 
 /**

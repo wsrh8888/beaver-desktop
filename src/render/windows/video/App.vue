@@ -35,7 +35,7 @@ export default defineComponent({
     }
 
     // 更新视频内容
-    const updateVideo = (data: { url?: string; title?: string }) => {
+    const updateVideo = (data: { url?: string, title?: string }) => {
       if (data.url) {
         videoUrl.value = data.url
       }
@@ -149,4 +149,3 @@ export default defineComponent({
   justify-content: center;
 }
 </style>
-

@@ -25,9 +25,9 @@
 </template>
 
 <script lang="ts">
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, defineComponent, watch } from 'vue'
 
 export default defineComponent({

@@ -1,5 +1,8 @@
 <template>
   <div class="message-left">
+    <!-- 应用状态显示 -->
+    <AppStatusComponent />
+
     <div class="search-container">
       <div class="search-wrapper">
         <input v-model="searchText" type="text" class="search-input" placeholder="搜索">
@@ -9,18 +12,11 @@
 
     <div class="chat-list">
       <div
-        v-for="chat in chatList"
-        :key="chat.conversationId"
-        class="chat-item"
-        :class="{ active: currentConversationId === chat.conversationId }"
-        @click="handleChatClick(chat)"
+        v-for="chat in chatList" :key="chat.conversationId" class="chat-item"
+        :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)"
       >
         <div class="chat-avatar">
-          <BeaverImage
-            :file-name="chat.avatar"
-            :cache-type="CacheType.USER_AVATAR"
-            :alt="chat.nickname"
-          />
+          <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickname" />
         </div>
 
         <div class="chat-info">
@@ -46,13 +42,15 @@
 
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import AppStatusComponent from 'renderModule/windows/app/components/business/status/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, defineComponent, ref } from 'vue'
 
 export default defineComponent({
   components: {
+    AppStatusComponent,
     BeaverImage,
   },
   setup() {

@@ -81,15 +81,12 @@ export class MessageService {
 
   // 按序列号范围获取消息（纯数据库查询，不含业务逻辑）
   static async getChatMessagesBySeqRange(conversationId: string, startSeq: number, endSeq: number): Promise<any[]> {
-    return await this.db.select().from(chats)
-      .where(
-        and(
-          gte(chats.seq as any, startSeq as any),
-          lte(chats.seq as any, endSeq as any),
-          eq(chats.conversationId as any, conversationId as any),
-        ),
-      )
-      .orderBy(chats.seq, 'asc')
-      .all()
+    return await this.db.select().from(chats).where(
+      and(
+        gte(chats.seq as any, startSeq as any),
+        lte(chats.seq as any, endSeq as any),
+        eq(chats.conversationId as any, conversationId as any),
+      ),
+    ).orderBy(chats.seq, 'asc').all()
   }
 }

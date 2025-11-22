@@ -53,4 +53,3 @@ export interface IConversationItem {
    */
   isMuted: boolean
 }
-

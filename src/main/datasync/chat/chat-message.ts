@@ -1,10 +1,10 @@
+import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { chatSyncApi } from 'mainModule/api/chat'
 import { datasyncGetSyncChatMessagesApi } from 'mainModule/api/datasync'
 import { MessageService } from 'mainModule/database/services/chat/message'
 import { ChatSyncStatusService } from 'mainModule/database/services/chat/sync-status'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
 

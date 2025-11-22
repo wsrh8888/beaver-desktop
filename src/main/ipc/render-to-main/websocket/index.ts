@@ -14,13 +14,14 @@ export class WebSocketHandler {
 
     try {
       switch (command) {
-        case WebSocketCommand.CONNECT:
-          // WebSocket连接由wsManager直接处理，不涉及消息管理器
-          await wsManager.connect()
-          return true
-
         case WebSocketCommand.DISCONNECT:
           wsManager.disconnect()
+          return true
+
+        case WebSocketCommand.RECONNECT:
+          // 重新连接WebSocket
+          wsManager.disconnect()
+          await wsManager.connect()
           return true
 
         case WebSocketCommand.SEND_CHAT_MESSAGE:

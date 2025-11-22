@@ -1,18 +1,19 @@
 import type {
+  IConversationInfoRes,
   IRecentChatReq,
   IRecentChatRes,
-  IConversationInfoRes
 } from 'commonModule/type/ajax/chat'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IConversationItem } from 'commonModule/type/pinia/conversation'
-import { BaseBusiness, type QueueItem } from '../base/base'
+import type { QueueItem } from '../base/base'
+import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getConversationsListByIdsApi } from 'mainModule/api/chat'
 import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
 import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { GroupService } from 'mainModule/database/services/group/group'
-import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { BaseBusiness } from '../base/base'
 
 /**
  * 会话同步队列项
@@ -37,6 +38,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       delayMs: 1000,
     })
   }
+
   /**
    * 获取聚合后的最近聊天列表
    */
@@ -98,7 +100,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     // 6. 获取好友信息（私聊需要）和群组信息（群聊需要）
     const privateChatFriendIds: string[] = []
     const groupIds: string[] = []
-    
+
     paginatedConversations.forEach((conv: any) => {
       if (conv.type === 1) { // 私聊
         const parts = conv.conversationId.split('_')
@@ -107,11 +109,13 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
           const userId2 = parts[2]
           if (userId1 === userId) {
             privateChatFriendIds.push(userId2)
-          } else if (userId2 === userId) {
+          }
+          else if (userId2 === userId) {
             privateChatFriendIds.push(userId1)
           }
         }
-      } else if (conv.type === 2) { // 群聊
+      }
+      else if (conv.type === 2) { // 群聊
         // conversationId格式: group_${groupId}
         const parts = conv.conversationId.split('_')
         if (parts.length >= 2 && parts[0] === 'group') {
@@ -119,7 +123,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         }
       }
     })
-    
+
     const friendDetailsMap = await FriendService.getFriendDetails(userId, privateChatFriendIds)
     const groupDetails = await GroupService.getGroupsByUuids(groupIds)
     const groupDetailsMap = new Map()
@@ -151,7 +155,8 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
             notice = friendDetail.notice || ''
           }
         }
-      } else if (conv.type === 2) { // 群聊：从群组信息获取显示数据
+      }
+      else if (conv.type === 2) { // 群聊：从群组信息获取显示数据
         const parts = conv.conversationId.split('_')
         if (parts.length >= 2 && parts[0] === 'group') {
           const groupId = parts.slice(1).join('_') // 支持groupId中包含下划线的情况
@@ -174,7 +179,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         chatType: conv.type || 1,
         notice,
         version: conv.version || 0,
-        unreadCount: unreadCount,
+        unreadCount,
         isMuted: conv.isMuted === 1,
       }
     })
@@ -238,7 +243,8 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
           notice = friendDetail.notice || ''
         }
       }
-    } else if (meta.type === 2) { // 群聊：从群组信息获取显示数据
+    }
+    else if (meta.type === 2) { // 群聊：从群组信息获取显示数据
       const parts = conversationId.split('_')
       if (parts.length >= 2 && parts[0] === 'group') {
         const groupId = parts.slice(1).join('_') // 支持groupId中包含下划线的情况
@@ -274,7 +280,8 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
    * 处理来自WS的会话更新
    */
   async handleWSConversationUpdates(updates: any[]) {
-    if (updates.length === 0) return
+    if (updates.length === 0)
+      return
 
     // 检查参数类型：如果是字符串数组（conversationIds），则从服务端同步
     if (typeof updates[0] === 'string') {
@@ -328,11 +335,12 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         await ChatConversationService.upsert(conversationData)
 
         console.log(`会话同步成功: conversationId=${conversationId}, versionRange=[${minVersion}, ${maxVersion}]`)
-      } else {
+      }
+      else {
         console.log(`会话未找到: conversationId=${conversationId}`)
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       console.error('通过版本区间同步会话失败:', error)
     }
   }
@@ -364,7 +372,8 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       if (existing) {
         existing.minVersion = Math.min(existing.minVersion, item.minVersion)
         existing.maxVersion = Math.max(existing.maxVersion, item.maxVersion)
-      } else {
+      }
+      else {
         conversationMap.set(item.conversationId, {
           minVersion: item.minVersion,
           maxVersion: item.maxVersion,
@@ -387,7 +396,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
    */
   private notifyConversationTableUpdate(conversationIds: string[]) {
     sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.CONVERSATION_UPDATE, {
-      conversationIds: conversationIds,
+      conversationIds,
     })
   }
 }

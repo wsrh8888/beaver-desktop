@@ -92,9 +92,9 @@
 <script lang="ts">
 import type { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { createGroupApi } from 'renderModule/api/group'
-import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
+import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { computed, onMounted, ref } from 'vue'
 
 export default {

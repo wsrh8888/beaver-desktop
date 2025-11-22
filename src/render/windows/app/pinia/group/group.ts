@@ -77,7 +77,8 @@ export const useGroupStore = defineStore('groupStore', {
       if (index !== -1) {
         // 更新现有群组
         this._groupList[index] = { ...this._groupList[index], ...groupData }
-      } else {
+      }
+      else {
         // 添加新群组
         this._groupList.push(groupData)
       }
@@ -107,7 +108,8 @@ export const useGroupStore = defineStore('groupStore', {
         }
 
         return result.list
-      } catch (error) {
+      }
+      catch (error) {
         console.error('批量更新群组信息失败:', error)
         throw error
       }

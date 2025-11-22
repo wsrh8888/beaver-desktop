@@ -44,12 +44,12 @@
 </template>
 
 <script lang="ts">
-import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
-import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
-import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 // import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useRouterHelper } from 'renderModule/utils/router/index'
+import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
+import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, onMounted } from 'vue'
 
 export default {
@@ -88,13 +88,12 @@ export default {
       if (friendInfo.value?.userId) {
         // 设置当前聊天会话ID
         console.error('friendInfo.value.conversationId', friendInfo)
-        
+
         // 跳转到聊天页面
         routerHelper.push('/message')
         setTimeout(() => {
           messageViewStore.setCurrentChat(friendInfo.value.conversationId)
         }, 100)
-
       }
     }
 

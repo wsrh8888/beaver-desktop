@@ -3,7 +3,7 @@
     <div
       v-for="message in messages" :key="message.messageId" class="message"
       :class="{
-        send: message.sender.userId === userStore.userInfo.userId,
+        send: message.sender.userId === userStore.getUserId,
         system: message.sender.userId === '',
       }"
     >
@@ -41,7 +41,7 @@
           :message="message"
         />
         <!-- 发送状态指示器 -->
-        <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.userInfo.userId" class="message-status">
+        <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
             <div class="sending-spinner" />
             发送中...
@@ -50,13 +50,13 @@
             <img class="retry-icon" src="@/render/assets/image/chat/retry.svg" alt="重试" />
             发送失败，点击重试
           </div>
-        </div>-->
-      </div> 
+        </div> -->
+      </div>
     </div>
 
     <!-- 右键菜单组件 -->
     <ContextMenu
-      :trigger="'manual'"
+      trigger="manual"
       :visible="contextMenuVisible"
       :menu-items="contextMenuItems"
       :position="contextMenuPosition"
@@ -68,25 +68,25 @@
 </template>
 
 <script lang="ts">
+import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
+import { updateReadSeqApi } from 'renderModule/api/chat'
+import ContextMenu from 'renderModule/components/ui/context-menu/index.vue'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
 import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import ContextMenu from 'renderModule/components/ui/context-menu/index.vue'
-import AudioFileMessage from './components/AudioFileMessage.vue'
-import TextMessage from './components/TextMessage.vue'
-import ImageMessage from './components/ImageMessage.vue'
-import VideoMessage from './components/VideoMessage.vue'
-import NotificationMessage from './components/NotificationMessage.vue'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import userInfo from './userInfo.vue'
-import { getMenuItems, MessageContentType } from './data'
+import AudioFileMessage from './components/AudioFileMessage.vue'
+import ImageMessage from './components/ImageMessage.vue'
+import NotificationMessage from './components/NotificationMessage.vue'
+import TextMessage from './components/TextMessage.vue'
+import VideoMessage from './components/VideoMessage.vue'
 import { copyToClipboard, hasTextSelected } from './copy'
-import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
-import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
-import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
-import { updateReadSeqApi } from 'renderModule/api/chat'
+import { getMenuItems, MessageContentType } from './data'
+import userInfo from './userInfo.vue'
 
 export default defineComponent({
   components: {
@@ -129,10 +129,10 @@ export default defineComponent({
       console.error('会话变了', newConversationId, messageViewStore.currentChatId)
       if (newConversationId) {
         console.log('会话切换:', newConversationId)
-        
+
         // 初始化消息
         await messageStore.init(newConversationId)
-        
+
         // 判断是否是群聊，如果是则初始化群成员
         const conversationStore = useConversationStore()
         const conversation = conversationStore.getConversationInfo(newConversationId)
@@ -144,14 +144,14 @@ export default defineComponent({
           const groupMemberStore = useGroupMemberStore()
           await groupMemberStore.init(groupId)
         }
-        
+
         // 等待消息加载完成后，更新已读数
         // 使用 nextTick 确保消息已经加载到 store 中
         await nextTick()
         await updateReadSeqWhenEnterConversation(newConversationId)
       }
     })
-    
+
     /**
      * @description: 进入会话时自动更新已读数
      * 大厂IM的做法：用户进入会话时，自动将已读数更新到当前会话的最大seq
@@ -161,20 +161,20 @@ export default defineComponent({
         // 1. 检查是否有未读消息
         const conversationStore = useConversationStore()
         const conversation = conversationStore.getConversationInfo(conversationId)
-        
+
         if (!conversation || conversation.unreadCount === 0) {
           return // 没有未读消息，不需要更新
         }
-        
+
         // 2. 从消息中获取 maxSeq（消息已经在 watch 中加载了）
         const messages = messageStore.getChatHistory(conversationId)
-        
+
         if (!messages || messages.length === 0) {
           return // 消息还未加载，等待下次再试
         }
-        
+
         const maxSeq = Math.max(...messages.map((m: any) => m.seq || 0))
-        
+
         // 3. 如果有有效的 maxSeq，调用接口更新已读数
         if (maxSeq > 0) {
           await updateReadSeqApi({ conversationId, readSeq: maxSeq })
@@ -196,19 +196,19 @@ export default defineComponent({
 
       // 获取消息类型
       const messageType = message.msg.type as MessageContentType
-      
+
       // 检查是否有文本被选中（仅对文本消息有效）
       const hasSelected = messageType === MessageContentType.TEXT && hasTextSelected()
-      
+
       // 根据消息类型获取菜单项
       contextMenuItems.value = getMenuItems(messageType, hasSelected)
-      
+
       // 设置菜单位置
       contextMenuPosition.value = {
         x: event.clientX,
         y: event.clientY,
       }
-      
+
       // 显示菜单
       contextMenuVisible.value = true
     }
@@ -271,7 +271,6 @@ export default defineComponent({
       }
     }
 
-
     // 处理滚动事件，检测是否需要加载更多历史消息
     const handleScroll = async () => {
       if (!messageContainer.value)
@@ -316,7 +315,7 @@ export default defineComponent({
       }
     })
     const showUserInfo = (event: MouseEvent, message: any) => {
-      if (message.sender.userId === userStore.userInfo.userId) {
+      if (message.sender.userId === userStore.getUserId) {
         return
       }
       userInfo.value.show = false
@@ -337,21 +336,20 @@ export default defineComponent({
       }
     })
 
-
-      return {
-        CacheType,
-        messages,
-        userStore,
-        messageContainer,
-        contextMenuVisible,
-        contextMenuPosition,
-        contextMenuItems,
-        currentMessage,
-        handleContextMenu,
-        handleMenuCommand,
-        userInfo,
-        showUserInfo,
-      }
+    return {
+      CacheType,
+      messages,
+      userStore,
+      messageContainer,
+      contextMenuVisible,
+      contextMenuPosition,
+      contextMenuItems,
+      currentMessage,
+      handleContextMenu,
+      handleMenuCommand,
+      userInfo,
+      showUserInfo,
+    }
   },
 })
 </script>
@@ -373,7 +371,6 @@ export default defineComponent({
   -ms-user-select: text !important;
   cursor: text;
 }
-
 </style>
 
 <style lang="less" scoped>

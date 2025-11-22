@@ -2,10 +2,10 @@ import type { IConversationInfoRes } from 'commonModule/type/ajax/chat'
 import type { IConversationItem } from 'commonModule/type/pinia/conversation'
 import { formatConversationTime } from 'commonModule/utils/time/time'
 import { defineStore } from 'pinia'
-import { useContactStore } from '../contact/contact'
-import { useUserStore } from '../user/user'
-import { useGroupStore } from '../group/group'
 import { getRecentChatInfoApi } from 'renderModule/api/chat'
+import { useContactStore } from '../contact/contact'
+import { useGroupStore } from '../group/group'
+import { useUserStore } from '../user/user'
 
 /**
  * @description: 会话管理
@@ -31,9 +31,8 @@ export const useConversationStore = defineStore('useConversationStore', {
     getConversations(): IConversationInfoRes[] {
       const contactStore = useContactStore()
       const userStore = useUserStore()
-      const currentUserId = userStore.userInfo.userId
+      const currentUserId = userStore.getUserId
       const groupStore = useGroupStore()
-
 
       return this.conversations.map((conversation: IConversationItem) => {
         // 格式化时间：从 updatedAt（秒级）转换为格式化字符串
@@ -67,7 +66,8 @@ export const useConversationStore = defineStore('useConversationStore', {
               }
             }
           }
-        } else if (conversation.chatType === 2) {
+        }
+        else if (conversation.chatType === 2) {
           const groupInfo = groupStore.getGroupById(conversation.conversationId)
           if (groupInfo) {
             result = {
@@ -100,7 +100,7 @@ export const useConversationStore = defineStore('useConversationStore', {
 
       const contactStore = useContactStore()
       const userStore = useUserStore()
-      const currentUserId = userStore.userInfo.userId
+      const currentUserId = userStore.getUserId
 
       // 如果是私聊，从 contactStore 获取最新的用户信息
       if (conversation.conversationId.startsWith('private_')) {
@@ -300,7 +300,8 @@ export const useConversationStore = defineStore('useConversationStore', {
           this.moveConversationToTop(conversationId)
           return localResult
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.warn('从主进程获取会话信息失败:', error)
       }
 
@@ -316,7 +317,8 @@ export const useConversationStore = defineStore('useConversationStore', {
           this.moveConversationToTop(conversationId)
           return serverResult.result
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('从服务端获取会话信息失败:', error)
         throw error
       }

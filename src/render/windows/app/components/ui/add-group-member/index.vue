@@ -84,8 +84,8 @@
 <script lang="ts">
 import type { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { CacheType } from 'commonModule/type/cache/cache'
-import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { computed, defineComponent, ref } from 'vue'
 
 export default defineComponent({
@@ -114,7 +114,7 @@ export default defineComponent({
     // 过滤好友列表（不过滤群成员，只做搜索过滤）
     const filteredFriends = computed(() => {
       let friends = friendStore.friendList
-      
+
       if (!searchKeyword.value.trim()) {
         return friends
       }
@@ -457,4 +457,3 @@ export default defineComponent({
   background-color: #E86835;
 }
 </style>
-

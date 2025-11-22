@@ -38,4 +38,3 @@ class Audio extends ApplicationBase implements Application {
 }
 
 export default new Audio()
-

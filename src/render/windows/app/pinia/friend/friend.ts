@@ -148,7 +148,7 @@ export const useFriendStore = defineStore('friendStore', {
 
         // 使用好友关系UUID列表查询获取最新的好友数据
         const result = await electron.database.friend.getFriendsByUuid({
-          uuids: userIds
+          uuids: userIds,
         })
 
         // 更新friend store
@@ -156,7 +156,8 @@ export const useFriendStore = defineStore('friendStore', {
           const index = this.friendList.findIndex(f => f.userId === friend.userId)
           if (index !== -1) {
             this.friendList[index] = friend
-          } else {
+          }
+          else {
             this.friendList.push(friend)
           }
 
@@ -170,7 +171,8 @@ export const useFriendStore = defineStore('friendStore', {
         }
 
         return result.list
-      } catch (error) {
+      }
+      catch (error) {
         console.error('根据用户ID列表更新好友信息失败:', error)
         throw error
       }

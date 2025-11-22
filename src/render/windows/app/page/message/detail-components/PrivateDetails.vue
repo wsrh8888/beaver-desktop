@@ -12,8 +12,10 @@
         <div class="user-info">
           <div class="user-avatar-container">
             <div v-if="userInfo" class="user-avatar">
-              <BeaverImage v-if="userInfo?.avatar" :file-name="userInfo?.avatar" alt="用户头像"
-                image-class="user-avatar-image" />
+              <BeaverImage
+                v-if="userInfo?.avatar" :file-name="userInfo?.avatar" alt="用户头像"
+                image-class="user-avatar-image"
+              />
             </div>
           </div>
           <div class="user-name-container">
@@ -104,12 +106,12 @@
 </template>
 
 <script lang="ts">
+import { hideChatApi, muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, defineComponent, ref, watch } from 'vue'
-import { hideChatApi, muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
 
 export default defineComponent({
   name: 'PrivateDetails',
@@ -137,7 +139,8 @@ export default defineComponent({
     // 从conversation store获取当前会话的信息
     const currentConversationInfo = computed(() => {
       const currentId = messageViewStore.currentChatId
-      if (!currentId) return null
+      if (!currentId)
+        return null
 
       // 使用现成的getConversationInfo getter
       return conversationStore.getConversationInfo(currentId)
@@ -149,7 +152,8 @@ export default defineComponent({
         try {
           // 确保会话存在，如果不存在会自动从数据库/服务端获取
           await conversationStore.initConversationById(newConversationId)
-        } catch (error) {
+        }
+        catch (error) {
           console.error('初始化会话失败:', error)
         }
       }
@@ -160,7 +164,8 @@ export default defineComponent({
       if (info) {
         muteEnabled.value = info.isMuted || false
         topEnabled.value = info.isTop || false
-      } else {
+      }
+      else {
         muteEnabled.value = false
         topEnabled.value = false
       }
@@ -186,9 +191,9 @@ export default defineComponent({
       emit('close')
     }
 
-
     const handleSettingsChange = async (setting: string) => {
-      if (!messageViewStore.currentChatId) return
+      if (!messageViewStore.currentChatId)
+        return
 
       try {
         if (setting === 'mute') {
@@ -197,13 +202,15 @@ export default defineComponent({
             isMuted: muteEnabled.value,
           })
           console.log('免打扰设置已更新')
-        } else if (setting === 'top') {
+        }
+        else if (setting === 'top') {
           await pinnedChatApi({
             conversationId: messageViewStore.currentChatId,
             isPinned: topEnabled.value,
           })
           console.log('置顶设置已更新')
-        } else if (setting === 'hide') {
+        }
+        else if (setting === 'hide') {
           await hideChatApi({
             conversationId: messageViewStore.currentChatId,
             isHidden: true,
@@ -211,12 +218,14 @@ export default defineComponent({
           console.log('会话已隐藏')
           closeDetails()
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('更新会话设置失败:', error)
         // 失败时恢复原来的状态
         if (setting === 'mute') {
           muteEnabled.value = currentConversationInfo.value?.isMuted || false
-        } else if (setting === 'top') {
+        }
+        else if (setting === 'top') {
           topEnabled.value = currentConversationInfo.value?.isTop || false
         }
       }

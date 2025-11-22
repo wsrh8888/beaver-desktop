@@ -1,10 +1,10 @@
+import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncGroupRequestsApi } from 'mainModule/api/datasync'
 import { groupJoinRequestSyncApi } from 'mainModule/api/group'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('datasync-群申请')
@@ -39,6 +39,7 @@ class GroupJoinRequestSync {
     }
     catch (error) {
       logger.error({ text: '入群申请同步失败', data: { error: (error as any)?.message } })
+      throw error
     }
   }
 

@@ -166,7 +166,7 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
           seq: 0, // 临时seq，发送成功后会更新
           msg: this.buildMessageContent(content, messageType),
           sender: {
-            userId: userStore.userInfo.userId,
+            userId: userStore.getUserId,
             avatar: userStore.userInfo.avatar,
             nickname: userStore.userInfo.nickName,
           },

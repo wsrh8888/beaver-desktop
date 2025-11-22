@@ -23,7 +23,7 @@ class ChatSender {
    */
   private getCurrentUserId(): string {
     const userStore = useUserStore()
-    return userStore.userInfo.userId || 'unknown'
+    return userStore.getUserId || 'unknown'
   }
 
   /**
@@ -40,7 +40,6 @@ class ChatSender {
     messageType: MessageType,
     chatType: string,
   ): Promise<string> {
-
     // 生成唯一的客户端消息ID
     const messageId = this.generateMessageId()
 

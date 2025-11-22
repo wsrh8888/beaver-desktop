@@ -185,8 +185,8 @@ class MediaManager {
     const cacheInfo = await mediaCacheService.getMediaInfo(fileKey)
     if (cacheInfo) {
       console.log('缓存文件存在: ', cacheInfo.path)
-      this.cacheFile[fileKey] = 'file://' + cacheInfo.path
-      return 'file://' + cacheInfo.path
+      this.cacheFile[fileKey] = `file://${cacheInfo.path}`
+      return `file://${cacheInfo.path}`
     }
     console.log('缓存文件不存在: ', fileKey)
     // 检查是否正在下载这个文件，如果是则直接返回在线URL

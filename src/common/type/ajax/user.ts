@@ -1,6 +1,6 @@
 export interface IUserInfoRes {
   userId: string
-  avatar: string
+  nickName: string // 用户昵称
   avatar: string // 用户头像URL
   abstract: string // 用户个性签名
   phone?: string // 用户手机号

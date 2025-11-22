@@ -1,3 +1,4 @@
+import type { AppLifecycleStatus } from 'commonModule/type/preload/notification'
 import { defineStore } from 'pinia'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
@@ -7,53 +8,43 @@ import { useFriendVerifyStore } from '../friend/friend_verify'
 import { useUpdateStore } from '../update/index'
 
 /**
- * 连接状态类型
- */
-type ConnectionStatus = 'connected' | 'disconnected' | 'syncing' | 'ready' | 'error'
-
-/**
  * @description: 全局应用状态管理
  * 管理应用初始化、连接状态等全局状态
  */
 export const useAppStore = defineStore('useAppStore', {
   state: () => ({
     /**
-     * @description: 是否已完成初始化
+     * @description: 应用生命周期状态
      */
-    isInitialized: false,
-
-    /**
-     * @description: 连接状态
-     */
-    connectionStatus: 'disconnected' as ConnectionStatus,
+    lifecycleStatus: 'connecting' as AppLifecycleStatus,
   }),
 
   getters: {
-    /**
-     * @description: 连接状态文本
-     */
-    connectionStatusText: (state) => {
-      switch (state.connectionStatus) {
-        case 'connected': return '已连接'
-        case 'disconnected': return '未连接'
-        case 'syncing': return '同步中'
-        case 'ready': return '就绪'
-        case 'error': return '连接错误'
-        default: return '未知状态'
-      }
-    },
+    // 全局store只保留核心状态，UI相关的转换逻辑移到组件内部
   },
 
   actions: {
 
     /**
-     * @description: 启动应用初始化（应用启动时调用，不阻塞UI渲染）
+     * @description: 获取应用生命周期的初始状态
+     */
+    async getInitialLifecycleStatus() {
+      try {
+        const initialStatus = await window.electron.datasync.getAppLifecycleStatus()
+        this.updateLifecycleStatus(initialStatus.status)
+        return initialStatus.status
+      }
+      catch (error) {
+        console.error('获取应用初始状态失败:', error)
+        // 获取失败时保持默认状态
+        return this.lifecycleStatus
+      }
+    },
+
+    /**
+     * @description: 启动应用初始化（应用启动时调用）
      */
     async initApp() {
-      if (this.isInitialized) {
-        return
-      }
-
       const userStore = useUserStore()
       const friendStore = useFriendStore()
       const _friendVerifyStore = useFriendVerifyStore()
@@ -62,34 +53,31 @@ export const useAppStore = defineStore('useAppStore', {
       const updateStore = useUpdateStore()
 
       try {
-        // 1. 初始化用户信息
-        await userStore.init()
+        // 首先获取应用生命周期的初始状态
+        await this.getInitialLifecycleStatus()
 
-        // 2. 并行初始化好友、会话数据和更新检查
+        // 并行初始化各项数据
         const promises = [
+          userStore.init(),
           friendStore.init(),
           conversationStore.init(),
           groupStore.init(),
-          updateStore.init(), // 初始化更新检查（静默检查，不阻塞UI）
+          updateStore.init(),
         ]
 
         await Promise.all(promises)
-
-        this.isInitialized = true
         console.log('应用数据初始化完成')
       }
       catch (error) {
         console.error('应用初始化失败:', error)
-        // 初始化失败不阻断应用使用
       }
     },
 
     /**
-     * @description: 更新连接状态
+     * @description: 更新应用生命周期状态
      */
-    updateConnectionStatus(status: ConnectionStatus) {
-      this.connectionStatus = status
-      console.log(`连接状态: ${this.connectionStatusText}`)
+    updateLifecycleStatus(status: AppLifecycleStatus) {
+      this.lifecycleStatus = status
     },
 
   },

@@ -49,12 +49,12 @@
 </template>
 
 <script lang="ts">
-import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
-import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
-import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 // import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useRouterHelper } from 'renderModule/utils/router/index'
+import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
+import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed } from 'vue'
 
 export default {

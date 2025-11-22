@@ -1,4 +1,4 @@
-import { IFriendInfo } from 'commonModule/type/ajax/friend'
+import type { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
 import dbManager from 'mainModule/database/db'
 import { friends } from 'mainModule/database/tables/friend/friend'

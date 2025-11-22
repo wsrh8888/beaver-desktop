@@ -1,8 +1,8 @@
-
-
 /**
  * 主进程通知渲染进程
  */
+import type { TrayMenuItem } from './app'
+
 export enum NotificationModule {
   /**
    * 群组通知
@@ -17,17 +17,15 @@ export enum NotificationModule {
    */
   DATABASE_USER = 'database:user',
   /**
-   * 数据同步状态通知
-   */
-  DATABASE_DATASYNC = 'database:datasync',
-  /**
    * 聊天消息通知
    */
   DATABASE_CHAT = 'database:chat',
   /**
-   * 连接状态通知
+   * 应用生命周期状态通知
+   * 简化的状态流：连接 -> 同步 -> 就绪
    */
-  CONNECTION = 'connection',
+  APP_LIFECYCLE = 'app:lifecycle',
+
   /**
    * 搜索结果通知到验证窗口
    */
@@ -37,8 +35,6 @@ export enum NotificationModule {
    */
   MEDIA_VIEWER = 'media:viewer',
 }
-
-
 
 export enum NotificationFriendCommand {
   /**
@@ -74,12 +70,6 @@ export enum NotificationUserCommand {
   USER_UPDATE = 'userUpdate',
 }
 
-export enum NotificationDataSyncCommand {
-  DATABASE_DATASYNC_START = 'database:datasync:start',
-  DATABASE_DATASYNC_COMPLETE = 'database:datasync:complete',
-  DATABASE_DATASYNC_ERROR = 'database:datasync:error',
-}
-
 export enum NotificationSearchToVerifyCommand {
   SEARCH_TO_VERIFY = 'searchToVerify',
 }
@@ -99,10 +89,13 @@ export enum NotificationChatCommand {
   USER_CONVERSATION_UPDATE = 'userConversationUpdate',
 }
 
-export enum NotificationConnectionCommand {
+export enum NotificationAppLifecycleCommand {
   /**
-   * 连接状态变更 - 统一的状态变更通知
-   * data: { status: 'connected' | 'disconnected' | 'error' | 'syncing' | 'ready' }
+   * 应用生命周期状态变更 - 统一的状态变更通知
+   * data: {
+   *   status: AppLifecycleStatus,
+   *   progress?: number // 0-100，仅在syncing状态使用
+   * }
    */
   STATUS_CHANGE = 'statusChange',
 }
@@ -126,20 +119,28 @@ export enum NotificationMediaViewerCommand {
 }
 
 /**
+ * 应用生命周期状态
+ * 细化的IM状态流：连接 -> 同步 -> 就绪，支持不同类型的错误
+ */
+export type AppLifecycleStatus
+  = | 'connecting' // WebSocket连接中
+    | 'syncing' // 数据同步中
+    | 'ready' // 应用就绪（隐藏状态条）
+    | 'connect_error' // WebSocket连接错误/断开
+    | 'sync_error' // 数据同步错误
+
+/**
  * 主进程更新通知渲染进程
  */
 export interface NotificationCommandMap {
   [NotificationModule.DATABASE_FRIEND]: NotificationFriendCommand
   [NotificationModule.DATABASE_USER]: NotificationUserCommand
   [NotificationModule.DATABASE_GROUP]: NotificationGroupCommand
-  [NotificationModule.DATABASE_DATASYNC]: NotificationDataSyncCommand
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
-  [NotificationModule.CONNECTION]: NotificationConnectionCommand
+  [NotificationModule.APP_LIFECYCLE]: NotificationAppLifecycleCommand
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
   [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand
 }
-
-import type { TrayMenuItem } from './app'
 
 export interface INotificationPayload<M extends NotificationModule> {
   command: NotificationCommandMap[M]

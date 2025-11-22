@@ -77,4 +77,3 @@ export function hasTextSelected(): boolean {
   const selection = window.getSelection()
   return !!(selection && selection.toString().trim().length > 0)
 }
-

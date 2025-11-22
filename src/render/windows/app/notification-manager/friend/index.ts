@@ -1,11 +1,11 @@
-import type { INotificationPayload } from 'commonModule/type/preload/notification'
+import type { INotificationPayload, NotificationModule } from 'commonModule/type/preload/notification'
 import { NotificationFriendCommand } from 'commonModule/type/preload/notification'
-import { NotificationModule } from 'commonModule/type/preload/notification'
 
+import Logger from 'renderModule/utils/logger'
 // 导入好友模块的通知处理器
 import friendNotificationManager from './friend'
 import friendVerifyNotificationManager from './friend-verify'
-import Logger from 'renderModule/utils/logger'
+
 const logger = new Logger('好友模块通知路由器')
 
 /**

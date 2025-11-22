@@ -116,10 +116,10 @@
 </template>
 
 <script lang="ts">
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { computed, ref } from 'vue'
 import { notificationList, POPUP_MENU_CONFIG, TABS_CONFIG } from '../data'
 import PopupMenu from './PopupMenu.vue'

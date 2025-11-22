@@ -1,12 +1,10 @@
 import { conversationBusiness } from 'mainModule/business/chat/conversation'
-import logger from 'mainModule/utils/log'
 
 /**
  * @description: 会话接收器 - 处理conversations表的操作
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
 export class ConversationReceiver {
-
   /**
    * 处理会话更新通知
    * 只处理 conversations 表的更新

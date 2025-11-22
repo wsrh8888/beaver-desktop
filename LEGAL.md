@@ -70,7 +70,6 @@
 
 **热爱祖国、遵纪守法，珍惜和享受美好生活，让技术为社会带来更多积极的价值。**
 
-
 ### 📞 举报机制
 
 如发现违法使用行为：
@@ -147,7 +146,6 @@ The following uses are strictly prohibited:
 
 **Love your country, abide by laws and regulations, cherish and enjoy a better life, and let technology bring more positive value to society.**
 
-
 ### 📞 Reporting Mechanism
 
 If illegal usage is discovered:
@@ -168,4 +166,4 @@ If illegal usage is discovered:
 
 **最后更新 / Last Updated**: 2025-01-27
 
-**联系方式 / Contact**: [751135385@qq.com](mailto:751135385@qq.com) 
+**联系方式 / Contact**: [751135385@qq.com](mailto:751135385@qq.com)

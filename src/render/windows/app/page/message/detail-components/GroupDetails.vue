@@ -137,17 +137,18 @@
 </template>
 
 <script lang="ts">
+import { muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
 import { addGroupMemberApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
-import { hideChatApi, muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
-import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
-import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
-import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
-import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
-import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
+import MessageBox from 'renderModule/components/ui/messagebox'
 import { uploadFile } from 'renderModule/utils/upload'
+import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
+import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
@@ -174,7 +175,7 @@ export default defineComponent({
     const showAllMembers = ref(false)
     const showAddMemberModal = ref(false)
     const avatarInputRef = ref<HTMLInputElement | null>(null)
-    const currentUserId = computed(() => userStore.userInfo.userId)
+    const currentUserId = computed(() => userStore.getUserId)
 
     // 获取当前用户在群中的角色
     const currentUserRole = computed(() => {
@@ -197,7 +198,8 @@ export default defineComponent({
     // 从conversation store获取当前会话的信息
     const currentConversationInfo = computed(() => {
       const currentId = messageViewStore.currentChatId
-      if (!currentId) return null
+      if (!currentId)
+        return null
 
       // 使用现成的getConversationInfo getter
       return conversationStore.getConversationInfo(currentId)
@@ -208,7 +210,8 @@ export default defineComponent({
       if (info) {
         topEnabled.value = info.isTop || false
         muteEnabled.value = info.isMuted || false
-      } else {
+      }
+      else {
         topEnabled.value = false
         muteEnabled.value = false
       }
@@ -259,7 +262,8 @@ export default defineComponent({
           conversationId: messageViewStore.currentChatId!,
           isMuted: muteEnabled.value,
         })
-      } else if (setting === 'top') {
+      }
+      else if (setting === 'top') {
         await pinnedChatApi({
           conversationId: messageViewStore.currentChatId!,
           isPinned: topEnabled.value,
@@ -334,18 +338,18 @@ export default defineComponent({
       if (!groupId.value || userIds.length === 0)
         return
 
-        const result = await addGroupMemberApi({
-          groupId: groupId.value,
-          userIds,
-        })
-        if (result.code === 0) {
-          Message.success('添加成员成功')
-          // 重新加载群成员列表
-          await groupMemberStore.init(groupId.value)
-        }
-        else {
-          Message.error(result.msg)
-        }
+      const result = await addGroupMemberApi({
+        groupId: groupId.value,
+        userIds,
+      })
+      if (result.code === 0) {
+        Message.success('添加成员成功')
+        // 重新加载群成员列表
+        await groupMemberStore.init(groupId.value)
+      }
+      else {
+        Message.error(result.msg)
+      }
     }
 
     // 成员右键菜单
@@ -353,9 +357,13 @@ export default defineComponent({
       // 如果是群主或管理员，可以删除成员
       if (canManageMembers.value && currentUserId.value !== member.userId) {
         // 显示删除确认
-        if (confirm(`确定要移除成员 ${member.nickName || member.userId} 吗？`)) {
-          handleRemoveMember(member.userId)
-        }
+        MessageBox.confirm(`确定要移除成员 ${member.nickName || member.userId} 吗？`, '确认操作')
+          .then(() => {
+            handleRemoveMember(member.userId)
+          })
+          .catch(() => {
+            // 用户取消操作
+          })
       }
     }
 
@@ -384,9 +392,7 @@ export default defineComponent({
       if (!groupId.value)
         return
 
-      if (!confirm('确定要退出该群聊吗？')) {
-        return
-      }
+      await MessageBox.confirm('确定要退出该群聊吗？', '确认操作')
 
       try {
         await quitGroupApi({

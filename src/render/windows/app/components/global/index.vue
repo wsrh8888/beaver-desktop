@@ -9,8 +9,8 @@
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
 import { useGlobalStore } from '../../pinia/view/global/index'
-import ProfileComponent from './component/profile/index.vue'
 import AboutComponent from './component/about/index.vue'
+import ProfileComponent from './component/profile/index.vue'
 
 export default defineComponent({
   name: 'GlobalComponent',

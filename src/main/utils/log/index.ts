@@ -49,14 +49,14 @@ class Log {
     const message = JSON.stringify(msg)
     console.log('info', this.transformName(source, moduleName) + message)
 
-    // return log4js.getLogger('info').info(this.transformName(source, moduleName) + message)
+    return log4js.getLogger('info').info(this.transformName(source, moduleName) + message)
   }
 
   warn(msg: ILogger, moduleName = '', source = 'main') {
     const message = JSON.stringify(msg)
     console.warn('warn', this.transformName(source, moduleName) + message)
 
-    // return log4js.getLogger('warn').warn(this.transformName(source, moduleName) + message)
+    return log4js.getLogger('warn').warn(this.transformName(source, moduleName) + message)
   }
 
   error(msg: ILogger, moduleName = '', source = 'main') {
@@ -64,7 +64,7 @@ class Log {
 
     console.error('error', this.transformName(source, moduleName) + message)
 
-    // return log4js.getLogger('error').error(this.transformName(source, moduleName) + message)
+    return log4js.getLogger('error').error(this.transformName(source, moduleName) + message)
   }
 }
 

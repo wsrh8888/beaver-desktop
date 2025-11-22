@@ -38,4 +38,3 @@ class Image extends ApplicationBase implements Application {
 }
 
 export default new Image()
-

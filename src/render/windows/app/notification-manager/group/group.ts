@@ -28,7 +28,8 @@ class DatabaseGroupEventManager {
           text: `群组信息更新成功: count=${updatedGroups?.length || 0}`,
           data: { updatedGroups: data.updatedGroups, fetchedGroups: updatedGroups },
         })
-      } else {
+      }
+      else {
         console.warn('群组信息更新缺少必要参数', { data })
       }
     }

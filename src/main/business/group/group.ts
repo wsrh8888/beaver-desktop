@@ -1,13 +1,14 @@
-import { BaseBusiness, type QueueItem } from '../base/base'
-import type { IGroupListRes, IGroupJoinRequestListRes, IGetGroupListReq, IGetGroupsBatchReq, IGetGroupMembersReq, IGetGroupMembersBatchReq, IGroupMemberListRes, IGroupJoinRequestListReq } from 'commonModule/type/ajax/group'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
-import { GroupMemberService } from 'mainModule/database/services/group/group-member'
-import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
-import { GroupService } from 'mainModule/database/services/group/group'
-import { UserService } from 'mainModule/database/services/user/user'
+import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from 'commonModule/type/ajax/group'
+import type { QueueItem } from '../base/base'
+import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { groupSyncApi } from 'mainModule/api/group'
+import { GroupService } from 'mainModule/database/services/group/group'
+import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
+import { GroupMemberService } from 'mainModule/database/services/group/group-member'
+import { UserService } from 'mainModule/database/services/user/user'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
+import { BaseBusiness } from '../base/base'
 
 /**
  * 群组同步队列项
@@ -296,10 +297,12 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
             version: group.version,
           })),
         })
-      } else {
+      }
+      else {
         console.log('群组数据同步完成: noUpdates=true')
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('同步群组数据失败:', error)
     }
   }
@@ -307,4 +310,3 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
 
 // 导出单例实例
 export const groupBusiness = new GroupBusiness()
-

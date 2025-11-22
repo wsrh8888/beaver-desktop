@@ -59,6 +59,7 @@ export class UserService {
           phone: users.phone,
           email: users.email,
           gender: users.gender,
+          version: users.version,
         })
         .from(users)
         .where(eq(users.uuid, userId))
@@ -77,6 +78,7 @@ export class UserService {
         phone: user.phone,
         email: user.email,
         gender: user.gender || 0,
+        version: user.version || 0,
       }
     }
     catch (error) {

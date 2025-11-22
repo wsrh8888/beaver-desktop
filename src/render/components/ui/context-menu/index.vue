@@ -321,4 +321,3 @@ export default defineComponent({
   transform: scale(0.95);
 }
 </style>
-

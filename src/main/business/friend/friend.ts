@@ -1,11 +1,12 @@
-import { BaseBusiness, type QueueItem } from '../base/base'
-import type { IFriendListReq, IFriendListRes, IFriendInfo } from 'commonModule/type/ajax/friend'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
+import type { IFriendInfo, IFriendListReq, IFriendListRes } from 'commonModule/type/ajax/friend'
+import type { QueueItem } from '../base/base'
+import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { UserService } from 'mainModule/database/services/user/user'
-import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationFriendCommand } from 'commonModule/type/preload/notification'
+import { BaseBusiness } from '../base/base'
 
 // 生成会话ID的辅助函数
 function generateConversationId(userId1: string, userId2: string): string {
@@ -37,6 +38,7 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
       delayMs: 1000,
     })
   }
+
   /**
    * 获取好友列表
    */
@@ -162,7 +164,8 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
           })),
         })
       }
-    } catch (error) {
+    }
+    catch (error) {
       console.error('精确同步好友数据失败:', error)
     }
   }
