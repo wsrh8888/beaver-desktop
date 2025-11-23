@@ -4,7 +4,6 @@
       <div v-if="visible" class="userinfo-popup" @click.stop>
         <!-- 遮罩层 -->
         <div class="popup-overlay" @click="handleClose" />
-
         <!-- 弹窗内容 -->
         <div ref="popupRef" class="popup-content" :style="popupStyle">
           <!-- 头部：头像和昵称 -->
@@ -52,8 +51,8 @@ import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import MessageBox from 'renderModule/components/ui/messagebox'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
-import { defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import { useGlobalStore } from '../../../pinia/view/global/index'
+import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global'
+import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { userInfoMenuList } from './data'
 
 export default defineComponent({
@@ -76,7 +75,8 @@ export default defineComponent({
     const userStore = useUserStore()
     const globalStore = useGlobalStore()
 
-    const userInfo = userStore.getUserInfo
+    const userInfo = computed(() => userStore.getUserInfo)
+
     const menuList = userInfoMenuList
     const popupRef = ref<HTMLElement | null>(null)
     const popupStyle = ref({

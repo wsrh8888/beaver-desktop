@@ -21,10 +21,9 @@
 </template>
 
 <script lang="ts">
-import type { INotificationItem } from 'commonModule/type/view/notification'
 import { valiFrienddAPi } from 'renderModule/api/friend'
 import { useFriendVerifyStore } from 'renderModule/windows/app/pinia/friend/friend_verify'
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent, onMounted } from 'vue'
 import NotificationItem from './item.vue'
 
 export default defineComponent({
@@ -33,19 +32,12 @@ export default defineComponent({
     NotificationItem,
   },
   setup() {
-    const notifications = ref<INotificationItem[]>([])
     const friendVerifyStore = useFriendVerifyStore()
-    const friendVerifyList = computed(() => friendVerifyStore.friendVerifyList)
+    const friendVerifyList = computed(() => friendVerifyStore.getVerifyList)
 
-    onMounted(async () => {
-      await friendVerifyStore.init()
-
-      loadNotifications()
-      console.error(friendVerifyList.value, '111')
-    })
-
-    const loadNotifications = async () => {
-      notifications.value = friendVerifyList.value.map((item) => {
+    // 将 notifications 改为 computed，直接基于 friendVerifyList 计算
+    const notifications = computed(() => {
+      return friendVerifyList.value.map((item) => {
         return {
           id: item.id,
           name: item.nickName,
@@ -57,7 +49,12 @@ export default defineComponent({
           statusResult: getStatusResult(item.flag, item.status),
         }
       })
-    }
+    })
+
+    onMounted(async () => {
+      await friendVerifyStore.init()
+      console.error(friendVerifyList.value, '111')
+    })
 
     const getHeaderText = (flag: string) => {
       switch (flag) {

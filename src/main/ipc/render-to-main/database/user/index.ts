@@ -14,7 +14,13 @@ export class UserHandler {
         case DataUserCommand.GET_USER_INFO:
           return await UserService.getUserById(header, data)
         case DataUserCommand.GET_USERS_BASIC_INFO:
-          return await UserService.getUsersBasicInfo(data.userIds)
+          return {
+            users: await UserService.getUsersBasicInfo(data.userIds),
+          }
+        case DataUserCommand.GET_ALL_USERS:
+          return {
+            users: await UserService.getAllUsers(),
+          }
         default:
           throw new Error(`不支持的用户数据库命令: ${command}`)
       }

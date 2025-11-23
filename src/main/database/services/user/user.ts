@@ -1,5 +1,6 @@
-import type { IUserInfoRes } from 'commonModule/type/ajax/user'
-import { eq, inArray } from 'drizzle-orm'
+import type { IUserInfoRes, IUserSyncItem } from 'commonModule/type/ajax/user'
+import type { IDBUser } from 'commonModule/type/database/user'
+import { sql } from 'drizzle-orm'
 import dbManager from '../../db'
 import { users } from '../../tables/user/user'
 
@@ -10,12 +11,12 @@ export class UserService {
   }
 
   // 创建用户
-  static async create(userData: IDataBaseUserModel) {
+  static async create(userData: IDBUser) {
     return await this.db.insert(users).values(userData).run()
   }
 
   // 创建或更新用户（upsert操作）
-  static async upsert(userData: IDataBaseUserModel) {
+  static async upsert(userData: IDBUser) {
     return await this.db.insert(users)
       .values(userData)
       .onConflictDoUpdate({
@@ -30,14 +31,13 @@ export class UserService {
           status: userData.status,
           version: userData.version,
           updatedAt: userData.updatedAt,
-          lastLoginIp: userData.lastLoginIp,
         },
       })
       .run()
   }
 
   // 批量创建用户（调用upsert方法，避免重复数据错误）
-  static async batchCreate(usersData: IDataBaseUserModel[]) {
+  static async batchCreate(usersData: IDBUser[]) {
     if (usersData.length === 0)
       return
 
@@ -49,7 +49,7 @@ export class UserService {
   // 根据用户ID获取用户信息
   static async getUserById(header: any, _data: any): Promise<IUserInfoRes | null> {
     try {
-      const userId = header.userId
+      const userId = header.userId as string
       const userData = await this.db
         .select({
           userId: users.uuid,
@@ -62,7 +62,7 @@ export class UserService {
           version: users.version,
         })
         .from(users)
-        .where(eq(users.uuid, userId))
+        .where(sql`${users.uuid} = ${userId}`)
         .limit(1)
 
       if (userData.length === 0) {
@@ -78,7 +78,6 @@ export class UserService {
         phone: user.phone,
         email: user.email,
         gender: user.gender || 0,
-        version: user.version || 0,
       }
     }
     catch (error) {
@@ -96,7 +95,7 @@ export class UserService {
           version: users.version,
         })
         .from(users)
-        .where(eq(users.uuid, userId))
+        .where(sql`${users.uuid} = ${userId}`)
         .limit(1)
 
       if (userData.length === 0) {
@@ -125,7 +124,7 @@ export class UserService {
           avatar: users.avatar,
         })
         .from(users)
-        .where(inArray(users.uuid, userIds))
+        .where(sql`${users.uuid} IN (${sql.join(userIds.map(id => sql`${id}`), sql`, `)})`)
 
       return userData.map((user: any) => ({
         userId: user.userId,
@@ -135,6 +134,45 @@ export class UserService {
     }
     catch (error) {
       console.error('批量获取用户基本信息失败:', error)
+      return []
+    }
+  }
+
+  // 获取所有用户基本信息（用于contactStore初始化）
+  static async getAllUsers(): Promise<IUserSyncItem[]> {
+    try {
+      const userData = await this.db
+        .select({
+          userId: users.uuid,
+          nickName: users.nickName,
+          avatar: users.avatar,
+          abstract: users.abstract,
+          phone: users.phone,
+          email: users.email,
+          gender: users.gender,
+          status: users.status,
+          version: users.version,
+          createAt: users.createdAt,
+          updateAt: users.updatedAt,
+        })
+        .from(users)
+
+      return userData.map((user: any) => ({
+        userId: user.userId,
+        nickName: user.nickName,
+        avatar: user.avatar || '',
+        abstract: user.abstract || '',
+        phone: user.phone || '',
+        email: user.email || '',
+        gender: user.gender || 0,
+        status: user.status || 0,
+        version: user.version || 0,
+        createAt: user.createAt || 0,
+        updateAt: user.updateAt || 0,
+      }))
+    }
+    catch (error) {
+      console.error('获取所有用户失败:', error)
       return []
     }
   }

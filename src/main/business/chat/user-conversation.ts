@@ -120,18 +120,17 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
         syncItem.version,
       )
     }
-
     // 发送表更新通知
-    const userIds = Array.from(new Set(Array.from(syncMap.values()).map(item => item.userId)))
-    this.notifyUserConversationTableUpdate(userIds)
+    const conversationId = Array.from(new Set(Array.from(syncMap.values()).map(item => item.conversationId)))
+    this.notifyUserConversationTableUpdate(conversationId)
   }
 
   /**
    * 发送用户会话设置表更新通知
    */
-  private notifyUserConversationTableUpdate(userIds: string[]) {
+  private notifyUserConversationTableUpdate(conversationId: string[]) {
     sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.USER_CONVERSATION_UPDATE, {
-      updatedUsers: userIds,
+      conversationIds: conversationId,
     })
   }
 }

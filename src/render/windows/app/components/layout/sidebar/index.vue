@@ -61,16 +61,9 @@ export default {
     const avatarRef = ref<HTMLElement | null>(null)
 
     const handleClick = (path: string) => {
-      if (path === 'update') {
-        // 打开更新窗口
-        updateStore.startDownload()
-      }
-      else {
-        console.error(path)
-        nextTick(() => {
-          router.push({ path })
-        })
-      }
+      nextTick(() => {
+        router.push({ path })
+      })
     }
 
     const handleUpdateClick = () => {

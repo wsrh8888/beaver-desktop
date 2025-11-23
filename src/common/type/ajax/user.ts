@@ -99,6 +99,11 @@ export interface IUserSyncByIdsRes {
   users: IUserSyncItem[]
 }
 
+// 获取所有用户响应
+export interface IGetAllUsersRes {
+  users: IUserSyncItem[]
+}
+
 export interface IUserSyncItem {
   userId: string
   nickName: string

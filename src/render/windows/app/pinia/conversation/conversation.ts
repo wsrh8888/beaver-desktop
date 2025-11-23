@@ -82,6 +82,13 @@ export const useConversationStore = defineStore('useConversationStore', {
       })
     },
 
+    /**
+     * @description: 获取置顶的会话列表
+     */
+    getTopConversations(): IConversationInfoRes[] {
+      return this.getConversations.filter(conversation => conversation.isTop)
+    },
+
     getConversationInfo: state => (conversationId: string) => {
       const conversation = state.conversations.find((c: IConversationItem) => c.conversationId === conversationId)
       if (!conversation)
@@ -325,6 +332,72 @@ export const useConversationStore = defineStore('useConversationStore', {
 
       // 4. 都没有找到
       throw new Error(`会话 ${conversationId} 不存在`)
+    },
+
+    /**
+     * @description: 根据会话ID批量更新会话信息（用于数据库更新通知）
+     */
+    async batchUpdateConversationsByIds(conversationIds: string[]) {
+      if (!conversationIds || conversationIds.length === 0) {
+        return
+      }
+
+      try {
+        // 并行获取所有需要更新的会话信息
+        const updatePromises = conversationIds.map(async (conversationId) => {
+          try {
+            // 1. 首先从主进程数据库获取最新的会话信息
+            const localResult = await electron.database.chat.getConversationInfo({
+              conversationId,
+            })
+
+            if (localResult) {
+              // 2. 更新本地store中的会话信息
+              this.upsertConversation(localResult)
+              return { conversationId, success: true }
+            }
+            else {
+              // 3. 主进程没有，从服务端获取
+              const serverResult = await getRecentChatInfoApi({
+                conversationId,
+              })
+
+              if (serverResult && serverResult.result) {
+                // 4. 更新本地store中的会话信息
+                this.upsertConversation(serverResult.result)
+                return { conversationId, success: true }
+              }
+              else {
+                return { conversationId, success: false, error: '服务端也没有找到会话信息' }
+              }
+            }
+          }
+          catch (error) {
+            return { conversationId, success: false, error: (error as Error).message }
+          }
+        })
+
+        // 等待所有更新完成
+        const results = await Promise.all(updatePromises)
+
+        // 重新排序会话列表
+        this.resortConversations()
+
+        // 统计结果
+        const successCount = results.filter(r => r.success).length
+        const failedResults = results.filter(r => !r.success)
+
+        if (failedResults.length > 0) {
+          console.warn(`批量更新会话信息完成，成功: ${successCount}，失败: ${failedResults.length}`, failedResults)
+        }
+        else {
+          console.log(`批量更新会话信息完成，成功更新 ${successCount} 个会话`)
+        }
+      }
+      catch (error) {
+        console.error('批量更新会话信息失败:', error)
+        throw error
+      }
     },
 
     /**

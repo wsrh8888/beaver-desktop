@@ -1,5 +1,5 @@
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from 'commonModule/type/ajax/friend'
-import type { IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
+import type { IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes, IGetAllUsersRes } from 'commonModule/type/ajax/user'
 import type { IConversationInfoReq, IConversationInfoRes, IChatHistoryReq, IChatHistoryRes, IRecentChatRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IChatConversationVerRangeReq, IChatConversationVerRangeRes, IRecentChatReq } from 'commonModule/type/ajax/chat'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
@@ -20,6 +20,11 @@ export const databaseModule: IDatabaseModule = {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.USER, {
         command: DataUserCommand.GET_USERS_BASIC_INFO,
         data: params,
+      })
+    },
+    getAllUsers: async (): Promise<IGetAllUsersRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.USER, {
+        command: DataUserCommand.GET_ALL_USERS,
       })
     },
   },

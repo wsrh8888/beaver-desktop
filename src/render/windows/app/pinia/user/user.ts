@@ -26,16 +26,9 @@ export const useUserStore = defineStore('useUserStore', {
 
   actions: {
     async init() {
-      const userInfo = await electron.database.user.getUserInfo()
       const storeUserId = await electron.storage.getAsync('userInfo')
       if (storeUserId) {
         this.currentUserId = storeUserId.userId!
-      }
-
-      if (userInfo) {
-        // 同步到contactStore（初始化时强制更新）
-        const contactStore = useContactStore()
-        contactStore.updateContact(this.currentUserId, userInfo, true)
       }
     },
 

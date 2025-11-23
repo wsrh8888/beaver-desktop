@@ -4,6 +4,7 @@ import { useConversationStore } from 'renderModule/windows/app/pinia/conversatio
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import { useContactStore } from '../contact/contact'
 import { useFriendVerifyStore } from '../friend/friend_verify'
 import { useUpdateStore } from '../update/index'
 
@@ -51,6 +52,7 @@ export const useAppStore = defineStore('useAppStore', {
       const conversationStore = useConversationStore()
       const groupStore = useGroupStore()
       const updateStore = useUpdateStore()
+      const contactStore = useContactStore()
 
       try {
         // 首先获取应用生命周期的初始状态
@@ -59,6 +61,7 @@ export const useAppStore = defineStore('useAppStore', {
         // 并行初始化各项数据
         const promises = [
           userStore.init(),
+          contactStore.init(),
           friendStore.init(),
           conversationStore.init(),
           groupStore.init(),

@@ -17,10 +17,12 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
   }),
 
   getters: {
+    // 获取验证列表. user基础信息从contact 获取
+
     /**
      * @description: 获取增强后的验证列表（包含联系人信息）
      */
-    getEnhancedVerifyList: (state) => {
+    getVerifyList: (state) => {
       const contactStore = useContactStore()
 
       return state.friendVerifyList.map((item) => {
@@ -37,28 +39,6 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
         return item
       })
     },
-
-    /**
-     * @description: 根据用户ID获取增强后的验证信息
-     */
-    getEnhancedVerifyByUserId: state => (userId: string) => {
-      const item = state.friendVerifyList.find(v => v.userId === userId)
-      if (!item)
-        return null
-
-      // 从contactStore获取最新的联系人信息
-      const contactStore = useContactStore()
-      const contactInfo = contactStore.getContact(userId)
-      if (contactInfo) {
-        return {
-          ...item,
-          nickName: contactInfo.nickName || item.nickName,
-          avatar: contactInfo.avatar || item.avatar,
-        }
-      }
-
-      return item
-    },
   },
 
   actions: {
@@ -69,18 +49,6 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
         limit: 1000,
       })
       this.friendVerifyList = res.result.list || []
-
-      // 将验证列表中的用户信息同步到联系人缓存中（仅基本信息）
-      const contactStore = useContactStore()
-      this.friendVerifyList.forEach((item) => {
-        if (item.userId) {
-          contactStore.updateContact(item.userId, {
-            userId: item.userId,
-            nickName: item.nickName,
-            avatar: item.avatar,
-          } as any)
-        }
-      })
     },
 
     /**
@@ -109,14 +77,6 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
           else {
             this.friendVerifyList.push(verify)
           }
-
-          // 同步到contact store
-          const contactStore = useContactStore()
-          contactStore.updateContact(verify.userId, {
-            userId: verify.userId,
-            nickName: verify.nickName,
-            avatar: verify.avatar,
-          } as any)
         }
 
         return result.list

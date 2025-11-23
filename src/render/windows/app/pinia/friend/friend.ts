@@ -119,19 +119,6 @@ export const useFriendStore = defineStore('friendStore', {
         limit: 1000,
       })
       this.friendList = res.list || []
-
-      // 将好友信息同步到联系人缓存中
-      const contactStore = useContactStore()
-      this.friendList.forEach((friend) => {
-        if (friend.userId) {
-          // 只更新好友模块特有的字段，其他字段如果已有则保持不变
-          contactStore.updateContact(friend.userId, {
-            userId: friend.userId,
-            nickName: friend.nickName,
-            avatar: friend.avatar,
-          } as any)
-        }
-      })
     },
 
     /**
@@ -160,14 +147,6 @@ export const useFriendStore = defineStore('friendStore', {
           else {
             this.friendList.push(friend)
           }
-
-          // 同步到contact store
-          const contactStore = useContactStore()
-          contactStore.updateContact(friend.userId, {
-            userId: friend.userId,
-            nickName: friend.nickName,
-            avatar: friend.avatar,
-          } as any)
         }
 
         return result.list
