@@ -138,7 +138,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
 
       // 业务逻辑：获取会话显示信息
       let avatar = ''
-      let nickname = ''
+      let nickName = ''
       let notice = ''
 
       if (conv.type === 1) { // 私聊：从好友信息获取显示数据
@@ -151,7 +151,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
           const friendDetail = friendDetailsMap.get(friendId)
           if (friendDetail) {
             avatar = friendDetail?.avatar || ''
-            nickname = friendDetail?.nickname || ''
+            nickName = friendDetail?.nickName || ''
             notice = friendDetail.notice || ''
           }
         }
@@ -163,7 +163,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
           const groupDetail = groupDetailsMap.get(groupId)
           if (groupDetail) {
             avatar = groupDetail.avatar || ''
-            nickname = groupDetail.title || ''
+            nickName = groupDetail.title || ''
             notice = groupDetail.notice || ''
           }
         }
@@ -172,7 +172,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       return {
         conversationId: conv.conversationId,
         avatar,
-        nickname,
+        nickName,
         msgPreview: conv.lastMessage || '',
         updatedAt: conv.updatedAt, // 原始时间戳（秒级），前端负责格式化
         isTop: conv.isPinned === 1,
@@ -225,7 +225,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
 
     // 3. 获取头像和昵称信息
     let avatar = ''
-    let nickname = ''
+    let nickName = ''
     let notice = ''
 
     if (meta.type === 1) { // 私聊：从好友信息获取显示数据
@@ -239,7 +239,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         const friendDetail = friendDetailsMap.get(friendId)
         if (friendDetail) {
           avatar = friendDetail?.avatar || ''
-          nickname = friendDetail?.nickname || ''
+          nickName = friendDetail?.nickName || ''
           notice = friendDetail.notice || ''
         }
       }
@@ -252,7 +252,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         if (groupDetails.length > 0) {
           const groupDetail = groupDetails[0]
           avatar = groupDetail.avatar || ''
-          nickname = groupDetail.title || ''
+          nickName = groupDetail.title || ''
           notice = groupDetail.notice || ''
         }
       }
@@ -262,7 +262,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     const mergedConversation: IConversationItem = {
       conversationId: userConversation.conversationId,
       avatar,
-      nickname,
+      nickName,
       msgPreview: meta.lastMessage || '',
       updatedAt: meta.updatedAt || 0,
       isTop: userConversation.isPinned === 1,

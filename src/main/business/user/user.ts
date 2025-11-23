@@ -67,7 +67,7 @@ export class UserBusiness extends BaseBusiness<UserSyncItem> {
         for (const user of response.result.users) {
           const userData = {
             uuid: user.userId,
-            nickName: user.nickname,
+            nickName: user.nickName,
             avatar: user.avatar,
             abstract: user.abstract,
             phone: user.phone,

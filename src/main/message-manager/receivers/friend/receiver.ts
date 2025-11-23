@@ -16,8 +16,11 @@ export class FriendReceiver {
     const friendUpdates = tableUpdates.filter((update: any) => update.table === 'friends')
 
     for (const update of friendUpdates) {
-      // 使用business的队列处理机制，避免频繁请求
-      await friendBusiness.handleTableUpdates(update.userId, update.data[0].version, update.data[0]?.uuid)
+      // update.data 是数组，需要遍历每个数据项
+      for (const dataItem of update.data) {
+        // 使用business的队列处理机制，避免频繁请求
+        await friendBusiness.handleTableUpdates(dataItem.version, dataItem?.uuid)
+      }
     }
   }
 }

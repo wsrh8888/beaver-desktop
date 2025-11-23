@@ -9,6 +9,8 @@
         <!-- <img class="search-icon" src="renderModule/assets/image/chat/search.svg" alt="search"> -->
       </div>
     </div>
+    <!-- 置顶会话 -->
+    <TopConversationsComponent />
 
     <div class="chat-list">
       <div
@@ -16,13 +18,13 @@
         :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)"
       >
         <div class="chat-avatar">
-          <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickname" />
+          <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickName" />
         </div>
 
         <div class="chat-info">
           <div class="chat-header">
             <div class="chat-name">
-              {{ chat.nickname }}
+              {{ chat.nickName }}
             </div>
             <div class="chat-time">
               {{ chat.updateAt }}
@@ -47,19 +49,21 @@ import AppStatusComponent from 'renderModule/windows/app/components/business/sta
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, ref } from 'vue'
+import TopConversationsComponent from './TopConversations.vue'
 
 export default defineComponent({
   components: {
     AppStatusComponent,
     BeaverImage,
+    TopConversationsComponent,
   },
   setup() {
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
     const searchText = ref('')
 
-    // 获取排序后的聊天列表
-    const chatList = computed(() => conversationStore.getConversations)
+    // 获取非置顶的聊天列表（置顶的在单独组件中显示）
+    const chatList = computed(() => conversationStore.getConversations.filter(chat => !chat.isTop))
 
     // 处理聊天项点击
     const handleChatClick = (chat: any) => {

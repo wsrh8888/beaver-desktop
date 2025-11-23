@@ -2,6 +2,7 @@ export enum DataUserCommand {
 
   GET_USER_INFO = 'user:getUserInfo',
   GET_USERS_BASIC_INFO = 'user:getUsersBasicInfo',
+  GET_ALL_USERS = 'user:getAllUsers',
 }
 
 export enum DataFriendCommand {

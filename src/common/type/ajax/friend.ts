@@ -3,7 +3,7 @@ export interface IValidInfo {
   avatar: string
   flag: string
   id: string // 验证记录UUID
-  nickname: string
+  nickName: string
   userId: string
   status: number
   createdAt: string
@@ -29,7 +29,7 @@ export interface IFriendInfoReq {
 // 好友信息
 export interface IFriendInfo {
   userId: string
-  nickname: string
+  nickName: string
   avatar: string
   abstract: string
   notice: string
@@ -43,7 +43,7 @@ export interface IUserMapInfo {
   avatar: string
   conversationId: string
   isFriend: boolean
-  nickname: string
+  nickName: string
   userId: string
 }
 
@@ -72,7 +72,7 @@ export interface ISearchReq {
 
 export interface ISearchRes {
   userId: string
-  nickname: string
+  nickName: string
   avatar: string
   abstract: string
   notice: string
@@ -125,7 +125,7 @@ export interface ISearchValidInfoRes {
 
 export interface IResSearchUserInfo {
   userId: string
-  nickname: string
+  nickName: string
   avatar: string
   abstract: string
   notice: string

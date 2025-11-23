@@ -114,7 +114,7 @@ export class FriendService {
 
         friendDetailsMap.set(friendId, {
           userId: userInfo.uuid,
-          nickname: userInfo.nickName || '',
+          nickName: userInfo.nickName || '',
           avatar: userInfo.avatar || '',
           abstract: userInfo.abstract || '',
           email: userInfo.email || '',
@@ -194,7 +194,7 @@ export class FriendService {
 
       return {
         userId: friendUserId,
-        nickname: friendUser?.nickName || '',
+        nickName: friendUser?.nickName || '',
         avatar: friendUser?.avatar || '',
         abstract: friendUser?.abstract || '',
         notice,
@@ -329,7 +329,7 @@ export class FriendService {
 
           return {
             userId: friendUserId,
-            nickname: friendUser?.nickName || '',
+            nickName: friendUser?.nickName || '',
             fileName: friendUser?.avatar || '',
             abstract: friendUser?.abstract || '',
             notice: notice || '',

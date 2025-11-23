@@ -3,7 +3,7 @@
     <div class="message__left">
       <MessageLeftComponent />
     </div>
-    <div class="message__right">
+    <div v-show="currentChatId" class="message__right">
       <ChatHeaderComponent
         @show-details="handleShowDetails"
       />
@@ -28,12 +28,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
+import { useMessageViewStore } from '../../pinia/view/message'
 import GroupDetailsComponent from './detail-components/GroupDetails.vue'
 import PrivateDetailsComponent from './detail-components/PrivateDetails.vue'
 import MessageLeftComponent from './left-components/MessageLeft.vue'
 import ChatMenusComponent from './right-component/bottom/ChatMenus.vue'
 import ChatContentComponent from './right-component/content/ChatContent.vue'
+
 import ChatHeaderComponent from './right-component/header/header.vue'
 
 export default defineComponent({
@@ -50,11 +52,16 @@ export default defineComponent({
     // 当前显示的详情类型
     type DetailType = 'private' | 'group' | 'ai'
     const currentDetailType = ref<DetailType | null>(null)
+    const messageViewStore = useMessageViewStore()
 
     // 统一处理显示详情
     const handleShowDetails = (type: DetailType) => {
       currentDetailType.value = type
     }
+
+    const currentChatId = computed(() => {
+      return messageViewStore.currentChatId
+    })
 
     // 隐藏详情
     const hideDetails = () => {
@@ -62,6 +69,7 @@ export default defineComponent({
     }
 
     return {
+      currentChatId,
       currentDetailType,
       handleShowDetails,
       hideDetails,

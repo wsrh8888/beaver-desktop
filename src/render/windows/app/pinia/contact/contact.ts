@@ -29,6 +29,32 @@ export const useContactStore = defineStore('useContactStore', {
   },
 
   actions: {
+    async init() {
+      try {
+        // 获取数据库中所有用户数据
+        const result = await electron.database.user.getAllUsers()
+
+        // 更新contact store
+        result.users.forEach((user) => {
+          this.updateContact(user.userId, {
+            userId: user.userId,
+            nickName: user.nickName,
+            avatar: user.avatar || '',
+            abstract: user.abstract || '',
+            phone: user.phone || '',
+            email: user.email || '',
+            gender: user.gender || 0,
+            version: user.version || 0,
+          })
+        })
+
+        console.log('联系人数据初始化完成，总数:', this.user.size)
+      }
+      catch (error) {
+        console.error('联系人数据初始化失败:', error)
+        throw error
+      }
+    },
     updateContact(userId: string, contactInfo: Partial<IUserInfo>, force: boolean = false) {
       const existing = this.user.get(userId)
       let updated = false
@@ -49,6 +75,7 @@ export const useContactStore = defineStore('useContactStore', {
         this.user.set(userId, contactInfo as IUserInfo)
         updated = true
       }
+      console.error('更新全部用户模块', this.user)
 
       // 如果有更新，递增version触发响应式更新
       if (updated) {
@@ -70,10 +97,10 @@ export const useContactStore = defineStore('useContactStore', {
         console.error('222222222222222', result)
 
         // 更新contact store
-        result.forEach((user) => {
+        result.users.forEach((user) => {
           this.updateContact(user.userId, {
             userId: user.userId,
-            nickName: user.nickname,
+            nickName: user.nickName,
             avatar: user.avatar || '',
             abstract: user.abstract || '',
             phone: user.phone || '',

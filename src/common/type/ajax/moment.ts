@@ -32,7 +32,7 @@ export interface IGetMomentListReq {
 export interface IMomentInfo {
   momentId: string
   userId: string
-  nickname: string
+  nickName: string
   avatar: string
   content: string
   type: MomentType

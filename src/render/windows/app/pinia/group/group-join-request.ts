@@ -76,19 +76,6 @@ export const useGroupJoinRequestStore = defineStore('groupJoinRequestStore', {
         this.totalCount = res.count || 0
         this.currentPage = page
         this.pageSize = limit
-
-        // 将申请者用户信息同步到联系人缓存中
-        const contactStore = useContactStore()
-        this.groupJoinRequestList.forEach((item) => {
-          if (item.applicantId) {
-            contactStore.updateContact(item.applicantId, {
-              userId: item.applicantId,
-              nickName: item.applicantName,
-              avatar: item.applicantAvatar,
-            })
-          }
-        })
-
         return res
       }
       catch (error) {
@@ -148,19 +135,6 @@ export const useGroupJoinRequestStore = defineStore('groupJoinRequestStore', {
         this.groupJoinRequestList = [...this.groupJoinRequestList, ...newList]
         this.totalCount = res.count || 0
         this.currentPage = nextPage
-
-        // 同步新用户信息到联系人缓存
-        const contactStore = useContactStore()
-        newList.forEach((item) => {
-          if (item.applicantId) {
-            contactStore.updateContact(item.applicantId, {
-              userId: item.applicantId,
-              nickName: item.applicantName,
-              avatar: item.applicantAvatar,
-            })
-          }
-        })
-
         return res
       }
       catch (error) {

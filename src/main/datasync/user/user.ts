@@ -104,7 +104,7 @@ export class UserSyncModule {
     if (syncResponse.result.users?.length > 0) {
       const usersModels = syncResponse.result.users.map((user: any) => ({
         uuid: user.userId,
-        nickName: user.nickname,
+        nickName: user.nickName,
         avatar: user.avatar,
         abstract: user.abstract,
         phone: user.phone,

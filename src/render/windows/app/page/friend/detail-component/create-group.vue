@@ -33,7 +33,7 @@
                 :key="friend.userId"
                 class="selected-friend"
               >
-                <span>{{ friend.nickname }}</span>
+                <span>{{ friend.nickName }}</span>
                 <button class="remove-friend" @click="removeFriend(friend.userId)">
                   <img src="renderModule/assets/image/create-group/remove.svg" alt="删除">
                 </button>
@@ -76,7 +76,7 @@
                 />
               </div>
               <div class="friend-name">
-                {{ friend.nickname }}
+                {{ friend.nickName }}
               </div>
               <div class="friend-checkbox">
                 <img v-if="isSelected(friend.userId)" src="renderModule/assets/image/create-group/check.svg" alt="选中">
@@ -116,7 +116,7 @@ export default {
       }
       const keyword = searchKeyword.value.toLowerCase()
       return friendStore.friendList.filter((friend: IFriendInfo) =>
-        friend.nickname.toLowerCase().includes(keyword),
+        friend.nickName.toLowerCase().includes(keyword),
       )
     })
 

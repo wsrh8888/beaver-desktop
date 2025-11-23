@@ -130,7 +130,7 @@ export class FriendVerifyService {
         return {
           id: record.uuid,
           userId: otherUserId,
-          nickname: otherUser?.nickName || '',
+          nickName: otherUser?.nickName || '',
           avatar: otherUser?.avatar || '',
           message: record.message || '',
           flag: record.sendUserId === userId ? 'send' : 'receive', // 发送或接收标识
@@ -215,7 +215,7 @@ export class FriendVerifyService {
         return {
           id: record.uuid,
           userId: otherUserId,
-          nickname: otherUser?.nickName || '',
+          nickName: otherUser?.nickName || '',
           avatar: otherUser?.avatar || '',
           message: record.message || '',
           flag: record.sendUserId === userId ? 'send' : 'receive', // 发送或接收标识
@@ -283,7 +283,7 @@ export class FriendVerifyService {
       return {
         id: record.uuid,
         userId: otherUserId,
-        nickname: otherUser?.nickName || '',
+        nickName: otherUser?.nickName || '',
         avatar: otherUser?.avatar || '',
         message: record.message || '',
         flag: record.sendUserId === currentUserId ? 'send' : 'receive', // 发送或接收标识

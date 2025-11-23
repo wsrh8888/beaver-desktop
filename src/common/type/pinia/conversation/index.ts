@@ -19,7 +19,7 @@ export interface IConversationItem {
   /**
    * @description: 昵称
    */
-  nickname: string
+  nickName: string
   /**
    * @description: 消息预览
    */
