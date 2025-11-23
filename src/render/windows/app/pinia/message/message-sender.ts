@@ -168,7 +168,7 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
           sender: {
             userId: userStore.getUserId,
             avatar: userStore.userInfo.avatar,
-            nickname: userStore.userInfo.nickName,
+            nickName: userStore.userInfo.nickName,
           },
           create_at: new Date().toISOString(),
           status: 1, // 正常状态

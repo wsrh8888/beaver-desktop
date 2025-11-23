@@ -70,7 +70,7 @@ export default defineComponent({
       if (response.code === 0) {
         searchResults.value = [{
           id: response.result.userId,
-          title: response.result.nickname,
+          title: response.result.nickName,
           avatar: response.result.avatar,
           conversationId: response.result.conversationId,
           type: 'friend',

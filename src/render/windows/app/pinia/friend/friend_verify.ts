@@ -30,7 +30,7 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
           // 返回增强后的验证信息
           return {
             ...item,
-            nickname: contactInfo.nickName || item.nickname,
+            nickName: contactInfo.nickName || item.nickName,
             avatar: contactInfo.avatar || item.avatar,
           }
         }
@@ -52,7 +52,7 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
       if (contactInfo) {
         return {
           ...item,
-          nickname: contactInfo.nickName || item.nickname,
+          nickName: contactInfo.nickName || item.nickName,
           avatar: contactInfo.avatar || item.avatar,
         }
       }
@@ -76,7 +76,7 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
         if (item.userId) {
           contactStore.updateContact(item.userId, {
             userId: item.userId,
-            nickName: item.nickname,
+            nickName: item.nickName,
             avatar: item.avatar,
           } as any)
         }
@@ -114,7 +114,7 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
           const contactStore = useContactStore()
           contactStore.updateContact(verify.userId, {
             userId: verify.userId,
-            nickName: verify.nickname,
+            nickName: verify.nickName,
             avatar: verify.avatar,
           } as any)
         }

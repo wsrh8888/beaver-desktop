@@ -25,7 +25,7 @@ export const useFriendStore = defineStore('friendStore', {
         if (contactInfo) {
           return {
             ...friend,
-            nickname: contactInfo.nickName || friend.nickname,
+            nickName: contactInfo.nickName || friend.nickName,
             avatar: contactInfo.avatar || friend.avatar,
           }
         }
@@ -49,7 +49,7 @@ export const useFriendStore = defineStore('friendStore', {
             // 返回增强后的好友信息
             return {
               ...friend,
-              nickname: contactInfo.nickName || friend.nickname,
+              nickName: contactInfo.nickName || friend.nickName,
               avatar: contactInfo.avatar || friend.avatar,
             }
           }
@@ -79,7 +79,7 @@ export const useFriendStore = defineStore('friendStore', {
           // 返回增强后的好友信息
           return {
             ...friend,
-            nickname: contactInfo.nickName || friend.nickname,
+            nickName: contactInfo.nickName || friend.nickName,
             avatar: contactInfo.avatar || friend.avatar,
           }
         }
@@ -127,7 +127,7 @@ export const useFriendStore = defineStore('friendStore', {
           // 只更新好友模块特有的字段，其他字段如果已有则保持不变
           contactStore.updateContact(friend.userId, {
             userId: friend.userId,
-            nickName: friend.nickname,
+            nickName: friend.nickName,
             avatar: friend.avatar,
           } as any)
         }
@@ -165,7 +165,7 @@ export const useFriendStore = defineStore('friendStore', {
           const contactStore = useContactStore()
           contactStore.updateContact(friend.userId, {
             userId: friend.userId,
-            nickName: friend.nickname,
+            nickName: friend.nickName,
             avatar: friend.avatar,
           } as any)
         }

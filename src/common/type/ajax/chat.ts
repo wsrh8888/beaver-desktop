@@ -128,7 +128,7 @@ export interface ISendMsgRes {
 export interface ISender {
   userId: string
   avatar: string
-  nickname: string
+  nickName: string
 }
 
 // 会话信息请求
@@ -145,7 +145,7 @@ export interface IConversationInfoRes {
   /**
    * @description: 昵称
    */
-  nickname: string
+  nickName: string
   /**
    * @description: 消息预览
    */

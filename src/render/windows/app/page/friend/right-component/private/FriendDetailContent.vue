@@ -7,14 +7,14 @@
           <BeaverImage
             v-if="friendInfo?.avatar"
             :file-name="friendInfo.avatar"
-            :alt="friendInfo.nickname"
+            :alt="friendInfo.nickName"
           />
         </div>
       </div>
 
       <div class="info-section">
         <h1 class="name">
-          {{ friendInfo?.nickname || '未知用户' }}
+          {{ friendInfo?.nickName || '未知用户' }}
         </h1>
         <p v-if="friendInfo?.notice" class="remark">
           {{ friendInfo.notice }}

@@ -3,8 +3,8 @@
     <div class="content">
       <BeaverImage :file-name="friendInfo.avatar" class="avatar" />
       <div class="info">
-        <div class="nickname">
-          {{ friendInfo.nickname }}
+        <div class="nickName">
+          {{ friendInfo.nickName }}
         </div>
       </div>
     </div>
@@ -28,7 +28,7 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const friendInfo = ref<{ fileName?: string, nickname?: string }>({})
+    const friendInfo = ref<{ fileName?: string, nickName?: string }>({})
     const userStyle = ref({
       top: '',
       left: '',
@@ -85,7 +85,7 @@ export default defineComponent({
   margin-right: 16px;
 }
 
-.info .nickname {
+.info .nickName {
   font-size: 22px;
   font-weight: bold;
 }

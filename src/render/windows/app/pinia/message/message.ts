@@ -289,7 +289,7 @@ export const useMessageStore = defineStore('useMessageStore', {
         // 创建更新的会话对象，包含新的消息预览和时间戳
         const updatedConversation: IConversationInfoRes = {
           ...existingConversation,
-          msgPreview: message.msg?.textMsg?.content || `${message.sender?.nickname} 发来新消息`,
+          msgPreview: message.msg?.textMsg?.content || `${message.sender?.nickName} 发来新消息`,
           updatedAt: messageTimestampSeconds, // 保存原始时间戳（秒级），前端 getter 会格式化
         }
 

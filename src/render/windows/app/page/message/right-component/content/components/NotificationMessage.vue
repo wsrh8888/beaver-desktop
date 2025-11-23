@@ -38,7 +38,7 @@ export default defineComponent({
         // 优先从群成员获取（群聊场景）
         const groupMember = groupMemberStore.getMemberByUserId(userId)
         if (groupMember) {
-          return groupMember.nickname || userId
+          return groupMember.nickName || userId
         }
 
         // 从联系人获取

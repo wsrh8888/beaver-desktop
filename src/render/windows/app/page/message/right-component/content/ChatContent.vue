@@ -10,7 +10,7 @@
       <div v-if="message.sender.userId" class="message-avatar">
         <BeaverImage
           :cache-type="CacheType.USER_AVATAR"
-          :file-name="message.sender.avatar" :alt="message.sender.nickname"
+          :file-name="message.sender.avatar" :alt="message.sender.nickName"
           image-class="avatar-image" @click.stop="showUserInfo($event, message)"
         />
       </div>

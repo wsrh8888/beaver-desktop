@@ -40,11 +40,11 @@
                 <BeaverImage
                   :file-name="friend.avatar"
                   :cache-type="CacheType.USER_AVATAR"
-                  :alt="friend.nickname"
+                  :alt="friend.nickName"
                 />
               </div>
               <div class="friend-name">
-                {{ friend.nickname }}
+                {{ friend.nickName }}
               </div>
               <div class="friend-checkbox">
                 <img v-if="isSelected(friend.userId)" src="renderModule/assets/image/create-group/check.svg" alt="选中">
@@ -63,7 +63,7 @@
                 :key="friend.userId"
                 class="selected-friend"
               >
-                <span>{{ friend.nickname }}</span>
+                <span>{{ friend.nickName }}</span>
                 <button class="remove-friend" @click="removeFriend(friend.userId)">
                   <img src="renderModule/assets/image/create-group/remove.svg" alt="删除">
                 </button>
@@ -120,7 +120,7 @@ export default defineComponent({
       }
       const keyword = searchKeyword.value.toLowerCase()
       return friends.filter((friend: IFriendInfo) =>
-        friend.nickname.toLowerCase().includes(keyword),
+        friend.nickName.toLowerCase().includes(keyword),
       )
     })
 

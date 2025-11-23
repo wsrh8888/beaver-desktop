@@ -91,7 +91,7 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
 
       return {
         userId: friendUserId,
-        nickname: friendUser?.nickName || '',
+        nickName: friendUser?.nickName || '',
         avatar: friendUser?.avatar || '',
         abstract: friendUser?.abstract || '',
         notice,

@@ -63,12 +63,12 @@
             <div class="friend-avatar">
               <BeaverImage
                 :file-name="friend.avatar"
-                :alt="friend.nickname"
+                :alt="friend.nickName"
               />
             </div>
             <div class="friend-info">
               <div class="friend-name">
-                {{ friend.nickname || '未知用户' }}
+                {{ friend.nickName || '未知用户' }}
               </div>
               <div class="friend-status">
                 {{ friend.notice || '暂无备注' }}

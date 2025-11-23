@@ -48,7 +48,7 @@ export default defineComponent({
       notifications.value = friendVerifyList.value.map((item) => {
         return {
           id: item.id,
-          name: item.nickname,
+          name: item.nickName,
           avatar: item.avatar,
           time: item.createdAt,
           message: item.message,

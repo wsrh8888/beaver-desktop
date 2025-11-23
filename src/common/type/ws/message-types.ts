@@ -14,7 +14,7 @@ export interface IMessageMsg {
 // WebSocket 消息发送者信息
 export interface IMessageSender {
   avatar?: string
-  nickname?: string
+  nickName?: string
   userId: string
 }
 

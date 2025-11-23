@@ -73,7 +73,7 @@ export const useContactStore = defineStore('useContactStore', {
         result.forEach((user) => {
           this.updateContact(user.userId, {
             userId: user.userId,
-            nickName: user.nickname,
+            nickName: user.nickName,
             avatar: user.avatar || '',
             abstract: user.abstract || '',
             phone: user.phone || '',

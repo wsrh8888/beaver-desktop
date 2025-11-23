@@ -20,7 +20,7 @@
           </div>
           <div class="user-name-container">
             <div class="user-name">
-              {{ userInfo?.nickname || '用户' }}
+              {{ userInfo?.nickName || '用户' }}
             </div>
             <div v-if="userInfo" class="user-id">
               用户ID: {{ userInfo.userId }}
@@ -35,7 +35,7 @@
               昵称
             </div>
             <div class="detail-value">
-              {{ userInfo?.nickname || '未设置' }}
+              {{ userInfo?.nickName || '未设置' }}
             </div>
           </div>
 

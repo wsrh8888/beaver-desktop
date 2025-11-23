@@ -101,7 +101,7 @@ export interface IUserSyncByIdsRes {
 
 export interface IUserSyncItem {
   userId: string
-  nickname: string
+  nickName: string
   avatar: string
   abstract: string
   phone: string

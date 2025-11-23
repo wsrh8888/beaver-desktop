@@ -61,8 +61,8 @@ export const useConversationStore = defineStore('useConversationStore', {
               result = {
                 ...result,
                 avatar: contactInfo.avatar || conversation.avatar,
-                // contactInfo 可能没有 nickName 字段，保持原有 nickname
-                nickname: conversation.nickname,
+                // contactInfo 可能没有 nickName 字段，保持原有 nickName
+                nickName: conversation.nickName,
               }
             }
           }
@@ -73,7 +73,7 @@ export const useConversationStore = defineStore('useConversationStore', {
             result = {
               ...result,
               avatar: groupInfo.avatar || conversation.avatar,
-              nickname: groupInfo.title || conversation.nickname,
+              nickName: groupInfo.title || conversation.nickName,
             }
           }
         }
@@ -117,8 +117,8 @@ export const useConversationStore = defineStore('useConversationStore', {
             result = {
               ...result,
               avatar: contactInfo.avatar || conversation.avatar,
-              // contactInfo 可能没有 nickName 字段，保持原有 nickname
-              nickname: conversation.nickname,
+              // contactInfo 可能没有 nickName 字段，保持原有 nickName
+              nickName: conversation.nickName,
             }
           }
         }

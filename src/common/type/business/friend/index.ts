@@ -13,7 +13,7 @@ export interface GetFriendsListReq {
  */
 export interface FriendInfo {
   userId: string
-  nickname: string
+  nickName: string
   avatar?: string
   notice?: string // 备注
   source?: string // 来源

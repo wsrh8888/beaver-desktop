@@ -16,13 +16,13 @@
         :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)"
       >
         <div class="chat-avatar">
-          <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickname" />
+          <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickName" />
         </div>
 
         <div class="chat-info">
           <div class="chat-header">
             <div class="chat-name">
-              {{ chat.nickname }}
+              {{ chat.nickName }}
             </div>
             <div class="chat-time">
               {{ chat.updateAt }}
