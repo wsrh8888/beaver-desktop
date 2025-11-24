@@ -13,10 +13,6 @@ export interface IGroupInfo {
    */
   avatar: string
   /**
-   * @description: 成员数量
-   */
-  memberCount: number
-  /**
    * @description: 会话ID
    */
   conversationId: string
@@ -440,10 +436,6 @@ export interface IGroupInfoRes {
    */
   avatar: string
   /**
-   * @description: 成员数量
-   */
-  memberCount: number
-  /**
    * @description: 创建者ID
    */
   creatorId: string
@@ -515,13 +507,20 @@ export interface IGroupSyncRes {
   groups: IGroupSyncItem[]
 }
 
+// [2025-11-25T01:15:11.724] [INFO] info - [main-ajax] {"text":"ajax接口正常","spendTime":"8ms","uuid":"3814b157-614e-43b1-ae0e-1c7
+//   9897169d5","response":"{\"code\":0,\"msg\":\"\",\"result\":{\"groups\":[{\"groupId\":\"ecddee8a-f62c-4f09-80db-925e4690ff5f\",\"
+//   title\":\"群1\",\"avatar\":\"a8ba5d19ea54a91aec17dec0ad5000e6.png\",\"creatorId\":\"100000\",\"joinType\":0,\"status\":3,\"versi
+//   on\":9,\"createAt\":1763999516,\"updateAt\":1764004509}]}}","config":"{\"method\":\"POST\",\"data\":{\"groups\":[{\"groupId\":\"
+//   ecddee8a-f62c-4f09-80db-925e4690ff5f\",\"version\":9}]},\"url\":\"http://127.0.0.1:20800/api/group/sync\",\"headers\":{\"uuid\":
+//   \"3814b157-614e-43b1-ae0e-1c79897169d5\"}}"}
+
 export interface IGroupSyncItem {
   groupId: string
   title: string
   avatar: string
   creatorId: string
   joinType: number
-  isDeleted: boolean
+  status: number
   version: number
   createAt: number
   updateAt: number
@@ -539,7 +538,6 @@ export interface ISearchGroupRes {
   groupId: string
   name: string
   avatar?: string
-  memberCount: number
   description?: string
   conversationId?: string
 }
@@ -714,10 +712,6 @@ export interface IGroupSearchItem {
    * @description: 群组头像URL
    */
   avatar: string
-  /**
-   * @description: 成员数量
-   */
-  memberCount: number
   /**
    * @description: 加入方式：0自由加入 1需审批 2不允许加入
    */

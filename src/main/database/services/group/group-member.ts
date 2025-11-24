@@ -18,18 +18,34 @@ export class GroupMemberService {
 
   // 创建或更新群成员（upsert操作）
   static async upsert(memberData: any): Promise<any> {
-    return await this.db.insert(groupMembers)
-      .values(memberData)
-      .onConflictDoUpdate({
-        target: [groupMembers.groupId, groupMembers.userId],
-        set: {
+    // 先尝试查找是否已存在
+    const existing = await this.db
+      .select()
+      .from(groupMembers)
+      .where(and(eq(groupMembers.groupId as any, memberData.groupId), eq(groupMembers.userId as any, memberData.userId)))
+      .get()
+
+    if (existing && existing.id) {
+      // 如果存在，更新
+      return await this.db
+        .update(groupMembers)
+        .set({
           role: memberData.role,
           status: memberData.status,
           joinTime: memberData.joinTime,
           version: memberData.version,
-        },
-      })
-      .run()
+          updatedAt: memberData.updatedAt,
+        })
+        .where(eq(groupMembers.id as any, existing.id))
+        .run()
+    }
+    else {
+      // 如果不存在，插入
+      return await this.db
+        .insert(groupMembers)
+        .values(memberData)
+        .run()
+    }
   }
 
   // 批量创建群成员（支持插入或更新）
@@ -123,29 +139,11 @@ export class GroupMemberService {
       .where(inArray(groups.groupId as any, groupIds as any))
       .all()
 
-    // 4. 获取每个群组的成员数量
-    const memberCounts = new Map<string, number>()
-    for (const groupId of groupIds) {
-      const count = await this.db
-        .select({ count: groupMembers.id })
-        .from(groupMembers)
-        .where(and(
-          eq(groupMembers.groupId as any, groupId as any),
-          eq(groupMembers.status as any, 1 as any),
-        ))
-        .all()
-
-      memberCounts.set(groupId, count[0]?.count || 0)
-    }
-
     // 5. 组装返回数据
     return groupDetails.map((group: any) => {
-      const memberCount = memberCounts.get(group.groupId) || 0
-
       return {
         title: group.title || '',
         avatar: group.avatar || '',
-        memberCount,
         conversationId: `group_${group.groupId}`,
         version: group.version || 0,
       }

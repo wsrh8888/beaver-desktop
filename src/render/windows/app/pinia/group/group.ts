@@ -102,7 +102,6 @@ export const useGroupStore = defineStore('groupStore', {
             conversationId: group.conversationId,
             title: group.title,
             avatar: group.avatar,
-            memberCount: group.memberCount,
             version: group.version,
           } as any)
         }
