@@ -53,22 +53,12 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     // 业务逻辑：获取这些群组的详细信息
     const groupDetails = await GroupService.getGroupsByUuids(groupIds)
 
-    // 业务逻辑：获取每个群组的成员数量
-    const memberCounts = new Map<string, number>()
-    for (const groupId of groupIds) {
-      const members = await GroupMemberService.getGroupMembers(groupId)
-      memberCounts.set(groupId, members.length)
-    }
-
     // 业务逻辑：组装返回数据
     const list = groupDetails.map((group: any) => {
-      const memberCount = memberCounts.get(group.groupId) || 0
-
       return {
         groupId: group.groupId,
         title: group.title || '',
         avatar: group.avatar || '',
-        memberCount,
         conversationId: `group_${group.groupId}`, // conversationId格式：group_${groupId}
         version: group.version || 0,
       }
@@ -98,13 +88,10 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
 
     // 业务逻辑：组装返回数据
     const list = groups.map((group: any) => {
-      const memberCount = memberCounts.get(group.groupId) || 0
-
       return {
         groupId: group.groupId,
         title: group.title || '',
         avatar: group.avatar || '',
-        memberCount,
         conversationId: `group_${group.groupId}`, // conversationId格式：group_${groupId}
         version: group.version || 0,
       }
@@ -280,7 +267,7 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
             creatorId: group.creatorId,
             notice: '', // 同步API中没有notice字段
             joinType: group.joinType || 0,
-            status: group.isDeleted ? 0 : 1, // 转换为状态：0删除 1正常
+            status: group.status || 1, // 直接使用服务器返回的状态：1正常 2冻结 3解散
             version: group.version || 0,
             createdAt: Math.floor(group.createAt / 1000), // 转换为秒级时间戳
             updatedAt: Math.floor(group.updateAt / 1000),

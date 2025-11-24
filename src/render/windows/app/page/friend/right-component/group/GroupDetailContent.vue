@@ -7,9 +7,8 @@
       <div class="avatar-section">
         <div class="avatar">
           <BeaverImage
-            v-if="groupInfo?.fileName"
-            :file-name="groupInfo.fileName"
-            :alt="groupInfo.name"
+            v-if="groupInfo?.avatar"
+            :file-name="groupInfo.avatar"
           />
           <div v-else class="avatar-placeholder">
             {{ getGroupAvatarText(groupInfo?.name || '') }}
@@ -19,7 +18,7 @@
 
       <div class="info-section">
         <h1 class="name">
-          {{ groupInfo?.name || '未命名群聊' }}
+          {{ groupInfo?.title || '未命名群聊' }}
         </h1>
         <p v-if="groupInfo?.description" class="remark">
           {{ groupInfo.description }}
@@ -31,11 +30,7 @@
     <div class="info-section">
       <div class="info-item">
         <span class="info-label">群号：</span>
-        <span class="info-value">{{ groupInfo?.conversationId || '未知' }}</span>
-      </div>
-      <div class="info-item">
-        <span class="info-label">成员数：</span>
-        <span class="info-value">{{ groupInfo?.memberCount || 0 }}人</span>
+        <span class="info-value">{{ groupInfo?.groupId || '未知' }}</span>
       </div>
     </div>
 

@@ -105,9 +105,6 @@
             <div class="friend-name">
               {{ group.title || '未命名群聊' }}
             </div>
-            <div class="friend-status">
-              {{ group.memberCount || 0 }}人
-            </div>
           </div>
         </div>
       </div>
