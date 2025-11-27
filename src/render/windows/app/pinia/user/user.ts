@@ -1,4 +1,4 @@
-import type { IUserInfoRes } from 'commonModule/type/ajax/user'
+import type { IUserInfo } from 'commonModule/type/store/userInfo'
 import { defineStore } from 'pinia'
 import { updateInfoApi } from 'renderModule/api/user'
 import { useContactStore } from '../contact/contact'
@@ -8,40 +8,38 @@ import { useContactStore } from '../contact/contact'
  */
 export const useUserStore = defineStore('useUserStore', {
   state: (): {
-    userInfo: IUserInfoRes
+    currentUserId: string
   } => ({
-    userInfo: {
-      userId: '',
-      nickName: '',
-      avatar: '',
-      abstract: '',
-      gender: 0,
-    },
+    currentUserId: '',
   }),
+
+  getters: {
+    getUserInfo: (state) => {
+      const contactStore = useContactStore()
+      // 直接从contactStore获取当前用户的信息
+      return contactStore.getContact(state.currentUserId)
+    },
+    getUserId: (state) => {
+      return state.currentUserId
+    },
+  },
 
   actions: {
     async init() {
-      const userInfo = await electron.database.user.getUserInfo()
-      if (userInfo) {
-        this.userInfo = userInfo
-
-        // 同步到contactStore
-        const contactStore = useContactStore()
-        contactStore.updateContact(userInfo.userId, userInfo)
+      const storeUserId = await electron.storage.getAsync('userInfo')
+      if (storeUserId) {
+        this.currentUserId = storeUserId.userId!
       }
     },
 
-    async updateUserInfo(updates: Partial<IUserInfoRes>) {
+    async updateUserInfo(updates: Partial<IUserInfo>): Promise<boolean> {
       const res = await updateInfoApi(updates)
       if (res.code === 0) {
-        this.userInfo = {
-          ...this.userInfo,
-          ...updates,
-        }
-
-        // 同步更新到contactStore，确保数据一致性
+        // 直接更新到contactStore（用户主动更新，强制更新）
         const contactStore = useContactStore()
-        contactStore.updateContact(this.userInfo.userId, updates)
+        if (Object.keys(updates).length > 0) {
+          contactStore.updateContact(this.currentUserId, updates, true)
+        }
 
         return true
       }
@@ -49,13 +47,7 @@ export const useUserStore = defineStore('useUserStore', {
     },
 
     reset() {
-      this.userInfo = {
-        userId: '',
-        nickName: '',
-        avatar: '',
-        abstract: '',
-        gender: 0,
-      }
+      this.currentUserId = ''
     },
   },
 })

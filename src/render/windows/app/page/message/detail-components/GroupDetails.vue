@@ -40,7 +40,7 @@
           <div class="members-header">
             <div>
               <span class="members-title">群成员</span>
-              <span v-if="groupInfo" class="members-count">({{ groupInfo.memberCount }}人)</span>
+              <span v-if="groupInfo" class="members-count">({{ groupMembers.length }}人)</span>
             </div>
             <button
               v-if="canManageMembers"
@@ -117,9 +117,27 @@
           </div>
         </div>
 
-        <button class="leave-group" @click="handleLeaveGroup">
+        <!-- 群主显示解散群聊按钮 -->
+        <BeaverButton
+          v-if="currentUserRole === 1"
+          type="danger"
+          size="large"
+          class="leave-group-btn"
+          @click="handleDisbandGroup"
+        >
+          解散群聊
+        </BeaverButton>
+
+        <!-- 普通成员显示退出群聊按钮 -->
+        <BeaverButton
+          v-if="currentUserRole !== 1"
+          type="default"
+          size="large"
+          class="leave-group-btn"
+          @click="handleLeaveGroup"
+        >
           退出群聊
-        </button>
+        </BeaverButton>
       </div>
     </div>
 
@@ -138,9 +156,11 @@
 
 <script lang="ts">
 import { muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
-import { addGroupMemberApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
+import { addGroupMemberApi, deleteGroupApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
+import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
+import MessageBox from 'renderModule/components/ui/messagebox'
 import { uploadFile } from 'renderModule/utils/upload'
 import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
@@ -154,6 +174,7 @@ export default defineComponent({
   name: 'GroupDetails',
   components: {
     BeaverImage,
+    BeaverButton,
     AddGroupMember,
   },
   props: {
@@ -174,7 +195,7 @@ export default defineComponent({
     const showAllMembers = ref(false)
     const showAddMemberModal = ref(false)
     const avatarInputRef = ref<HTMLInputElement | null>(null)
-    const currentUserId = computed(() => userStore.userInfo.userId)
+    const currentUserId = computed(() => userStore.getUserId)
 
     // 获取当前用户在群中的角色
     const currentUserRole = computed(() => {
@@ -356,10 +377,13 @@ export default defineComponent({
       // 如果是群主或管理员，可以删除成员
       if (canManageMembers.value && currentUserId.value !== member.userId) {
         // 显示删除确认
-        // eslint-disable-next-line no-alert
-        if (confirm(`确定要移除成员 ${member.nickName || member.userId} 吗？`)) {
-          handleRemoveMember(member.userId)
-        }
+        MessageBox.confirm(`确定要移除成员 ${member.nickName || member.userId} 吗？`, '确认操作')
+          .then(() => {
+            handleRemoveMember(member.userId)
+          })
+          .catch(() => {
+            // 用户取消操作
+          })
       }
     }
 
@@ -388,10 +412,7 @@ export default defineComponent({
       if (!groupId.value)
         return
 
-      // eslint-disable-next-line no-alert
-      if (!confirm('确定要退出该群聊吗？')) {
-        return
-      }
+      await MessageBox.confirm('确定要退出该群聊吗？', '确认操作')
 
       try {
         await quitGroupApi({
@@ -406,6 +427,22 @@ export default defineComponent({
         console.error('退出群聊失败:', error)
         Message.error('退出群聊失败，请重试')
       }
+    }
+
+    // 解散群聊（仅群主可用）
+    const handleDisbandGroup = async () => {
+      if (!groupId.value)
+        return
+
+      await MessageBox.confirm('确定要解散该群聊吗？此操作不可恢复！', '确认操作')
+
+      await deleteGroupApi({
+        groupId: groupId.value,
+      })
+      Message.success('已解散群聊')
+      // 关闭详情面板
+      closeDetails()
+      // TODO: 需要更新会话列表，移除该群聊
     }
 
     return {
@@ -430,6 +467,8 @@ export default defineComponent({
       showAddMemberModal,
       canManageMembers,
       currentUserId,
+      currentUserRole,
+      handleDisbandGroup,
     }
   },
 })
@@ -854,24 +893,10 @@ input:checked + .slider:before {
   transform: translateX(22px);
 }
 
-/* 退出群聊 */
-.leave-group {
+/* 退出/解散群聊按钮 */
+.leave-group-btn {
   width: 100%;
-  height: 44px;
-  border-radius: 8px;
-  background-color: #FFE6D9;
-  color: #E86835;
-  border: 1px solid #E86835;
-  font-size: 15px;
-  font-weight: 500;
-  cursor: pointer;
   margin-top: 24px;
-  transition: all 0.2s;
-
-  &:hover {
-    background-color: #E86835;
-    color: #FFFFFF;
-  }
 }
 
 /* 覆盖层 */

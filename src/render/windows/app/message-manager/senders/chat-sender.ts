@@ -23,7 +23,7 @@ class ChatSender {
    */
   private getCurrentUserId(): string {
     const userStore = useUserStore()
-    return userStore.userInfo.userId || 'unknown'
+    return userStore.getUserId || 'unknown'
   }
 
   /**

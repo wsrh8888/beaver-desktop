@@ -166,9 +166,9 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
           seq: 0, // 临时seq，发送成功后会更新
           msg: this.buildMessageContent(content, messageType),
           sender: {
-            userId: userStore.userInfo.userId,
-            avatar: userStore.userInfo.avatar,
-            nickname: userStore.userInfo.nickName,
+            userId: userStore.getUserId,
+            avatar: userStore.getUserInfo.avatar,
+            nickName: userStore.getUserInfo.nickName,
           },
           create_at: new Date().toISOString(),
           status: 1, // 正常状态

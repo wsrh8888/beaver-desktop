@@ -14,6 +14,11 @@ export interface IWebSocketModule {
    */
   disconnect(): Promise<void>
 
+  /**
+   * @description: 重新连接WebSocket
+   */
+  reconnect(): Promise<boolean>
+
   chat: {
     /**
      * @description: 发送私聊消息

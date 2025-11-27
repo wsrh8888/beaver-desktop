@@ -62,7 +62,7 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
         senderDetails.forEach((detail) => {
           senderInfoMap.set(detail.userId, {
             userId: detail.userId,
-            nickname: detail.nickName,
+            nickName: detail.nickName,
             avatar: detail.avatar,
           })
         })
@@ -85,7 +85,7 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
         sender: {
           userId: message.sendUserId || '',
           avatar: senderDetail?.avatar || '',
-          nickname: senderDetail?.nickname || (message.sendUserId ? '用户' : '系统消息'),
+          nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
         },
         create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
         status: 0, // 消息状态：正常（只增不修改原则）
@@ -117,7 +117,7 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
         senderDetails.forEach((detail) => {
           senderInfoMap.set(detail.userId, {
             userId: detail.userId,
-            nickname: detail.nickName,
+            nickName: detail.nickName,
             avatar: detail.avatar,
           })
         })
@@ -139,7 +139,7 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
         sender: {
           userId: message.sendUserId || '',
           avatar: senderDetail?.avatar || '',
-          nickname: senderDetail?.nickname || (message.sendUserId ? '用户' : '系统消息'),
+          nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
         },
         create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
         status: 0, // 消息状态：正常（只增不修改原则）

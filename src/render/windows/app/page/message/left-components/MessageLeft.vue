@@ -1,32 +1,30 @@
 <template>
   <div class="message-left">
+    <!-- 应用状态显示 -->
+    <AppStatusComponent />
+
     <div class="search-container">
       <div class="search-wrapper">
         <input v-model="searchText" type="text" class="search-input" placeholder="搜索">
         <!-- <img class="search-icon" src="renderModule/assets/image/chat/search.svg" alt="search"> -->
       </div>
     </div>
+    <!-- 置顶会话 -->
+    <TopConversationsComponent />
 
     <div class="chat-list">
       <div
-        v-for="chat in chatList"
-        :key="chat.conversationId"
-        class="chat-item"
-        :class="{ active: currentConversationId === chat.conversationId }"
-        @click="handleChatClick(chat)"
+        v-for="chat in chatList" :key="chat.conversationId" class="chat-item"
+        :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)"
       >
         <div class="chat-avatar">
-          <BeaverImage
-            :file-name="chat.avatar"
-            :cache-type="CacheType.USER_AVATAR"
-            :alt="chat.nickname"
-          />
+          <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickName" />
         </div>
 
         <div class="chat-info">
           <div class="chat-header">
             <div class="chat-name">
-              {{ chat.nickname }}
+              {{ chat.nickName }}
             </div>
             <div class="chat-time">
               {{ chat.updateAt }}
@@ -47,21 +45,25 @@
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import AppStatusComponent from 'renderModule/windows/app/components/business/status/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, ref } from 'vue'
+import TopConversationsComponent from './TopConversations.vue'
 
 export default defineComponent({
   components: {
+    AppStatusComponent,
     BeaverImage,
+    TopConversationsComponent,
   },
   setup() {
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
     const searchText = ref('')
 
-    // 获取排序后的聊天列表
-    const chatList = computed(() => conversationStore.getConversations)
+    // 获取非置顶的聊天列表（置顶的在单独组件中显示）
+    const chatList = computed(() => conversationStore.getConversations.filter(chat => !chat.isTop))
 
     // 处理聊天项点击
     const handleChatClick = (chat: any) => {

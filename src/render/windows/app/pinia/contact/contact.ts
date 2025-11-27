@@ -1,34 +1,85 @@
-import type { IUserInfoRes } from 'commonModule/type/ajax/user'
+import type { IUserInfo } from 'commonModule/type/store/userInfo'
 import { defineStore } from 'pinia'
 
 /**
- * @description: 联系人信息管理
+ * @description: 联系人信息管理（数据总称，存储所有用户的完整信息）
  */
 export const useContactStore = defineStore('useContactStore', {
   state: (): {
-    user: Map<string, IUserInfoRes>
+    user: Map<string, IUserInfo>
+    version: number // 用于触发响应式更新
   } => ({
     user: new Map(),
+    version: 0,
   }),
 
   getters: {
-    getContact: state => (userId: string) => {
-      return state.user.get(userId) || null
+    getContact: state => (userId: string): IUserInfo => {
+      return state.user.get(userId) || {
+        userId: '',
+        nickName: '',
+        avatar: '',
+        abstract: '',
+        phone: '',
+        email: '',
+        gender: 0,
+        version: 0,
+      }
     },
   },
 
   actions: {
-    updateContact(userId: string, contactInfo: Partial<IUserInfoRes>) {
-      const existing = this.user.get(userId)
-      if (existing) {
-        this.user.set(userId, {
-          ...existing,
-          ...contactInfo,
+    async init() {
+      try {
+        // 获取数据库中所有用户数据
+        const result = await electron.database.user.getAllUsers()
+
+        // 更新contact store
+        result.users.forEach((user) => {
+          this.updateContact(user.userId, {
+            userId: user.userId,
+            nickName: user.nickName,
+            avatar: user.avatar || '',
+            abstract: user.abstract || '',
+            phone: user.phone || '',
+            email: user.email || '',
+            gender: user.gender || 0,
+            version: user.version || 0,
+          })
         })
+
+        console.log('联系人数据初始化完成，总数:', this.user.size)
+      }
+      catch (error) {
+        console.error('联系人数据初始化失败:', error)
+        throw error
+      }
+    },
+    updateContact(userId: string, contactInfo: Partial<IUserInfo>, force: boolean = false) {
+      const existing = this.user.get(userId)
+      let updated = false
+
+      if (existing) {
+        // 如果强制更新或新版本号大于等于现有版本号，则更新
+        if (force || !contactInfo.version || contactInfo.version >= existing.version) {
+          this.user.set(userId, {
+            ...existing,
+            ...contactInfo,
+          })
+          updated = true
+        }
+        // 如果版本号较低且不强制更新，则跳过更新
       }
       else {
-        // 如果不存在，创建新的（需要完整的用户信息）
-        this.user.set(userId, contactInfo as IUserInfoRes)
+        // 如果不存在，创建新的（需要完整信息）
+        this.user.set(userId, contactInfo as IUserInfo)
+        updated = true
+      }
+      console.error('更新全部用户模块', this.user)
+
+      // 如果有更新，递增version触发响应式更新
+      if (updated) {
+        this.version++
       }
     },
 
@@ -41,23 +92,25 @@ export const useContactStore = defineStore('useContactStore', {
       }
 
       try {
-        // 通过electron.database获取完整的用户信息
+        // 通过electron.database获取用户信息
         const result = await electron.database.user.getUsersBasicInfo({ userIds })
+        console.error('222222222222222', result)
 
         // 更新contact store
-        for (const user of result.users) {
+        result.users.forEach((user) => {
           this.updateContact(user.userId, {
             userId: user.userId,
-            nickName: user.nickname,
-            avatar: user.avatar,
-            abstract: user.abstract,
-            phone: user.phone,
-            email: user.email,
-            gender: user.gender,
-          } as any)
-        }
+            nickName: user.nickName,
+            avatar: user.avatar || '',
+            abstract: user.abstract || '',
+            phone: user.phone || '',
+            email: user.email || '',
+            gender: user.gender || 0,
+            version: user.version || 0,
+          })
+        })
 
-        return result.users
+        return result
       }
       catch (error) {
         console.error('批量更新联系人信息失败:', error)
@@ -67,6 +120,7 @@ export const useContactStore = defineStore('useContactStore', {
 
     reset() {
       this.user.clear()
+      this.version = 0
     },
   },
 })

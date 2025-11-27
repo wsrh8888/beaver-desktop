@@ -39,6 +39,7 @@ class GroupJoinRequestSync {
     }
     catch (error) {
       logger.error({ text: '入群申请同步失败', data: { error: (error as any)?.message } })
+      throw error
     }
   }
 

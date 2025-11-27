@@ -6,7 +6,7 @@
       </div>
       <div class="user-details">
         <div class="user-name">
-          {{ friendInfo?.nickname }}
+          {{ friendInfo?.nickName }}
         </div>
       </div>
     </div>

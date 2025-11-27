@@ -56,21 +56,14 @@ export default {
     const userStore = useUserStore()
     const updateStore = useUpdateStore()
 
-    const userInfo = computed(() => userStore.userInfo)
+    const userInfo = computed(() => userStore.getUserInfo)
     const showUserInfo = ref(false)
     const avatarRef = ref<HTMLElement | null>(null)
 
     const handleClick = (path: string) => {
-      if (path === 'update') {
-        // 打开更新窗口
-        updateStore.startDownload()
-      }
-      else {
-        console.error(path)
-        nextTick(() => {
-          router.push({ path })
-        })
-      }
+      nextTick(() => {
+        router.push({ path })
+      })
     }
 
     const handleUpdateClick = () => {

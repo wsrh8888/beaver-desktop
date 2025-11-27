@@ -16,6 +16,11 @@ export const websocketModule: IWebSocketModule = {
     return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WebSocketCommand.DISCONNECT)
   },
 
+  // 重新连接WebSocket
+  reconnect: async (): Promise<boolean> => {
+    return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WebSocketCommand.RECONNECT)
+  },
+
   chat: {
     privateMessageSend: async (
       wsMessage: any,

@@ -104,7 +104,7 @@ export class UserSyncModule {
     if (syncResponse.result.users?.length > 0) {
       const usersModels = syncResponse.result.users.map((user: any) => ({
         uuid: user.userId,
-        nickName: user.nickname,
+        nickName: user.nickName,
         avatar: user.avatar,
         abstract: user.abstract,
         phone: user.phone,
@@ -127,6 +127,7 @@ export class UserSyncModule {
 
       // 发送通知到render进程，告知用户数据已同步
       sendMainNotification('*', NotificationModule.DATABASE_USER, NotificationUserCommand.USER_UPDATE, {
+        source: 'datasync', // 标识来源：批量同步
         updatedUsers: usersModels.map(user => ({
           userId: user.uuid,
           version: user.version,

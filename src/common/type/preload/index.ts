@@ -2,6 +2,7 @@ import type { IAppModule } from './app'
 import type { IAuthModule } from './auth'
 import type { ICacheModule } from './cache'
 import type { IDatabaseModule } from './database'
+import type { IDatasyncModule } from './datasync'
 import type { ILoggerModule } from './logger'
 import type { INotificationModule } from './notification'
 import type { IStorageModule } from './storage'
@@ -57,6 +58,11 @@ export interface ElectronAPP {
    * @description: 通知模块
    */
   notification: INotificationModule
+
+  /**
+   * @description: 数据同步模块
+   */
+  datasync: IDatasyncModule
 
   /**
    * @description: 认证模块

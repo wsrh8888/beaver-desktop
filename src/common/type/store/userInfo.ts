@@ -1,10 +1,11 @@
-// 用户信息响应
-export interface IUserInfoRes {
+// 用户基本信息（前端状态存储）
+export interface IUserInfo {
   userId: string
   nickName: string
-  fileName: string // 修正：服务器端是fileName不是avatar
+  avatar: string
   abstract: string
   phone?: string
   email?: string
   gender: number
+  version: number
 }

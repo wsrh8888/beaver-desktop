@@ -1,4 +1,5 @@
 import type { IWsData, WsType } from 'commonModule/type/ws/command'
+import type { Buffer } from 'node:buffer'
 import { getCurrentConfig } from 'commonModule/config'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
@@ -27,8 +28,10 @@ type WsStatus = 'connecting' | 'connected' | 'closed' | 'error'
  */
 interface WsEventCallbacks {
   onMessage?(message: any): void
+  onConnecting?(): void
   onConnect?(): void
-  onDisconnect?(): void
+  onDisconnect?(code?: number, reason?: Buffer): void
+  onReconnectFailed?(): void
   onError?(error: any): void
 }
 
@@ -92,6 +95,11 @@ class WsManager {
     this.status = 'connecting'
     this.isClose = false
     this.isManualClose = false
+
+    // 触发开始连接回调
+    if (this.eventCallbacks.onConnecting) {
+      this.eventCallbacks.onConnecting()
+    }
 
     try {
       this.socket = new WebSocket(`${wsUrl}?token=${token}`)
@@ -242,6 +250,11 @@ class WsManager {
   private reconnect() {
     if (this.reconnectAttempts >= this.maxReconnectAttempts) {
       logger.info({ text: '达到最大重连次数，停止重连' })
+
+      // 通知前端：重连失败
+      if (this.eventCallbacks.onReconnectFailed) {
+        this.eventCallbacks.onReconnectFailed()
+      }
       return
     }
 

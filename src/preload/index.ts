@@ -6,6 +6,7 @@ import { appModule } from './core/app'
 import { authModule } from './core/auth'
 import { cacheModule } from './core/cache'
 import { databaseModule } from './core/database'
+import { datasyncModule } from './core/datasync'
 import { loggerModule } from './core/logger'
 import { notificationModule } from './core/notification'
 import { storageModule } from './core/storage'
@@ -25,6 +26,7 @@ const electronAPI: ElectronAPP = {
   database: databaseModule,
   notification: notificationModule,
   auth: authModule,
+  datasync: datasyncModule,
 
 }
 

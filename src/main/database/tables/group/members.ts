@@ -1,6 +1,6 @@
 import type { IDBGroupMember } from 'commonModule/type/database/group'
 import { sql } from 'drizzle-orm'
-import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
+import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // 群成员表 (与服务器端 group_models.GroupMemberModel 保持一致)
 export const groupMembers = sqliteTable('group_members', {
@@ -13,4 +13,6 @@ export const groupMembers = sqliteTable('group_members', {
   version: integer('version').default(0), // 群组成员列表版本号
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),
   updatedAt: integer('updated_at').default(sql`(strftime('%s', 'now'))`),
-}) as unknown as IDBGroupMember
+}, table => ({
+  uniqueGroupUser: uniqueIndex('unique_group_user').on(table.groupId, table.userId),
+})) as unknown as IDBGroupMember

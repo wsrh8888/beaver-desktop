@@ -6,7 +6,7 @@ export interface IContactUserInfo {
   /**
    * @description: 用户昵称
    */
-  nickname: string
+  nickName: string
   /**
    * @description: 用户头像
    */

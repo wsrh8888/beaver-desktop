@@ -3,14 +3,14 @@
     <div
       v-for="message in messages" :key="message.messageId" class="message"
       :class="{
-        send: message.sender.userId === userStore.userInfo.userId,
+        send: message.sender.userId === userStore.getUserId,
         system: message.sender.userId === '',
       }"
     >
       <div v-if="message.sender.userId" class="message-avatar">
         <BeaverImage
           :cache-type="CacheType.USER_AVATAR"
-          :file-name="message.sender.avatar" :alt="message.sender.nickname"
+          :file-name="message.sender.avatar" :alt="message.sender.nickName"
           image-class="avatar-image" @click.stop="showUserInfo($event, message)"
         />
       </div>
@@ -41,7 +41,7 @@
           :message="message"
         />
         <!-- 发送状态指示器 -->
-        <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.userInfo.userId" class="message-status">
+        <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
             <div class="sending-spinner" />
             发送中...
@@ -315,7 +315,7 @@ export default defineComponent({
       }
     })
     const showUserInfo = (event: MouseEvent, message: any) => {
-      if (message.sender.userId === userStore.userInfo.userId) {
+      if (message.sender.userId === userStore.getUserId) {
         return
       }
       userInfo.value.show = false

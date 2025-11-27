@@ -21,6 +21,6 @@ export class LoggerHandler {
    */
   private static handleLog(data: any) {
     const { level, message, moduleName } = data
-    logger[level as keyof typeof loggerModule](message, moduleName, 'main')
+    logger[level as keyof typeof loggerModule](message, moduleName, 'render')
   }
 }

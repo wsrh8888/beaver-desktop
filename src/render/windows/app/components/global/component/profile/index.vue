@@ -138,14 +138,14 @@ export default defineComponent({
 
     // 表单数据（只包含数据库中存在的字段）
     const formData = ref({
-      avatar: userStore.userInfo.avatar || '',
-      nickName: userStore.userInfo.nickName || '',
-      abstract: userStore.userInfo.abstract || '',
-      gender: genderReverseMap[userStore.userInfo.gender] || 'unknown',
+      avatar: userStore.getUserInfo.avatar || '',
+      nickName: userStore.getUserInfo.nickName || '',
+      abstract: userStore.getUserInfo.abstract || '',
+      gender: genderReverseMap[userStore.getUserInfo.gender] || 'unknown',
     })
 
     // 监听用户信息变化
-    watch(() => userStore.userInfo, (newInfo) => {
+    watch(() => userStore.getUserInfo, (newInfo) => {
       formData.value = {
         avatar: newInfo.avatar || '',
         nickName: newInfo.nickName || '',

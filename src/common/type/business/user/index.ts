@@ -5,7 +5,7 @@
  */
 export interface UserInfo {
   userId: string
-  nickname: string
+  nickName: string
   avatar?: string
   email?: string
 }

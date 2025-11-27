@@ -19,8 +19,7 @@ function generateConversationId(userId1: string, userId2: string): string {
  * 好友同步队列项
  */
 interface FriendSyncItem extends QueueItem {
-  userId: string
-  uuid?: string
+  uuid: string
   version: number
 }
 
@@ -91,7 +90,7 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
 
       return {
         userId: friendUserId,
-        nickname: friendUser?.nickName || '',
+        nickName: friendUser?.nickName || '',
         avatar: friendUser?.avatar || '',
         abstract: friendUser?.abstract || '',
         notice,
@@ -111,12 +110,11 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
    * 处理好友表的更新通知
    * 将同步请求加入队列，1秒后批量处理
    */
-  async handleTableUpdates(userId: string, version: number, uuid?: string) {
+  async handleTableUpdates(version: number, uuid: string) {
     this.addToQueue({
-      key: userId,
-      data: { userId, uuid, version },
+      key: uuid,
+      data: { uuid, version },
       timestamp: Date.now(),
-      userId,
       uuid,
       version,
     })
