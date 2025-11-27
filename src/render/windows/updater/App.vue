@@ -6,10 +6,14 @@
         <img src="commonModule/assets/img/logo/logo.png" alt="Beaver Logo">
       </div>
       <div class="header-info">
-        <h2 class="update-title">海狸 有可用更新</h2>
-        <p class="update-subtitle">我们推荐您更新到最新版本，以获得更好的使用体验和安全性提升</p>
+        <h2 class="update-title">
+          海狸 有可用更新
+        </h2>
+        <p class="update-subtitle">
+          我们推荐您更新到最新版本，以获得更好的使用体验和安全性提升
+        </p>
         <div class="version-info">
-          <span class="version-badge current-version">当前版本: v{{currentVersion}}</span>
+          <span class="version-badge current-version">当前版本: v{{ currentVersion }}</span>
           <span class="version-arrow">→</span>
           <span class="version-badge new-version">新版本: v{{ updateInfo.version }}</span>
         </div>
@@ -18,45 +22,47 @@
 
     <!-- 内容区域 -->
     <div class="update-content">
-      <h3 class="content-title">更新内容</h3>
+      <h3 class="content-title">
+        更新内容
+      </h3>
       <ul class="feature-list">
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
-        <li class="feature-item" v-if="updateInfo.releaseNotes">
+        <li v-if="updateInfo.releaseNotes" class="feature-item">
           <span class="feature-bullet">•</span>
           <span>{{ updateInfo.releaseNotes }}</span>
         </li>
@@ -77,7 +83,7 @@
           <span class="progress-percentage">{{ downloadProgress }}%</span>
         </div>
         <div class="progress-bar-container">
-          <div class="progress-bar" :style="{ width: downloadProgress + '%' }"></div>
+          <div class="progress-bar" :style="{ width: `${downloadProgress}%` }" />
         </div>
       </div>
     </div>
@@ -129,8 +135,8 @@
 </template>
 
 <script lang="ts">
-import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import { NotificationModule } from 'commonModule/type/preload/notification'
+import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
 
 export default defineComponent({
@@ -151,13 +157,11 @@ export default defineComponent({
     const downloadProgress = ref(0)
     const autoUpdate = ref(false)
 
-
     // 监听notification更新
     const handleNotification = (payload: any) => {
       if (payload.command === 'updateInfo' && payload.data) {
         updateInfo.value = { ...updateInfo.value, ...payload.data }
         checkLocalUpdateFile()
-
       }
     }
 
@@ -170,7 +174,7 @@ export default defineComponent({
       const downloadOptions = {
         fileKey: updateInfo.value.fileKey, // 直接使用 fileKey
         md5: updateInfo.value.md5,
-        version: updateInfo.value.version
+        version: updateInfo.value.version,
       }
 
       // 调用真实的下载功能
@@ -197,7 +201,7 @@ export default defineComponent({
       const restartOptions = {
         fileKey: updateInfo.value.fileKey,
         md5: updateInfo.value.md5,
-        version: updateInfo.value.version
+        version: updateInfo.value.version,
       }
 
       // 调用重启升级
@@ -224,11 +228,13 @@ export default defineComponent({
         if (result && result.includes('file://')) {
           updateStatus.value = 'completed'
           downloadProgress.value = 100
-        } else {
+        }
+        else {
           updateStatus.value = 'idle'
           downloadProgress.value = 0
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('检查本地更新文件失败:', error)
         updateStatus.value = 'idle'
       }
@@ -237,7 +243,6 @@ export default defineComponent({
     // 生命周期
     onMounted(async () => {
       electron?.notification.on(NotificationModule.MEDIA_VIEWER, handleNotification)
-
     })
 
     onUnmounted(() => {
@@ -256,9 +261,9 @@ export default defineComponent({
       handleRestart,
       handleClose,
       toggleAutoUpdate,
-      
+
     }
-  }
+  },
 })
 </script>
 
@@ -517,7 +522,6 @@ body {
   opacity: 1;
   pointer-events: all;
 }
-
 
 /* 按钮图标样式 */
 .beaver-button__icon img {

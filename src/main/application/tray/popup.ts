@@ -1,6 +1,6 @@
-import type { BrowserWindow } from 'electron'
 import type { TrayMenuItem } from 'commonModule/type/preload/app'
-import { BrowserWindow as ElectronBrowserWindow, screen, Tray } from 'electron'
+import type { BrowserWindow, Tray } from 'electron'
+import { BrowserWindow as ElectronBrowserWindow, screen } from 'electron'
 
 export interface PopupWindowOptions {
   messages: TrayMenuItem[]
@@ -8,8 +8,8 @@ export interface PopupWindowOptions {
   logoBase64: string
   tray: Tray
   mainWindow: BrowserWindow
-  onMessageClick?: (index: number) => void
-  onStopFlash?: () => void
+  onMessageClick?(index: number): void
+  onStopFlash?(): void
 }
 
 export interface TrayBounds {
@@ -82,7 +82,7 @@ export class PopupWindow {
     const displayCount = Math.min(options.messages.length, 4)
     const newHeight = 42 + displayCount * 30 + 5
     const currentBounds = this.window.getBounds()
-    
+
     if (currentBounds.height !== newHeight) {
       this.window.setSize(currentBounds.width, newHeight)
       // 高度变化后需要重新计算位置
@@ -161,8 +161,8 @@ export class PopupWindow {
 
     this.window.webContents.on('console-message', (_event, _level, message) => {
       if (message.startsWith('TRAY_CLICK:')) {
-        const index = parseInt(message.split(':')[1])
-        if (!isNaN(index) && index >= 0 && index < options.messages.length) {
+        const index = Number.parseInt(message.split(':')[1])
+        if (!Number.isNaN(index) && index >= 0 && index < options.messages.length) {
           this.hide()
           options.onMessageClick?.(index)
         }
@@ -190,10 +190,10 @@ export class PopupWindow {
     const display = screen.getDisplayNearestPoint({ x: bounds.x, y: bounds.y })
     const workArea = display.workArea
     const popupBounds = this.window.getBounds()
-    
+
     const trayCenterX = bounds.x + bounds.width / 2
     const popupX = trayCenterX - popupBounds.width / 2
-    
+
     // 计算 popup 底部应该对齐托盘图标顶部
     // bounds.y 是托盘图标的顶部 Y 坐标
     // popupBounds.height 是 popup 窗口的高度
@@ -214,7 +214,7 @@ export class PopupWindow {
     // 确保先停止之前的检查
     this.stopMouseCheck()
     // 不清除定时器，让之前的定时器继续（如果存在）
-    
+
     const checkMousePosition = () => {
       if (!this.window || this.window.isDestroyed() || !this.window.isVisible()) {
         this.stopMouseCheck()
@@ -224,11 +224,11 @@ export class PopupWindow {
 
       const point = screen.getCursorScreenPoint()
       const popupBounds = this.window.getBounds()
-      
+
       // 检查鼠标是否在弹窗上
       const isMouseInPopup = point.x >= popupBounds.x && point.x <= popupBounds.x + popupBounds.width
         && point.y >= popupBounds.y && point.y <= popupBounds.y + popupBounds.height
-      
+
       // 检查鼠标是否在托盘上
       const isMouseInTray = point.x >= trayBounds.x && point.x <= trayBounds.x + trayBounds.width
         && point.y >= trayBounds.y && point.y <= trayBounds.y + trayBounds.height
@@ -246,10 +246,10 @@ export class PopupWindow {
         // 如果已经有定时器，让它继续倒计时，不要重置
       }
     }
-    
+
     // 立即检查一次
     checkMousePosition()
-    
+
     // 然后定期检查
     this.checkTimer = setInterval(checkMousePosition, this.CHECK_INTERVAL)
   }
@@ -276,7 +276,7 @@ export class PopupWindow {
 
     this.hideTimer = setTimeout(() => {
       this.hideTimer = null
-      
+
       // 定时器到期时，再次检查鼠标位置
       if (!this.window || this.window.isDestroyed() || !this.window.isVisible()) {
         this.hide()
@@ -479,4 +479,3 @@ export class PopupWindow {
       .replace(/'/g, '&#039;')
   }
 }
-

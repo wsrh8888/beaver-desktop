@@ -1,10 +1,10 @@
-import type { INotificationPayload } from 'commonModule/type/preload/notification'
+import type { INotificationPayload, NotificationModule } from 'commonModule/type/preload/notification'
 import { NotificationUserCommand } from 'commonModule/type/preload/notification'
-import { NotificationModule } from 'commonModule/type/preload/notification'
 
+import Logger from 'renderModule/utils/logger'
 // 导入用户模块的通知处理器
 import userNotificationManager from './user'
-import Logger from 'renderModule/utils/logger'
+
 const logger = new Logger('用户模块通知路由器')
 
 /**

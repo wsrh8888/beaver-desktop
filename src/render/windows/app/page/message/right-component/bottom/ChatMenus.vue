@@ -45,10 +45,10 @@
 <script lang="ts">
 import type { UploadResult } from 'renderModule/utils/upload'
 import { MessageType } from 'commonModule/type/ajax/chat'
-import { useMessageSenderStore } from 'renderModule/windows/app/pinia/message/message-sender'
-import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { getFilesFromClipboardEvent } from 'renderModule/utils/clipboard'
 import { selectAndUploadFile, uploadFile } from 'renderModule/utils/upload'
+import { useMessageSenderStore } from 'renderModule/windows/app/pinia/message/message-sender'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { defineComponent, onBeforeUnmount, ref } from 'vue'
 import { toolList } from './data'
 import EmojiComponent from './emoji.vue'

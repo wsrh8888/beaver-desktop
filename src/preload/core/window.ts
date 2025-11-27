@@ -1,7 +1,7 @@
 import type { IWindowModule, IWindowOpenOptions, IWinodwCloseOptions } from 'commonModule/type/preload/window'
 import { WinHook } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
-import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
+import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
 // --- Window Management Module ---
 export const windowModule: IWindowModule = {

@@ -4,7 +4,6 @@ import { useMessageStore } from '../../pinia/message/message'
 const logger = new Logger('DatabaseChatMessageEventManager')
 
 class DatabaseChatMessageEventManager {
-
   /**
    * 处理消息表更新通知
    */

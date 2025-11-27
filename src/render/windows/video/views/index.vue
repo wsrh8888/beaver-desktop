@@ -22,8 +22,8 @@
 </template>
 
 <script lang="ts">
+import { NotificationMediaViewerCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
-import { NotificationModule, NotificationMediaViewerCommand } from 'commonModule/type/preload/notification'
 
 export default defineComponent({
   name: 'VideoPlayer',
@@ -67,7 +67,8 @@ export default defineComponent({
 
     // 键盘事件
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (!videoRef.value) return
+      if (!videoRef.value)
+        return
 
       if (e.key === 'Escape') {
         electron?.window.closeWindow('video', { hideOnly: true })
@@ -169,4 +170,3 @@ export default defineComponent({
   font-size: 14px;
 }
 </style>
-

@@ -1,10 +1,10 @@
+import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncGroupMembersApi } from 'mainModule/api/datasync'
 import { groupMemberSyncApi } from 'mainModule/api/group'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { GroupMemberService } from 'mainModule/database/services/group/group-member'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { NotificationModule, NotificationGroupCommand } from 'commonModule/type/preload/notification'
 import Logger from 'mainModule/utils/logger/index'
 
 const logger = new Logger('数据同步-group-member')

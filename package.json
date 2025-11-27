@@ -121,7 +121,7 @@
     "unzipper": "^0.12.3",
     "vite": "^5.3.4",
     "vite-plugin-compression": "^0.5.1",
-    "vite-plugin-electron": "^0.28.7",
+    "vite-plugin-electron": "^0.29.0",
     "vite-plugin-electron-renderer": "^0.14.5",
     "vite-plugin-html": "^3.2.2",
     "vite-plugin-static-copy": "^1.0.6",

@@ -1,6 +1,6 @@
 import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from '../ajax/chat'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
-import type { IGetGroupListReq, IGetGroupsBatchReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
+import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
 import type { IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from '../ajax/user'
 
 /**

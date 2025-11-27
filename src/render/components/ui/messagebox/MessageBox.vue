@@ -354,7 +354,7 @@ export default defineComponent({
 
   &--success {
     background: #F0F9FF;
-    
+
     img {
       filter: brightness(0) saturate(100%) invert(67%) sepia(90%) saturate(400%) hue-rotate(60deg) brightness(95%) contrast(90%);
     }
@@ -366,7 +366,7 @@ export default defineComponent({
 
   &--error {
     background: #FEF0F0;
-    
+
     img {
       filter: brightness(0) saturate(100%) invert(50%) sepia(90%) saturate(2000%) hue-rotate(330deg) brightness(95%) contrast(90%);
     }
@@ -374,7 +374,7 @@ export default defineComponent({
 
   &--info {
     background: #F4F4F5;
-    
+
     img {
       filter: brightness(0) saturate(100%) invert(60%) sepia(0%) saturate(0%) hue-rotate(0deg) brightness(90%) contrast(90%);
     }

@@ -4,13 +4,12 @@ import path from 'node:path'
 import { CacheType } from 'commonModule/type/cache/cache'
 import { UpdateCommand } from 'commonModule/type/ipc/command'
 import { shell } from 'electron'
+import { previewOnlineFileApi } from 'mainModule/api/file'
+import { cacheTypeToFilePath } from 'mainModule/cache/config'
+import { getRootPath } from 'mainModule/config'
+import { mediaCacheService } from 'mainModule/database/services/media/media'
 import { downloadFile } from 'mainModule/utils/download/index'
 import logger from 'mainModule/utils/log'
-import updater from 'mainModule/application/updater'
-import { cacheTypeToFilePath } from 'mainModule/cache/config'
-import { previewOnlineFileApi } from 'mainModule/api/file'
-import { mediaCacheService } from 'mainModule/database/services/media/media'
-import { getRootPath } from 'mainModule/config'
 
 export class UpdaterHandler {
   /**
@@ -70,7 +69,8 @@ export class UpdaterHandler {
       try {
         await mediaCacheService.upsert(fileKey, downloadedFile.path, CacheType.PUBLIC_UPDATE, downloadedFile.size)
         logger.info({ text: '下载记录已保存到数据库', data: { fileKey, filePath: downloadedFile.path, fileSize: downloadedFile.size } }, 'UpdaterHandler')
-      } catch (error) {
+      }
+      catch (error) {
         logger.error({ text: '保存下载记录失败', data: error }, 'UpdaterHandler')
         // 保存失败不影响下载结果，只记录错误
       }

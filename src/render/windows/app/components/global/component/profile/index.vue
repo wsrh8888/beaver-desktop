@@ -103,12 +103,12 @@
 
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
-import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import cameraIcon from 'renderModule/assets/image/leftBar/settings/camera.svg'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
-import { selectAndUploadFile, uploadFile } from 'renderModule/utils/upload'
+import { uploadFile } from 'renderModule/utils/upload'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({

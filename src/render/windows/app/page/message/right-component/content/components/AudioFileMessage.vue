@@ -3,24 +3,28 @@
     <!-- 顶部蓝色区域：Audio标识 -->
     <div class="audio-header">
       <div class="audio-icon">
-        <img :src="AudioIconSvg" alt="Audio" />
+        <img :src="AudioIconSvg" alt="Audio">
       </div>
       <span class="audio-label">Audio</span>
     </div>
     <!-- 底部白色区域：文件信息 -->
     <div class="audio-content">
       <div class="file-info">
-        <div class="file-name" :title="fileName">{{ fileName }}</div>
-        <div v-if="fileSize" class="file-size">{{ formatFileSize(fileSize) }}</div>
+        <div class="file-name" :title="fileName">
+          {{ fileName }}
+        </div>
+        <div v-if="fileSize" class="file-size">
+          {{ formatFileSize(fileSize) }}
+        </div>
       </div>
       <div class="file-actions">
         <!-- 播放按钮 -->
         <div class="action-btn play-btn" @click.stop="handlePlay">
-          <img :src="playerSvg" alt="播放" />
+          <img :src="playerSvg" alt="播放">
         </div>
         <!-- 下载按钮 -->
         <div class="action-btn download-btn" @click.stop="handleDownload">
-          <img :src="downloadSvg" alt="下载" />
+          <img :src="downloadSvg" alt="下载">
         </div>
       </div>
     </div>
@@ -28,11 +32,11 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
 import { previewOnlineFileApi } from 'renderModule/api/file'
-import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import AudioIconSvg from 'renderModule/assets/image/chat/audio-icon.svg'
+import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'AudioFileMessage',
@@ -57,17 +61,19 @@ export default defineComponent({
 
     // 格式化文件大小
     const formatFileSize = (bytes: number | null | undefined): string => {
-      if (!bytes || bytes === 0) return '0 B'
+      if (!bytes || bytes === 0)
+        return '0 B'
       const k = 1024
       const sizes = ['B', 'KB', 'MB', 'GB']
       const i = Math.floor(Math.log(bytes) / Math.log(k))
-      return `${(bytes / Math.pow(k, i)).toFixed(2)} ${sizes[i]}`
+      return `${(bytes / k ** i).toFixed(2)} ${sizes[i]}`
     }
 
     // 处理播放
     const handlePlay = async () => {
       const fileKey = props.message.msg.audioFileMsg?.fileName
-      if (!fileKey) return
+      if (!fileKey)
+        return
 
       try {
         // 获取音频URL（优先使用缓存，否则使用在线URL）
@@ -81,7 +87,7 @@ export default defineComponent({
         catch {
           // 缓存获取失败，使用在线URL
         }
-        
+
         // 打开音频播放器窗口
         await electron.window.openWindow('audio', {
           unique: true,
@@ -151,7 +157,7 @@ export default defineComponent({
       left: 0;
       right: 0;
       bottom: 0;
-      background-image: 
+      background-image:
         radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
         repeating-linear-gradient(
@@ -276,4 +282,3 @@ export default defineComponent({
   }
 }
 </style>
-

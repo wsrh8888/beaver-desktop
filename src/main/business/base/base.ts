@@ -70,7 +70,8 @@ export abstract class BaseBusiness<T extends QueueItem = QueueItem> {
    * 调度队列处理
    */
   private scheduleProcessing(delayMs: number): void {
-    if (this.processingTimer) return
+    if (this.processingTimer)
+      return
 
     this.processingTimer = setTimeout(() => {
       this.processQueue()
@@ -81,7 +82,8 @@ export abstract class BaseBusiness<T extends QueueItem = QueueItem> {
    * 处理队列中的所有请求
    */
   private async processQueue(): Promise<void> {
-    if (this.pendingQueue.length === 0) return
+    if (this.pendingQueue.length === 0)
+      return
 
     // 清除定时器
     if (this.processingTimer) {

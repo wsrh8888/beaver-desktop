@@ -2,7 +2,7 @@ import type { CacheType } from 'commonModule/type/cache/cache'
 import type { ICacheModule } from 'commonModule/type/preload/cache'
 import { CacheCommand } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
-import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
+import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
 export const cacheModule: ICacheModule = {
   // 获取缓存内容

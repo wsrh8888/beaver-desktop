@@ -7,7 +7,7 @@ function parseAdditionalArguments() {
     env: 'prod' as 'prod' | 'test',
     token: undefined as string | undefined,
     devicedId: undefined as string | undefined,
-    version: "1.0.0.0" as string,
+    version: '1.0.0.0' as string,
   }
   args.forEach((arg) => {
     const paramsPrefix = '--custom='

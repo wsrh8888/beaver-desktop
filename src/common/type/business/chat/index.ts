@@ -2,5 +2,5 @@
 // 与API层的ajax类型区分开
 
 export * from './conversation'
-export * from './user-conversation'
 export * from './message'
+export * from './user-conversation'

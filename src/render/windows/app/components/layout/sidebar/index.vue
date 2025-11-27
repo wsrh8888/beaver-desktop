@@ -24,7 +24,7 @@
     <!-- 更新图标 -->
     <div v-if="updateStore?.updateInfo?.hasUpdate" class="update-icon app__no_drag" @click="handleUpdateClick">
       <img src="renderModule/assets/image/update/update.svg" alt="更新">
-      <span class="update-badge"></span>
+      <span class="update-badge" />
     </div>
 
     <div class="main-logo">
@@ -37,9 +37,9 @@
 
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
-import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
-import { useUpdateStore } from 'renderModule/windows/app/pinia/update/index'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { useUpdateStore } from 'renderModule/windows/app/pinia/update/index'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { outsideList } from './data'
@@ -64,7 +64,8 @@ export default {
       if (path === 'update') {
         // 打开更新窗口
         updateStore.startDownload()
-      } else {
+      }
+      else {
         console.error(path)
         nextTick(() => {
           router.push({ path })

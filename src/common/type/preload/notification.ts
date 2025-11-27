@@ -1,8 +1,8 @@
-
-
 /**
  * 主进程通知渲染进程
  */
+import type { TrayMenuItem } from './app'
+
 export enum NotificationModule {
   /**
    * 群组通知
@@ -37,8 +37,6 @@ export enum NotificationModule {
    */
   MEDIA_VIEWER = 'media:viewer',
 }
-
-
 
 export enum NotificationFriendCommand {
   /**
@@ -138,8 +136,6 @@ export interface NotificationCommandMap {
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
   [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand
 }
-
-import type { TrayMenuItem } from './app'
 
 export interface INotificationPayload<M extends NotificationModule> {
   command: NotificationCommandMap[M]

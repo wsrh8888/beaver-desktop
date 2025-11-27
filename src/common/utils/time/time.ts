@@ -11,7 +11,7 @@
  * - 本周内（周一~周六）：显示星期几，如 "周一"
  * - 今年内：显示月日，如 "3月15日"
  * - 更早：显示年月日，如 "2023年3月15日"
- * 
+ *
  * @param timestamp 时间戳（秒或毫秒）或时间戳字符串
  * @returns 格式化后的时间字符串
  */
@@ -21,8 +21,8 @@ export function formatConversationTime(timestamp: number | string | null | undef
   }
 
   // 转换为数字时间戳
-  let ts = typeof timestamp === 'string' ? parseInt(timestamp, 10) : timestamp
-  if (isNaN(ts) || ts <= 0) {
+  let ts = typeof timestamp === 'string' ? Number.parseInt(timestamp, 10) : timestamp
+  if (Number.isNaN(ts) || ts <= 0) {
     return ''
   }
 
@@ -34,16 +34,16 @@ export function formatConversationTime(timestamp: number | string | null | undef
 
   const date = new Date(ts)
   const now = new Date()
-  
+
   // 检查日期是否有效
-  if (isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) {
     return ''
   }
 
   // 今天的时间范围
   const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate())
   const todayEnd = new Date(todayStart.getTime() + 24 * 60 * 60 * 1000 - 1)
-  
+
   // 昨天的时间范围
   const yesterdayStart = new Date(todayStart.getTime() - 24 * 60 * 60 * 1000)
   const yesterdayEnd = new Date(todayStart.getTime() - 1)
@@ -85,4 +85,3 @@ export function formatConversationTime(timestamp: number | string | null | undef
     return `${year}年${month}月${day}日`
   }
 }
-

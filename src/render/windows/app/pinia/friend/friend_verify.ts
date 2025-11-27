@@ -97,7 +97,7 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
 
         // 使用验证记录UUID列表查询获取最新的验证数据
         const result = await electron.database.friend.getValidByUuid({
-          uuids: userIds
+          uuids: userIds,
         })
 
         // 更新friend verify store
@@ -105,7 +105,8 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
           const index = this.friendVerifyList.findIndex(v => v.userId === verify.userId)
           if (index !== -1) {
             this.friendVerifyList[index] = verify
-          } else {
+          }
+          else {
             this.friendVerifyList.push(verify)
           }
 
@@ -119,7 +120,8 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
         }
 
         return result.list
-      } catch (error) {
+      }
+      catch (error) {
         console.error('根据用户ID列表更新好友验证信息失败:', error)
         throw error
       }

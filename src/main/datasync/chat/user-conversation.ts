@@ -75,7 +75,7 @@ class UserConversationSync {
     const conversationIds = conversationsWithVersions.map(item => item.conversationId)
 
     // 构建版本映射，方便查找
-    const versionMap = new Map(conversationsWithVersions.map(item => [item.conversationId, item.version]))
+    const _versionMap = new Map(conversationsWithVersions.map(item => [item.conversationId, item.version]))
 
     // 分批获取用户会话设置数据（避免一次性获取过多数据）
     const batchSize = 50

@@ -159,10 +159,10 @@ export class GroupJoinRequestService {
 
     // 构建查询条件：用户申请的 OR 别人申请用户管理的群组
     const conditions = []
-    
+
     // 条件1：用户申请的群组
     conditions.push(eq(groupJoinRequests.applicantUserId as any, userId as any))
-    
+
     // 条件2：别人申请用户管理的群组
     if (managedGroupIds.length > 0) {
       conditions.push(inArray(groupJoinRequests.groupId as any, managedGroupIds as any))
@@ -187,10 +187,10 @@ export class GroupJoinRequestService {
   static async getUserRelatedJoinRequestsCount(userId: string, managedGroupIds: string[]): Promise<number> {
     // 构建查询条件：用户申请的 OR 别人申请用户管理的群组
     const conditions = []
-    
+
     // 条件1：用户申请的群组
     conditions.push(eq(groupJoinRequests.applicantUserId as any, userId as any))
-    
+
     // 条件2：别人申请用户管理的群组
     if (managedGroupIds.length > 0) {
       conditions.push(inArray(groupJoinRequests.groupId as any, managedGroupIds as any))
@@ -232,7 +232,7 @@ export class GroupJoinRequestService {
       .all()
 
     // 获取所有申请者ID
-    const applicantIds = requests.map((r: IDBGroupJoinRequest) => r.applicantUserId as string).filter((id: string) => id)
+    const _applicantIds = requests.map((r: IDBGroupJoinRequest) => r.applicantUserId as string).filter((id: string) => id)
 
     // 批量获取申请者用户信息（业务逻辑，已移至业务层）
     // const userInfos = await UserService.getUsersBasicInfo(applicantIds)
@@ -303,7 +303,7 @@ export class GroupJoinRequestService {
       .all()
 
     // 获取所有申请者ID
-    const applicantIds = requests.map((r: IDBGroupJoinRequest) => r.applicantUserId as string).filter((id: string) => id)
+    const _applicantIds = requests.map((r: IDBGroupJoinRequest) => r.applicantUserId as string).filter((id: string) => id)
 
     // 批量获取申请者用户信息（业务逻辑，已移至业务层）
     // const userInfos = await UserService.getUsersBasicInfo(applicantIds)

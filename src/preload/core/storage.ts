@@ -2,7 +2,7 @@ import type { IStoreOptions } from 'commonModule/type/mainStore'
 import type { IStorageModule } from 'commonModule/type/preload/storage'
 import { StorageCommand } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
-import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
+import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
 export const storageModule: IStorageModule = {
   getAsync: (key: string, options?: IStoreOptions) => {

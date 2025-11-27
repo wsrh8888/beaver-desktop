@@ -1,15 +1,16 @@
 import type {
   IChatHistoryReq,
   IChatHistoryRes,
-  IChatMessageVerRangeRes
+  IChatMessageVerRangeRes,
 } from 'commonModule/type/ajax/chat'
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
-import { BaseBusiness, type QueueItem } from '../base/base'
+import type { QueueItem } from '../base/base'
+import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { chatSyncApi } from 'mainModule/api/chat'
 import { MessageService } from 'mainModule/database/services/chat/message'
 import { UserService } from 'mainModule/database/services/user/user'
-import { NotificationModule, NotificationChatCommand } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { BaseBusiness } from '../base/base'
 
 /**
  * 消息同步队列项
@@ -34,6 +35,7 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       delayMs: 1000,
     })
   }
+
   /**
    * 获取聊天历史
    */
@@ -150,7 +152,6 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     }
   }
 
-
   /**
    * 通过版本区间从服务端同步消息数据
    * 直接使用WS推送的版本范围，不查询本地数据
@@ -174,11 +175,12 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
         await this.handleSyncedMessages(response.result.messages)
 
         console.log(`消息同步成功: conversationId=${conversationId}, range=[${minVersion}, ${maxVersion}], count=${response.result.messages.length}`)
-      } else {
+      }
+      else {
         console.log(`消息已同步: conversationId=${conversationId}, range=[${minVersion}, ${maxVersion}]`)
       }
-
-    } catch (error) {
+    }
+    catch (error) {
       console.error('通过版本区间同步消息失败:', error)
     }
   }
@@ -210,7 +212,8 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       if (existing) {
         existing.minVersion = Math.min(existing.minVersion, item.minVersion)
         existing.maxVersion = Math.max(existing.maxVersion, item.maxVersion)
-      } else {
+      }
+      else {
         conversationMap.set(item.conversationId, {
           minVersion: item.minVersion,
           maxVersion: item.maxVersion,
@@ -226,7 +229,7 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     // 发送消息表更新通知 - 为每个更新的会话发送通知
     for (const [conversationId, versionRange] of conversationMap) {
       sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.MESSAGE_UPDATE, {
-        conversationId: conversationId,
+        conversationId,
         seq: versionRange.maxVersion, // 使用最大版本号作为最新序列号
       })
     }
@@ -236,7 +239,8 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
    * 处理同步到的消息数据
    */
   private async handleSyncedMessages(messages: any[]) {
-    if (messages.length === 0) return
+    if (messages.length === 0)
+      return
 
     console.log('同步到消息数据:', messages.length, '条')
 
@@ -256,8 +260,6 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       createdAt: msg.createAt,
       updatedAt: Math.floor(Date.now() / 1000),
     }))
-
-
 
     // 批量保存到本地数据库
     await MessageService.batchCreate(formattedMessages)

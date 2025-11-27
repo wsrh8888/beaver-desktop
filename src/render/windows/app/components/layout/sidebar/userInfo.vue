@@ -49,9 +49,9 @@
 
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
-import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import MessageBox from 'renderModule/components/ui/messagebox'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useGlobalStore } from '../../../pinia/view/global/index'
 import { userInfoMenuList } from './data'

@@ -1,5 +1,5 @@
-import { FriendReceiver } from './receiver'
 import { FriendVerifyReceiver } from './friend-verify-receiver'
+import { FriendReceiver } from './receiver'
 
 /**
  * @description: 好友消息路由器

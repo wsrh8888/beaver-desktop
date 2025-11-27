@@ -1,12 +1,12 @@
+import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from 'commonModule/type/ajax/chat'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from 'commonModule/type/ajax/friend'
+import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from 'commonModule/type/ajax/group'
 import type { IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
-import type { IConversationInfoReq, IConversationInfoRes, IChatHistoryReq, IChatHistoryRes, IRecentChatRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IChatConversationVerRangeReq, IChatConversationVerRangeRes, IRecentChatReq } from 'commonModule/type/ajax/chat'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
-import { DataFriendCommand, DataUserCommand, DataChatCommand, DataGroupCommand } from 'commonModule/type/ipc/database'
+import { DataChatCommand, DataFriendCommand, DataGroupCommand, DataUserCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
-import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
-import { IGetGroupListReq, IGetGroupsBatchReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGroupListRes, IGroupMemberListRes, IGroupJoinRequestListReq, IGroupJoinRequestListRes } from 'commonModule/type/ajax/group'
+import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
 export const databaseModule: IDatabaseModule = {
   // 用户相关

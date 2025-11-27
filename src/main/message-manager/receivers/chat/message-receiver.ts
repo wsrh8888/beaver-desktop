@@ -1,5 +1,5 @@
-import { messageBusiness } from 'mainModule/business/chat/message'
 import { conversationBusiness } from 'mainModule/business/chat/conversation'
+import { messageBusiness } from 'mainModule/business/chat/message'
 import { userConversationBusiness } from 'mainModule/business/chat/user-conversation'
 
 /**
@@ -7,8 +7,6 @@ import { userConversationBusiness } from 'mainModule/business/chat/user-conversa
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
 export class MessageReceiver {
-
-
   /**
    * 处理消息更新通知
    * 只处理 messages 表的更新

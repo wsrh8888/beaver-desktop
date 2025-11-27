@@ -12,11 +12,11 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { CacheType } from 'commonModule/type/cache/cache'
 import { previewOnlineFileApi } from 'renderModule/api/file'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
-import { CacheType } from 'commonModule/type/cache/cache'
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'ImageMessage',
@@ -46,7 +46,8 @@ export default defineComponent({
     // 处理图片点击
     const handleImageClick = async () => {
       const fileKey = props.message.msg.imageMsg?.fileKey
-      if (!fileKey) return
+      if (!fileKey)
+        return
 
       try {
         // 获取图片URL（优先使用缓存，否则使用在线URL）
@@ -60,7 +61,7 @@ export default defineComponent({
         catch {
           // 缓存获取失败，使用在线URL
         }
-        
+
         // 打开图片查看器窗口
         await electron.window.openWindow('image', {
           unique: true,
@@ -98,4 +99,3 @@ export default defineComponent({
   }
 }
 </style>
-

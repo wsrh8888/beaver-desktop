@@ -1,7 +1,7 @@
 import type { INotificationModule, INotificationPayload, NotificationCommandMap, NotificationModule, SystemNotificationOptions, TrayUpdateOptions } from 'commonModule/type/preload/notification'
 import { NotificationCommand } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
-import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
+import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
 /**
  * @description: 通知模块

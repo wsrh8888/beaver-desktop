@@ -1,8 +1,9 @@
 import type { IWebSocketModule } from 'commonModule/type/preload/websocket'
+import type { GetWsMessageBody } from 'commonModule/type/ws/command'
 import { WebSocketCommand } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
-import ipcRenderManager from 'mainModule/utils/preload/ipcRender'
-import { GetWsMessageBody, WsCommand, WsType } from 'commonModule/type/ws/command'
+import { WsType } from 'commonModule/type/ws/command'
+import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
 export const websocketModule: IWebSocketModule = {
   // 连接WebSocket
@@ -17,7 +18,7 @@ export const websocketModule: IWebSocketModule = {
 
   chat: {
     privateMessageSend: async (
-      wsMessage: any
+      wsMessage: any,
     ): Promise<boolean> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WebSocketCommand.SEND_CHAT_MESSAGE, {
         command: WsType.PRIVATE_MESSAGE_SEND,
@@ -26,7 +27,7 @@ export const websocketModule: IWebSocketModule = {
     },
     groupMessageSend: async <T extends WsType>(
       conversationId: string,
-      content: GetWsMessageBody<T>
+      content: GetWsMessageBody<T>,
     ): Promise<boolean> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WebSocketCommand.SEND_CHAT_MESSAGE, {
         command: WsType.GROUP_MESSAGE_SEND,

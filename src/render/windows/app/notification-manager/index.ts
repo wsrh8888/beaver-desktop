@@ -12,18 +12,18 @@ import { userNotificationRouter } from './user/index'
 class NotificationManager {
   init() {
     // 设置全局通知监听器，委托给各个子模块的路由器处理
-    electron.notification.on(NotificationModule.DATABASE_CHAT, (params) => chatNotificationRouter.handleNotification(params))
-    electron.notification.on(NotificationModule.DATABASE_FRIEND, (params) => friendNotificationRouter.handleNotification(params))
-    electron.notification.on(NotificationModule.DATABASE_GROUP, (params) => groupNotificationRouter.handleNotification(params))
-    electron.notification.on(NotificationModule.DATABASE_USER, (params) => userNotificationRouter.handleNotification(params))
+    electron.notification.on(NotificationModule.DATABASE_CHAT, params => chatNotificationRouter.handleNotification(params))
+    electron.notification.on(NotificationModule.DATABASE_FRIEND, params => friendNotificationRouter.handleNotification(params))
+    electron.notification.on(NotificationModule.DATABASE_GROUP, params => groupNotificationRouter.handleNotification(params))
+    electron.notification.on(NotificationModule.DATABASE_USER, params => userNotificationRouter.handleNotification(params))
   }
 
   off() {
     // 移除全局通知监听器
-    electron.notification.off(NotificationModule.DATABASE_CHAT, (params) => chatNotificationRouter.handleNotification(params))
-    electron.notification.off(NotificationModule.DATABASE_FRIEND, (params) => friendNotificationRouter.handleNotification(params))
-    electron.notification.off(NotificationModule.DATABASE_GROUP, (params) => groupNotificationRouter.handleNotification(params))
-    electron.notification.off(NotificationModule.DATABASE_USER, (params) => userNotificationRouter.handleNotification(params))
+    electron.notification.off(NotificationModule.DATABASE_CHAT, params => chatNotificationRouter.handleNotification(params))
+    electron.notification.off(NotificationModule.DATABASE_FRIEND, params => friendNotificationRouter.handleNotification(params))
+    electron.notification.off(NotificationModule.DATABASE_GROUP, params => groupNotificationRouter.handleNotification(params))
+    electron.notification.off(NotificationModule.DATABASE_USER, params => userNotificationRouter.handleNotification(params))
   }
 }
 

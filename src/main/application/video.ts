@@ -38,4 +38,3 @@ class Video extends ApplicationBase implements Application {
 }
 
 export default new Video()
-

@@ -25,10 +25,9 @@ export function initCustom() {
     ENV: 'prod',
     TOOLS: false,
     DEVICE_ID: deviceId,
-    VERSION: getVersion()
+    VERSION: getVersion(),
   }
 }
-
 
 const getVersion = () => {
   // 判断跟目录是否存在god.txt
@@ -38,7 +37,6 @@ const getVersion = () => {
   }
   return '1.0.0.0'
 }
-
 
 export function loadConfigs() {
   const configPaths = [
@@ -63,7 +61,6 @@ function loadConfigFile(configPath: string) {
     }
   }
 }
-
 
 export const getExePath = () => {
   if (process.env.NODE_ENV === 'development') {
