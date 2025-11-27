@@ -265,18 +265,18 @@ export default defineComponent({
   position: fixed;
   background: #FFFFFF;
   border: 1px solid #EBEEF5;
-  border-radius: 4px;
+  border-radius: 10px;
   box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
-  padding: 5px 0;
-  min-width: 120px;
-  max-width: 300px;
+  padding: 3px 0;
+  // min-width: 100px;
+  // max-width: 300px;
   z-index: 9999;
 }
 
 .context-menu-item {
-  padding: 8px 16px;
+  padding: 5px 15px;
   cursor: pointer;
-  font-size: 14px;
+  font-size: 12px;
   color: #2D3436;
   display: flex;
   align-items: center;
@@ -301,6 +301,7 @@ export default defineComponent({
 
   &__text {
     flex: 1;
+    text-align: center;
   }
 
   &__shortcut {
