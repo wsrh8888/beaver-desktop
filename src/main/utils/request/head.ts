@@ -1,28 +1,29 @@
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import axios from 'axios'
+import axiosRetry from 'axios-retry'
+import Logger from 'mainModule/utils/logger/index'
+
 import { v4 as uuidV4 } from 'uuid'
 
-// 直接导入logger
-let logger: any
-
-// 简单的进程检测
-if (typeof window !== 'undefined' && window.electron) {
-  // 渲染进程
-  import('renderModule/utils/logger').then((LoggerModule) => {
-    logger = new LoggerModule.default('head')
-  })
-}
-else {
-  // 主进程
-  import('mainModule/utils/log').then((mainLogger) => {
-    logger = mainLogger.default
-  })
-}
+const logger = new Logger('head')
 
 // 探测接口专用请求实例
 const baseRequest = axios.create({
   baseURL: '',
   timeout: 5000,
+})
+
+// 配置重试机制
+axiosRetry(baseRequest, {
+  retries: 1, // 重试1次，总共2次请求
+  retryDelay: () => {
+    return 1000 // 固定延迟：1秒
+  },
+  retryCondition: (error: AxiosError) => {
+    // HTTP状态码不为200且不是404时重试
+    const shouldRetry = !error.response || (error.response.status !== 200 && error.response.status !== 404)
+    return shouldRetry
+  },
 })
 
 baseRequest.interceptors.request.use(
@@ -63,31 +64,27 @@ function head(config: AxiosRequestConfig): Promise<AxiosResponse | AxiosError> {
   return baseRequest(config)
     .then((response) => {
       const spendTime = new Date().getTime() - currentTime
-      if (logger) {
-        logger.info({
-          text: 'head请求成功',
-          spendTime: `${spendTime}ms`,
-          uuid: httpId,
-          config: JSON.stringify(config),
-        }, 'head')
-      }
+      logger.info({
+        text: 'head请求成功',
+        spendTime: `${spendTime}ms`,
+        uuid: httpId,
+        config: JSON.stringify(config),
+      })
 
       return Promise.resolve(response)
     })
     .catch((err: AxiosError) => {
       const spendTime = new Date().getTime() - currentTime
-      if (logger) {
-        logger.error({
-          text: 'head请求失败',
-          spendTime: `${spendTime}ms`,
-          uuid: httpId,
-          config: JSON.stringify(config),
-          response: JSON.stringify({
-            code: err?.code,
-            message: err?.message,
-          }),
-        }, 'head')
-      }
+      logger.error({
+        text: 'head请求失败',
+        spendTime: `${spendTime}ms`,
+        uuid: httpId,
+        config: JSON.stringify(config),
+        response: JSON.stringify({
+          code: err?.code,
+          message: err?.message,
+        }),
+      })
       return Promise.reject(err)
     })
 }

@@ -73,6 +73,7 @@
     "@types/better-sqlite3": "^7.6.13",
     "@types/uuid": "^10.0.0",
     "@types/ws": "^8.18.1",
+    "axios-retry": "^4.5.0",
     "better-sqlite3": "^12.4.1",
     "browser-md5-file": "^1.1.1",
     "drizzle-kit": "^0.31.4",

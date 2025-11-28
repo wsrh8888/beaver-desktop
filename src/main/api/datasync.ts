@@ -7,6 +7,10 @@ import type {
   IGetSyncChatMessagesRes,
   IGetSyncChatUserConversationsReq,
   IGetSyncChatUserConversationsRes,
+  IGetSyncEmojiCollectsReq,
+  IGetSyncEmojiCollectsRes,
+  IGetSyncEmojisReq,
+  IGetSyncEmojisRes,
   IGetSyncFriendsReq,
   IGetSyncFriendsRes,
   IGetSyncFriendVerifiesReq,
@@ -117,5 +121,27 @@ export const datasyncGetSyncFriendVerifiesApi = (data: IGetSyncFriendVerifiesReq
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/datasync/getSyncFriendVerifies`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的表情版本
+ */
+export const datasyncGetSyncEmojisApi = (data: IGetSyncEmojisReq) => {
+  return ajax<IGetSyncEmojisRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncEmojis`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的表情收藏版本
+ */
+export const datasyncGetSyncEmojiCollectsApi = (data: IGetSyncEmojiCollectsReq) => {
+  return ajax<IGetSyncEmojiCollectsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncEmojiCollects`,
   })
 }

@@ -2,6 +2,7 @@ import { NotificationAppLifecycleCommand, NotificationModule } from 'commonModul
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 import { chatDatasync } from './chat'
+import { emojiDatasync } from './emoji'
 import { friendDatasync } from './friend'
 import { groupDatasync } from './group'
 import { userDatasync } from './user'
@@ -33,6 +34,7 @@ export class DataSyncManager {
       await chatDatasync.checkAndSync()
       await friendDatasync.checkAndSync()
       await groupDatasync.checkAndSync()
+      await emojiDatasync.checkAndSync()
 
       this.isSyncing = false
       // 通知前端：同步完成，系统就绪

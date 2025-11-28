@@ -191,3 +191,58 @@ export interface IFriendVerifyVersionItem {
   uuid: string // 验证记录UUID
   version: number // 验证记录版本号
 }
+
+// 获取表情同步请求
+export interface IGetSyncEmojisReq {
+  since?: number // 从这个时间戳之后开始同步，不传则同步所有
+}
+
+// 获取表情同步响应
+export interface IGetSyncEmojisRes {
+  emojiVersions: IEmojiVersionItem[] // 表情基础数据摘要
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 表情版本信息
+export interface IEmojiVersionItem {
+  uuid: string // 表情UUID
+  version: number // 表情版本号
+}
+
+// 获取表情收藏同步请求
+export interface IGetSyncEmojiCollectsReq {
+  since?: number // 从这个时间戳之后开始同步，不传则同步所有
+}
+
+// 获取表情收藏同步响应
+export interface IGetSyncEmojiCollectsRes {
+  emojiCollectVersions: IEmojiCollectVersionItem[] // 用户收藏的表情变更摘要
+  emojiPackageCollectVersions: IEmojiPackageCollectVersionItem[] // 用户收藏的表情包变更摘要
+  emojiPackageVersions: IEmojiPackageVersionItem[] // 表情包数据变更摘要
+  emojiPackageContentVersions: IEmojiPackageContentVersionItem[] // 表情包内容变更摘要
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 表情收藏版本信息
+export interface IEmojiCollectVersionItem {
+  id: string // 收藏记录UUID
+  version: number // 收藏版本号
+}
+
+// 表情包收藏版本信息
+export interface IEmojiPackageCollectVersionItem {
+  id: string // 收藏记录UUID
+  version: number // 收藏版本号
+}
+
+// 表情包版本信息
+export interface IEmojiPackageVersionItem {
+  id: string // 表情包UUID
+  version: number // 表情包版本号
+}
+
+// 表情包内容版本信息
+export interface IEmojiPackageContentVersionItem {
+  packageId: string // 表情包UUID
+  version: number // 表情包内容版本号
+}

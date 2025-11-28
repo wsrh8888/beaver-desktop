@@ -34,6 +34,10 @@ export enum NotificationModule {
    * 媒体查看器更新通知
    */
   MEDIA_VIEWER = 'media:viewer',
+  /**
+   * 表情通知
+   */
+  EMOJI = 'database:emoji',
 }
 
 export enum NotificationFriendCommand {
@@ -87,6 +91,29 @@ export enum NotificationChatCommand {
    * 用户会话设置表更新 - user_conversations表有变更
    */
   USER_CONVERSATION_UPDATE = 'userConversationUpdate',
+}
+
+export enum NotificationEmojiCommand {
+  /**
+   * 表情更新
+   */
+  EMOJI_UPDATE = 'emojiUpdate',
+  /**
+   * 表情收藏更新
+   */
+  EMOJI_COLLECT_UPDATE = 'emojiCollectUpdate',
+  /**
+   * 表情包收藏更新
+   */
+  EMOJI_PACKAGE_COLLECT_UPDATE = 'emojiPackageCollectUpdate',
+  /**
+   * 表情包更新
+   */
+  EMOJI_PACKAGE_UPDATE = 'emojiPackageUpdate',
+  /**
+   * 表情包内容更新
+   */
+  EMOJI_PACKAGE_CONTENT_UPDATE = 'emojiPackageContentUpdate',
 }
 
 export enum NotificationAppLifecycleCommand {
