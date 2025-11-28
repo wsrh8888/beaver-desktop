@@ -1,6 +1,6 @@
 import { eq, inArray } from 'drizzle-orm'
 import dbManager from 'mainModule/database/db'
-import { emojiPackageCollect } from 'mainModule/database/tables/emoji/package-collect'
+import { emojiPackageCollect } from 'mainModule/database/tables/emoji/package_collect'
 
 // 表情包收藏服务
 export class EmojiPackageCollectService {

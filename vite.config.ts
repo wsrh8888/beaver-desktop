@@ -66,6 +66,7 @@ export default defineConfig(({ command: _command }) => {
         input: {
           app: path.resolve(__dirname, 'app.html'),
           login: path.resolve(__dirname, 'login.html'),
+          moment: path.resolve(__dirname, 'moment.html'),
           updater: path.resolve(__dirname, 'updater.html'),
           search: path.resolve(__dirname, 'search.html'),
           verify: path.resolve(__dirname, 'verify.html'),

@@ -6,6 +6,7 @@ import appApplication from 'mainModule/application/app'
 import audioApplication from 'mainModule/application/audio'
 import imageApplication from 'mainModule/application/image'
 import loginApplication from 'mainModule/application/login'
+import momentApplication from 'mainModule/application/moment'
 import searchApplication from 'mainModule/application/search'
 import updateApplication from 'mainModule/application/updater'
 import verifyApplication from 'mainModule/application/verify'
@@ -146,6 +147,10 @@ export class WindowHandler {
         case 'audio':
           audioApplication.createBrowserWindow()
           newWindow = (audioApplication as any).win
+          break
+        case 'moment':
+          momentApplication.createBrowserWindow()
+          newWindow = (momentApplication as any).win
           break
         case 'updater':
           updateApplication.createBrowserWindow()

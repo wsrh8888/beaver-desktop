@@ -4,28 +4,32 @@ import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
 import ApplicationBase from './common/base'
 
-class Updater extends ApplicationBase implements Application {
+class Moment extends ApplicationBase implements Application {
   constructor() {
-    super('updater') // 对应 updater.html
+    super('moment')
   }
 
   public createBrowserWindow(): BrowserWindow {
     this.win = new BrowserWindow({
-      width: 480,
-      height: 450,
-      frame: false, // 无边框设计
-      resizable: false,
+      width: 800,
+      height: 600,
+      minWidth: 600,
+      minHeight: 500,
+      frame: false,
+      resizable: true,
       webPreferences: {
-        preload: path.join(__dirname, './preload/index.mjs'), // 复用你的预加载脚本
+        preload: path.join(__dirname, './preload/index.mjs'),
         nodeIntegration: false,
+        nodeIntegrationInWorker: false,
         contextIsolation: true,
         webSecurity: false,
-        devTools: process.custom.TOOLS, // 复用你的开发工具配置
+        devTools: true,
         additionalArguments: [`--custom=${JSON.stringify({ ...this.getPreloadParams() })}`],
       },
     })
+    this.win.setFullScreenable(false)
 
-    // 复用你的基础方法
+    // 加载渲染器
     this.loadRender()
     this.init()
     this.initEvents()
@@ -33,4 +37,4 @@ class Updater extends ApplicationBase implements Application {
   }
 }
 
-export default new Updater()
+export default new Moment()

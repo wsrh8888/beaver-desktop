@@ -27,7 +27,6 @@ const electronAPI: ElectronAPP = {
   notification: notificationModule,
   auth: authModule,
   datasync: datasyncModule,
-
 }
 
 // Expose the new API structure to the main world

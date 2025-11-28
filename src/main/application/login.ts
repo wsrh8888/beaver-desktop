@@ -16,7 +16,7 @@ class Login extends ApplicationBase implements Application {
       frame: false,
       resizable: false,
       webPreferences: {
-        preload: path.join(__dirname, './preload/electron.js'), // 引用预加载脚本
+        preload: path.join(__dirname, './preload/index.mjs'), // 引用预加载脚本
         nodeIntegration: false, // 禁用 Node.js
         nodeIntegrationInWorker: false, // 禁用 Worker 中的 Node.js
         contextIsolation: true, // 启用上下文隔离

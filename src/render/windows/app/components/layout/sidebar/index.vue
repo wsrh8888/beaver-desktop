@@ -10,7 +10,7 @@
         :key="item.id"
         class="nav-item app__no_drag"
         :class="{ active: item.router === route.path }"
-        @click="handleClick(item.router)"
+        @click="handleClick(item.router, item.id)"
       >
         <div class="nav-icon">
           <img :src="item.router === route.path ? item.activeIcon : item.defaultIcon" :alt="item.title">
@@ -60,10 +60,18 @@ export default {
     const showUserInfo = ref(false)
     const avatarRef = ref<HTMLElement | null>(null)
 
-    const handleClick = (path: string) => {
-      nextTick(() => {
-        router.push({ path })
-      })
+    const handleClick = (path: string, id?: string) => {
+      if (id === 'moment') {
+        // 打开朋友圈独立窗口
+        electron.window.openWindow('moment', {
+          unique: true,
+        })
+      }
+      else {
+        nextTick(() => {
+          router.push({ path })
+        })
+      }
     }
 
     const handleUpdateClick = () => {
