@@ -79,16 +79,18 @@ import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import AudioFileMessage from './components/AudioFileMessage.vue'
-import ImageMessage from './components/ImageMessage.vue'
-import NotificationMessage from './components/NotificationMessage.vue'
-import TextMessage from './components/TextMessage.vue'
-import VideoMessage from './components/VideoMessage.vue'
-import { copyToClipboard, hasTextSelected } from './copy'
-import { getMenuItems, MessageContentType } from './data'
-import userInfo from './userInfo.vue'
+import userInfo from './components/userInfo.vue'
+import { getMenuItems, MessageHandlerFactory } from './contentHandler'
+import AudioFileMessage from './message/audio.vue'
+import ImageMessage from './message/image.vue'
+import NotificationMessage from './message/notification.vue'
+import TextMessage from './message/text.vue'
+import VideoMessage from './message/video.vue'
+import { hasTextSelected } from './utils/copy'
+import { MessageContentType } from './utils/data'
 
 export default defineComponent({
+  name: 'ChatContent',
   components: {
     UserInfo: userInfo,
     BeaverImage,
@@ -215,47 +217,24 @@ export default defineComponent({
 
     // 处理菜单项点击
     const handleMenuCommand = async (item: ContextMenuItem, message?: any) => {
-      switch (item.id) {
-        case 'copy': {
-          // 复制文本（文本消息）
-          const selectedText = window.getSelection()?.toString().trim() || ''
-          if (selectedText) {
-            await copyToClipboard(selectedText)
-          }
-          break
-        }
-        case 'save': {
-          // 保存文件（图片/视频/音频/文件）
-          console.log('保存文件功能开发中', message)
-          break
-        }
-        case 'view': {
-          // 查看原图（图片消息）
-          console.log('查看原图功能开发中', message)
-          break
-        }
-        case 'play': {
-          // 播放（视频/音频消息）
-          console.log('播放功能开发中', message)
-          break
-        }
-        case 'open': {
-          // 打开文件（文件消息）
-          console.log('打开文件功能开发中', message)
-          break
-        }
-        case 'forward': {
-          // 转发消息
-          console.log('转发消息功能开发中', message)
-          break
-        }
-        case 'delete': {
-          // 删除消息
-          console.log('删除消息功能开发中', message)
-          break
-        }
-        default:
-          console.log('未知菜单项:', item)
+      if (!message) {
+        console.error('消息对象不存在')
+        return
+      }
+
+      // 获取消息类型
+      const messageType = message.msg?.type
+      if (typeof messageType !== 'number' || !(messageType in MessageContentType)) {
+        console.error('无效的消息类型:', messageType)
+        return
+      }
+
+      try {
+        // 直接调用处理方法
+        await MessageHandlerFactory.handleCommand(messageType as MessageContentType, item.id, message)
+      }
+      catch (error) {
+        console.error('处理菜单命令失败:', error, { commandId: item.id, messageType, message })
       }
     }
 
