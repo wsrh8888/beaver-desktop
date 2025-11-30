@@ -1,0 +1,25 @@
+---
+alwaysApply: true
+---
+# 项目概述
+
+这是一个开源的IM（即时通讯）项目，对标大厂和开源IM产品。本项目使用分为3层
+
+### 技术架构
+vite+ electron+vue3
+
+### ts别名
+commonModule: path.resolve(__dirname, 'src/common'),
+mainModule: path.resolve(__dirname, 'src/main'),
+renderModule: path.resolve(__dirname, 'src/render'),
+preloadModule: path.resolve(__dirname, 'src/preload'),
+
+### 文件命名
+- 所有的文件不能以大写字母开头， 如果是多个单词采用驼峰命名
+
+### css的编写
+- 我使用less， 你的css开发的时候采用嵌套结构
+
+
+# 注意事项
+- 不要写md文件

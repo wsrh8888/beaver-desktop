@@ -18,10 +18,17 @@ export interface headerRequest {
 // 简单的内存缓存
 let cachedToken = ''
 
-// 模块加载时自动读取一次
-electron.storage.getAsync('userInfo').then((userInfo: any) => {
-  cachedToken = userInfo?.token || ''
-})
+// 异步加载token（如果还没有加载过）
+const ensureTokenLoaded = async (): Promise<void> => {
+  if (cachedToken) return // 如果已有缓存，直接返回
+
+  try {
+    const userInfo = await electron.storage.getAsync('userInfo')
+    cachedToken = userInfo?.token || ''
+  } catch (error) {
+    console.warn('获取token失败:', error)
+  }
+}
 
 // 基础请求配置
 const baseRequest = axios.create({
@@ -37,7 +44,12 @@ const baseRequest = axios.create({
 
 // 请求拦截器
 baseRequest.interceptors.request.use(
-  (config) => {
+  async (config) => {
+    // 如果没有缓存的token，尝试异步获取
+    if (!cachedToken) {
+      await ensureTokenLoaded()
+    }
+
     // 根据进程类型获取不同的headers
     config.headers = {
       source: 'beaver-desktop',

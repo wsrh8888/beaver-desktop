@@ -11,10 +11,10 @@ class Moment extends ApplicationBase implements Application {
 
   public createBrowserWindow(): BrowserWindow {
     this.win = new BrowserWindow({
-      width: 800,
-      height: 600,
-      minWidth: 600,
-      minHeight: 500,
+      width: 670,
+      minHeight: 726,
+      minWidth: 670,
+      maxWidth: 670,
       frame: false,
       resizable: true,
       webPreferences: {

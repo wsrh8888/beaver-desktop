@@ -18,6 +18,16 @@ import type {
   IGetUserFavoritePackagesRes,
   IUpdateFavoriteEmojiPackageReq,
   IUpdateFavoriteEmojiReq,
+  IGetEmojisByIdsReq,
+  IGetEmojisByIdsRes,
+  IGetEmojiPackagesByIdsReq,
+  IGetEmojiPackagesByIdsRes,
+  IGetEmojiCollectsByIdsReq,
+  IGetEmojiCollectsByIdsRes,
+  IGetEmojiPackageCollectsByIdsReq,
+  IGetEmojiPackageCollectsByIdsRes,
+  IGetEmojiPackageContentsByPackageIdsReq,
+  IGetEmojiPackageContentsByPackageIdsRes,
 } from 'commonModule/type/ajax/emoji'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -139,6 +149,61 @@ export const getUserFavoritePackagesApi = (data: IGetUserFavoritePackagesReq) =>
   return ajax<IGetUserFavoritePackagesRes>({
     method: 'POST',
     url: `${baseUrl}/api/emoji/favoritePackageList`,
+    data,
+  })
+}
+
+/**
+ * @description: 批量获取表情详情
+ */
+export const getEmojisByIdsApi = (data: IGetEmojisByIdsReq) => {
+  return ajax<IGetEmojisByIdsRes>({
+    method: 'POST',
+    url: `${baseUrl}/api/emoji/emojis-by-ids`,
+    data,
+  })
+}
+
+/**
+ * @description: 批量获取表情包详情
+ */
+export const getEmojiPackagesByIdsApi = (data: IGetEmojiPackagesByIdsReq) => {
+  return ajax<IGetEmojiPackagesByIdsRes>({
+    method: 'POST',
+    url: `${baseUrl}/api/emoji/packages-by-ids`,
+    data,
+  })
+}
+
+/**
+ * @description: 批量获取用户收藏的表情记录详情（同步用）
+ */
+export const getEmojiCollectsByIdsApi = (data: IGetEmojiCollectsByIdsReq) => {
+  return ajax<IGetEmojiCollectsByIdsRes>({
+    method: 'POST',
+    url: `${baseUrl}/api/emoji/collects-by-ids`,
+    data,
+  })
+}
+
+/**
+ * @description: 批量获取用户收藏的表情包记录详情（同步用）
+ */
+export const getEmojiPackageCollectsByIdsApi = (data: IGetEmojiPackageCollectsByIdsReq) => {
+  return ajax<IGetEmojiPackageCollectsByIdsRes>({
+    method: 'POST',
+    url: `${baseUrl}/api/emoji/package-collects-by-ids`,
+    data,
+  })
+}
+
+/**
+ * @description: 批量获取表情包内容详情（同步用）
+ */
+export const getEmojiPackageContentsByPackageIdsApi = (data: IGetEmojiPackageContentsByPackageIdsReq) => {
+  return ajax<IGetEmojiPackageContentsByPackageIdsRes>({
+    method: 'POST',
+    url: `${baseUrl}/api/emoji/package-contents-by-package-ids`,
     data,
   })
 }

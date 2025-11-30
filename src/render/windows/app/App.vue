@@ -3,9 +3,9 @@
     <HeaderComponent />
     <Sidebar class="app__sidebar app__drag" />
 
-    <!-- <div class="app__content">
+    <div class="app__content">
       <router-view />
-    </div> -->
+    </div>
     <GlobalComponent />
   </div>
 </template>

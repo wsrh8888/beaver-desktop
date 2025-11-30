@@ -1,5 +1,6 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { previewOnlineFileApi } from 'renderModule/api/file'
+import { addEmojiApi } from 'renderModule/api/emoji'
 import { BaseMessageHandler } from './base'
 
 /**
@@ -23,6 +24,7 @@ class ImageHandler extends BaseMessageHandler {
   ]
 
   handleCommand(commandId: string, message: any): Promise<void> {
+    console.error('11111111111111', commandId)
     switch (commandId) {
       case 'copy':
         return this.handleCopy(message)
@@ -50,8 +52,28 @@ class ImageHandler extends BaseMessageHandler {
   }
 
   private async handleAddToEmoji(message: any): Promise<void> {
-    console.log('添加到表情功能开发中', message)
-    // TODO: 实现添加到表情逻辑
+    try {
+      const fileKey = message.msg.imageMsg?.fileKey
+      if (!fileKey) {
+        console.error('无法获取图片文件Key')
+        return
+      }
+
+      // 生成表情标题（可以根据需要调整）
+      const title = `表情_${Date.now()}`
+
+      await addEmojiApi({
+        fileKey,
+        title,
+        // packageId 可选，不指定则添加到默认收藏中
+      })
+
+      console.log('图片已成功添加到表情收藏')
+      // TODO: 可以添加用户提示，如Toast通知
+    } catch (error) {
+      console.error('添加到表情失败:', error)
+      // TODO: 可以添加错误提示
+    }
   }
 
   private async handleDownload(message: any): Promise<void> {

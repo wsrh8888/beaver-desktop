@@ -6,17 +6,17 @@
  * @description: 表情项
  */
 export interface IEmojiItem {
-  emojiId: number
-  fileId: string
+  emojiId: string
+  fileKey: string
   title: string
-  packageId?: number
+  packageId?: string
 }
 
 /**
  * @description: 表情包项
  */
 export interface IEmojiPackageItem {
-  packageId: number
+  packageId: string
   title: string
   coverFile: string
   description: string
@@ -41,7 +41,7 @@ export interface IEmojiCategoryItem {
  * @description: 表情
  */
 export interface IEmoji {
-  fileId: string
+  fileKey: string
   title: string
 }
 
@@ -49,16 +49,16 @@ export interface IEmoji {
  * @description: 添加表情请求参数
  */
 export interface IAddEmojiReq {
-  fileId: string
+  fileKey: string
   title: string
-  packageId?: number
+  packageId?: string
 }
 
 /**
  * @description: 更新表情收藏状态请求参数
  */
 export interface IUpdateFavoriteEmojiReq {
-  emojiId: number
+  emojiId: string
   type: 'favorite' | 'unfavorite'
 }
 
@@ -100,7 +100,7 @@ export interface IGetEmojiPackagesRes {
  * @description: 获取表情包详情请求参数
  */
 export interface IGetEmojiPackageDetailReq {
-  packageId: number
+  packageId: string
 }
 
 /**
@@ -114,7 +114,7 @@ export interface IGetEmojiPackageDetailRes extends IEmojiPackageItem {
  * @description: 更新表情包收藏状态请求参数
  */
 export interface IUpdateFavoriteEmojiPackageReq {
-  packageId: number
+  packageId: string
   type: 'favorite' | 'unfavorite'
 }
 
@@ -131,15 +131,15 @@ export interface ICreateEmojiPackageReq {
  * @description: 创建表情包响应
  */
 export interface ICreateEmojiPackageRes {
-  packageId: number
+  packageId: string
 }
 
 /**
  * @description: 添加表情到表情包请求参数
  */
 export interface IAddEmojiToPackageReq {
-  packageId: number
-  fileId: string
+  packageId: string
+  fileKey: string
   title: string
 }
 
@@ -147,22 +147,22 @@ export interface IAddEmojiToPackageReq {
  * @description: 添加表情到表情包响应
  */
 export interface IAddEmojiToPackageRes {
-  emojiId: number
+  emojiId: string
 }
 
 /**
  * @description: 从表情包中删除表情请求参数
  */
 export interface IDeleteEmojiFromPackageReq {
-  packageId: number
-  emojiId: number
+  packageId: string
+  emojiId: string
 }
 
 /**
  * @description: 批量添加表情到表情包请求参数
  */
 export interface IBatchAddEmojiToPackageReq {
-  packageId: number
+  packageId: string
   emojis: IEmoji[]
 }
 
@@ -170,7 +170,7 @@ export interface IBatchAddEmojiToPackageReq {
  * @description: 批量添加表情到表情包响应
  */
 export interface IBatchAddEmojiToPackageRes {
-  emojiIds: number[]
+  emojiIds: string[]
 }
 
 /**
@@ -193,4 +193,145 @@ export interface IGetUserFavoritePackagesRes {
 export interface ICommonRes {
   message: string
   success: boolean
+}
+
+/**
+ * @description: 表情详情项
+ */
+export interface IEmojiDetailItem {
+  emojiId: string
+  uuid: string
+  fileKey: string
+  title: string
+  status: number
+  version: number
+  packageId?: string
+  createAt: number
+  updateAt: number
+}
+
+/**
+ * @description: 表情包详情项
+ */
+export interface IEmojiPackageDetailItem {
+  packageId: string
+  uuid: string
+  title: string
+  coverFile: string
+  userId: string
+  description: string
+  type: string
+  status: number
+  collectCount: number
+  createAt: number
+  updateAt: number
+  version: number
+}
+
+/**
+ * @description: 表情收藏详情项
+ */
+export interface IEmojiCollectDetailItem {
+  uuid: string
+  userId: string
+  emojiId: string
+  isDeleted: boolean
+  version: number
+  createAt: number
+  updateAt: number
+}
+
+/**
+ * @description: 表情包收藏详情项
+ */
+export interface IEmojiPackageCollectDetailItem {
+  uuid: string
+  userId: string
+  packageId: string
+  isDeleted: boolean
+  version: number
+  createAt: number
+  updateAt: number
+}
+
+/**
+ * @description: 表情包内容详情项
+ */
+export interface IEmojiPackageContentDetailItem {
+  packageId: string
+  emojiId: string
+  sortOrder: number
+  version: number
+  createAt: number
+  updateAt: number
+}
+
+/**
+ * @description: 批量获取表情详情请求参数
+ */
+export interface IGetEmojisByIdsReq {
+  ids: string[]
+}
+
+/**
+ * @description: 批量获取表情详情响应
+ */
+export interface IGetEmojisByIdsRes {
+  emojis: IEmojiDetailItem[]
+}
+
+/**
+ * @description: 批量获取表情包详情请求参数
+ */
+export interface IGetEmojiPackagesByIdsReq {
+  ids: string[]
+}
+
+/**
+ * @description: 批量获取表情包详情响应
+ */
+export interface IGetEmojiPackagesByIdsRes {
+  packages: IEmojiPackageDetailItem[]
+}
+
+/**
+ * @description: 批量获取表情收藏详情请求参数
+ */
+export interface IGetEmojiCollectsByIdsReq {
+  ids: string[]
+}
+
+/**
+ * @description: 批量获取表情收藏详情响应
+ */
+export interface IGetEmojiCollectsByIdsRes {
+  collects: IEmojiCollectDetailItem[]
+}
+
+/**
+ * @description: 批量获取表情包收藏详情请求参数
+ */
+export interface IGetEmojiPackageCollectsByIdsReq {
+  ids: string[]
+}
+
+/**
+ * @description: 批量获取表情包收藏详情响应
+ */
+export interface IGetEmojiPackageCollectsByIdsRes {
+  collects: IEmojiPackageCollectDetailItem[]
+}
+
+/**
+ * @description: 批量获取表情包内容详情请求参数
+ */
+export interface IGetEmojiPackageContentsByPackageIdsReq {
+  packageIds: string[]
+}
+
+/**
+ * @description: 批量获取表情包内容详情响应
+ */
+export interface IGetEmojiPackageContentsByPackageIdsRes {
+  contents: IEmojiPackageContentDetailItem[]
 }
