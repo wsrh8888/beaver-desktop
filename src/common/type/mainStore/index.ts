@@ -20,6 +20,16 @@ export interface IStoreDataMap {
     token?: string
     userId?: string
   }
+  allUser: Record<string, {
+    userId: string
+    nickName: string
+    avatar: string
+    abstract?: string
+    phone?: string
+    email?: string
+    gender?: number
+    version?: number
+  }>
   searchResults: {
     type: string
     id: string

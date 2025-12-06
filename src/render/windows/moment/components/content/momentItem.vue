@@ -5,7 +5,7 @@
       <!-- 左侧头像 -->
       <div class="avatar-section">
         <BeaverImage
-          :file-name="moment.avatar"
+          :file-name="displayAvatar"
           :cache-type="CacheType.USER_AVATAR"
           class="user-avatar"
         />
@@ -13,7 +13,7 @@
 
       <!-- 右侧用户信息 -->
       <div class="user-info">
-        <div class="user-nickname">{{ moment.userName || moment.nickName }}</div>
+        <div class="user-nickname">{{ displayUserName }}</div>
         <div class="moment-time">{{ formatMomentTime(moment.createdAt) }}</div>
       </div>
     </div>
@@ -52,26 +52,48 @@
       </div>
     </div>
 
-    <!-- 点赞和操作区域：左右结构 -->
+    <!-- 点赞、评论预览和操作 -->
     <div class="moment-footer">
-      <!-- 左侧点赞信息 -->
-      <div class="likes-info" v-if="moment.likes && moment.likes.length > 0">
-        <img :src="SvgLikeActive" alt="点赞" class="like-icon">
-        <span class="like-text">
-          {{ getLikeDisplayText(moment.likes) }}
-        </span>
-      </div>
-      <div class="line"></div>
-      <!-- 右侧操作按钮 -->
-      <div class="actions-section">
-        <div class="action-btn" @click.stop="handleCommentClick">
-          <img src="renderModule/assets/image/moment/comment.svg" alt="评论" class="action-icon">
-          <span class="action-count">{{ moment.comments?.length ? moment.comments.length : '评论' }}</span>
+      <div class="footer-top">
+        <!-- 点赞信息 -->
+        <div class="likes-info" v-if="moment.likes && moment.likes.length > 0">
+          <img :src="SvgLikeActive" alt="点赞" class="like-icon">
+          <span class="like-text">
+            {{ getLikeDisplayText(moment.likes) }}
+          </span>
         </div>
+        <!-- 操作按钮 -->
+        <div class="actions-section">
+          <div class="action-btn" @click.stop="handleCommentClick">
+            <img src="renderModule/assets/image/moment/comment.svg" alt="评论" class="action-icon">
+            <span class="action-count">{{ commentCount || '评论' }}</span>
+          </div>
+          <div class="action-btn" @click.stop="handleLikeClick">
+            <img :src="isLiked ? SvgLikeActive : SvgLike" alt="点赞" class="action-icon">
+            <span class="action-count" >{{ likeCount || '赞' }}</span>
+          </div>
+        </div>
+      </div>
 
-        <div class="action-btn" @click.stop="handleLikeClick">
-          <img :src="isLiked ? SvgLikeActive : SvgLike" alt="点赞" class="action-icon">
-          <span class="action-count" >{{ moment.likes?.length ? moment.likes.length : '赞' }}</span>
+      <!-- 评论预览（列表接口只返回顶层3条） -->
+      <div class="comment-preview" v-if="moment.comments && moment.comments.length > 0">
+        <div
+          class="comment-line"
+          v-for="c in moment.comments"
+          :key="c.id"
+          @click.stop="handleCommentClick"
+        >
+          <div class="comment-avatar">
+            <BeaverImage
+              :file-name="getCommentAvatar(c)"
+              :cache-type="CacheType.USER_AVATAR"
+              class="comment-avatar-img"
+            />
+          </div>
+          <div class="comment-body">
+            <span class="comment-user">{{ getCommentName(c) }}</span>
+            <span class="comment-text">：{{ c.content }}</span>
+          </div>
         </div>
       </div>
     </div>
@@ -79,13 +101,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue'
+import { defineComponent, computed } from 'vue'
 import type { IMomentInfo } from 'commonModule/type/ajax/moment'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
 import SvgLikeActive from 'renderModule/assets/image/moment/like-active.svg'
 import SvgLike from 'renderModule/assets/image/moment/like-default.svg'
 import { useMomentStore } from 'renderModule/windows/moment/store/moment/moment'
+import { useUserStore } from 'renderModule/windows/moment/store/user/user'
 
 
 
@@ -103,21 +126,15 @@ export default defineComponent({
   },
   setup(props, { emit }) {
 
-    // 当前用户信息（应该从store获取）
-    const currentUser = ref({
-      userId: '100000',
-      userName: '我',
-      nickName: '我',
-      avatar: 'renderModule/assets/image/common/default-avatar.svg'
-    })
-
     const momentStore = useMomentStore()
+    const userStore = useUserStore()
     // 是否已点赞
     const isLiked = computed(() => {
       if (props.moment.isLiked !== undefined) {
         return props.moment.isLiked
       }
-      return props.moment.likes?.some(like => like.userId === currentUser.value.userId) || false
+      const me = userStore.getUserId
+      return props.moment.likes?.some(like => like.userId === me) || false
     })
 
     // 点赞数量
@@ -154,7 +171,12 @@ export default defineComponent({
     // 获取点赞显示文本（最多6个，超过显示...）
     const getLikeDisplayText = (likes: any[]) => {
       if (!likes || likes.length === 0) return ''
-      const names = likes.slice(0, 6).map(like => like.userName || like.nickName)
+      const names = likes
+        .slice(0, 6)
+        .map(like => {
+          const info = userStore.getContact(like.userId || '')
+          return info.nickName || like.userName || like.nickName
+        })
       const displayText = names.join('，')
       return likes.length > 6 ? displayText + '...' : displayText
     }
@@ -166,7 +188,7 @@ export default defineComponent({
 
     // 处理点赞点击
     const handleLikeClick = () => {
-      momentStore.toggleLike(props.moment.id, isLiked.value ? 'unlike' : 'like')
+      momentStore.toggleLike(props.moment.id)
     }
 
     // 处理评论点击
@@ -210,11 +232,32 @@ export default defineComponent({
       element.style.display = 'none'
     }
 
+    const displayUserName = computed(() => {
+      const info = userStore.getContact(props.moment.userId)
+      return info.nickName || props.moment.userName || props.moment.nickName
+    })
+    const displayAvatar = computed(() => {
+      const info = userStore.getContact(props.moment.userId)
+      return info.avatar || props.moment.avatar
+    })
+
+    const getCommentName = (c: any) => {
+      const info = userStore.getContact(c.userId || '')
+      return info.nickName || c.userName || c.nickName
+    }
+    const getCommentAvatar = (c: any) => {
+      const info = userStore.getContact(c.userId || '')
+      return info.avatar || c.avatar
+    }
+
     return {
-      currentUser,
       isLiked,
       likeCount,
       commentCount,
+      displayUserName,
+      displayAvatar,
+      getCommentName,
+      getCommentAvatar,
       getDisplayFiles,
       getMediaGridClass,
       formatMomentTime,
@@ -422,23 +465,95 @@ export default defineComponent({
 /* Footer区域：点赞和操作区域 */
 .moment-footer {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  .line {
-    flex: 1;
-  }
-}
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
 
-/* 左侧点赞信息 */
-.likes-info {
-  display: flex;
-  align-items: flex-start;
-  gap: 6px;
-  padding: 8px 12px;
-  background-color: #F8F8F8;
-  border-radius: 6px;
-  flex: 1;
-  margin-right: 12px;
+  .footer-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+
+    .likes-info {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      padding: 8px 12px;
+      background-color: #F8F8F8;
+      border-radius: 6px;
+      flex: 1;
+    }
+
+    .actions-section {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+  }
+
+  .comment-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 8px 12px;
+    background: #f9f9f9;
+    border-radius: 6px;
+
+    .comment-line {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+
+      .comment-avatar {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        overflow: hidden;
+        flex-shrink: 0;
+
+        .comment-avatar-img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          border-radius: 50%;
+        }
+      }
+
+      .comment-body {
+        font-size: 13px;
+        color: #333333;
+        line-height: 1.4;
+        display: flex;
+        align-items: center;
+        gap: 2px;
+
+        .comment-user {
+          font-weight: 500;
+          color: #576b95;
+        }
+        .comment-text {
+          color: #333333;
+        }
+      }
+
+      &:hover {
+        color: #ff7d45;
+      }
+    }
+
+    .comment-more {
+      font-size: 12px;
+      color: #999999;
+      cursor: pointer;
+
+      &:hover {
+        color: #ff7d45;
+      }
+    }
+  }
+
 }
 
 .like-icon {

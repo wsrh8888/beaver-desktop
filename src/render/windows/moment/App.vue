@@ -28,6 +28,8 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed } from 'vue'
 import { useMomentStore } from './store/moment/moment'
+import { useUserStore } from './store/user/user'
+
 import MomentHeader from './components/header/index.vue'
 import MomentContent from './components/content/index.vue'
 import MomentCreate from './components/create/index.vue'
@@ -43,10 +45,22 @@ export default defineComponent({
   setup() {
     const showPublishModal = ref(false)
     const momentStore = useMomentStore()
+    const userStore = useUserStore()
+
+
+
+
+
+
+
 
     const handlePublish = () => {
       showPublishModal.value = true
     }
+
+    onMounted(() => {
+      userStore.init()
+    })
 
 
 
