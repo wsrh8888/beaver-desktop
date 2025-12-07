@@ -51,7 +51,7 @@ import { useMessageSenderStore } from 'renderModule/windows/app/pinia/message/me
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { defineComponent, onBeforeUnmount, ref } from 'vue'
 import { toolList } from './data'
-import EmojiComponent from './emoji.vue'
+import EmojiComponent from './emoji/emoji.vue'
 
 export default defineComponent({
   components: {

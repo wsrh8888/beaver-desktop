@@ -14,3 +14,5 @@ export { groupBusiness } from './group/group'
 
 // User模块
 export { userBusiness } from './user/user'
+
+// Emoji模块（按表拆分，按需各自引用）

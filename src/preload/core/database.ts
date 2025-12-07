@@ -2,9 +2,10 @@ import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatH
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from 'commonModule/type/ajax/friend'
 import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from 'commonModule/type/ajax/group'
 import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
+import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from 'commonModule/type/ajax/emoji'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
-import { DataChatCommand, DataFriendCommand, DataGroupCommand, DataUserCommand } from 'commonModule/type/ipc/database'
+import { DataChatCommand, DataEmojiCommand, DataFriendCommand, DataGroupCommand, DataUserCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
@@ -133,6 +134,26 @@ export const databaseModule: IDatabaseModule = {
       // 合并为同一个方法：获取用户相关的群组申请（包括用户申请的 + 别人申请用户管理的群组）
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
         command: DataGroupCommand.GET_GROUP_JOIN_REQUEST_LIST,
+        data: params,
+      })
+    },
+  },
+  emoji: {
+    getUserFavoriteEmojis: async (params: IGetEmojisListReq): Promise<IGetEmojisListRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.EMOJI, {
+        command: DataEmojiCommand.GET_USER_FAVORITE_EMOJIS,
+        data: params,
+      })
+    },
+    getEmojiPackages: async (params: IGetEmojiPackagesReq): Promise<IGetEmojiPackagesRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.EMOJI, {
+        command: DataEmojiCommand.GET_EMOJI_PACKAGES,
+        data: params,
+      })
+    },
+    getEmojiPackagesByIds: async (params: IGetEmojiPackagesByIdsReq): Promise<IGetEmojiPackagesByIdsRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.EMOJI, {
+        command: DataEmojiCommand.GET_EMOJI_PACKAGES_BY_IDS,
         data: params,
       })
     },

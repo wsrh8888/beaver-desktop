@@ -5,6 +5,7 @@ import { ChatHandler } from './chat'
 import { FriendHandler } from './friend'
 import { GroupHandler } from './group'
 import { UserHandler } from './user'
+import { EmojiHandler } from './emoji'
 
 const loggerName = 'database-handler'
 
@@ -16,7 +17,7 @@ export class DatabaseHandler {
     logger.info({ text: '处理数据库命令', data: { command, data } }, loggerName)
     const userInfo = store.get('userInfo')
     const header = {
-      userId: userInfo?.userId,
+      userId: userInfo?.userId || '',
     }
     try {
       switch (command) {
@@ -28,6 +29,8 @@ export class DatabaseHandler {
           return await ChatHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.GROUP:
           return await GroupHandler.handle(_event, data?.command, data?.data, header)
+        case DatabaseCommand.EMOJI:
+          return await EmojiHandler.handle(_event, data?.command, data?.data, header)
         default:
           logger.error({ text: `未处理的数据库命令: ${command}` }, loggerName)
           return null
