@@ -3,18 +3,18 @@ import type {
   ICreateMomentRes,
   IDeleteMomentReq,
   IDeleteMomentRes,
-  IGetMomentInfoReq,
-  IGetMomentInfoRes,
+  IGetMomentDetailReq,
+  IGetMomentDetailRes,
   IGetMomentListReq,
   IGetMomentListRes,
   ILikeMomentReq,
   ILikeMomentRes,
-  ICreateCommentReq,
-  ICreateCommentRes,
-  IDeleteCommentReq,
-  IDeleteCommentRes,
-  IGetCommentListReq,
-  IGetCommentListRes,
+  IGetMomentCommentsReq,
+  IGetMomentCommentsRes,
+  IGetMomentLikesReq,
+  IGetMomentLikesRes,
+  ICreateMomentCommentReq,
+  ICreateMomentCommentRes,
 } from 'commonModule/type/ajax/moment'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -36,7 +36,10 @@ export const createMomentApi = (data: ICreateMomentReq) => {
 export const getMomentListApi = (data: IGetMomentListReq) => {
   return ajax<IGetMomentListRes>({
     method: 'POST',
-    data,
+    data: {
+      page: data.page,
+      limit: data.limit,
+    },
     url: `${baseUrl}/api/moment/list`,
   })
 }
@@ -47,21 +50,40 @@ export const getMomentListApi = (data: IGetMomentListReq) => {
 export const likeMomentApi = (data: ILikeMomentReq) => {
   return ajax<ILikeMomentRes>({
     method: 'POST',
-    data: data,
+    data: {
+      momentId: data.momentId,
+      status: data.status,
+    },
     url: `${baseUrl}/api/moment/like`,
   })
 }
 
 /**
- * @description: 获取单个动态详情
+ * @description: 发表评论
  */
-export const getMomentInfoApi = (data: IGetMomentInfoReq) => {
-  return ajax<IGetMomentInfoRes>({
-    method: 'GET',
+export const createMomentCommentApi = (data: ICreateMomentCommentReq) => {
+  return ajax<ICreateMomentCommentRes>({
+    method: 'POST',
+    data: {
+      momentId: data.momentId,
+      content: data.content,
+      parentId: data.parentId,
+      replyToCommentId: data.replyToCommentId,
+    },
+    url: `${baseUrl}/api/moment/comment/create`,
+  })
+}
+
+/**
+ * @description: 获取动态详情
+ */
+export const getMomentDetailApi = (data: IGetMomentDetailReq) => {
+  return ajax<IGetMomentDetailRes>({
+    method: 'POST',
     data: {
       momentId: data.momentId,
     },
-    url: `${baseUrl}/api/moment/info`,
+    url: `${baseUrl}/api/moment/detail`,
   })
 }
 
@@ -79,34 +101,46 @@ export const deleteMomentApi = (data: IDeleteMomentReq) => {
 }
 
 /**
- * @description: 创建评论
+ * @description: 获取动态评论列表
  */
-export const createCommentApi = (data: ICreateCommentReq) => {
-  return ajax<ICreateCommentRes>({
+export const getMomentCommentsApi = (data: IGetMomentCommentsReq) => {
+  return ajax<IGetMomentCommentsRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/moment/comment/create`,
+    url: `${baseUrl}/api/moment/comments`,
   })
 }
 
 /**
- * @description: 获取评论列表
+ * @description: 获取顶层评论（含子回复预览3条）
  */
-export const getCommentListApi = (data: IGetCommentListReq) => {
-  return ajax<IGetCommentListRes>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/moment/comment/list`,
+export const getMomentRootCommentsApi = (data: Omit<IGetMomentCommentsReq, 'parentId'>) => {
+  return getMomentCommentsApi({
+    ...data,
+    parentId: undefined,
   })
 }
 
 /**
- * @description: 删除评论
+ * @description: 获取子评论（分页，不返回下级 children）
  */
-export const deleteCommentApi = (data: IDeleteCommentReq) => {
-  return ajax<IDeleteCommentRes>({
-    method: 'GET',
+export const getMomentChildCommentsApi = (
+  data: IGetMomentCommentsReq & { parentId: string }
+) => {
+  return ajax<IGetMomentCommentsRes>({
+    method: 'POST',
     data,
-    url: `${baseUrl}/api/moment/comment/delete`,
+    url: `${baseUrl}/api/moment/comments`,
+  })
+}
+
+/**
+ * @description: 获取动态点赞列表
+ */
+export const getMomentLikesApi = (data: IGetMomentLikesReq) => {
+  return ajax<IGetMomentLikesRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/moment/likes`,
   })
 }

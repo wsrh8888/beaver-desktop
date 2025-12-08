@@ -2,7 +2,7 @@ export interface IValidInfo {
   message: string
   avatar: string
   flag: string
-  id: string // 验证记录UUID
+  verifyId: string // 验证记录ID
   nickName: string
   userId: string
   status: number
@@ -87,7 +87,7 @@ export interface IDeleteFriendReq {
 export interface IDeleteFriendRes {}
 
 export interface IValidStatusReq {
-  verifyId: string // 验证记录UUID
+  verifyId: string // 验证记录ID
   status: number
 }
 
@@ -120,7 +120,7 @@ export interface ISearchValidInfoReq {
 }
 
 export interface ISearchValidInfoRes {
-  validId: string // 验证记录UUID
+  verifyId: string // 验证记录ID
 }
 
 export interface IResSearchUserInfo {
@@ -148,7 +148,7 @@ export interface IFriendSyncRes {
 }
 
 export interface IFriendSyncItem {
-  uuid: string // 好友记录UUID
+  friendId: string // 好友记录ID
   sendUserId: string
   revUserId: string
   sendUserNotice: string
@@ -189,7 +189,7 @@ export interface IFriendVerifySyncRes {
 }
 
 export interface IFriendVerifySyncItem {
-  uuid: string // 验证记录UUID
+  verifyId: string // 验证记录ID
   sendUserId: string // 发送者用户ID
   revUserId: string // 接收者用户ID
   sendStatus: number // 发送方状态：0(未处理)/1(已通过)/2(已拒绝)/3(忽略)/4(删除)
@@ -210,31 +210,9 @@ export interface IGetFriendsListByIdsRes {
   friends: IFriendSyncItem[] // 好友列表
 }
 
-// 批量获取好友数据（通过UUID）
-export interface IGetFriendsListByUuidsReq {
-  uuids: string[] // 好友记录UUID列表
-}
-
-export interface IGetFriendsListByUuidsRes {
-  friends: IFriendByUuid[] // 好友列表
-}
-
-export interface IFriendByUuid {
-  uuid: string // 好友记录UUID
-  sendUserId: string // 发送者用户ID
-  revUserId: string // 接收者用户ID
-  sendUserNotice: string // 发送者备注
-  revUserNotice: string // 接收者备注
-  source: string // 添加好友来源
-  isDeleted: boolean // 是否已删除
-  version: number // 版本号
-  createAt: number // 创建时间戳
-  updateAt: number // 更新时间戳
-}
-
-// 批量获取好友验证数据（通过UUID）
+// 批量获取好友验证数据
 export interface IGetFriendVerifiesListByIdsReq {
-  uuids: string[] // 验证记录UUID列表
+  verifyIds: string[] // 验证记录ID列表
 }
 
 export interface IGetFriendVerifiesListByIdsRes {
@@ -242,7 +220,7 @@ export interface IGetFriendVerifiesListByIdsRes {
 }
 
 export interface IFriendVerifyById {
-  uuid: string // 验证记录UUID
+  verifyId: string // 验证记录ID
   sendUserId: string // 发送者用户ID
   revUserId: string // 接收者用户ID
   sendStatus: number // 发送方状态：0(未处理)/1(已通过)/2(已拒绝)/3(忽略)/4(删除)

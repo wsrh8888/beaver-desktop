@@ -1,8 +1,8 @@
 <template>
   <div class="like-section">
-    <div class="likes-list" v-if="likes && likes.length > 0">
+    <div class="likes-list" v-if="displayLikes && displayLikes.length > 0">
       <div
-        v-for="like in likes"
+        v-for="like in displayLikes"
         :key="like.id"
         class="like-item"
       >
@@ -21,9 +21,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, computed } from 'vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
+import { useUserStore } from 'renderModule/windows/moment/store/user/user'
 
 export default defineComponent({
   name: 'LikeSection',
@@ -36,9 +37,23 @@ export default defineComponent({
       default: () => []
     }
   },
-  setup() {
+  setup(props) {
+    const userStore = useUserStore()
+
+    const displayLikes = computed(() =>
+      (props.likes || []).map((like: any) => {
+        const info = userStore.getContact(like.userId || '')
+        return {
+          ...like,
+          userName: info.nickName || like.userName || like.nickName,
+          avatar: info.avatar || like.avatar,
+        }
+      })
+    )
+
     return {
       CacheType,
+      displayLikes,
     }
   }
 })

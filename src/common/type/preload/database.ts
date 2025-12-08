@@ -2,6 +2,7 @@ import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatH
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
 import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
 import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from '../ajax/user'
+import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from '../ajax/emoji'
 
 /**
  * @description: 数据库模块接口 - 按业务分类
@@ -78,5 +79,22 @@ export interface IDatabaseModule {
     getGroupMembersBatch(params: IGetGroupMembersBatchReq): Promise<IGroupMemberListRes>
     getGroupJoinRequestList(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
     getAllGroupJoinRequests(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
+  }
+  /**
+   * @description: 表情相关
+   */
+  emoji: {
+    /**
+     * @description: 获取用户收藏的表情列表
+     */
+    getUserFavoriteEmojis(params: IGetEmojisListReq): Promise<IGetEmojisListRes>
+    /**
+     * @description: 获取表情包列表
+     */
+    getEmojiPackages(params: IGetEmojiPackagesReq): Promise<IGetEmojiPackagesRes>
+    /**
+     * @description: 获取表情包详情
+     */
+    getEmojiPackagesByIds(params: IGetEmojiPackagesByIdsReq): Promise<IGetEmojiPackagesByIdsRes>
   }
 }

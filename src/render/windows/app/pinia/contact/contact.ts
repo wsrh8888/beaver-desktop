@@ -49,6 +49,12 @@ export const useContactStore = defineStore('useContactStore', {
         })
 
         console.log('联系人数据初始化完成，总数:', this.user.size)
+        const contactSnapshot: Record<string, IUserInfo> = {}
+        this.user.forEach((val, key) => {
+          contactSnapshot[key] = { ...val }
+        })
+        // 仅写主进程内存，不落盘，避免 Map 造成 clone 失败
+        await electron.storage.setAsync('allUser', contactSnapshot, { persist: true })
       }
       catch (error) {
         console.error('联系人数据初始化失败:', error)

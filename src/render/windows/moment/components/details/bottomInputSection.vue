@@ -13,7 +13,11 @@
     <!-- 展开输入状态：遮罩层 + 大输入框 -->
     <div class="input-overlay" v-if="showFullInput">
       <div class="input-container">
-        <textarea v-model="commentText" class="input-textarea" placeholder="说点什么..."
+        <textarea
+          ref="textareaRef"
+          v-model="commentText"
+          class="input-textarea"
+          :placeholder="replyPlaceholder"
           @input="handleTextareaInput"
           @keydown.enter.exact.prevent="handleSendComment" @keydown.enter.shift.exact="commentText += '\n'"></textarea>
         <div class="input-actions">
@@ -28,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onUnmounted } from 'vue'
+import { defineComponent, ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import SvgLikeActive from 'renderModule/assets/image/moment/like-active.svg'
 import SvgLike from 'renderModule/assets/image/moment/like-default.svg'
 export default defineComponent({
@@ -37,12 +41,21 @@ export default defineComponent({
     isLiked: {
       type: Boolean,
       default: false
+    },
+    replyPlaceholder: {
+      type: String,
+      default: '说点什么...'
+    },
+    openKey: {
+      type: Number,
+      default: 0
     }
   },
-  emits: ['send-comment', 'quick-like'],
+  emits: ['send-comment', 'quick-like', 'close-reply'],
   setup(props, { emit }) {
     const showFullInput = ref(false)
     const commentText = ref('')
+    const textareaRef = ref<HTMLTextAreaElement | null>(null)
     let clickOutsideHandler: ((event: Event) => void) | null = null
 
     // 处理显示完整输入框
@@ -50,6 +63,9 @@ export default defineComponent({
       showFullInput.value = true
       // 添加全局点击监听器
       addClickOutsideListener()
+      nextTick(() => {
+        textareaRef.value?.focus()
+      })
     }
 
     // 处理隐藏完整输入框
@@ -58,6 +74,7 @@ export default defineComponent({
       commentText.value = ''
       // 移除全局点击监听器
       removeClickOutsideListener()
+      emit('close-reply')
     }
 
     // 添加点击外部区域的监听器
@@ -106,6 +123,16 @@ export default defineComponent({
       }
     })
 
+    // 外部触发打开输入框
+    watch(
+      () => props.openKey,
+      (v) => {
+        if (v) {
+          handleShowFullInput()
+        }
+      }
+    )
+
     // 组件卸载时
     onUnmounted(() => {
       removeClickOutsideListener()
@@ -124,6 +151,7 @@ export default defineComponent({
     return {
       showFullInput,
       commentText,
+      textareaRef,
       handleShowFullInput,
       handleHideFullInput,
       handleSendComment,

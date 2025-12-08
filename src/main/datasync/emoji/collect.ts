@@ -11,11 +11,10 @@ export class CollectSync {
       return
     }
 
-    // 过滤出需要更新的收藏记录ID
-    const needUpdateCollectIds = await this.compareAndFilterCollectVersions(collectVersions)
-
-    if (needUpdateCollectIds.length > 0) {
-      await this.syncEmojiCollectData(needUpdateCollectIds)
+    // 过滤出需要更新的收藏记录UUID
+    const needUpdateCollectUuids = await this.compareAndFilterCollectVersions(collectVersions)
+    if (needUpdateCollectUuids.length > 0) {
+      await this.syncEmojiCollectData(needUpdateCollectUuids)
     }
   }
 
@@ -49,6 +48,7 @@ export class CollectSync {
     const syncedCollects: Array<{ collectId: string, version: number }> = []
 
     const batchSize = 50
+
     for (let i = 0; i < collectIds.length; i += batchSize) {
       const batchIds = collectIds.slice(i, i + batchSize)
 
@@ -57,13 +57,13 @@ export class CollectSync {
       })
 
       if (response.result.collects.length > 0) {
-        const collects = response.result.collects.map((collect: any, index: number) => ({
-          collectId: batchIds[index],
+        const collects = response.result.collects.map((collect: any) => ({
+          uuid: collect.uuid,
           userId: collect.userId,
           emojiId: collect.emojiId,
           version: collect.version,
-          createdAt: collect.createdAt,
-          updatedAt: collect.updatedAt,
+          createdAt: collect.createdAt ?? collect.createAt,
+          updatedAt: collect.updatedAt ?? collect.updateAt,
         }))
 
         await EmojiCollectService.batchCreate(collects)

@@ -8,12 +8,12 @@
       </div>
 
       <!-- 主内容区域（可滚动） -->
-      <div class="main-content">
+      <div class="main-content" ref="mainContentRef">
         <!-- 朋友圈内容 -->
         <MomentContentCard
-          :user-name="moment.userName"
-          :nick-name="moment.nickName"
-          :avatar="moment.avatar"
+          :user-name="displayUserName"
+          :nick-name="displayUserName"
+          :avatar="displayAvatar"
           :created-at="moment.createdAt"
           :content="moment.content"
           :files="moment.files"
@@ -29,7 +29,7 @@
               :class="{ active: activeTab === 'comments' }"
               @click="activeTab = 'comments'"
             >
-              评论 {{ moment.comments?.length || 0 }}
+              评论 {{ moment.commentCount ?? (moment.comments?.length || 0) }}
             </div>
             <div
               class="tab-item"
@@ -52,7 +52,10 @@
             <CommentSection
               v-if="activeTab === 'comments'"
               :comments="moment.comments"
+              :comment-count="moment.commentCount ?? (moment.comments?.length || 0)"
               @reply="handleReply"
+              @load-more-comments="handleLoadMoreComments"
+              @load-more-children="handleLoadMoreChildren"
             />
 
             <!-- 点赞内容 -->
@@ -67,49 +70,68 @@
       <!-- 底部固定输入区域 -->
       <BottomInputSection
         :is-liked="moment.isLiked"
+        :reply-placeholder="replyTarget ? `回复 ${replyTarget.userName || replyTarget.nickName || ''}` : '说点什么...'"
+        :open-key="openKey"
         @send-comment="handleSendComment"
         @quick-like="handleQuickLike"
+        @close-reply="replyTarget = null"
       />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, onUnmounted } from 'vue'
+import { defineComponent, ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type { IMomentInfo } from 'commonModule/type/ajax/moment'
-import MomentContentCard from '../common/momentContentCard.vue'
 import CommentSection from './commentSection.vue'
 import LikeSection from './likeSection.vue'
 import BottomInputSection from './bottomInputSection.vue'
 import { useMomentStore } from '../../store/moment/moment'
+import { useUserStore } from '../../store/user/user'
+import MomentContentCard from '../common/MomentContentCard.vue'
+
 
 export default defineComponent({
   name: 'MomentDetail',
   components: {
-    MomentContentCard,
     CommentSection,
     LikeSection,
+    MomentContentCard,
     BottomInputSection,
   },
   emits: ['close'],
   setup(props, { emit }) {
     const momentStore = useMomentStore()
-
-    // 当前用户信息
-    const currentUser = ref({
-      userId: '100000',
-      userName: '我',
-      nickName: '我',
-      avatar: 'renderModule/assets/image/common/default-avatar.svg'
-    })
+    const userStore = useUserStore()
 
     // 获取当前选中的moment
     const moment = computed(() => momentStore.getCurrentMoment() || {} as IMomentInfo)
 
+    const displayUserName = computed(() => {
+      if (!moment.value) return ''
+      const info = userStore.getContact(moment.value.userId || '')
+      return info.nickName || moment.value.userName || (moment.value as any).nickName || ''
+    })
+    const displayAvatar = computed(() => {
+      if (!moment.value) return ''
+      const info = userStore.getContact(moment.value.userId || '')
+      return info.avatar || moment.value.avatar || ''
+    })
+
     // 标签页状态
     const activeTab = ref('comments')
+    const replyTarget = ref<any | null>(null)
+    const openKey = ref(0)
+    const commentPage = ref(1)
+    const commentLimit = 20
+    const childLimit = 20
+    const childPageMap = ref<Record<string, number>>({})
+    const isLoadingComments = ref(false)
+    const mainContentRef = ref<HTMLElement | null>(null)
 
-
+    const resetChildPages = () => {
+      childPageMap.value = {}
+    }
 
     // 处理关闭
     const handleClose = () => {
@@ -117,10 +139,16 @@ export default defineComponent({
     }
 
 
-    // 处理刷新
-    const handleRefresh = () => {
-      // TODO: 刷新评论和点赞数据
-      console.log('刷新数据')
+    const handleRefresh = async () => {
+      if (moment.value.id) {
+        commentPage.value = 1
+        resetChildPages()
+        await Promise.all([
+          momentStore.loadMomentDetail(moment.value.id),
+          momentStore.refreshComments(moment.value.id, 1, commentLimit),
+          momentStore.refreshLikes(moment.value.id, 1, 50),
+        ])
+      }
     }
 
     // 处理快速点赞
@@ -139,16 +167,47 @@ export default defineComponent({
 
 
     // 处理发送评论
-    const handleSendComment = (commentText: string) => {
-      // TODO: 发送评论逻辑
-      console.log('发送评论:', commentText)
+    const handleSendComment = async (commentText: string) => {
+      if (moment.value.id) {
+        const currentReplyTarget = replyTarget.value
+        await momentStore.addComment(moment.value.id, commentText, currentReplyTarget || undefined)
+        replyTarget.value = null
+        // 顶层/子评论均只做本地追加，不再额外拉取评论接口，避免列表错乱
+      }
     }
 
     // 处理回复
     const handleReply = (targetComment: any) => {
-      // TODO: 设置回复目标
-      console.log('回复评论:', targetComment)
-      // 这里可以直接调用子组件的方法，但现在先通过其他方式处理
+      replyTarget.value = targetComment
+      openKey.value += 1 // 触发底部输入框打开
+    }
+
+    const hasMoreComments = computed(() => {
+      const total = moment.value.commentCount || 0
+      const loaded = moment.value.comments?.length || 0
+      return loaded < total
+    })
+
+    // 加载更多顶层评论（自动触发）
+    const handleLoadMoreComments = async () => {
+      if (!moment.value.id || !hasMoreComments.value || isLoadingComments.value) return
+      isLoadingComments.value = true
+      commentPage.value += 1
+      await momentStore.loadMoreComments(moment.value.id, commentPage.value, commentLimit)
+      isLoadingComments.value = false
+    }
+
+    // 加载更多子回复（分页，不合并到其他 root）
+    const handleLoadMoreChildren = async (root: any) => {
+      if (moment.value.id) {
+        const current = childPageMap.value[root.id] || 0
+        const nextPage = current + 1
+        await momentStore.loadChildComments(moment.value.id, root.id, nextPage, childLimit)
+        childPageMap.value = {
+          ...childPageMap.value,
+          [root.id]: nextPage,
+        }
+      }
     }
 
     // 处理媒体文件点击
@@ -162,18 +221,60 @@ export default defineComponent({
       return fileName.split('/').pop() || '未知文件'
     }
 
+    // 首次打开加载详情、评论、点赞
+    watch(
+      () => moment.value.id,
+      async (id) => {
+        if (id) {
+          resetChildPages()
+          await Promise.all([
+            momentStore.loadMomentDetail(id),
+            momentStore.refreshComments(id, 1, commentLimit),
+            momentStore.refreshLikes(id, 1, 50),
+          ])
+        }
+      },
+      { immediate: true }
+    )
+
+    // 评论区域滚动自动加载更多
+    const onScroll = () => {
+      if (activeTab.value !== 'comments') return
+      const el = mainContentRef.value
+      if (!el) return
+      const threshold = 120
+      if (el.scrollHeight - el.scrollTop - el.clientHeight < threshold) {
+        handleLoadMoreComments()
+      }
+    }
+
+    onMounted(() => {
+      mainContentRef.value?.addEventListener('scroll', onScroll, { passive: true })
+    })
+
+    onUnmounted(() => {
+      mainContentRef.value?.removeEventListener('scroll', onScroll)
+    })
+
     return {
       moment,
-      currentUser,
       activeTab,
+      replyTarget,
+      openKey,
+      commentPage,
+      mainContentRef,
       handleClose,
       handleOverlayClick,
       handleRefresh,
       handleQuickLike,
       handleSendComment,
       handleReply,
+      handleLoadMoreComments,
+      handleLoadMoreChildren,
       handleMediaClick,
       getFileName,
+      displayUserName,
+      displayAvatar,
     }
   }
 })
@@ -208,7 +309,7 @@ export default defineComponent({
 .main-content {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 0;
+  margin-bottom: 120px;
   .moment-content-card {
     padding: 0 20px;
   }
