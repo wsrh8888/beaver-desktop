@@ -125,7 +125,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     })
 
     const friendDetailsMap = await FriendService.getFriendDetails(userId, privateChatFriendIds)
-    const groupDetails = await GroupService.getGroupsByUuids(groupIds)
+    const groupDetails = await GroupService.getGroupsByIds(groupIds)
     const groupDetailsMap = new Map()
     groupDetails.forEach((group: any) => {
       groupDetailsMap.set(group.groupId, group)
@@ -248,7 +248,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       const parts = conversationId.split('_')
       if (parts.length >= 2 && parts[0] === 'group') {
         const groupId = parts.slice(1).join('_') // 支持groupId中包含下划线的情况
-        const groupDetails = await GroupService.getGroupsByUuids([groupId])
+        const groupDetails = await GroupService.getGroupsByIds([groupId])
         if (groupDetails.length > 0) {
           const groupDetail = groupDetails[0]
           avatar = groupDetail.avatar || ''

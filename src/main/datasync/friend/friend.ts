@@ -1,7 +1,7 @@
 import { SyncStatus } from 'commonModule/type/datasync'
 import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncFriendsApi } from 'mainModule/api/datasync'
-import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
+import { getFriendsListByIdsApi } from 'mainModule/api/friened'
 import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
@@ -60,7 +60,7 @@ export class FriendSyncModule {
 
     // 提取所有变更的好友关系ID，过滤掉空字符串
     const friendshipIds = friendVersions
-      .map(item => item.id)
+      .map(item => item.friendId)
       .filter(id => id && id.trim() !== '')
 
     if (friendshipIds.length === 0) {
@@ -68,12 +68,12 @@ export class FriendSyncModule {
     }
 
     // 查询本地已存在的记录
-    const existingFriendsMap = await FriendService.getFriendsByIds(friendshipIds)
+    const existingFriendsMap = await FriendService.getFriendRecordsByIds(friendshipIds)
 
     // 过滤出需要更新的friendshipIds（本地不存在或版本号更旧的数据）
     const needUpdateFriendshipIds = friendshipIds.filter((id) => {
       const existingFriend = existingFriendsMap.get(id)
-      const serverVersion = friendVersions.find(item => item.id === id)?.version || 0
+      const serverVersion = friendVersions.find(item => item.friendId === id)?.version || 0
 
       // 如果本地不存在，或服务器版本更新，则需要更新
       return !existingFriend || existingFriend.version < serverVersion
@@ -88,20 +88,20 @@ export class FriendSyncModule {
       return
     }
 
-    const syncedFriends: Array<{ uuid: string, version: number }> = []
+    const syncedFriends: Array<{ friendId: string, version: number }> = []
 
     // 分批获取好友数据（避免一次性获取过多数据）
     const batchSize = 50
     for (let i = 0; i < friendshipIds.length; i += batchSize) {
       const batchIds = friendshipIds.slice(i, i + batchSize)
 
-      const response = await getFriendsListByUuidsApi({
-        uuids: batchIds,
+      const response = await getFriendsListByIdsApi({
+        friendIds: batchIds,
       })
 
       if (response.result.friends.length > 0) {
         const friends = response.result.friends.map((friend: any, index: number) => ({
-          uuid: batchIds[index], // 使用请求中的UUID
+          friendId: batchIds[index], // 使用请求中的ID
           sendUserId: friend.sendUserId,
           revUserId: friend.revUserId,
           sendUserNotice: friend.sendUserNotice,
@@ -117,7 +117,7 @@ export class FriendSyncModule {
 
         // 收集同步的数据用于通知
         syncedFriends.push(...friends.map(friend => ({
-          uuid: friend.uuid,
+          friendId: friend.friendId,
           version: friend.version,
         })))
       }

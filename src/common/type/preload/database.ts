@@ -38,13 +38,13 @@ export interface IDatabaseModule {
      */
     getValidByVerRange(params: IValidVerRangeReq): Promise<IValidListRes>
     /**
-     * 根据好友关系UUID列表获取好友信息
+     * 根据好友关系ID列表获取好友信息
      */
-    getFriendsByUuid(params: { friendIds: string[] }): Promise<IFriendListRes>
+    getFriendsByIds(params: { friendIds: string[] }): Promise<IFriendListRes>
     /**
-     * 根据验证记录UUID列表获取验证记录
+     * 根据验证记录ID列表获取验证记录
      */
-    getValidByUuid(params: { verifyIds: string[] }): Promise<IValidListRes>
+    getValidByIds(params: { verifyIds: string[] }): Promise<IValidListRes>
   }
 
   /**

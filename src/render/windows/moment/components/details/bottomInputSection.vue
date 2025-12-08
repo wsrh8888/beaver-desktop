@@ -51,7 +51,7 @@ export default defineComponent({
       default: 0
     }
   },
-  emits: ['send-comment', 'quick-like', 'close-reply'],
+  emits: ['sendComment', 'quickLike', 'closeReply'],
   setup(props, { emit }) {
     const showFullInput = ref(false)
     const commentText = ref('')
@@ -74,7 +74,7 @@ export default defineComponent({
       commentText.value = ''
       // 移除全局点击监听器
       removeClickOutsideListener()
-      emit('close-reply')
+      emit('closeReply')
     }
 
     // 添加点击外部区域的监听器
@@ -102,7 +102,7 @@ export default defineComponent({
     // 处理发送评论
     const handleSendComment = () => {
       if (commentText.value.trim()) {
-        emit('send-comment', commentText.value.trim())
+        emit('sendComment', commentText.value.trim())
         commentText.value = ''
         handleHideFullInput()
       }
@@ -110,7 +110,7 @@ export default defineComponent({
 
     // 处理快速点赞
     const handleQuickLike = () => {
-      emit('quick-like')
+      emit('quickLike')
     }
 
 

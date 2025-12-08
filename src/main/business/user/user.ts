@@ -4,6 +4,7 @@ import { userSyncApi } from 'mainModule/api/user'
 import { UserService } from 'mainModule/database/services/user/user'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
+import { IDBUser } from 'commonModule/type/database/user'
 
 /**
  * 用户同步队列项
@@ -65,8 +66,8 @@ export class UserBusiness extends BaseBusiness<UserSyncItem> {
       if (response.result?.users && response.result.users.length > 0) {
         // 更新本地数据库，转换数据类型
         for (const user of response.result.users) {
-          const userData = {
-            uuid: user.userId,
+          const userData: IDBUser = {
+            userId: user.userId,
             nickName: user.nickName,
             avatar: user.avatar,
             abstract: user.abstract,

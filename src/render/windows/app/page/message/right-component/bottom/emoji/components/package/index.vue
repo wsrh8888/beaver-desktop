@@ -18,7 +18,7 @@
     <div class="package-emojis custom-scrollbar">
       <div
         v-for="emoji in emojiList"
-        :key="emoji.uuid || emoji.name"
+        :key="emoji.emojiId || emoji.name"
         class="emoji-item"
         @click="onSelectEmoji(emoji)"
       >

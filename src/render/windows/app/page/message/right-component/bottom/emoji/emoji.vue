@@ -62,7 +62,7 @@ export default defineComponent({
       default: 0,
     },
   },
-  emits: ['select', 'close', 'open-store', 'add-favorite'],
+  emits: ['select', 'close', 'openStore', 'addFavorite'],
   setup(_props, { emit }) {
     const activeTab = ref<string>('default')
 
@@ -86,7 +86,7 @@ export default defineComponent({
     })
 
     const handleStoreClick = () => {
-      emit('open-store')
+      emit('openStore')
     }
 
     const handleTabClick = (tabId: string) => {
@@ -101,7 +101,7 @@ export default defineComponent({
     }
 
     const handleAddFavorite = () => {
-      emit('add-favorite')
+      emit('addFavorite')
     }
 
     // 点击外部区域关闭表情弹窗

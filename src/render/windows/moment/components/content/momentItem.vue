@@ -117,7 +117,7 @@ export default defineComponent({
   components: {
     BeaverImage,
   },
-  emits: ['moment-click', 'like', 'comment'],
+  emits: ['momentClick', 'like', 'comment'],
   props: {
     moment: {
       type: Object as () => IMomentInfo,
@@ -183,7 +183,7 @@ export default defineComponent({
 
     // 处理动态点击
     const handleMomentClick = () => {
-      emit('moment-click', props.moment)
+      emit('momentClick', props.moment)
     }
 
     // 处理点赞点击

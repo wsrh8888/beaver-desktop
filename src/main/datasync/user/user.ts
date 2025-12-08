@@ -103,7 +103,7 @@ export class UserSyncModule {
     const syncResponse = await userSyncApi({ userVersions: usersWithVersions })
     if (syncResponse.result.users?.length > 0) {
       const usersModels = syncResponse.result.users.map((user: any) => ({
-        uuid: user.userId,
+        userId: user.userId,
         nickName: user.nickName,
         avatar: user.avatar,
         abstract: user.abstract,
@@ -120,7 +120,7 @@ export class UserSyncModule {
 
       // 更新本地用户版本状态
       const statusUpdates = usersModels.map(user => ({
-        userId: user.uuid,
+        userId: user.userId,
         userVersion: user.version,
       }))
       await UserSyncStatusService.batchUpsertUserSyncStatus(statusUpdates)
@@ -129,7 +129,7 @@ export class UserSyncModule {
       sendMainNotification('*', NotificationModule.DATABASE_USER, NotificationUserCommand.USER_UPDATE, {
         source: 'datasync', // 标识来源：批量同步
         updatedUsers: usersModels.map(user => ({
-          userId: user.uuid,
+          userId: user.userId,
           version: user.version,
         })),
       })

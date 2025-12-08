@@ -133,7 +133,7 @@ export const useFriendStore = defineStore('friendStore', {
         // 提取用户ID列表
         const friendIds = updatedFriends.map(f => f.friendId)
         // 使用好友关系ID列表查询获取最新的好友数据
-        const result = await electron.database.friend.getFriendsByUuid({
+        const result = await electron.database.friend.getFriendsByIds({
           friendIds,
         })
 

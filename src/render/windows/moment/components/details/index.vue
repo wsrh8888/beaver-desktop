@@ -54,8 +54,8 @@
               :comments="moment.comments"
               :comment-count="moment.commentCount ?? (moment.comments?.length || 0)"
               @reply="handleReply"
-              @load-more-comments="handleLoadMoreComments"
-              @load-more-children="handleLoadMoreChildren"
+              @loadMoreComments="handleLoadMoreComments"
+              @loadMoreChildren="handleLoadMoreChildren"
             />
 
             <!-- 点赞内容 -->
@@ -72,9 +72,9 @@
         :is-liked="moment.isLiked"
         :reply-placeholder="replyTarget ? `回复 ${replyTarget.userName || replyTarget.nickName || ''}` : '说点什么...'"
         :open-key="openKey"
-        @send-comment="handleSendComment"
-        @quick-like="handleQuickLike"
-        @close-reply="replyTarget = null"
+        @sendComment="handleSendComment"
+        @quickLike="handleQuickLike"
+        @closeReply="replyTarget = null"
       />
     </div>
   </div>

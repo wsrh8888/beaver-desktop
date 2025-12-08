@@ -128,7 +128,7 @@ export class FriendVerifyService {
         const otherUser = userMap.get(otherUserId)
 
         return {
-          id: record.verifyId,
+          verifyId: record.verifyId,
           userId: otherUserId,
           nickName: otherUser?.nickName || '',
           avatar: otherUser?.avatar || '',
@@ -233,7 +233,7 @@ export class FriendVerifyService {
   }
 
   // 根据验证记录ID列表批量查询验证记录
-  static async getValidByUuid(verifyIds: string[], currentUserId: string): Promise<{ list: IValidInfo[] }> {
+  static async getValidByIds(verifyIds: string[], currentUserId: string): Promise<{ list: IValidInfo[] }> {
     if (verifyIds.length === 0) {
       return { list: [] }
     }
@@ -275,13 +275,13 @@ export class FriendVerifyService {
     })
 
     // 构建验证列表
-    const validList = validRecords.map((record: any) => {
+      const validList = validRecords.map((record: any) => {
       // 确定对方用户ID和用户信息
       const otherUserId = record.sendUserId === currentUserId ? record.revUserId : record.sendUserId
       const otherUser = userMap.get(otherUserId)
 
       return {
-        id: record.verifyId,
+          verifyId: record.verifyId,
         userId: otherUserId,
         nickName: otherUser?.nickName || '',
         avatar: otherUser?.avatar || '',

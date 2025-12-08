@@ -200,7 +200,7 @@ export interface ICommonRes {
  */
 export interface IEmojiDetailItem {
   emojiId: string
-  uuid: string
+  collectId: string
   fileKey: string
   title: string
   status: number
@@ -215,7 +215,7 @@ export interface IEmojiDetailItem {
  */
 export interface IEmojiPackageDetailItem {
   packageId: string
-  uuid: string
+  collectId: string
   title: string
   coverFile: string
   userId: string
@@ -232,7 +232,7 @@ export interface IEmojiPackageDetailItem {
  * @description: 表情收藏详情项
  */
 export interface IEmojiCollectDetailItem {
-  uuid: string
+  collectId: string
   userId: string
   emojiId: string
   isDeleted: boolean
@@ -245,7 +245,7 @@ export interface IEmojiCollectDetailItem {
  * @description: 表情包收藏详情项
  */
 export interface IEmojiPackageCollectDetailItem {
-  uuid: string
+  collectId: string
   userId: string
   packageId: string
   isDeleted: boolean

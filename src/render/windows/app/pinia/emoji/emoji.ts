@@ -2,7 +2,7 @@ import { defineStore } from 'pinia'
 import { emojiList } from 'renderModule/windows/app/utils/emoji'
 
 export interface IEmojiBase {
-  uuid?: string
+  emojiId: string
   name: string
   icon: string
   version?: number

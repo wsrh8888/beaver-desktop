@@ -10,8 +10,8 @@ export enum DataFriendCommand {
   GET_VALID_LIST = 'friend:getValidList',
   GET_FRIENDS_BY_VER_RANGE = 'friend:getFriendsByVerRange',
   GET_VALID_BY_VER_RANGE = 'friend:getValidByVerRange',
-  GET_FRIENDS_BY_UUID = 'friend:getFriendsByUuid',
-  GET_VALID_BY_UUID = 'friend:getValidByUuid',
+  GET_FRIENDS_BY_IDS = 'friend:getFriendsByIds',
+  GET_VALID_BY_IDS = 'friend:getValidByIds',
 }
 
 export enum DataGroupCommand {

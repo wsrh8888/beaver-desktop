@@ -22,7 +22,7 @@ class PackageSync {
   // 对比本地数据，过滤出需要更新的表情包ID
   private async compareAndFilterPackageVersions(packageVersions: any[]): Promise<string[]> {
     const packageIds = packageVersions
-      .map(item => item.id)
+      .map(item => item.packageId)
       .filter(id => id && id.trim() !== '')
 
     if (packageIds.length === 0) {
@@ -33,7 +33,7 @@ class PackageSync {
 
     const needUpdatePackageIds = packageIds.filter((id) => {
       const existingPackage = existingPackagesMap.get(id)
-      const serverVersion = packageVersions.find(item => item.id === id)?.version || 0
+      const serverVersion = packageVersions.find(item => item.packageId === id)?.version || 0
       return !existingPackage || existingPackage.version < serverVersion
     })
 
@@ -46,7 +46,7 @@ class PackageSync {
       return
     }
 
-    const syncedPackages: Array<{ id: string, version: number }> = []
+    const syncedPackages: Array<{ packageId: string, version: number }> = []
 
     const batchSize = 50
     for (let i = 0; i < packageIds.length; i += batchSize) {
@@ -58,8 +58,7 @@ class PackageSync {
 
       if (response.result.packages.length > 0) {
         const packages = response.result.packages.map((pkg: any, index: number) => ({
-          id: batchIds[index],
-          uuid: pkg.uuid,
+          packageId: pkg.packageId || batchIds[index],
           title: pkg.title,
           coverFile: pkg.coverFile,
           userId: pkg.userId,
@@ -67,13 +66,13 @@ class PackageSync {
           type: pkg.type,
           status: pkg.status,
           version: pkg.version,
-          createdAt: pkg.createdAt,
-          updatedAt: pkg.updatedAt,
+          createdAt: pkg.createdAt ?? pkg.createAt,
+          updatedAt: pkg.updatedAt ?? pkg.updateAt,
         }))
 
         await EmojiPackageService.batchCreate(packages)
         syncedPackages.push(...packages.map(pkg => ({
-          id: pkg.id,
+          packageId: pkg.packageId,
           version: pkg.version,
         })))
       }

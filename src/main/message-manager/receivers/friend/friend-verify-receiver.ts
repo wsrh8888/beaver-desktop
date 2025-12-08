@@ -28,7 +28,7 @@ export class FriendVerifyReceiver {
       // update.data 是数组，需要遍历每个数据项
       for (const dataItem of update.data) {
         // 使用business的队列处理机制，避免频繁请求
-        await friendVerifyBusiness.handleTableUpdates(dataItem.userId, dataItem.uuid, dataItem.version)
+        await friendVerifyBusiness.handleTableUpdates(dataItem.userId, dataItem.verifyId, dataItem.version)
       }
     }
 
@@ -37,7 +37,7 @@ export class FriendVerifyReceiver {
       // update.data 是数组，需要遍历每个数据项
       for (const dataItem of update.data) {
         // 使用business的队列处理机制，避免频繁请求
-        await friendBusiness.handleTableUpdates(dataItem.version, dataItem.uuid)
+        await friendBusiness.handleTableUpdates(dataItem.version, dataItem.verifyId)
       }
     }
 

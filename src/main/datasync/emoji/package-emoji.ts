@@ -52,12 +52,12 @@ class PackageEmojiSync {
 
       if (response.result.contents.length > 0) {
         const contents = response.result.contents.map((content: any) => ({
-          uuid: content.uuid,
+          relationId: content.relationId,
           packageId: content.packageId,
           emojiId: content.emojiId,
           sortOrder: content.sortOrder,
           version: content.version,
-          createdAt: content.createdAt,
+          createdAt: content.createdAt ,
           updatedAt: content.updatedAt,
         }))
 

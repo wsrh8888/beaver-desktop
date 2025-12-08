@@ -1,7 +1,7 @@
 // 好友表
 export interface IDBFriend {
   id?: number
-  uuid: string
+  friendId: string
   sendUserId: string
   revUserId: string
   sendUserNotice?: string
@@ -16,7 +16,7 @@ export interface IDBFriend {
 // 好友验证表
 export interface IDBFriendVerify {
   id?: number
-  uuid: string
+  verifyId: string
   sendUserId: string
   revUserId: string
   sendStatus?: number // 发起方状态 0:未处理 1:已通过 2:已拒绝 3:忽略 4:删除

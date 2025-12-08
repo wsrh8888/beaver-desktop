@@ -52,7 +52,7 @@
           <div
             class="replies-more"
             v-if="commentGroup.root.childCount > ((commentGroup.replies && commentGroup.replies.length) || 0)"
-            @click="$emit('load-more-children', commentGroup.root)"
+            @click="$emit('loadMoreChildren', commentGroup.root)"
           >
             共 {{ commentGroup.root.childCount }} 条回复
           </div>
@@ -86,7 +86,7 @@ export default defineComponent({
       default: 0
     }
   },
-  emits: ['reply', 'load-more-comments', 'load-more-children'],
+  emits: ['reply', 'loadMoreComments', 'loadMoreChildren'],
   setup(props) {
     const userStore = useUserStore()
 

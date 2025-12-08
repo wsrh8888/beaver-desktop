@@ -11,7 +11,7 @@ import { BaseBusiness } from '../base/base'
  */
 interface FriendVerifySyncItem extends QueueItem {
   userId: string
-  uuid: string
+  verifyId: string
   version: number
 }
 
@@ -31,28 +31,28 @@ export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
   }
 
   /**
-   * 根据验证记录UUID列表批量查询验证记录
+   * 根据验证记录ID列表批量查询验证记录
    */
-  async getValidByUuid(uuids: string[]): Promise<{ list: any[] }> {
+  async getValidByIds(verifyIds: string[]): Promise<{ list: any[] }> {
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
       throw new Error('用户未登录')
     }
 
-    return await FriendVerifyService.getValidByUuid(uuids, userStore.userId)
+    return await FriendVerifyService.getValidByIds(verifyIds, userStore.userId)
   }
 
   /**
    * 处理好友验证表的更新通知
    * 将同步请求加入队列，1秒后批量处理
    */
-  async handleTableUpdates(userId: string, uuid: string, version: number) {
+  async handleTableUpdates(userId: string, verifyId: string, version: number) {
     this.addToQueue({
-      key: `${userId}:${uuid}`,
-      data: { userId, uuid, version },
+      key: `${userId}:${verifyId}`,
+      data: { userId, verifyId, version },
       timestamp: Date.now(),
       userId,
-      uuid,
+      verifyId,
       version,
     })
   }
@@ -62,21 +62,21 @@ export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
    */
   protected async processBatchRequests(items: FriendVerifySyncItem[]): Promise<void> {
     // 直接调用API获取好友验证数据
-    const uuids = items.map(item => item.data.uuid).filter(Boolean)
+    const verifyIds = items.map(item => item.data.verifyId).filter(Boolean)
 
-    if (uuids.length === 0) {
+    if (verifyIds.length === 0) {
       return
     }
 
     try {
-      // 直接调用API获取指定UUID的好友验证数据
+      // 直接调用API获取指定ID的好友验证数据
       const response = await getFriendVerifiesListByIdsApi({
-        uuids,
+        verifyIds,
       })
 
       if (response.result.friendVerifies && response.result.friendVerifies.length > 0) {
         const friendVerifies = response.result.friendVerifies.map((verify: any) => ({
-          uuid: verify.uuid,
+          verifyId: verify.verifyId,
           sendUserId: verify.sendUserId,
           revUserId: verify.revUserId,
           message: verify.message,
@@ -94,7 +94,7 @@ export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
         // 发送通知到render进程，告知好友验证数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_VALID_UPDATE, {
           updatedVerifies: friendVerifies.map((verify: any) => ({
-            uuid: verify.uuid,
+            verifyId: verify.verifyId,
             sendUserId: verify.sendUserId,
             revUserId: verify.revUserId,
             version: verify.version,

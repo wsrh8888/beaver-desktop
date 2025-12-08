@@ -11,8 +11,7 @@ export class EmojiPackageBusiness {
         const pkg = packageMap.get(id)
         if (!pkg) return null
         return {
-          packageId: pkg.uuid,
-          uuid: pkg.uuid,
+          packageId: pkg.packageId,
           title: pkg.title,
           coverFile: pkg.coverFile,
           userId: pkg.userId,

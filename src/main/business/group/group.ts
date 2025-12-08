@@ -51,7 +51,7 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     const groupIds = userMemberships.map((membership: any) => membership.groupId)
 
     // 业务逻辑：获取这些群组的详细信息
-    const groupDetails = await GroupService.getGroupsByUuids(groupIds)
+    const groupDetails = await GroupService.getGroupsByIds(groupIds)
 
     // 业务逻辑：组装返回数据
     const list = groupDetails.map((group: any) => {
@@ -77,7 +77,7 @@ export class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     const { groupIds } = params
 
     // 调用服务层批量获取群组信息
-    const groups = await GroupService.getGroupsByUuids(groupIds)
+    const groups = await GroupService.getGroupsByIds(groupIds)
 
     // 业务逻辑：获取每个群组的成员数量
     const memberCounts = new Map<string, number>()

@@ -52,55 +52,55 @@ export class FriendVerifySyncModule {
     }
   }
 
-  // 对比本地数据，过滤出需要更新的好友验证UUID
+  // 对比本地数据，过滤出需要更新的好友验证ID
   private async compareAndFilterFriendVerifyVersions(friendVerifyVersions: any[]): Promise<string[]> {
     if (!friendVerifyVersions || friendVerifyVersions.length === 0) {
       return []
     }
-    // 提取所有变更的好友验证UUID，过滤掉空字符串
-    const uuids = friendVerifyVersions
-      .map(item => item.uuid)
-      .filter(uuid => uuid && uuid.trim() !== '')
+    // 提取所有变更的好友验证ID，过滤掉空字符串
+    const verifyIds = friendVerifyVersions
+      .map(item => item.verifyId)
+      .filter(id => id && id.trim() !== '')
 
-    if (uuids.length === 0) {
+    if (verifyIds.length === 0) {
       return []
     }
 
     // 查询本地已存在的记录
-    const existingVerifiesMap = await FriendVerifyService.getFriendVerifiesByIds(uuids)
+    const existingVerifiesMap = await FriendVerifyService.getFriendVerifiesByIds(verifyIds)
 
-    // 过滤出需要更新的uuids（本地不存在或版本号更旧的数据）
-    const needUpdateUuids = uuids.filter((uuid) => {
-      const existingVerify = existingVerifiesMap.get(uuid)
-      const serverVersion = friendVerifyVersions.find(item => item.uuid === uuid)?.version || 0
+    // 过滤出需要更新的ID（本地不存在或版本号更旧的数据）
+    const needUpdateVerifyIds = verifyIds.filter((id) => {
+      const existingVerify = existingVerifiesMap.get(id)
+      const serverVersion = friendVerifyVersions.find(item => item.verifyId === id)?.version || 0
 
       // 如果本地不存在，或服务器版本更新，则需要更新
       return !existingVerify || existingVerify.version < serverVersion
     })
 
-    return needUpdateUuids
+    return needUpdateVerifyIds
   }
 
   // 同步好友验证数据
-  private async syncFriendVerifyData(uuids: string[]) {
-    if (uuids.length === 0) {
+  private async syncFriendVerifyData(verifyIds: string[]) {
+    if (verifyIds.length === 0) {
       return
     }
 
-    const syncedVerifies: Array<{ uuid: string, version: number }> = []
+    const syncedVerifies: Array<{ verifyId: string, version: number }> = []
 
     // 分批获取好友验证数据（避免一次性获取过多数据）
     const batchSize = 50
-    for (let i = 0; i < uuids.length; i += batchSize) {
-      const batchUuids = uuids.slice(i, i + batchSize)
+    for (let i = 0; i < verifyIds.length; i += batchSize) {
+      const batchVerifyIds = verifyIds.slice(i, i + batchSize)
 
       const response = await getFriendVerifiesListByIdsApi({
-        uuids: batchUuids,
+        verifyIds: batchVerifyIds,
       })
 
       if (response.result.friendVerifies.length > 0) {
         const friendVerifies = response.result.friendVerifies.map((verify: any) => ({
-          uuid: verify.uuid,
+          verifyId: verify.verifyId,
           sendUserId: verify.sendUserId,
           revUserId: verify.revUserId,
           sendStatus: verify.sendStatus,
@@ -117,7 +117,7 @@ export class FriendVerifySyncModule {
 
         // 收集同步的数据用于通知
         syncedVerifies.push(...friendVerifies.map(verify => ({
-          uuid: verify.uuid,
+          verifyId: verify.verifyId,
           version: verify.version,
         })))
       }

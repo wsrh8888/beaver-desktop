@@ -67,7 +67,7 @@ export class GroupService {
 
     for (const group of groupsData) {
       // 获取本地群组数据
-      const localGroup = await this.getGroupByUuid(group.groupId)
+      const localGroup = await this.getGroupById(group.groupId)
 
       // 如果本地不存在或版本号不同，则更新
       if (!localGroup || localGroup.version !== group.version) {
@@ -93,12 +93,12 @@ export class GroupService {
   }
 
   // 根据GroupID获取群组
-  static async getGroupByUuid(groupId: string): Promise<IDBGroup | undefined> {
+  static async getGroupById(groupId: string): Promise<IDBGroup | undefined> {
     return await this.db.select().from(groups).where(eq(groups.groupId as any, groupId as any)).get()
   }
 
   // 根据GroupID列表批量获取群组
-  static async getGroupsByUuids(groupIds: string[]): Promise<IDBGroup[]> {
+  static async getGroupsByIds(groupIds: string[]): Promise<IDBGroup[]> {
     if (groupIds.length === 0)
       return []
     return await this.db.select().from(groups).where(inArray(groups.groupId as any, groupIds as any)).all()

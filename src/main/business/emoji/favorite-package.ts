@@ -20,7 +20,7 @@ export class FavoritePackageBusiness {
         const pkg = packageMap.get(item.packageId)
         if (!pkg) return null
         return {
-          packageId: pkg.uuid,
+          packageId: pkg.packageId,
           title: pkg.title,
           coverFile: pkg.coverFile,
           description: pkg.description || '',

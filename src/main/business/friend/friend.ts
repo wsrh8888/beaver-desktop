@@ -2,7 +2,7 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IFriendInfo, IFriendListReq, IFriendListRes } from 'commonModule/type/ajax/friend'
 import type { QueueItem } from '../base/base'
 import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
-import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
+import { getFriendsListByIdsApi } from 'mainModule/api/friened'
 import { FriendService } from 'mainModule/database/services/friend/friend'
 import { UserService } from 'mainModule/database/services/user/user'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
@@ -19,7 +19,7 @@ function generateConversationId(userId1: string, userId2: string): string {
  * 好友同步队列项
  */
 interface FriendSyncItem extends QueueItem {
-  uuid: string
+  friendId: string
   version: number
 }
 
@@ -110,12 +110,12 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
    * 处理好友表的更新通知
    * 将同步请求加入队列，1秒后批量处理
    */
-  async handleTableUpdates(version: number, uuid: string) {
+  async handleTableUpdates(version: number, friendId: string) {
     this.addToQueue({
-      key: uuid,
-      data: { uuid, version },
+      key: friendId,
+      data: { friendId, version },
       timestamp: Date.now(),
-      uuid,
+      friendId,
       version,
     })
   }
@@ -124,19 +124,19 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
    * 批量处理好友同步请求
    */
   protected async processBatchRequests(items: FriendSyncItem[]): Promise<void> {
-    // 检查是否有具体的 uuid
-    const uuids = items.map(item => item.uuid).filter((uuid): uuid is string => Boolean(uuid))
+    // 检查是否有具体的 ID
+    const friendIds = items.map(item => item.friendId).filter((id): id is string => Boolean(id))
 
     try {
-      const response = await getFriendsListByUuidsApi({
-        uuids,
+      const response = await getFriendsListByIdsApi({
+        friendIds,
       })
 
       if (response.result.friends && response.result.friends.length > 0) {
         // 更新本地数据库，转换数据类型
         for (const friend of response.result.friends) {
           const friendData = {
-            uuid: friend.uuid,
+            friendId: friend.friendId,
             sendUserId: friend.sendUserId,
             revUserId: friend.revUserId,
             sendUserNotice: friend.sendUserNotice || '',
@@ -150,12 +150,12 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
           await FriendService.upsert(friendData)
         }
 
-        console.log(`好友数据精确同步成功: uuids=${uuids.join(',')}, count=${response.result.friends.length}`)
+        console.log(`好友数据精确同步成功: ids=${friendIds.join(',')}, count=${response.result.friends.length}`)
 
         // 发送通知到render进程，告知好友数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_UPDATE, {
           updatedFriends: response.result.friends.map((friend: any) => ({
-            uuid: friend.uuid,
+            friendId: friend.friendId,
             sendUserId: friend.sendUserId,
             revUserId: friend.revUserId,
             version: friend.version,
@@ -169,14 +169,14 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
   }
 
   /**
-   * 根据好友关系UUID列表批量获取好友信息
+   * 根据好友关系ID列表批量获取好友信息
    */
-  async getFriendsByUuid(header: ICommonHeader, params: { uuids: string[] }): Promise<{ list: IFriendInfo[] }> {
-    const { uuids } = params
+  async getFriendsByIds(header: ICommonHeader, params: { friendIds: string[] }): Promise<{ list: IFriendInfo[] }> {
+    const { friendIds } = params
     const { userId } = header
 
     // 调用服务层批量获取好友信息
-    const friends = await FriendService.getFriendsByUuid(uuids, userId)
+    const friends = await FriendService.getFriendsByIds(friendIds, userId)
 
     return { list: friends }
   }

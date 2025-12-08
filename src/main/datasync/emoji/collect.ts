@@ -11,17 +11,17 @@ export class CollectSync {
       return
     }
 
-    // 过滤出需要更新的收藏记录UUID
-    const needUpdateCollectUuids = await this.compareAndFilterCollectVersions(collectVersions)
-    if (needUpdateCollectUuids.length > 0) {
-      await this.syncEmojiCollectData(needUpdateCollectUuids)
+    // 过滤出需要更新的收藏记录ID
+    const needUpdateCollectIds = await this.compareAndFilterCollectVersions(collectVersions)
+    if (needUpdateCollectIds.length > 0) {
+      await this.syncEmojiCollectData(needUpdateCollectIds)
     }
   }
 
   // 对比本地数据，过滤出需要更新的收藏记录ID
   private async compareAndFilterCollectVersions(collectVersions: any[]): Promise<string[]> {
     const ids = collectVersions
-      .map(item => item.id)
+      .map(item => item.collectId || item.id)
       .filter(id => id && id.trim() !== '')
 
     if (ids.length === 0) {
@@ -32,7 +32,7 @@ export class CollectSync {
 
     const needUpdateIds = ids.filter((id) => {
       const existingRecord = existingRecordsMap.get(id)
-      const serverVersion = collectVersions.find(item => item.id === id)?.version || 0
+      const serverVersion = collectVersions.find(item => (item.collectId || item.id) === id)?.version || 0
       return !existingRecord || existingRecord.version < serverVersion
     })
 
@@ -57,8 +57,8 @@ export class CollectSync {
       })
 
       if (response.result.collects.length > 0) {
-        const collects = response.result.collects.map((collect: any) => ({
-          uuid: collect.uuid,
+        const collects = response.result.collects.map((collect: any, index: number) => ({
+          collectId: collect.collectId  ?? batchIds[index],
           userId: collect.userId,
           emojiId: collect.emojiId,
           version: collect.version,

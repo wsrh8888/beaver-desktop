@@ -128,7 +128,7 @@ export class FriendService {
   }
 
   // 根据好友关系ID列表批量查询好友信息
-  static async getFriendsByUuid(friendIds: string[], currentUserId: string): Promise<IFriendInfo[]> {
+  static async getFriendsByIds(friendIds: string[], currentUserId: string): Promise<IFriendInfo[]> {
     if (friendIds.length === 0) {
       return []
     }
@@ -206,8 +206,8 @@ export class FriendService {
     })
   }
 
-  // 根据friendshipIds批量查询本地好友关系
-  static async getFriendsByIds(friendshipIds: string[]): Promise<Map<string, any>> {
+  // 根据friendshipIds批量查询本地好友关系（仅原始记录映射）
+  static async getFriendRecordsByIds(friendshipIds: string[]): Promise<Map<string, any>> {
     if (friendshipIds.length === 0) {
       return new Map()
     }

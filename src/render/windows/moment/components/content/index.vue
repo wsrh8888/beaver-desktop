@@ -9,7 +9,7 @@
           v-for="moment in momentList"
           :key="moment.id"
           :moment="moment"
-          @moment-click="handleMomentClick"
+          @momentClick="handleMomentClick"
           @comment="handleComment"
         />
       </div>

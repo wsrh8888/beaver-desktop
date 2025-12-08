@@ -15,7 +15,7 @@ export const initEmojiPackageCollectTable = (sqlite: any) => {
   `)
   try {
     sqlite.exec(`ALTER TABLE emoji_package_collect ADD COLUMN is_deleted INTEGER DEFAULT 0`)
-  } catch (err) {
+  } catch (_err) {
     // ignore if column already exists
   }
 }

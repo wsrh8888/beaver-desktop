@@ -10,7 +10,6 @@ export class UserReceiver {
    */
   async handleTableUpdates(tableUpdatesBody: any) {
     // user 模块的 tableUpdatesBody 直接就是单个表的更新结构
-    // { table: "users", version: 123, targetId: "user_uuid" }
 
     // 检查是否是 users 表的更新
     if (tableUpdatesBody.table !== 'users') {
