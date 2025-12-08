@@ -24,7 +24,7 @@ export class EmojiService {
       const result = await this.db.insert(emoji)
         .values(emojiData)
         .onConflictDoUpdate({
-          target: emoji.uuid,
+          target: emoji.emojiId,
           set: {
             fileKey: emojiData.fileKey,
             title: emojiData.title,
@@ -40,27 +40,8 @@ export class EmojiService {
     return results
   }
 
-  // 根据UUID列表获取表情
-  static async getEmojisByUuids(uuids: string[]): Promise<Map<string, any>> {
-    if (uuids.length === 0) {
-      return new Map()
-    }
-
-    const emojiList = await this.db
-      .select()
-      .from(emoji)
-      .where(inArray(emoji.uuid, uuids as any))
-
-    const emojiMap = new Map<string, any>()
-    emojiList.forEach((item) => {
-      emojiMap.set(item.uuid, item)
-    })
-
-    return emojiMap
-  }
-
   // 根据ID列表获取表情
-  static async getEmojisByIds(ids: number[]): Promise<Map<number, any>> {
+  static async getEmojisByIds(ids: string[]): Promise<Map<string, any>> {
     if (ids.length === 0) {
       return new Map()
     }
@@ -68,11 +49,11 @@ export class EmojiService {
     const emojiList = await this.db
       .select()
       .from(emoji)
-      .where(inArray(emoji.id, ids as any))
+      .where(inArray(emoji.emojiId, ids as any))
 
-    const emojiMap = new Map<number, any>()
+    const emojiMap = new Map<string, any>()
     emojiList.forEach((item) => {
-      emojiMap.set(item.id, item)
+      emojiMap.set(item.emojiId, item)
     })
 
     return emojiMap
@@ -83,23 +64,12 @@ export class EmojiService {
     return await this.db.select().from(emoji).all()
   }
 
-  // 根据UUID获取单个表情
-  static async getEmojiByUuid(uuid: string) {
-    const result = await this.db
-      .select()
-      .from(emoji)
-      .where(eq(emoji.uuid, uuid))
-      .limit(1)
-
-    return result[0] || null
-  }
-
   // 根据ID获取单个表情
-  static async getEmojiById(id: number) {
+  static async getEmojiById(id: string) {
     const result = await this.db
       .select()
       .from(emoji)
-      .where(eq(emoji.id, id))
+      .where(eq(emoji.emojiId, id))
       .limit(1)
 
     return result[0] || null

@@ -24,7 +24,7 @@ export class EmojiPackageCollectService {
       const result = await this.db.insert(emojiPackageCollect)
         .values(collectData)
         .onConflictDoUpdate({
-          target: emojiPackageCollect.uuid,
+          target: emojiPackageCollect.packageCollectId,
           set: {
             userId: collectData.userId,
             packageId: collectData.packageId,
@@ -39,20 +39,20 @@ export class EmojiPackageCollectService {
     return results
   }
 
-  // 根据UUID列表获取表情包收藏
-  static async getPackageCollectsByUuids(uuids: string[]): Promise<Map<string, any>> {
-    if (uuids.length === 0) {
+  // 根据ID列表获取表情包收藏
+  static async getPackageCollectsByIds(ids: string[]): Promise<Map<string, any>> {
+    if (ids.length === 0) {
       return new Map()
     }
 
     const collectList = await this.db
       .select()
       .from(emojiPackageCollect)
-      .where(inArray(emojiPackageCollect.uuid, uuids as any))
+      .where(inArray(emojiPackageCollect.packageCollectId, ids as any))
 
     const collectMap = new Map<string, any>()
     collectList.forEach((item) => {
-      collectMap.set(item.uuid, item)
+      collectMap.set(item.packageCollectId, item)
     })
 
     return collectMap
@@ -67,22 +67,22 @@ export class EmojiPackageCollectService {
       .all()
   }
 
-  // 根据UUID获取单个表情包收藏
-  static async getPackageCollectByUuid(uuid: string) {
+  // 根据ID获取单个表情包收藏
+  static async getPackageCollectById(packageCollectId: string) {
     const result = await this.db
       .select()
       .from(emojiPackageCollect)
-      .where(eq(emojiPackageCollect.uuid, uuid))
+      .where(eq(emojiPackageCollect.packageCollectId, packageCollectId))
       .limit(1)
 
     return result[0] || null
   }
 
   // 删除表情包收藏
-  static async delete(uuid: string) {
+  static async delete(packageCollectId: string) {
     return await this.db
       .delete(emojiPackageCollect)
-      .where(eq(emojiPackageCollect.uuid, uuid))
+      .where(eq(emojiPackageCollect.packageCollectId, packageCollectId))
       .run()
   }
 }

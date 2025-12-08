@@ -24,9 +24,9 @@ export class EmojiPackageService {
       const result = await this.db.insert(emojiPackage)
         .values(packageData)
         .onConflictDoUpdate({
-          target: emojiPackage.id,
+          target: emojiPackage.packageId,
           set: {
-            uuid: packageData.uuid,
+            packageId: packageData.packageId,
             title: packageData.title,
             coverFile: packageData.coverFile,
             userId: packageData.userId,
@@ -44,20 +44,20 @@ export class EmojiPackageService {
     return results
   }
 
-  // 根据UUID列表获取表情包
-  static async getPackagesByIds(uuids: string[]): Promise<Map<string, any>> {
-    if (uuids.length === 0) {
+  // 根据ID列表获取表情包
+  static async getPackagesByIds(ids: string[]): Promise<Map<string, any>> {
+    if (ids.length === 0) {
       return new Map()
     }
 
     const packageList = await this.db
       .select()
       .from(emojiPackage)
-      .where(inArray(emojiPackage.uuid, uuids))
+      .where(inArray(emojiPackage.packageId, ids))
 
     const packageMap = new Map<string, any>()
     packageList.forEach((item) => {
-      packageMap.set(item.uuid, item)
+      packageMap.set(item.packageId, item)
     })
 
     return packageMap
@@ -78,24 +78,19 @@ export class EmojiPackageService {
   }
 
   // 根据ID获取单个表情包
-  static async getPackageById(id: number) {
+  static async getPackageById(id: string) {
     const result = await this.db
       .select()
       .from(emojiPackage)
-      .where(eq(emojiPackage.id, id))
+      .where(eq(emojiPackage.packageId, id))
       .limit(1)
 
     return result[0] || null
   }
 
-  // 根据UUID获取单个表情包
-  static async getPackageByUuid(uuid: string) {
-    const result = await this.db
-      .select()
-      .from(emojiPackage)
-      .where(eq(emojiPackage.uuid, uuid))
-      .limit(1)
-
+  // 根据内部自增 id 查询（如需）
+  static async getPackageByAutoId(id: number) {
+    const result = await this.db.select().from(emojiPackage).where(eq(emojiPackage.id, id)).limit(1)
     return result[0] || null
   }
 }

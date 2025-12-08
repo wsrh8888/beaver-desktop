@@ -19,7 +19,7 @@ class PackageEmojiSync {
     }
   }
 
-  // 对比本地数据，过滤出需要更新的表情包内容UUID
+  // 对比本地数据，过滤出需要更新的表情包内容
   private async compareAndFilterPackageContentVersions(packageContentVersions: any[]): Promise<string[]> {
     const packageIds = packageContentVersions
       .map(item => item.packageId)

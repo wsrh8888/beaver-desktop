@@ -19,7 +19,7 @@ class PackageSync {
     }
   }
 
-  // 对比本地数据，过滤出需要更新的表情包UUID
+  // 对比本地数据，过滤出需要更新的表情包ID
   private async compareAndFilterPackageVersions(packageVersions: any[]): Promise<string[]> {
     const packageIds = packageVersions
       .map(item => item.id)

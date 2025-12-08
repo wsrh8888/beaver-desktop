@@ -188,7 +188,7 @@ export interface IGetSyncFriendVerifiesRes {
 
 // 好友验证版本信息
 export interface IFriendVerifyVersionItem {
-  uuid: string // 验证记录UUID
+  verifyId: string // 验证记录ID
   version: number // 验证记录版本号
 }
 
@@ -205,7 +205,7 @@ export interface IGetSyncEmojisRes {
 
 // 表情版本信息
 export interface IEmojiVersionItem {
-  uuid: string // 表情UUID
+  emojiId: string // 表情ID
   version: number // 表情版本号
 }
 
@@ -225,24 +225,24 @@ export interface IGetSyncEmojiCollectsRes {
 
 // 表情收藏版本信息
 export interface IEmojiCollectVersionItem {
-  id: string // 收藏记录UUID
+  emojiCollectId: string // 表情收藏记录ID
   version: number // 收藏版本号
 }
 
 // 表情包收藏版本信息
 export interface IEmojiPackageCollectVersionItem {
-  id: string // 收藏记录UUID
+  packageCollectId: string // 表情包收藏记录ID
   version: number // 收藏版本号
 }
 
 // 表情包版本信息
 export interface IEmojiPackageVersionItem {
-  id: string // 表情包UUID
+  packageId: string // 表情包ID
   version: number // 表情包版本号
 }
 
 // 表情包内容版本信息
 export interface IEmojiPackageContentVersionItem {
-  packageId: string // 表情包UUID
+  packageId: string // 表情包ID
   version: number // 表情包内容版本号
 }

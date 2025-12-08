@@ -4,7 +4,7 @@ export const initEmojiTable = (sqlite: any) => {
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS emoji (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      uuid TEXT NOT NULL UNIQUE,
+      emoji_id TEXT NOT NULL UNIQUE,
       file_key TEXT NOT NULL,
       title TEXT NOT NULL,
       status INTEGER DEFAULT 1,

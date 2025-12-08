@@ -20,7 +20,7 @@ export class UserService {
     return await this.db.insert(users)
       .values(userData)
       .onConflictDoUpdate({
-        target: users.uuid,
+        target: users.userId,
         set: {
           nickName: userData.nickName,
           avatar: userData.avatar,
@@ -52,7 +52,7 @@ export class UserService {
       const userId = header.userId as string
       const userData = await this.db
         .select({
-          userId: users.uuid,
+          userId: users.userId,
           nickName: users.nickName,
           avatar: users.avatar,
           abstract: users.abstract,
@@ -62,7 +62,7 @@ export class UserService {
           version: users.version,
         })
         .from(users)
-        .where(sql`${users.uuid} = ${userId}`)
+        .where(sql`${users.userId} = ${userId}`)
         .limit(1)
 
       if (userData.length === 0) {
@@ -91,11 +91,11 @@ export class UserService {
     try {
       const userData = await this.db
         .select({
-          userId: users.uuid,
+          userId: users.userId,
           version: users.version,
         })
         .from(users)
-        .where(sql`${users.uuid} = ${userId}`)
+        .where(sql`${users.userId} = ${userId}`)
         .limit(1)
 
       if (userData.length === 0) {
@@ -119,12 +119,12 @@ export class UserService {
     try {
       const userData = await this.db
         .select({
-          userId: users.uuid,
+          userId: users.userId,
           nickName: users.nickName,
           avatar: users.avatar,
         })
         .from(users)
-        .where(sql`${users.uuid} IN (${sql.join(userIds.map(id => sql`${id}`), sql`, `)})`)
+        .where(sql`${users.userId} IN (${sql.join(userIds.map(id => sql`${id}`), sql`, `)})`)
 
       return userData.map((user: any) => ({
         userId: user.userId,
@@ -143,7 +143,7 @@ export class UserService {
     try {
       const userData = await this.db
         .select({
-          userId: users.uuid,
+          userId: users.userId,
           nickName: users.nickName,
           avatar: users.avatar,
           abstract: users.abstract,

@@ -20,7 +20,7 @@ export class FriendService {
     return await this.db.insert(friends)
       .values(friendData)
       .onConflictDoUpdate({
-        target: friends.uuid,
+        target: friends.friendId,
         set: {
           sendUserId: friendData.sendUserId,
           revUserId: friendData.revUserId,
@@ -72,20 +72,20 @@ export class FriendService {
     const userIdsArray = Array.from(userIdsToQuery)
     const userInfos = await dbManager.db
       .select({
-        uuid: users.uuid,
+        userId: users.userId,
         nickName: users.nickName,
         avatar: users.avatar,
         abstract: users.abstract,
         email: users.email,
       })
       .from(users)
-      .where(inArray(users.uuid, userIdsArray))
+      .where(inArray(users.userId, userIdsArray))
       .all()
 
     // 构建用户信息的映射
     const userInfoMap = new Map<string, any>()
     userInfos.forEach((user: any) => {
-      userInfoMap.set(user.uuid, user)
+      userInfoMap.set(user.userId, user)
     })
 
     // 构建好友关系的映射
@@ -113,7 +113,7 @@ export class FriendService {
           : friendRelation.sendUserNotice || ''
 
         friendDetailsMap.set(friendId, {
-          userId: userInfo.uuid,
+          userId: userInfo.userId,
           nickName: userInfo.nickName || '',
           avatar: userInfo.avatar || '',
           abstract: userInfo.abstract || '',
@@ -127,16 +127,16 @@ export class FriendService {
     return friendDetailsMap
   }
 
-  // 根据好友关系UUID列表批量查询好友信息
-  static async getFriendsByUuid(uuids: string[], currentUserId: string): Promise<IFriendInfo[]> {
-    if (uuids.length === 0) {
+  // 根据好友关系ID列表批量查询好友信息
+  static async getFriendsByUuid(friendIds: string[], currentUserId: string): Promise<IFriendInfo[]> {
+    if (friendIds.length === 0) {
       return []
     }
 
     const friendRecords = await this.db
       .select()
       .from(friends)
-      .where(inArray(friends.uuid, uuids as any))
+      .where(inArray(friends.friendId, friendIds as any))
       .all()
 
     if (friendRecords.length === 0) {
@@ -152,10 +152,10 @@ export class FriendService {
 
     // 查询用户信息
     const userIdsArray = Array.from(userIds)
-    const conditions = userIdsArray.map(id => eq(users.uuid, id))
+    const conditions = userIdsArray.map(id => eq(users.userId, id))
     const userInfos = await this.db
       .select({
-        uuid: users.uuid,
+        userId: users.userId,
         nickName: users.nickName,
         avatar: users.avatar,
         abstract: users.abstract,
@@ -168,7 +168,7 @@ export class FriendService {
     // 构建用户映射
     const userMap = new Map<string, any>()
     userInfos.forEach((user: any) => {
-      userMap.set(user.uuid, user)
+      userMap.set(user.userId, user)
     })
 
     // 生成会话ID的辅助函数
@@ -215,12 +215,12 @@ export class FriendService {
     const existingFriends = await this.db
       .select()
       .from(friends)
-      .where(inArray(friends.uuid, friendshipIds as any))
+      .where(inArray(friends.friendId, friendshipIds as any))
       .all()
 
     const friendMap = new Map<string, any>()
     existingFriends.forEach((friend: any) => {
-      friendMap.set(friend.uuid, friend)
+      friendMap.set(friend.friendId, friend)
     })
 
     return friendMap
@@ -297,10 +297,10 @@ export class FriendService {
       // 查询用户信息
       const userIdsArray = Array.from(userIds)
       if (userIdsArray.length > 0) {
-        const conditions = userIdsArray.map(id => eq(users.uuid, id))
+        const conditions = userIdsArray.map(id => eq(users.userId, id))
         const userInfos = await this.db
           .select({
-            uuid: users.uuid,
+            userId: users.userId,
             nickName: users.nickName,
             avatar: users.avatar,
             abstract: users.abstract,
@@ -313,7 +313,7 @@ export class FriendService {
         // 构建用户映射
         const userMap = new Map<string, any>()
         userInfos.forEach((user: any) => {
-          userMap.set(user.uuid, user)
+          userMap.set(user.userId, user)
         })
 
         // 构建好友列表

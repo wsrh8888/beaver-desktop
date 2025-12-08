@@ -15,21 +15,21 @@ export class FriendVerifyService {
     return await this.db.insert(friendVerifies).values(verifyData).run()
   }
 
-  // 根据uuids批量查询好友验证记录
-  static async getFriendVerifiesByIds(uuids: string[]): Promise<Map<string, any>> {
-    if (uuids.length === 0) {
+  // 根据验证记录ID批量查询好友验证记录
+  static async getFriendVerifiesByIds(verifyIds: string[]): Promise<Map<string, any>> {
+    if (verifyIds.length === 0) {
       return new Map()
     }
 
     const existingVerifies = await this.db
       .select()
       .from(friendVerifies)
-      .where(inArray(friendVerifies.uuid, uuids as any))
+      .where(inArray(friendVerifies.verifyId, verifyIds as any))
       .all()
 
     const verifyMap = new Map<string, any>()
     existingVerifies.forEach((verify) => {
-      verifyMap.set(verify.uuid, verify)
+      verifyMap.set(verify.verifyId, verify)
     })
 
     return verifyMap
@@ -46,7 +46,7 @@ export class FriendVerifyService {
         .insert(friendVerifies)
         .values(verify)
         .onConflictDoUpdate({
-          target: friendVerifies.uuid,
+          target: friendVerifies.verifyId,
           set: {
             sendUserId: verify.sendUserId,
             revUserId: verify.revUserId,
@@ -104,10 +104,10 @@ export class FriendVerifyService {
 
       // 查询用户信息
       const userIdsArray = Array.from(userIds)
-      const conditions = userIdsArray.map(id => eq(users.uuid, id))
+      const conditions = userIdsArray.map(id => eq(users.userId, id))
       const userInfos = await this.db
         .select({
-          uuid: users.uuid,
+          userId: users.userId,
           nickName: users.nickName,
           avatar: users.avatar,
         })
@@ -118,7 +118,7 @@ export class FriendVerifyService {
       // 构建用户映射
       const userMap = new Map<string, any>()
       userInfos.forEach((user: any) => {
-        userMap.set(user.uuid, user)
+        userMap.set(user.userId, user)
       })
 
       // 构建验证列表
@@ -128,7 +128,7 @@ export class FriendVerifyService {
         const otherUser = userMap.get(otherUserId)
 
         return {
-          id: record.uuid,
+          id: record.verifyId,
           userId: otherUserId,
           nickName: otherUser?.nickName || '',
           avatar: otherUser?.avatar || '',
@@ -189,10 +189,10 @@ export class FriendVerifyService {
 
       // 查询用户信息
       const userIdsArray = Array.from(userIds)
-      const conditions = userIdsArray.map(id => eq(users.uuid, id))
+      const conditions = userIdsArray.map(id => eq(users.userId, id))
       const userInfos = await this.db
         .select({
-          uuid: users.uuid,
+          userId: users.userId,
           nickName: users.nickName,
           avatar: users.avatar,
         })
@@ -203,7 +203,7 @@ export class FriendVerifyService {
       // 构建用户映射
       const userMap = new Map<string, any>()
       userInfos.forEach((user: any) => {
-        userMap.set(user.uuid, user)
+        userMap.set(user.userId, user)
       })
 
       // 构建验证列表
@@ -213,7 +213,7 @@ export class FriendVerifyService {
         const otherUser = userMap.get(otherUserId)
 
         return {
-          id: record.uuid,
+          id: record.verifyId,
           userId: otherUserId,
           nickName: otherUser?.nickName || '',
           avatar: otherUser?.avatar || '',
@@ -232,16 +232,16 @@ export class FriendVerifyService {
     }
   }
 
-  // 根据验证记录UUID列表批量查询验证记录
-  static async getValidByUuid(uuids: string[], currentUserId: string): Promise<{ list: IValidInfo[] }> {
-    if (uuids.length === 0) {
+  // 根据验证记录ID列表批量查询验证记录
+  static async getValidByUuid(verifyIds: string[], currentUserId: string): Promise<{ list: IValidInfo[] }> {
+    if (verifyIds.length === 0) {
       return { list: [] }
     }
 
     const validRecords = await this.db
       .select()
       .from(friendVerifies)
-      .where(inArray(friendVerifies.uuid, uuids as any))
+      .where(inArray(friendVerifies.verifyId, verifyIds as any))
       .all()
 
     if (validRecords.length === 0) {
@@ -257,10 +257,10 @@ export class FriendVerifyService {
 
     // 查询用户信息
     const userIdsArray = Array.from(userIds)
-    const conditions = userIdsArray.map(id => eq(users.uuid, id))
+    const conditions = userIdsArray.map(id => eq(users.userId, id))
     const userInfos = await this.db
       .select({
-        uuid: users.uuid,
+        userId: users.userId,
         nickName: users.nickName,
         avatar: users.avatar,
       })
@@ -271,7 +271,7 @@ export class FriendVerifyService {
     // 构建用户映射
     const userMap = new Map<string, any>()
     userInfos.forEach((user: any) => {
-      userMap.set(user.uuid, user)
+      userMap.set(user.userId, user)
     })
 
     // 构建验证列表
@@ -281,7 +281,7 @@ export class FriendVerifyService {
       const otherUser = userMap.get(otherUserId)
 
       return {
-        id: record.uuid,
+        id: record.verifyId,
         userId: otherUserId,
         nickName: otherUser?.nickName || '',
         avatar: otherUser?.avatar || '',

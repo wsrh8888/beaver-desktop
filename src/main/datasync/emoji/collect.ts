@@ -1,5 +1,5 @@
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
-import { getEmojiCollectsByUuidsApi } from 'mainModule/api/emoji'
+import { getEmojiCollectsByIdsApi } from 'mainModule/api/emoji'
 import { EmojiCollectService } from 'mainModule/database/services/emoji/collect'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
@@ -11,54 +11,54 @@ export class CollectSync {
       return
     }
 
-    // 过滤出需要更新的收藏记录UUID
-    const needUpdateCollectUuids = await this.compareAndFilterCollectVersions(collectVersions)
+    // 过滤出需要更新的收藏记录ID
+    const needUpdateCollectIds = await this.compareAndFilterCollectVersions(collectVersions)
 
-    if (needUpdateCollectUuids.length > 0) {
-      await this.syncEmojiCollectData(needUpdateCollectUuids)
+    if (needUpdateCollectIds.length > 0) {
+      await this.syncEmojiCollectData(needUpdateCollectIds)
     }
   }
 
-  // 对比本地数据，过滤出需要更新的收藏记录UUID
+  // 对比本地数据，过滤出需要更新的收藏记录ID
   private async compareAndFilterCollectVersions(collectVersions: any[]): Promise<string[]> {
-    const uuids = collectVersions
+    const ids = collectVersions
       .map(item => item.id)
       .filter(id => id && id.trim() !== '')
 
-    if (uuids.length === 0) {
+    if (ids.length === 0) {
       return []
     }
 
-    const existingRecordsMap = await EmojiCollectService.getCollectsByUuids(uuids)
+    const existingRecordsMap = await EmojiCollectService.getCollectsByIds(ids)
 
-    const needUpdateUuids = uuids.filter((uuid) => {
-      const existingRecord = existingRecordsMap.get(uuid)
-      const serverVersion = collectVersions.find(item => item.id === uuid)?.version || 0
+    const needUpdateIds = ids.filter((id) => {
+      const existingRecord = existingRecordsMap.get(id)
+      const serverVersion = collectVersions.find(item => item.id === id)?.version || 0
       return !existingRecord || existingRecord.version < serverVersion
     })
 
-    return needUpdateUuids
+    return needUpdateIds
   }
 
   // 同步表情收藏数据
-  private async syncEmojiCollectData(collectUuids: string[]) {
-    if (collectUuids.length === 0) {
+  private async syncEmojiCollectData(collectIds: string[]) {
+    if (collectIds.length === 0) {
       return
     }
 
-    const syncedCollects: Array<{ uuid: string, version: number }> = []
+    const syncedCollects: Array<{ collectId: string, version: number }> = []
 
     const batchSize = 50
-    for (let i = 0; i < collectUuids.length; i += batchSize) {
-      const batchUuids = collectUuids.slice(i, i + batchSize)
+    for (let i = 0; i < collectIds.length; i += batchSize) {
+      const batchIds = collectIds.slice(i, i + batchSize)
 
-      const response = await getEmojiCollectsByUuidsApi({
-        uuids: batchUuids,
+      const response = await getEmojiCollectsByIdsApi({
+        ids: batchIds,
       })
 
       if (response.result.collects.length > 0) {
         const collects = response.result.collects.map((collect: any, index: number) => ({
-          uuid: batchUuids[index],
+          collectId: batchIds[index],
           userId: collect.userId,
           emojiId: collect.emojiId,
           version: collect.version,
@@ -68,7 +68,7 @@ export class CollectSync {
 
         await EmojiCollectService.batchCreate(collects)
         syncedCollects.push(...collects.map(collect => ({
-          uuid: collect.uuid,
+          collectId: collect.collectId,
           version: collect.version,
         })))
       }

@@ -1,5 +1,5 @@
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
-import { getEmojiPackageCollectsByUuidsApi } from 'mainModule/api/emoji'
+import { getEmojiPackageCollectsByIdsApi } from 'mainModule/api/emoji'
 import { EmojiPackageCollectService } from 'mainModule/database/services/emoji/package-collect'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
@@ -11,54 +11,54 @@ class PackageCollectSync {
       return
     }
 
-    // 过滤出需要更新的收藏记录UUID
-    const needUpdatePackageCollectUuids = await this.compareAndFilterPackageCollectVersions(packageCollectVersions)
+    // 过滤出需要更新的收藏记录ID
+    const needUpdatePackageCollectIds = await this.compareAndFilterPackageCollectVersions(packageCollectVersions)
 
-    if (needUpdatePackageCollectUuids.length > 0) {
-      await this.syncEmojiPackageCollectData(needUpdatePackageCollectUuids)
+    if (needUpdatePackageCollectIds.length > 0) {
+      await this.syncEmojiPackageCollectData(needUpdatePackageCollectIds)
     }
   }
 
-  // 对比本地数据，过滤出需要更新的收藏记录UUID
+  // 对比本地数据，过滤出需要更新的收藏记录ID
   private async compareAndFilterPackageCollectVersions(packageCollectVersions: any[]): Promise<string[]> {
-    const uuids = packageCollectVersions
+    const ids = packageCollectVersions
       .map(item => item.id)
       .filter(id => id && id.trim() !== '')
 
-    if (uuids.length === 0) {
+    if (ids.length === 0) {
       return []
     }
 
-    const existingRecordsMap = await EmojiPackageCollectService.getPackageCollectsByUuids(uuids)
+    const existingRecordsMap = await EmojiPackageCollectService.getPackageCollectsByIds(ids)
 
-    const needUpdateUuids = uuids.filter((uuid) => {
-      const existingRecord = existingRecordsMap.get(uuid)
-      const serverVersion = packageCollectVersions.find(item => item.id === uuid)?.version || 0
+    const needUpdateIds = ids.filter((id) => {
+      const existingRecord = existingRecordsMap.get(id)
+      const serverVersion = packageCollectVersions.find(item => item.id === id)?.version || 0
       return !existingRecord || existingRecord.version < serverVersion
     })
 
-    return needUpdateUuids
+    return needUpdateIds
   }
 
   // 同步表情包收藏数据
-  private async syncEmojiPackageCollectData(packageCollectUuids: string[]) {
-    if (packageCollectUuids.length === 0) {
+  private async syncEmojiPackageCollectData(packageCollectIds: string[]) {
+    if (packageCollectIds.length === 0) {
       return
     }
 
-    const syncedPackageCollects: Array<{ uuid: string, version: number }> = []
+    const syncedPackageCollects: Array<{ packageCollectId: string, version: number }> = []
 
     const batchSize = 50
-    for (let i = 0; i < packageCollectUuids.length; i += batchSize) {
-      const batchUuids = packageCollectUuids.slice(i, i + batchSize)
+    for (let i = 0; i < packageCollectIds.length; i += batchSize) {
+      const batchIds = packageCollectIds.slice(i, i + batchSize)
 
-      const response = await getEmojiPackageCollectsByUuidsApi({
-        uuids: batchUuids,
+      const response = await getEmojiPackageCollectsByIdsApi({
+        ids: batchIds,
       })
 
       if (response.result.collects.length > 0) {
         const collects = response.result.collects.map((collect: any, index: number) => ({
-          uuid: batchUuids[index],
+          packageCollectId: batchIds[index],
           userId: collect.userId,
           packageId: collect.packageId,
           version: collect.version,
@@ -68,7 +68,7 @@ class PackageCollectSync {
 
         await EmojiPackageCollectService.batchCreate(collects)
         syncedPackageCollects.push(...collects.map(collect => ({
-          uuid: collect.uuid,
+          packageCollectId: collect.packageCollectId,
           version: collect.version,
         })))
       }

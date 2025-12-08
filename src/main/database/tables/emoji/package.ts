@@ -5,7 +5,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 // 表情包表
 export const emojiPackage = sqliteTable('emoji_package', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique(),
+  packageId: text('package_id').notNull().unique(),
   title: text('title').notNull(),
   coverFile: text('cover_file'),
   userId: text('user_id').notNull(),

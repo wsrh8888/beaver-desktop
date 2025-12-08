@@ -1,7 +1,7 @@
 // 表情表
 export interface IDBEmoji {
   id?: number
-  uuid: string
+  emojiId: string
   fileKey: string
   title: string
   status?: number // 状态：1=正常 2=审核中 3=违规禁用
@@ -13,9 +13,9 @@ export interface IDBEmoji {
 // 用户收藏的表情表
 export interface IDBEmojiCollect {
   id?: number
-  uuid: string
+  emojiCollectId: string
   userId: string
-  emojiId: string // 表情UUID
+  emojiId: string // 表情ID
   isDeleted?: number // 是否已删除（软删除）：0=未删除 1=已删除
   version?: number // 版本号
   createdAt?: number
@@ -25,7 +25,7 @@ export interface IDBEmojiCollect {
 // 表情包表
 export interface IDBEmojiPackage {
   id?: number
-  uuid: string
+  packageId: string
   title: string
   coverFile?: string
   userId: string
@@ -40,9 +40,9 @@ export interface IDBEmojiPackage {
 // 表情包与表情的多对多关联表
 export interface IDBEmojiPackageEmoji {
   id?: number
-  uuid: string
-  packageId: string // 表情包UUID
-  emojiId: string // 表情UUID
+  relationId: string
+  packageId: string // 表情包ID
+  emojiId: string // 表情ID
   sortOrder?: number // 在表情包中的排序
   version?: number // 版本号
   createdAt?: number
@@ -52,9 +52,9 @@ export interface IDBEmojiPackageEmoji {
 // 用户收藏的表情包表
 export interface IDBEmojiPackageCollect {
   id?: number
-  uuid: string
+  packageCollectId: string
   userId: string
-  packageId: string // 表情包UUID
+  packageId: string // 表情包ID
   isDeleted?: number // 是否已删除（软删除）：0=未删除 1=已删除
   version?: number // 版本号
   createdAt?: number

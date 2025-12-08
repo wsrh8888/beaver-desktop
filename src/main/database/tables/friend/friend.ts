@@ -5,7 +5,7 @@ import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 // 好友表
 export const friends = sqliteTable('friends', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique(),
+  friendId: text('friend_id').notNull().unique(),
   sendUserId: text('send_user_id').notNull(),
   revUserId: text('rev_user_id').notNull(),
   sendUserNotice: text('send_user_notice'),

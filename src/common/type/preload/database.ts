@@ -39,11 +39,11 @@ export interface IDatabaseModule {
     /**
      * 根据好友关系UUID列表获取好友信息
      */
-    getFriendsByUuid(params: { uuids: string[] }): Promise<IFriendListRes>
+    getFriendsByUuid(params: { friendIds: string[] }): Promise<IFriendListRes>
     /**
      * 根据验证记录UUID列表获取验证记录
      */
-    getValidByUuid(params: { uuids: string[] }): Promise<IValidListRes>
+    getValidByUuid(params: { verifyIds: string[] }): Promise<IValidListRes>
   }
 
   /**

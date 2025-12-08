@@ -1,7 +1,7 @@
 // 用户表
 export interface IDBUser {
-  id?: number
-  uuid: string
+  id: number
+  userId: string
   nickName: string
   email?: string
   phone?: string
@@ -16,7 +16,7 @@ export interface IDBUser {
 
 // 用户同步状态表（客户端本地维护）
 export interface IDBUserSyncStatus {
-  id?: number
+  id: number
   userId: string // 用户ID
   userVersion: number // 用户资料版本号
   lastSyncTime: number // 最后同步时间戳

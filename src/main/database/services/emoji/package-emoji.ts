@@ -26,7 +26,7 @@ export class EmojiPackageEmojiService {
         .onConflictDoUpdate({
           target: [emojiPackageEmoji.packageId, emojiPackageEmoji.emojiId],
           set: {
-            uuid: relationData.uuid,
+            relationId: relationData.relationId,
             sortOrder: relationData.sortOrder,
             version: relationData.version,
             updatedAt: relationData.updatedAt,
@@ -40,7 +40,7 @@ export class EmojiPackageEmojiService {
   }
 
   // 根据表情包ID获取表情列表
-  static async getEmojisByPackageId(packageId: number) {
+  static async getEmojisByPackageId(packageId: string) {
     return await this.db
       .select()
       .from(emojiPackageEmoji)
@@ -49,7 +49,7 @@ export class EmojiPackageEmojiService {
   }
 
   // 根据表情包ID列表获取表情关联数据
-  static async getEmojisByPackageIds(packageIds: number[]): Promise<Map<number, any[]>> {
+  static async getEmojisByPackageIds(packageIds: string[]): Promise<Map<string, any[]>> {
     if (packageIds.length === 0) {
       return new Map()
     }
@@ -59,7 +59,7 @@ export class EmojiPackageEmojiService {
       .from(emojiPackageEmoji)
       .where(inArray(emojiPackageEmoji.packageId, packageIds as any))
 
-    const relationMap = new Map<number, any[]>()
+    const relationMap = new Map<string, any[]>()
     relationList.forEach((item) => {
       if (!relationMap.has(item.packageId)) {
         relationMap.set(item.packageId, [])
@@ -71,7 +71,7 @@ export class EmojiPackageEmojiService {
   }
 
   // 根据表情ID获取所属的表情包
-  static async getPackagesByEmojiId(emojiId: number) {
+  static async getPackagesByEmojiId(emojiId: string) {
     return await this.db
       .select()
       .from(emojiPackageEmoji)
@@ -80,7 +80,7 @@ export class EmojiPackageEmojiService {
   }
 
   // 删除表情包中的表情
-  static async deleteByPackageIdAndEmojiId(packageId: number, emojiId: number) {
+  static async deleteByPackageIdAndEmojiId(packageId: string, emojiId: string) {
     return await this.db
       .delete(emojiPackageEmoji)
       .where(eq(emojiPackageEmoji.packageId, packageId))
@@ -89,7 +89,7 @@ export class EmojiPackageEmojiService {
   }
 
   // 删除表情包中的所有表情
-  static async deleteByPackageId(packageId: number) {
+  static async deleteByPackageId(packageId: string) {
     return await this.db
       .delete(emojiPackageEmoji)
       .where(eq(emojiPackageEmoji.packageId, packageId))

@@ -24,7 +24,7 @@ export class EmojiCollectService {
       const result = await this.db.insert(emojiCollect)
         .values(collectData)
         .onConflictDoUpdate({
-          target: emojiCollect.uuid,
+          target: emojiCollect.emojiCollectId,
           set: {
             userId: collectData.userId,
             emojiId: collectData.emojiId,
@@ -39,20 +39,20 @@ export class EmojiCollectService {
     return results
   }
 
-  // 根据UUID列表获取表情收藏
-  static async getCollectsByUuids(uuids: string[]): Promise<Map<string, any>> {
-    if (uuids.length === 0) {
+  // 根据ID列表获取表情收藏
+  static async getCollectsByIds(ids: string[]): Promise<Map<string, any>> {
+    if (ids.length === 0) {
       return new Map()
     }
 
     const collectList = await this.db
       .select()
       .from(emojiCollect)
-      .where(inArray(emojiCollect.uuid, uuids as any))
+      .where(inArray(emojiCollect.emojiCollectId, ids as any))
 
     const collectMap = new Map<string, any>()
     collectList.forEach((item) => {
-      collectMap.set(item.uuid, item)
+      collectMap.set(item.emojiCollectId, item)
     })
 
     return collectMap
@@ -67,22 +67,22 @@ export class EmojiCollectService {
       .all()
   }
 
-  // 根据UUID获取单个表情收藏
-  static async getCollectByUuid(uuid: string) {
+  // 根据ID获取单个表情收藏
+  static async getCollectById(collectId: string) {
     const result = await this.db
       .select()
       .from(emojiCollect)
-      .where(eq(emojiCollect.uuid, uuid))
+      .where(eq(emojiCollect.emojiCollectId, collectId))
       .limit(1)
 
     return result[0] || null
   }
 
   // 删除表情收藏
-  static async delete(uuid: string) {
+  static async delete(collectId: string) {
     return await this.db
       .delete(emojiCollect)
-      .where(eq(emojiCollect.uuid, uuid))
+      .where(eq(emojiCollect.emojiCollectId, collectId))
       .run()
   }
 }
