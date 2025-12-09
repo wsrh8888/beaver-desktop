@@ -22,6 +22,7 @@ export const outsideList = [
     title: '好友',
     defaultIcon: friendSvg,
     activeIcon: friendActive,
+    badgeCategories: ['social', 'group'],
   },
   {
     id: 'moment',

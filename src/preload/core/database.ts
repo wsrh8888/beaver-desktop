@@ -3,9 +3,10 @@ import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq,
 import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from 'commonModule/type/ajax/group'
 import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
 import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from 'commonModule/type/ajax/emoji'
+import type { IGetNotificationEventsByIdsReq, IGetNotificationEventsByIdsRes, IGetNotificationInboxByIdsReq, IGetNotificationInboxByIdsRes, IGetNotificationReadCursorsReq, IGetNotificationReadCursorsRes } from 'commonModule/type/ajax/notification'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
-import { DataChatCommand, DataEmojiCommand, DataFriendCommand, DataGroupCommand, DataUserCommand } from 'commonModule/type/ipc/database'
+import { DataChatCommand, DataEmojiCommand, DataFriendCommand, DataGroupCommand, DataNotificationCommand, DataUserCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
@@ -154,6 +155,32 @@ export const databaseModule: IDatabaseModule = {
     getEmojiPackagesByIds: async (params: IGetEmojiPackagesByIdsReq): Promise<IGetEmojiPackagesByIdsRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.EMOJI, {
         command: DataEmojiCommand.GET_EMOJI_PACKAGES_BY_IDS,
+        data: params,
+      })
+    },
+  },
+  notification: {
+    getEventsByIds: async (params: IGetNotificationEventsByIdsReq): Promise<IGetNotificationEventsByIdsRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.NOTIFICATION, {
+        command: DataNotificationCommand.GET_EVENTS_BY_IDS,
+        data: params,
+      })
+    },
+    getInboxByIds: async (params: IGetNotificationInboxByIdsReq): Promise<IGetNotificationInboxByIdsRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.NOTIFICATION, {
+        command: DataNotificationCommand.GET_INBOX_BY_IDS,
+        data: params,
+      })
+    },
+    getReadCursors: async (params: IGetNotificationReadCursorsReq): Promise<IGetNotificationReadCursorsRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.NOTIFICATION, {
+        command: DataNotificationCommand.GET_READ_CURSORS,
+        data: params,
+      })
+    },
+    getUnreadSummary: async (params: { categories?: string[] }) => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.NOTIFICATION, {
+        command: DataNotificationCommand.GET_UNREAD_SUMMARY,
         data: params,
       })
     },

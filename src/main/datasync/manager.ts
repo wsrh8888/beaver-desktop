@@ -5,6 +5,7 @@ import { chatDatasync } from './chat'
 import { emojiDatasync } from './emoji'
 import { friendDatasync } from './friend'
 import { groupDatasync } from './group'
+import { notificationDatasync } from './notification'
 import { userDatasync } from './user'
 
 // 数据同步管理器
@@ -35,6 +36,7 @@ export class DataSyncManager {
       await friendDatasync.checkAndSync()
       await groupDatasync.checkAndSync()
       await emojiDatasync.checkAndSync()
+      await notificationDatasync.checkAndSync()
 
       this.isSyncing = false
       // 通知前端：同步完成，系统就绪

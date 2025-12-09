@@ -6,17 +6,11 @@ export const initEmojiCollectTable = (sqlite: any) => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       emoji_collect_id TEXT NOT NULL UNIQUE,
       user_id TEXT NOT NULL,
-      emoji_id INTEGER NOT NULL,
+      emoji_id TEXT NOT NULL,
       is_deleted INTEGER DEFAULT 0,
       version INTEGER DEFAULT 0,
       created_at INTEGER DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER DEFAULT (strftime('%s', 'now'))
     )
   `)
-  try {
-    sqlite.exec(`ALTER TABLE emoji_collect ADD COLUMN is_deleted INTEGER DEFAULT 0`)
-  } catch (err) {
-    console.error(err)
-    // ignore if column already exists
-  }
 }

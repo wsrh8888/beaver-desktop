@@ -9,6 +9,9 @@ export enum EDataType {
   CHAT_MESSAGES = 'chat_messages', // 消息表 - 使用seq
   CHAT_DATASYNC = 'chat_datasync', // 数据同步表 - 使用version
   CHAT_CONVERSATION_SETTINGS = 'chat_conversation_settings', // 会话设置表 - 使用version
+  NOTIFICATION_EVENTS = 'notification_events', // 通知事件 - 使用version
+  NOTIFICATION_INBOXES = 'notification_inboxes', // 通知收件箱 - 使用version
+  NOTIFICATION_READ_CURSORS = 'notification_read_cursors', // 通知已读游标 - 使用version
 }
 
 // 数据同步状态请求
@@ -245,4 +248,60 @@ export interface IEmojiPackageVersionItem {
 export interface IEmojiPackageContentVersionItem {
   packageId: string // 表情包ID
   version: number // 表情包内容版本号
+}
+
+// 获取通知事件同步请求
+export interface IGetSyncNotificationEventsReq {
+  sinceVersion?: number // 事件表的版本游标，>sinceVersion
+  limit?: number // 分页大小
+}
+
+// 获取通知事件同步响应
+export interface IGetSyncNotificationEventsRes {
+  eventVersions: INotificationEventVersionItem[] // 事件版本摘要
+  maxVersion: number // 本次返回的最大版本
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 通知事件版本信息
+export interface INotificationEventVersionItem {
+  eventId: string // 事件ID
+  version: number // 事件版本
+}
+
+// 获取通知收件箱同步请求
+export interface IGetSyncNotificationInboxesReq {
+  sinceVersion?: number // 收件箱表的版本游标，>sinceVersion
+  limit?: number // 分页大小
+}
+
+// 获取通知收件箱同步响应
+export interface IGetSyncNotificationInboxesRes {
+  inboxVersions: INotificationInboxVersionItem[] // 收件箱版本摘要
+  maxVersion: number // 本次返回的最大版本
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 通知收件箱版本信息
+export interface INotificationInboxVersionItem {
+  eventId: string // 事件ID
+  version: number // 收件箱版本
+}
+
+// 获取通知已读游标同步请求
+export interface IGetSyncNotificationReadCursorsReq {
+  sinceVersion?: number // 已读游标表的版本游标，>sinceVersion
+}
+
+// 获取通知已读游标同步响应
+export interface IGetSyncNotificationReadCursorsRes {
+  cursorVersions: INotificationReadCursorVersionItem[] // 已读游标版本摘要
+  maxVersion: number // 本次返回的最大版本
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 通知已读游标版本信息
+export interface INotificationReadCursorVersionItem {
+  category: string // 分类
+  version: number // 已读游标版本
 }

@@ -3,6 +3,7 @@ import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq,
 import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
 import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from '../ajax/user'
 import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from '../ajax/emoji'
+import type { IGetNotificationEventsByIdsReq, IGetNotificationEventsByIdsRes, IGetNotificationInboxByIdsReq, IGetNotificationInboxByIdsRes, IGetNotificationReadCursorsReq, IGetNotificationReadCursorsRes } from '../ajax/notification'
 
 /**
  * @description: 数据库模块接口 - 按业务分类
@@ -96,5 +97,23 @@ export interface IDatabaseModule {
      * @description: 获取表情包详情
      */
     getEmojiPackagesByIds(params: IGetEmojiPackagesByIdsReq): Promise<IGetEmojiPackagesByIdsRes>
+  }
+  notification: {
+    /**
+     * @description: 按ID获取通知事件
+     */
+    getEventsByIds(params: IGetNotificationEventsByIdsReq): Promise<IGetNotificationEventsByIdsRes>
+    /**
+     * @description: 按ID获取通知收件箱
+     */
+    getInboxByIds(params: IGetNotificationInboxByIdsReq): Promise<IGetNotificationInboxByIdsRes>
+    /**
+     * @description: 获取已读游标（可按分类）
+     */
+    getReadCursors(params: IGetNotificationReadCursorsReq): Promise<IGetNotificationReadCursorsRes>
+    /**
+     * @description: 获取未读汇总（总数 + 按分类）
+     */
+    getUnreadSummary(params: { categories?: string[] }): Promise<{ total: number, byCat: Array<{ category: string, unread: number }> }>
   }
 }

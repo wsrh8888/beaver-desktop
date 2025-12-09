@@ -199,6 +199,7 @@ export enum DatabaseCommand {
   CHAT = 'database:chat',
   GROUP = 'database:group',
   EMOJI = 'database:emoji',
+  NOTIFICATION = 'database:notification',
 }
 
 /**

@@ -14,7 +14,12 @@
       >
         <div class="nav-icon">
           <img :src="item.router === route.path ? item.activeIcon : item.defaultIcon" :alt="item.title">
-          <span v-if="item.id === 'chat'" class="badge">3</span>
+          <span
+            v-if="badgeCount(item) > 0"
+            class="badge"
+          >
+            {{ badgeCount(item) }}
+          </span>
         </div>
         <div class="nav-label">
           {{ item.title }}
@@ -40,6 +45,7 @@ import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useUpdateStore } from 'renderModule/windows/app/pinia/update/index'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import { useNotificationStore } from 'renderModule/windows/app/pinia/notification/notification'
 import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { outsideList } from './data'
@@ -55,8 +61,18 @@ export default {
     const route = useRoute()
     const userStore = useUserStore()
     const updateStore = useUpdateStore()
+    const notificationStore = useNotificationStore()
 
     const userInfo = computed(() => userStore.getUserInfo)
+    const badgeCount = (item: any) => {
+      if (item.badgeCategories && Array.isArray(item.badgeCategories)) {
+        return item.badgeCategories.reduce((sum: number, cat: string) => sum + notificationStore.getCategoryUnread(cat), 0)
+      }
+      if (item.badgeCategory) {
+        return notificationStore.getCategoryUnread(item.badgeCategory)
+      }
+      return 0
+    }
     const showUserInfo = ref(false)
     const avatarRef = ref<HTMLElement | null>(null)
 
@@ -88,6 +104,7 @@ export default {
       userInfo,
       route,
       updateStore,
+      badgeCount,
       handleClick,
       handleUpdateClick,
       handleAvatarClick,

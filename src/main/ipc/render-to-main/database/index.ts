@@ -6,6 +6,7 @@ import { FriendHandler } from './friend'
 import { GroupHandler } from './group'
 import { UserHandler } from './user'
 import { EmojiHandler } from './emoji'
+import { NotificationHandler } from './notification'
 
 const loggerName = 'database-handler'
 
@@ -31,6 +32,8 @@ export class DatabaseHandler {
           return await GroupHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.EMOJI:
           return await EmojiHandler.handle(_event, data?.command, data?.data, header)
+        case DatabaseCommand.NOTIFICATION:
+          return await NotificationHandler.handle(_event, data?.command, data?.data, header)
         default:
           logger.error({ text: `未处理的数据库命令: ${command}` }, loggerName)
           return null

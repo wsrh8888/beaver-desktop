@@ -63,7 +63,9 @@ export const getFriendsListByIdsApi = (data: IGetFriendsListByIdsReq) => {
 export const getFriendVerifiesListByIdsApi = (data: IGetFriendVerifiesListByIdsReq) => {
   return ajax<IGetFriendVerifiesListByIdsRes>({
     method: 'POST',
-    data,
+    data: {
+      ids: data.verifyIds, // 接口字段名为 ids
+    },
     url: `${getBaseUrl()}/api/friend/getFriendVerifiesListByIds`,
   })
 }

@@ -21,6 +21,12 @@ import type {
   IGetSyncGroupMembersRes,
   IGetSyncGroupRequestsReq,
   IGetSyncGroupRequestsRes,
+  IGetSyncNotificationEventsReq,
+  IGetSyncNotificationEventsRes,
+  IGetSyncNotificationInboxesReq,
+  IGetSyncNotificationInboxesRes,
+  IGetSyncNotificationReadCursorsReq,
+  IGetSyncNotificationReadCursorsRes,
 } from 'commonModule/type/ajax/datasync'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
@@ -143,5 +149,38 @@ export const datasyncGetSyncEmojiCollectsApi = (data: IGetSyncEmojiCollectsReq) 
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/datasync/getSyncEmojiCollects`,
+  })
+}
+
+/**
+ * @description: 获取通知事件版本摘要
+ */
+export const datasyncGetSyncNotificationEventsApi = (data: IGetSyncNotificationEventsReq) => {
+  return ajax<IGetSyncNotificationEventsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncNotificationEvents`,
+  })
+}
+
+/**
+ * @description: 获取通知收件箱版本摘要
+ */
+export const datasyncGetSyncNotificationInboxesApi = (data: IGetSyncNotificationInboxesReq) => {
+  return ajax<IGetSyncNotificationInboxesRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncNotificationInboxes`,
+  })
+}
+
+/**
+ * @description: 获取通知已读游标版本摘要
+ */
+export const datasyncGetSyncNotificationReadCursorsApi = (data: IGetSyncNotificationReadCursorsReq) => {
+  return ajax<IGetSyncNotificationReadCursorsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncNotificationReadCursors`,
   })
 }

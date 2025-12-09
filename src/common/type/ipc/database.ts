@@ -38,3 +38,10 @@ export enum DataEmojiCommand {
   GET_EMOJI_PACKAGES = 'emoji:getEmojiPackages',
   GET_EMOJI_PACKAGES_BY_IDS = 'emoji:getEmojiPackagesByIds',
 }
+
+export enum DataNotificationCommand {
+  GET_EVENTS_BY_IDS = 'notification:getEventsByIds',
+  GET_INBOX_BY_IDS = 'notification:getInboxByIds',
+  GET_READ_CURSORS = 'notification:getReadCursors',
+  GET_UNREAD_SUMMARY = 'notification:getUnreadSummary',
+}

@@ -38,6 +38,10 @@ export enum NotificationModule {
    * 表情通知
    */
   EMOJI = 'database:emoji',
+  /**
+   * 通知中心相关数据
+   */
+  DATABASE_NOTIFICATION = 'database:notification',
 }
 
 export enum NotificationFriendCommand {
@@ -116,6 +120,21 @@ export enum NotificationEmojiCommand {
   EMOJI_PACKAGE_CONTENT_UPDATE = 'emojiPackageContentUpdate',
 }
 
+export enum NotificationNotificationCommand {
+  /**
+   * 通知事件更新
+   */
+  EVENT_UPDATE = 'eventUpdate',
+  /**
+   * 通知收件箱更新
+   */
+  INBOX_UPDATE = 'inboxUpdate',
+  /**
+   * 通知已读游标更新
+   */
+  READ_CURSOR_UPDATE = 'readCursorUpdate',
+}
+
 export enum NotificationAppLifecycleCommand {
   /**
    * 应用生命周期状态变更 - 统一的状态变更通知
@@ -167,6 +186,7 @@ export interface NotificationCommandMap {
   [NotificationModule.APP_LIFECYCLE]: NotificationAppLifecycleCommand
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
   [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand
+  [NotificationModule.DATABASE_NOTIFICATION]: NotificationNotificationCommand
 }
 
 export interface INotificationPayload<M extends NotificationModule> {

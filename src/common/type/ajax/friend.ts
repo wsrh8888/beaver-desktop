@@ -212,7 +212,7 @@ export interface IGetFriendsListByIdsRes {
 
 // 批量获取好友验证数据
 export interface IGetFriendVerifiesListByIdsReq {
-  verifyIds: string[] // 验证记录ID列表
+  verifyIds: string[] // 验证记录ID列表（客户端字段）
 }
 
 export interface IGetFriendVerifiesListByIdsRes {

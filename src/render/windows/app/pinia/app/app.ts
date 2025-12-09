@@ -8,6 +8,7 @@ import { useContactStore } from '../contact/contact'
 import { useFriendVerifyStore } from '../friend/friend_verify'
 import { useUpdateStore } from '../update/index'
 import { useEmojiStore } from '../emoji/emoji'
+import { useNotificationStore } from '../notification/notification'
 
 /**
  * @description: 全局应用状态管理
@@ -55,6 +56,7 @@ export const useAppStore = defineStore('useAppStore', {
       const updateStore = useUpdateStore()
       const contactStore = useContactStore()
       const emojiStore = useEmojiStore()
+      const notificationStore = useNotificationStore()
 
       try {
         // 首先获取应用生命周期的初始状态
@@ -69,6 +71,7 @@ export const useAppStore = defineStore('useAppStore', {
           groupStore.init(),
           updateStore.init(),
           emojiStore.init(),
+          notificationStore.init(),
         ]
 
         await Promise.all(promises)
