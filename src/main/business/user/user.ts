@@ -1,10 +1,10 @@
+import type { IDBUser } from 'commonModule/type/database/user'
 import type { QueueItem } from '../base/base'
 import { NotificationModule, NotificationUserCommand } from 'commonModule/type/preload/notification'
 import { userSyncApi } from 'mainModule/api/user'
 import { UserService } from 'mainModule/database/services/user/user'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
-import { IDBUser } from 'commonModule/type/database/user'
 
 /**
  * 用户同步队列项

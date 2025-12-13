@@ -275,13 +275,13 @@ export class FriendVerifyService {
     })
 
     // 构建验证列表
-      const validList = validRecords.map((record: any) => {
+    const validList = validRecords.map((record: any) => {
       // 确定对方用户ID和用户信息
       const otherUserId = record.sendUserId === currentUserId ? record.revUserId : record.sendUserId
       const otherUser = userMap.get(otherUserId)
 
       return {
-          verifyId: record.verifyId,
+        verifyId: record.verifyId,
         userId: otherUserId,
         nickName: otherUser?.nickName || '',
         avatar: otherUser?.avatar || '',

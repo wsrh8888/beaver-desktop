@@ -1,7 +1,7 @@
-import { defineStore } from 'pinia'
 import type { IStoreDataMap } from 'commonModule/type/mainStore'
 import type { IStorageModule } from 'commonModule/type/preload/storage'
 import type { IUserInfo } from 'commonModule/type/store/userInfo'
+import { defineStore } from 'pinia'
 
 /**
  * @description: 当前用户信息管理

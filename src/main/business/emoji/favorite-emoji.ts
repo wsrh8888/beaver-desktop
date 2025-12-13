@@ -4,7 +4,8 @@ import { EmojiCollectService } from 'mainModule/database/services/emoji/collect'
 import { EmojiService } from 'mainModule/database/services/emoji/emoji'
 
 const ensureLogin = (header: ICommonHeader) => {
-  if (!header.userId) throw new Error('用户未登录')
+  if (!header.userId)
+    throw new Error('用户未登录')
 }
 
 export class FavoriteEmojiBusiness {
@@ -18,7 +19,8 @@ export class FavoriteEmojiBusiness {
     const list = validCollects
       .map((item: any) => {
         const emoji = emojiMap.get(item.emojiId)
-        if (!emoji) return null
+        if (!emoji)
+          return null
         return {
           emojiId: emoji.emojiId,
           fileKey: emoji.fileKey,

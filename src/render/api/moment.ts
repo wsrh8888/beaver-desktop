@@ -1,20 +1,20 @@
 import type {
+  ICreateMomentCommentReq,
+  ICreateMomentCommentRes,
   ICreateMomentReq,
   ICreateMomentRes,
   IDeleteMomentReq,
   IDeleteMomentRes,
+  IGetMomentCommentsReq,
+  IGetMomentCommentsRes,
   IGetMomentDetailReq,
   IGetMomentDetailRes,
+  IGetMomentLikesReq,
+  IGetMomentLikesRes,
   IGetMomentListReq,
   IGetMomentListRes,
   ILikeMomentReq,
   ILikeMomentRes,
-  IGetMomentCommentsReq,
-  IGetMomentCommentsRes,
-  IGetMomentLikesReq,
-  IGetMomentLikesRes,
-  ICreateMomentCommentReq,
-  ICreateMomentCommentRes,
 } from 'commonModule/type/ajax/moment'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -125,7 +125,7 @@ export const getMomentRootCommentsApi = (data: Omit<IGetMomentCommentsReq, 'pare
  * @description: 获取子评论（分页，不返回下级 children）
  */
 export const getMomentChildCommentsApi = (
-  data: IGetMomentCommentsReq & { parentId: string }
+  data: IGetMomentCommentsReq & { parentId: string },
 ) => {
   return ajax<IGetMomentCommentsRes>({
     method: 'POST',

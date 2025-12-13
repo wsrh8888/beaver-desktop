@@ -122,8 +122,8 @@
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
-import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
 import { useNotificationStore } from 'renderModule/windows/app/pinia/notification/notification'
+import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
 import { computed, ref } from 'vue'
 import { notificationList, POPUP_MENU_CONFIG, TABS_CONFIG } from '../data'
 import PopupMenu from './PopupMenu.vue'
@@ -153,7 +153,17 @@ export default {
       friendViewStore.setCurrentTab(tab)
     }
 
-    const handleNotificationClick = (value: string) => {
+    const handleNotificationClick = async (value: string) => {
+      // 点击通知入口：跳转到通知页面，并标记该分类为已读
+      // 这符合用户习惯：点击查看通知后，红点消失
+      const notificationItem = notificationList.find(item => item.key === value)
+      if (notificationItem && notificationItem.badgeCategories) {
+        // 标记相关分类为已读（调用后端API）
+        for (const category of notificationItem.badgeCategories) {
+          await notificationStore.markCategoryAsViewed(category)
+        }
+      }
+
       friendViewStore.setSelectedConversationWithType('', value as 'friend-notification' | 'group-notification')
     }
     const changePopupMenu = (visible: boolean) => {

@@ -9,7 +9,7 @@ export enum MomentType {
 // 文件信息
 export interface IFileInfo {
   fileKey: string // 文件名
-  type: number    // 文件类型：2=图片 3=视频 8=音频 4=文件 (与MsgType枚举保持一致)
+  type: number // 文件类型：2=图片 3=视频 8=音频 4=文件 (与MsgType枚举保持一致)
 }
 
 // 创建朋友圈请求

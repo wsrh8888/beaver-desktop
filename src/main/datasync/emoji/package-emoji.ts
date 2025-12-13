@@ -57,7 +57,7 @@ class PackageEmojiSync {
           emojiId: content.emojiId,
           sortOrder: content.sortOrder,
           version: content.version,
-          createdAt: content.createdAt ,
+          createdAt: content.createdAt,
           updatedAt: content.updatedAt,
         }))
 

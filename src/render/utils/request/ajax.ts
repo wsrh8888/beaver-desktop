@@ -20,12 +20,14 @@ let cachedToken = ''
 
 // 异步加载token（如果还没有加载过）
 const ensureTokenLoaded = async (): Promise<void> => {
-  if (cachedToken) return // 如果已有缓存，直接返回
+  if (cachedToken)
+    return // 如果已有缓存，直接返回
 
   try {
     const userInfo = await electron.storage.getAsync('userInfo')
     cachedToken = userInfo?.token || ''
-  } catch (error) {
+  }
+  catch (error) {
     console.warn('获取token失败:', error)
   }
 }

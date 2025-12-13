@@ -97,4 +97,3 @@ class NotificationInboxSync {
 }
 
 export const notificationInboxSync = new NotificationInboxSync()
-

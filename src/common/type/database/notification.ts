@@ -26,6 +26,7 @@ export interface IDBNotificationInbox {
   isRead?: number
   readAt?: number
   status?: number
+  isDeleted?: number
   silent?: number
   createdAt?: number
   updatedAt?: number
@@ -36,9 +37,8 @@ export interface IDBNotificationReadCursor {
   userId: string
   category: string
   version?: number
-  lastEventId?: string
   lastReadAt?: number
-  lastReadTime?: number
   createdAt?: number
   updatedAt?: number
 }
+

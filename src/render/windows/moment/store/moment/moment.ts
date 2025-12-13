@@ -3,10 +3,10 @@ import { defineStore } from 'pinia'
 import {
   createMomentCommentApi,
   getMomentChildCommentsApi,
-  getMomentRootCommentsApi,
   getMomentDetailApi,
   getMomentLikesApi,
   getMomentListApi,
+  getMomentRootCommentsApi,
   likeMomentApi,
 } from 'renderModule/api/moment'
 import { useUserStore } from '../user/user'
@@ -33,7 +33,7 @@ export const useMomentStore = defineStore('useMomentStore', {
     /**
      * @description: 当前详情数据（不污染列表预览）
      */
-    currentMomentDetail: null as IMomentInfo | null
+    currentMomentDetail: null as IMomentInfo | null,
   }),
 
   getters: {
@@ -46,16 +46,16 @@ export const useMomentStore = defineStore('useMomentStore', {
     async loadMoments(page: number = 1) {
       const response = await getMomentListApi({
         page,
-        limit: 50
+        limit: 50,
       })
 
       if (page === 1) {
         this.momentList = response.result.list
-      } else {
+      }
+      else {
         this.momentList.push(...response.result.list)
       }
       console.log(this.momentList)
-
     },
 
     /**
@@ -71,61 +71,62 @@ export const useMomentStore = defineStore('useMomentStore', {
      */
     async loadMoreMoments() {
       await this.loadMoments(this.currentPage + 1)
-
     },
 
     /**
      * @description: 点赞和取消点赞
      */
-  async toggleLike(momentId: string) {
+    async toggleLike(momentId: string) {
       const userStore = useUserStore()
-    // 取当前状态（优先详情，其次列表）
-    const detail = this.currentMomentDetail && this.currentMomentDetail.id === momentId ? this.currentMomentDetail : undefined
-    const listItem = this.momentList.find(m => m.id === momentId)
-    const currentLiked = detail?.isLiked ?? listItem?.isLiked ?? false
-    const nextStatus = !currentLiked
+      // 取当前状态（优先详情，其次列表）
+      const detail = this.currentMomentDetail && this.currentMomentDetail.id === momentId ? this.currentMomentDetail : undefined
+      const listItem = this.momentList.find(m => m.id === momentId)
+      const currentLiked = detail?.isLiked ?? listItem?.isLiked ?? false
+      const nextStatus = !currentLiked
 
-    await likeMomentApi({
-      momentId,
-      status: nextStatus,
-    })
+      await likeMomentApi({
+        momentId,
+        status: nextStatus,
+      })
 
-    const applyLikeChange = (target?: IMomentInfo) => {
-      if (!target) return
-      const userId = userStore.getUserId
-      const existed = (target.likes || []).some(like => like.userId === userId)
-      if (nextStatus) {
-        if (!existed) {
-          const me = userStore.getContact(userStore.getUserId)
-          const myName = me.nickName || me.userId || ''
-          const myAvatar = me.avatar || ''
-          target.likes = [
-            {
-              id: '',
-              momentId,
-              userId,
-              createdAt: new Date().toISOString(),
-              userName: myName,
-              avatar: myAvatar,
-            },
-            ...(target.likes || []),
-          ]
-          target.likeCount = (target.likeCount || 0) + 1
+      const applyLikeChange = (target?: IMomentInfo) => {
+        if (!target)
+          return
+        const userId = userStore.getUserId
+        const existed = (target.likes || []).some(like => like.userId === userId)
+        if (nextStatus) {
+          if (!existed) {
+            const me = userStore.getContact(userStore.getUserId)
+            const myName = me.nickName || me.userId || ''
+            const myAvatar = me.avatar || ''
+            target.likes = [
+              {
+                id: '',
+                momentId,
+                userId,
+                createdAt: new Date().toISOString(),
+                userName: myName,
+                avatar: myAvatar,
+              },
+              ...(target.likes || []),
+            ]
+            target.likeCount = (target.likeCount || 0) + 1
+          }
+          target.isLiked = true
         }
-        target.isLiked = true
-      } else {
-        if (existed) {
-          target.likes = (target.likes || []).filter(like => like.userId !== userId)
-          target.likeCount = Math.max((target.likeCount || 0) - 1, 0)
+        else {
+          if (existed) {
+            target.likes = (target.likes || []).filter(like => like.userId !== userId)
+            target.likeCount = Math.max((target.likeCount || 0) - 1, 0)
+          }
+          target.isLiked = false
         }
-        target.isLiked = false
       }
-    }
 
-    applyLikeChange(this.momentList.find(m => m.id === momentId))
-    if (this.currentMomentDetail && this.currentMomentDetail.id === momentId) {
-      applyLikeChange(this.currentMomentDetail)
-    }
+      applyLikeChange(this.momentList.find(m => m.id === momentId))
+      if (this.currentMomentDetail && this.currentMomentDetail.id === momentId) {
+        applyLikeChange(this.currentMomentDetail)
+      }
     },
 
     /**
@@ -161,11 +162,13 @@ export const useMomentStore = defineStore('useMomentStore', {
           replyToUserName: res.result.replyToUserName,
           createdAt: res.result.createdAt,
         }
-        if (!target.comments) target.comments = []
+        if (!target.comments)
+          target.comments = []
         if (!newComment.parentId) {
           // 顶层评论放到列表前端，保持倒序
           target.comments.unshift({ ...newComment, children: [] })
-        } else {
+        }
+        else {
           const root = target.comments.find(c => c.id === newComment.parentId)
           if (root) {
             root.children = root.children || []
@@ -173,11 +176,13 @@ export const useMomentStore = defineStore('useMomentStore', {
             const insertAfterIdx = root.children.findIndex(c => c.id === newComment.replyToCommentId)
             if (insertAfterIdx >= 0) {
               root.children.splice(insertAfterIdx + 1, 0, newComment)
-            } else {
+            }
+            else {
               root.children.push(newComment)
             }
             root.childCount = (root.childCount || 0) + 1
-          } else {
+          }
+          else {
             target.comments.unshift({ ...newComment, children: [] })
           }
         }
@@ -196,7 +201,7 @@ export const useMomentStore = defineStore('useMomentStore', {
      */
     async loadMomentDetail(momentId: string) {
       const res = await getMomentDetailApi({
-        momentId
+        momentId,
       })
       this.currentMomentDetail = res.result as IMomentInfo
       if (this.currentMomentId !== momentId) {

@@ -41,4 +41,3 @@ export const getNotificationReadCursorsApi = (data: IGetNotificationReadCursorsR
     url: `${getBaseUrl()}/api/notification/getReadCursors`,
   })
 }
-

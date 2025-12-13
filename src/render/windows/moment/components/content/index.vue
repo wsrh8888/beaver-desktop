@@ -2,26 +2,25 @@
   <!-- 主要内容区域 -->
   <div class="moment__main">
     <!-- 动态列表 -->
-    <div class="moments-section" ref="listContent" @scroll="handleScroll">
+    <div ref="listContent" class="moments-section" @scroll="handleScroll">
       <!-- 动态项列表 -->
       <div class="moments-list">
         <MomentItem
           v-for="moment in momentList"
           :key="moment.id"
           :moment="moment"
-          @momentClick="handleMomentClick"
+          @moment-click="handleMomentClick"
           @comment="handleComment"
         />
       </div>
     </div>
   </div>
-
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from 'vue'
-import MomentItem from './momentItem.vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import { useMomentStore } from '../../store/moment/moment'
+import MomentItem from './momentItem.vue'
 
 export default defineComponent({
   name: 'MomentContent',
@@ -34,7 +33,8 @@ export default defineComponent({
 
     // 监听滚动事件
     const handleScroll = async () => {
-      if (!listContent.value) return
+      if (!listContent.value)
+        return
 
       const { scrollTop, scrollHeight, clientHeight } = listContent.value
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100
@@ -76,7 +76,7 @@ export default defineComponent({
       handleComment,
       handleSendComment,
     }
-  }
+  },
 })
 </script>
 

@@ -10,4 +10,3 @@ export const notificationDatasync = new class NotificationDatasync {
     await notificationReadCursorSync.checkAndSync()
   }
 }()
-

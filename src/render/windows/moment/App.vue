@@ -1,7 +1,7 @@
 <template>
   <div class="moment__content">
     <!-- 标题栏 -->
-    <MomentHeader/>
+    <MomentHeader />
 
     <!-- 主要内容区域 -->
     <MomentContent />
@@ -26,14 +26,14 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, computed } from 'vue'
-import { useMomentStore } from './store/moment/moment'
-import { useUserStore } from './store/user/user'
-
-import MomentHeader from './components/header/index.vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import MomentContent from './components/content/index.vue'
 import MomentCreate from './components/create/index.vue'
+
 import MomentDetail from './components/details/index.vue'
+import MomentHeader from './components/header/index.vue'
+import { useMomentStore } from './store/moment/moment'
+import { useUserStore } from './store/user/user'
 
 export default defineComponent({
   components: {
@@ -47,13 +47,6 @@ export default defineComponent({
     const momentStore = useMomentStore()
     const userStore = useUserStore()
 
-
-
-
-
-
-
-
     const handlePublish = () => {
       showPublishModal.value = true
     }
@@ -61,8 +54,6 @@ export default defineComponent({
     onMounted(() => {
       userStore.init()
     })
-
-
 
     return {
       showPublishModal,
@@ -323,7 +314,6 @@ export default defineComponent({
   position: relative;
   z-index: 1;
 }
-
 
 .title-icon {
   width: 40px;
@@ -943,5 +933,4 @@ export default defineComponent({
     filter: brightness(0) invert(1);
   }
 }
-
 </style>

@@ -1,6 +1,6 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
-import { previewOnlineFileApi } from 'renderModule/api/file'
 import { addEmojiApi } from 'renderModule/api/emoji'
+import { previewOnlineFileApi } from 'renderModule/api/file'
 import { BaseMessageHandler } from './base'
 
 /**
@@ -70,7 +70,8 @@ class ImageHandler extends BaseMessageHandler {
 
       console.log('图片已成功添加到表情收藏')
       // TODO: 可以添加用户提示，如Toast通知
-    } catch (error) {
+    }
+    catch (error) {
       console.error('添加到表情失败:', error)
       // TODO: 可以添加错误提示
     }

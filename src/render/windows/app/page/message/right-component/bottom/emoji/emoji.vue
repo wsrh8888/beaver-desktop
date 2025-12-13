@@ -3,8 +3,8 @@
     <div class="emoji-content custom-scrollbar">
       <component
         :is="activeComponent"
-        :onSelect="handleEmojiSelect"
-        :onAdd="handleAddFavorite"
+        :on-select="handleEmojiSelect"
+        :on-add="handleAddFavorite"
       />
     </div>
 
@@ -13,7 +13,7 @@
         <div class="emoji-category-icon">
           <img :src="storeIcon" alt="商店">
         </div>
-        <div class="emoji-category-name"></div>
+        <div class="emoji-category-name" />
       </div>
 
       <div
@@ -26,7 +26,7 @@
         <div class="emoji-category-icon">
           <img :src="tab.icon" :alt="tab.label">
         </div>
-        <div class="emoji-category-name"></div>
+        <div class="emoji-category-name" />
       </div>
 
       <div
@@ -39,21 +39,22 @@
         <div class="emoji-category-icon">
           <img :src="tab.icon" :alt="tab.label">
         </div>
-        <div class="emoji-category-name"></div>
+        <div class="emoji-category-name" />
       </div>
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import storeIcon from 'renderModule/assets/image/emoji/store.svg'
-import defaultIcon from 'renderModule/assets/image/emoji/smile.svg'
 import favoriteIcon from 'renderModule/assets/image/emoji/favorite.svg'
-import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+import defaultIcon from 'renderModule/assets/image/emoji/smile.svg'
+import storeIcon from 'renderModule/assets/image/emoji/store.svg'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
+import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import EmojiDefaultList from './components/default/index.vue'
-import EmojiPackageList from './components/package/index.vue'
 import EmojiFavoriteList from './components/favorite/index.vue'
+import EmojiPackageList from './components/package/index.vue'
+
 export default defineComponent({
   name: 'EmojiComponent',
   props: {
@@ -72,16 +73,19 @@ export default defineComponent({
       { id: 'default', label: '默认', icon: defaultIcon },
       { id: 'favorite', label: '收藏', icon: favoriteIcon },
     ]
-    const packageTabs = computed(() => emojiStore.packageList.map((pkg) => ({
+    const packageTabs = computed(() => emojiStore.packageList.map(pkg => ({
       id: pkg.packageId,
       label: pkg.title,
       icon: pkg.coverFile || favoriteIcon,
     })))
 
     const activeComponent = computed(() => {
-      if (activeTab.value === 'default') return EmojiDefaultList
-      if (activeTab.value === 'favorite') return EmojiFavoriteList
-      if (activeTab.value === 'package') return EmojiPackageList
+      if (activeTab.value === 'default')
+        return EmojiDefaultList
+      if (activeTab.value === 'favorite')
+        return EmojiFavoriteList
+      if (activeTab.value === 'package')
+        return EmojiPackageList
       return EmojiDefaultList
     })
 

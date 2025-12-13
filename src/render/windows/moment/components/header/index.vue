@@ -3,19 +3,19 @@
     <div class="header-content">
       <!-- 刷新按钮 -->
       <button class="header-btn refresh-btn" @click="handleRefresh">
-        <img src="renderModule/assets/image/moment/refresh.svg" alt="刷新" class="header-icon" :class="{ 'refreshing': isRefreshing }">
+        <img src="renderModule/assets/image/moment/refresh.svg" alt="刷新" class="header-icon" :class="{ refreshing: isRefreshing }">
       </button>
 
       <!-- 窗口控制按钮 -->
       <div class="window-controls">
         <button class="header-btn minimize-btn" @click="handleMinimize">
           <svg width="10" height="1" viewBox="0 0 10 1" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <rect width="10" height="1" fill="currentColor"/>
+            <rect width="10" height="1" fill="currentColor" />
           </svg>
         </button>
         <button class="header-btn close-btn" @click="handleClose">
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M7.5 2.5L2.5 7.5M2.5 2.5L7.5 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+            <path d="M7.5 2.5L2.5 7.5M2.5 2.5L7.5 7.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
           </svg>
         </button>
       </div>
@@ -50,7 +50,7 @@ export default defineComponent({
       handleMinimize,
       handleClose,
     }
-  }
+  },
 })
 </script>
 

@@ -11,7 +11,7 @@
     </div>
 
     <!-- 展开输入状态：遮罩层 + 大输入框 -->
-    <div class="input-overlay" v-if="showFullInput">
+    <div v-if="showFullInput" class="input-overlay">
       <div class="input-container">
         <textarea
           ref="textareaRef"
@@ -19,37 +19,38 @@
           class="input-textarea"
           :placeholder="replyPlaceholder"
           @input="handleTextareaInput"
-          @keydown.enter.exact.prevent="handleSendComment" @keydown.enter.shift.exact="commentText += '\n'"></textarea>
+          @keydown.enter.exact.prevent="handleSendComment" @keydown.enter.shift.exact="commentText += '\n'"
+        />
         <div class="input-actions">
-          <button class="send-btn" @click="handleSendComment" :disabled="!commentText.trim()">
+          <button class="send-btn" :disabled="!commentText.trim()" @click="handleSendComment">
             <img src="renderModule/assets/image/moment/send.svg" alt="发送" class="send-icon">
           </button>
         </div>
       </div>
-
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onUnmounted, nextTick, watch } from 'vue'
 import SvgLikeActive from 'renderModule/assets/image/moment/like-active.svg'
 import SvgLike from 'renderModule/assets/image/moment/like-default.svg'
+import { defineComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+
 export default defineComponent({
   name: 'BottomInputSection',
   props: {
     isLiked: {
       type: Boolean,
-      default: false
+      default: false,
     },
     replyPlaceholder: {
       type: String,
-      default: '说点什么...'
+      default: '说点什么...',
     },
     openKey: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   emits: ['sendComment', 'quickLike', 'closeReply'],
   setup(props, { emit }) {
@@ -113,8 +114,6 @@ export default defineComponent({
       emit('quickLike')
     }
 
-
-
     // 组件挂载时
     onMounted(() => {
       // 如果初始状态就是展开的，添加监听器
@@ -130,7 +129,7 @@ export default defineComponent({
         if (v) {
           handleShowFullInput()
         }
-      }
+      },
     )
 
     // 组件卸载时
@@ -145,7 +144,7 @@ export default defineComponent({
       textarea.style.height = 'auto'
       // 计算新高度，最小60px，最大400px
       const newHeight = Math.min(Math.max(textarea.scrollHeight, 60), 300)
-      textarea.style.height = newHeight + 'px'
+      textarea.style.height = `${newHeight}px`
     }
 
     return {
@@ -160,7 +159,7 @@ export default defineComponent({
       SvgLikeActive,
       SvgLike,
     }
-  }
+  },
 })
 </script>
 
@@ -314,7 +313,6 @@ export default defineComponent({
           font-size: 13px;
           color: #FFFFFF;
           font-weight: 500;
-
 
           &:disabled {
             background: #CCCCCC;

@@ -58,7 +58,7 @@ export class CollectSync {
 
       if (response.result.collects.length > 0) {
         const collects = response.result.collects.map((collect: any, index: number) => ({
-          collectId: collect.collectId  ?? batchIds[index],
+          collectId: collect.collectId ?? batchIds[index],
           userId: collect.userId,
           emojiId: collect.emojiId,
           version: collect.version,

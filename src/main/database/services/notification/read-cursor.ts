@@ -1,5 +1,5 @@
 import type { IDBNotificationReadCursor } from 'commonModule/type/database/notification'
-import { and, eq, inArray, sql } from 'drizzle-orm'
+import { and, eq, sql } from 'drizzle-orm'
 import { notificationReadCursors } from 'mainModule/database/tables/notification/read-cursor'
 import dbManager from '../../db'
 
@@ -17,9 +17,7 @@ export class NotificationReadCursorService {
         target: [notificationReadCursors.userId, notificationReadCursors.category],
         set: {
           version: sql.raw(`excluded.version`),
-          lastEventId: sql.raw(`excluded.last_event_id`),
           lastReadAt: sql.raw(`excluded.last_read_at`),
-          lastReadTime: sql.raw(`excluded.last_read_time`),
           updatedAt: sql.raw(`excluded.updated_at`),
         },
       })
@@ -37,52 +35,5 @@ export class NotificationReadCursorService {
         ),
       )
       .get()
-  }
-
-  // 获取用户游标版本映射
-  static async getVersionMap(userId: string, categories?: string[]): Promise<Map<string, number>> {
-    if (!userId)
-      return new Map()
-
-    const hasCategories = !!categories && categories.length > 0
-    const rows = await this.db.select({
-      category: notificationReadCursors.category,
-      version: notificationReadCursors.version,
-    })
-      .from(notificationReadCursors)
-      .where(
-        hasCategories
-          ? and(
-            eq(notificationReadCursors.userId as any, userId as any),
-            inArray(notificationReadCursors.category as any, categories as any),
-          )
-          : eq(notificationReadCursors.userId as any, userId as any),
-      )
-      .all()
-
-    const map = new Map<string, number>()
-    rows.forEach((row) => {
-      map.set(row.category, row.version || 0)
-    })
-    return map
-  }
-
-  // 获取用户已读游标列表（可按分类过滤）
-  static async getCursors(userId: string, categories?: string[]): Promise<IDBNotificationReadCursor[]> {
-    if (!userId)
-      return []
-
-    const hasCategories = !!categories && categories.length > 0
-    return await this.db.select()
-      .from(notificationReadCursors)
-      .where(
-        hasCategories
-          ? and(
-            eq(notificationReadCursors.userId as any, userId as any),
-            inArray(notificationReadCursors.category as any, categories as any),
-          )
-          : eq(notificationReadCursors.userId as any, userId as any),
-      )
-      .all()
   }
 }

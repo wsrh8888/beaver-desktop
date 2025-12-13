@@ -2,11 +2,11 @@ import { DatabaseCommand } from 'commonModule/type/ipc/command'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import { ChatHandler } from './chat'
+import { EmojiHandler } from './emoji'
 import { FriendHandler } from './friend'
 import { GroupHandler } from './group'
-import { UserHandler } from './user'
-import { EmojiHandler } from './emoji'
 import { NotificationHandler } from './notification'
+import { UserHandler } from './user'
 
 const loggerName = 'database-handler'
 

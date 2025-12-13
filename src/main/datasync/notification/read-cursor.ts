@@ -90,4 +90,3 @@ class NotificationReadCursorSync {
 }
 
 export const notificationReadCursorSync = new NotificationReadCursorSync()
-

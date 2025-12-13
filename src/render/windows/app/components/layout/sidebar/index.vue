@@ -43,9 +43,9 @@
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { useNotificationStore } from 'renderModule/windows/app/pinia/notification/notification'
 import { useUpdateStore } from 'renderModule/windows/app/pinia/update/index'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
-import { useNotificationStore } from 'renderModule/windows/app/pinia/notification/notification'
 import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { outsideList } from './data'

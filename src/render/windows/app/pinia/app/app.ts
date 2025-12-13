@@ -5,10 +5,10 @@ import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useContactStore } from '../contact/contact'
-import { useFriendVerifyStore } from '../friend/friend_verify'
-import { useUpdateStore } from '../update/index'
 import { useEmojiStore } from '../emoji/emoji'
+import { useFriendVerifyStore } from '../friend/friend_verify'
 import { useNotificationStore } from '../notification/notification'
+import { useUpdateStore } from '../update/index'
 
 /**
  * @description: 全局应用状态管理

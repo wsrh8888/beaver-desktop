@@ -3,7 +3,9 @@
     <div class="publish-modal" @click.stop>
       <!-- 头部 -->
       <div class="publish-header">
-        <h2 class="publish-title">发布动态</h2>
+        <h2 class="publish-title">
+          发布动态
+        </h2>
         <div class="publish-close" @click="$emit('close')">
           <img src="renderModule/assets/image/common/close.svg" alt="关闭">
         </div>
@@ -19,8 +21,10 @@
             class="publish-textarea"
             maxlength="500"
             @input="handleTextInput"
-          ></textarea>
-          <div class="text-counter">{{ content.length }}/500</div>
+          />
+          <div class="text-counter">
+            {{ content.length }}/500
+          </div>
         </div>
 
         <!-- 媒体上传区域 -->
@@ -53,7 +57,9 @@
                 <div class="upload-icon">
                   <img src="renderModule/assets/image/common/add.svg" alt="添加">
                 </div>
-                <div class="upload-text">添加图片</div>
+                <div class="upload-text">
+                  添加图片
+                </div>
               </div>
             </div>
           </div>
@@ -62,7 +68,7 @@
 
       <!-- 底部操作区 -->
       <div class="publish-footer">
-        <BeaverButton size="small" @click="$emit('close')" :disabled="isPublishing">
+        <BeaverButton size="small" :disabled="isPublishing" @click="$emit('close')">
           取消
         </BeaverButton>
         <BeaverButton
@@ -80,24 +86,25 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed } from 'vue'
-import { createMomentApi } from 'renderModule/api/moment'
 import type { ICreateMomentReq } from 'commonModule/type/ajax/moment'
+import type { UploadResult } from 'renderModule/utils/upload'
+import { previewOnlineFileApi } from 'renderModule/api/file'
+import { createMomentApi } from 'renderModule/api/moment'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import { selectAndUploadFile, type UploadResult } from 'renderModule/utils/upload'
-import { previewOnlineFileApi } from 'renderModule/api/file'
+import { selectAndUploadFile } from 'renderModule/utils/upload'
+import { computed, defineComponent, ref } from 'vue'
 
 interface MediaFile {
-  fileKey: string;
-  type: number; // 文件类型：1=图片 2=视频 3=音频 4=文件
-  name: string;
-  size?: number;
+  fileKey: string
+  type: number // 文件类型：1=图片 2=视频 3=音频 4=文件
+  name: string
+  size?: number
   style?: {
-    width?: number;
-    height?: number;
-  };
-  thumbnailKey?: string;
+    width?: number
+    height?: number
+  }
+  thumbnailKey?: string
 }
 
 export default defineComponent({
@@ -127,7 +134,7 @@ export default defineComponent({
       const textarea = document.querySelector('.publish-textarea') as HTMLTextAreaElement
       if (textarea) {
         textarea.style.height = 'auto'
-        textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px'
+        textarea.style.height = `${Math.min(textarea.scrollHeight, 120)}px`
       }
     }
 
@@ -138,10 +145,10 @@ export default defineComponent({
 
         // 文件类型映射：字符串 -> 数字 (与MsgType保持一致)
         const fileTypeMap = {
-          'image': 2, // ImageMsgType = 2
-          'video': 3, // VideoMsgType = 3
-          'audio': 8, // AudioFileMsgType = 8
-          'file': 4,  // FileMsgType = 4
+          image: 2, // ImageMsgType = 2
+          video: 3, // VideoMsgType = 3
+          audio: 8, // AudioFileMsgType = 8
+          file: 4, // FileMsgType = 4
         }
 
         // 将上传结果转换为我们需要的格式
@@ -168,11 +175,10 @@ export default defineComponent({
       mediaFiles.value.splice(index, 1)
     }
 
-
     // 处理媒体点击
     const handleMediaClick = async (file: MediaFile, _index: number) => {
       // 打开图片查看器
-      
+
       try {
         const currentIndex = mediaFiles.value.findIndex(f => f === file)
         await electron.window.openWindow('image', {
@@ -183,13 +189,15 @@ export default defineComponent({
             index: currentIndex,
           },
         })
-      } catch (error) {
+      }
+      catch (error) {
         console.error('打开图片查看器失败:', error)
       }
     }
 
     const handlePublish = async () => {
-      if (!canPublish.value) return
+      if (!canPublish.value)
+        return
 
       isPublishing.value = true
 
@@ -198,8 +206,8 @@ export default defineComponent({
           content: content.value.trim(),
           files: mediaFiles.value.map(f => ({
             fileKey: f.fileKey,
-            type: f.type
-          }))
+            type: f.type,
+          })),
         }
 
         const result = await createMomentApi(publishData)
@@ -207,14 +215,17 @@ export default defineComponent({
         if (result.code === 0) {
           emit('published')
           emit('close')
-        } else {
+        }
+        else {
           console.error('发布失败:', result.message)
           // TODO: 显示错误提示
         }
-      } catch (error) {
+      }
+      catch (error) {
         console.error('发布失败:', error)
         // TODO: 显示错误提示
-      } finally {
+      }
+      finally {
         isPublishing.value = false
       }
     }
@@ -231,7 +242,7 @@ export default defineComponent({
       handleMediaClick,
       handlePublish,
     }
-  }
+  },
 })
 </script>
 
@@ -517,7 +528,6 @@ export default defineComponent({
       }
     }
 
-
     .media-remove {
       position: absolute;
       top: 0;
@@ -624,5 +634,4 @@ export default defineComponent({
   align-items: center;
   gap: 10px;
 }
-
 </style>

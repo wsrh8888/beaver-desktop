@@ -4,11 +4,13 @@
       <!-- Header -->
       <div class="detail-header">
         <span class="header-title">海狸朋友圈</span>
-        <button class="close-btn" @click="handleClose">×</button>
+        <button class="close-btn" @click="handleClose">
+          ×
+        </button>
       </div>
 
       <!-- 主内容区域（可滚动） -->
-      <div class="main-content" ref="mainContentRef">
+      <div ref="mainContentRef" class="main-content">
         <!-- 朋友圈内容 -->
         <MomentContentCard
           :user-name="displayUserName"
@@ -38,7 +40,7 @@
             >
               点赞 {{ moment.likes?.length || 0 }}
             </div>
-            <div class="placeholder"></div>
+            <div class="placeholder" />
             <div class="tab-actions">
               <button class="refresh-btn" @click="handleRefresh">
                 <img src="renderModule/assets/image/moment/refresh.svg" alt="刷新" class="refresh-icon">
@@ -54,8 +56,8 @@
               :comments="moment.comments"
               :comment-count="moment.commentCount ?? (moment.comments?.length || 0)"
               @reply="handleReply"
-              @loadMoreComments="handleLoadMoreComments"
-              @loadMoreChildren="handleLoadMoreChildren"
+              @load-more-comments="handleLoadMoreComments"
+              @load-more-children="handleLoadMoreChildren"
             />
 
             <!-- 点赞内容 -->
@@ -72,24 +74,23 @@
         :is-liked="moment.isLiked"
         :reply-placeholder="replyTarget ? `回复 ${replyTarget.userName || replyTarget.nickName || ''}` : '说点什么...'"
         :open-key="openKey"
-        @sendComment="handleSendComment"
-        @quickLike="handleQuickLike"
-        @closeReply="replyTarget = null"
+        @send-comment="handleSendComment"
+        @quick-like="handleQuickLike"
+        @close-reply="replyTarget = null"
       />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import type { IMomentInfo } from 'commonModule/type/ajax/moment'
-import CommentSection from './commentSection.vue'
-import LikeSection from './likeSection.vue'
-import BottomInputSection from './bottomInputSection.vue'
+import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useMomentStore } from '../../store/moment/moment'
 import { useUserStore } from '../../store/user/user'
 import MomentContentCard from '../common/MomentContentCard.vue'
-
+import BottomInputSection from './bottomInputSection.vue'
+import CommentSection from './commentSection.vue'
+import LikeSection from './likeSection.vue'
 
 export default defineComponent({
   name: 'MomentDetail',
@@ -108,12 +109,14 @@ export default defineComponent({
     const moment = computed(() => momentStore.getCurrentMoment() || {} as IMomentInfo)
 
     const displayUserName = computed(() => {
-      if (!moment.value) return ''
+      if (!moment.value)
+        return ''
       const info = userStore.getContact(moment.value.userId || '')
       return info.nickName || moment.value.userName || (moment.value as any).nickName || ''
     })
     const displayAvatar = computed(() => {
-      if (!moment.value) return ''
+      if (!moment.value)
+        return ''
       const info = userStore.getContact(moment.value.userId || '')
       return info.avatar || moment.value.avatar || ''
     })
@@ -138,7 +141,6 @@ export default defineComponent({
       emit('close')
     }
 
-
     const handleRefresh = async () => {
       if (moment.value.id) {
         commentPage.value = 1
@@ -158,13 +160,11 @@ export default defineComponent({
       }
     }
 
-
     // 处理点击遮罩层
     const handleOverlayClick = () => {
       // 直接关闭详情页面
       emit('close')
     }
-
 
     // 处理发送评论
     const handleSendComment = async (commentText: string) => {
@@ -190,7 +190,8 @@ export default defineComponent({
 
     // 加载更多顶层评论（自动触发）
     const handleLoadMoreComments = async () => {
-      if (!moment.value.id || !hasMoreComments.value || isLoadingComments.value) return
+      if (!moment.value.id || !hasMoreComments.value || isLoadingComments.value)
+        return
       isLoadingComments.value = true
       commentPage.value += 1
       await momentStore.loadMoreComments(moment.value.id, commentPage.value, commentLimit)
@@ -234,14 +235,16 @@ export default defineComponent({
           ])
         }
       },
-      { immediate: true }
+      { immediate: true },
     )
 
     // 评论区域滚动自动加载更多
     const onScroll = () => {
-      if (activeTab.value !== 'comments') return
+      if (activeTab.value !== 'comments')
+        return
       const el = mainContentRef.value
-      if (!el) return
+      if (!el)
+        return
       const threshold = 120
       if (el.scrollHeight - el.scrollTop - el.clientHeight < threshold) {
         handleLoadMoreComments()
@@ -276,7 +279,7 @@ export default defineComponent({
       displayUserName,
       displayAvatar,
     }
-  }
+  },
 })
 </script>
 
@@ -350,7 +353,6 @@ export default defineComponent({
   z-index: 10;
 }
 
-
 @keyframes slideRight {
   from {
     transform: translateX(100%);
@@ -361,7 +363,6 @@ export default defineComponent({
     opacity: 1;
   }
 }
-
 
 .detail-header {
   display: flex;
@@ -442,7 +443,6 @@ export default defineComponent({
   flex: 1;
  }
 }
-
 
 .tab-actions {
   padding: 0 16px;
@@ -676,7 +676,6 @@ export default defineComponent({
   word-break: break-all;
 }
 
-
 /* 空状态 */
 .empty-state {
   display: flex;
@@ -686,6 +685,4 @@ export default defineComponent({
   color: #999999;
   font-size: 14px;
 }
-
-
 </style>

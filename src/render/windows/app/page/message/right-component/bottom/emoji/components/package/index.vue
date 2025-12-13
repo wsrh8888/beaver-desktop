@@ -11,7 +11,9 @@
         <div class="icon">
           <img :src="pkg.coverFile" :alt="pkg.title">
         </div>
-        <div class="name">{{ pkg.title }}</div>
+        <div class="name">
+          {{ pkg.title }}
+        </div>
       </div>
     </div>
 
@@ -50,7 +52,8 @@ export default defineComponent({
     })
 
     const emojiList = computed(() => {
-      if (!activePackageId.value) return [] as IEmojiBase[]
+      if (!activePackageId.value)
+        return [] as IEmojiBase[]
       return emojiStore.getPackageEmojis(activePackageId.value)
     })
 

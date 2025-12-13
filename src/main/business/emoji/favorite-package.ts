@@ -1,10 +1,11 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IGetEmojiPackagesRes } from 'commonModule/type/ajax/emoji'
-import { EmojiPackageCollectService } from 'mainModule/database/services/emoji/package-collect'
 import { EmojiPackageService } from 'mainModule/database/services/emoji/package'
+import { EmojiPackageCollectService } from 'mainModule/database/services/emoji/package-collect'
 
 const ensureLogin = (header: ICommonHeader) => {
-  if (!header.userId) throw new Error('用户未登录')
+  if (!header.userId)
+    throw new Error('用户未登录')
 }
 
 export class FavoritePackageBusiness {
@@ -18,7 +19,8 @@ export class FavoritePackageBusiness {
     const list = validCollects
       .map((item: any) => {
         const pkg = packageMap.get(item.packageId)
-        if (!pkg) return null
+        if (!pkg)
+          return null
         return {
           packageId: pkg.packageId,
           title: pkg.title,

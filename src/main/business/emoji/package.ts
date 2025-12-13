@@ -9,7 +9,8 @@ export class EmojiPackageBusiness {
     const packages = ids
       .map((id) => {
         const pkg = packageMap.get(id)
-        if (!pkg) return null
+        if (!pkg)
+          return null
         return {
           packageId: pkg.packageId,
           title: pkg.title,

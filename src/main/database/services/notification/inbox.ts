@@ -124,9 +124,9 @@ export class NotificationInboxService {
       .where(
         hasCategories
           ? and(
-            eq(notificationInboxes.userId as any, userId as any),
-            inArray(notificationInboxes.category as any, categories as any),
-          )
+              eq(notificationInboxes.userId as any, userId as any),
+              inArray(notificationInboxes.category as any, categories as any),
+            )
           : eq(notificationInboxes.userId as any, userId as any),
       )
       .groupBy(notificationInboxes.category)

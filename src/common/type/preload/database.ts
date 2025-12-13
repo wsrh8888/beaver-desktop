@@ -1,9 +1,9 @@
 import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from '../ajax/chat'
+import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from '../ajax/emoji'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
 import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
-import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from '../ajax/user'
-import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from '../ajax/emoji'
 import type { IGetNotificationEventsByIdsReq, IGetNotificationEventsByIdsRes, IGetNotificationInboxByIdsReq, IGetNotificationInboxByIdsRes, IGetNotificationReadCursorsReq, IGetNotificationReadCursorsRes } from '../ajax/notification'
+import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from '../ajax/user'
 
 /**
  * @description: 数据库模块接口 - 按业务分类

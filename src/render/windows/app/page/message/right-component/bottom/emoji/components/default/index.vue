@@ -1,7 +1,8 @@
 <template>
   <div class="emoji__default">
-
-    <div class="emoji-category-name">默认表情</div>
+    <div class="emoji-category-name">
+      默认表情
+    </div>
     <div class="emoji-grid">
       <div v-for="emoji in list" :key="emoji.name" class="emoji-item" :data-title="emoji.name" @click="onSelect(emoji)">
         <img :src="emoji.icon" :alt="emoji.name">

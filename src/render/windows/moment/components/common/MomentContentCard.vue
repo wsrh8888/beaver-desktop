@@ -18,10 +18,14 @@
 
       <div class="user-info">
         <div class="user-nickname">
-          <slot name="nickname">{{ userName || nickName || '未知用户' }}</slot>
+          <slot name="nickname">
+            {{ userName || nickName || '未知用户' }}
+          </slot>
         </div>
         <div class="moment-time">
-          <slot name="time">{{ formatTime(createdAt) }}</slot>
+          <slot name="time">
+            {{ formatTime(createdAt) }}
+          </slot>
         </div>
       </div>
     </div>
@@ -30,7 +34,9 @@
     <div class="card-content">
       <slot name="content">
         <!-- 默认内容区域 -->
-        <div v-if="content" class="moment-content">{{ content }}</div>
+        <div v-if="content" class="moment-content">
+          {{ content }}
+        </div>
 
         <!-- 媒体文件区域 -->
         <div v-if="files && files.length > 0" class="media-section">
@@ -50,11 +56,15 @@
               />
               <div v-else class="media-file">
                 <img src="renderModule/assets/image/moment/file.svg" alt="文件" class="file-icon">
-                <div class="file-name">{{ getFileName(file.fileKey) }}</div>
+                <div class="file-name">
+                  {{ getFileName(file.fileKey) }}
+                </div>
               </div>
 
               <div v-if="index === 8 && files.length > 9" class="media-overlay">
-                <div class="overlay-text">+{{ files.length - 9 }}</div>
+                <div class="overlay-text">
+                  +{{ files.length - 9 }}
+                </div>
               </div>
             </div>
           </div>
@@ -65,9 +75,9 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'MomentContentCard',
@@ -78,29 +88,29 @@ export default defineComponent({
     // 用户信息
     userName: {
       type: String,
-      default: ''
+      default: '',
     },
     nickName: {
       type: String,
-      default: ''
+      default: '',
     },
     avatar: {
       type: String,
-      default: ''
+      default: '',
     },
     createdAt: {
       type: String,
-      default: ''
+      default: '',
     },
     // 内容信息
     content: {
       type: String,
-      default: ''
+      default: '',
     },
     files: {
       type: Array,
-      default: () => []
-    }
+      default: () => [],
+    },
   },
   emits: ['mediaClick'],
   setup() {
@@ -111,10 +121,14 @@ export default defineComponent({
 
     // 获取媒体网格样式类
     const getMediaGridClass = (count: number) => {
-      if (count === 1) return 'single'
-      if (count === 2) return 'double'
-      if (count === 3) return 'triple'
-      if (count === 4) return 'quad'
+      if (count === 1)
+        return 'single'
+      if (count === 2)
+        return 'double'
+      if (count === 3)
+        return 'triple'
+      if (count === 4)
+        return 'quad'
       return 'multiple'
     }
 
@@ -125,7 +139,8 @@ export default defineComponent({
 
     // 格式化时间
     const formatTime = (timeStr: string) => {
-      if (!timeStr) return ''
+      if (!timeStr)
+        return ''
       const date = new Date(timeStr)
       const now = new Date()
       const diff = now.getTime() - date.getTime()
@@ -133,10 +148,14 @@ export default defineComponent({
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
-      if (minutes < 1) return '刚刚'
-      if (minutes < 60) return `${minutes}分钟前`
-      if (hours < 24) return `${hours}小时前`
-      if (days < 30) return `${days}天前`
+      if (minutes < 1)
+        return '刚刚'
+      if (minutes < 60)
+        return `${minutes}分钟前`
+      if (hours < 24)
+        return `${hours}小时前`
+      if (days < 30)
+        return `${days}天前`
 
       return date.toLocaleDateString()
     }
@@ -148,7 +167,7 @@ export default defineComponent({
       formatTime,
       CacheType,
     }
-  }
+  },
 })
 </script>
 

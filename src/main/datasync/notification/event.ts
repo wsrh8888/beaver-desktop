@@ -99,4 +99,3 @@ class NotificationEventSync {
 }
 
 export const notificationEventSync = new NotificationEventSync()
-

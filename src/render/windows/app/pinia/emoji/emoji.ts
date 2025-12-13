@@ -52,7 +52,8 @@ export const useEmojiStore = defineStore('emojiStore', {
       this.packageList = packageRes?.list || []
     },
     removeFavorite(emoji: IFavoriteEmoji) {
-      if (!emoji) return
+      if (!emoji)
+        return
       this.favoriteEmojis = this.favoriteEmojis.filter((item) => {
         return item.emojiId !== emoji.emojiId
       })

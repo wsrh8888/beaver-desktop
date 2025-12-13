@@ -13,18 +13,24 @@
 
       <!-- 右侧用户信息 -->
       <div class="user-info">
-        <div class="user-nickname">{{ displayUserName }}</div>
-        <div class="moment-time">{{ formatMomentTime(moment.createdAt) }}</div>
+        <div class="user-nickname">
+          {{ displayUserName }}
+        </div>
+        <div class="moment-time">
+          {{ formatMomentTime(moment.createdAt) }}
+        </div>
       </div>
     </div>
 
     <!-- 内容区域 -->
     <div class="moment-content-section">
       <!-- 动态内容 -->
-      <div class="moment-content" v-if="moment.content">{{ moment.content }}</div>
+      <div v-if="moment.content" class="moment-content">
+        {{ moment.content }}
+      </div>
 
       <!-- 媒体文件9宫格 -->
-      <div class="media-section" v-if="moment.files && moment.files.length > 0">
+      <div v-if="moment.files && moment.files.length > 0" class="media-section">
         <div class="media-grid" :class="getMediaGridClass(moment.files.length)">
           <div
             v-for="(file, index) in getDisplayFiles(moment.files)"
@@ -40,12 +46,16 @@
             />
             <div v-else class="media-file">
               <img src="renderModule/assets/image/common/file.svg" alt="文件" class="file-icon">
-              <div class="file-name">{{ getFileName(file.fileKey) }}</div>
+              <div class="file-name">
+                {{ getFileName(file.fileKey) }}
+              </div>
             </div>
 
             <!-- 更多图片遮罩 -->
             <div v-if="index === 8 && moment.files.length > 9" class="media-overlay">
-              <div class="overlay-text">+{{ moment.files.length - 9 }}</div>
+              <div class="overlay-text">
+                +{{ moment.files.length - 9 }}
+              </div>
             </div>
           </div>
         </div>
@@ -56,7 +66,7 @@
     <div class="moment-footer">
       <div class="footer-top">
         <!-- 点赞信息 -->
-        <div class="likes-info" v-if="moment.likes && moment.likes.length > 0">
+        <div v-if="moment.likes && moment.likes.length > 0" class="likes-info">
           <img :src="SvgLikeActive" alt="点赞" class="like-icon">
           <span class="like-text">
             {{ getLikeDisplayText(moment.likes) }}
@@ -70,17 +80,17 @@
           </div>
           <div class="action-btn" @click.stop="handleLikeClick">
             <img :src="isLiked ? SvgLikeActive : SvgLike" alt="点赞" class="action-icon">
-            <span class="action-count" >{{ likeCount || '赞' }}</span>
+            <span class="action-count">{{ likeCount || '赞' }}</span>
           </div>
         </div>
       </div>
 
       <!-- 评论预览（列表接口只返回顶层3条） -->
-      <div class="comment-preview" v-if="moment.comments && moment.comments.length > 0">
+      <div v-if="moment.comments && moment.comments.length > 0" class="comment-preview">
         <div
-          class="comment-line"
           v-for="c in moment.comments"
           :key="c.id"
+          class="comment-line"
           @click.stop="handleCommentClick"
         >
           <div class="comment-avatar">
@@ -101,31 +111,28 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
 import type { IMomentInfo } from 'commonModule/type/ajax/moment'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
 import SvgLikeActive from 'renderModule/assets/image/moment/like-active.svg'
 import SvgLike from 'renderModule/assets/image/moment/like-default.svg'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useMomentStore } from 'renderModule/windows/moment/store/moment/moment'
 import { useUserStore } from 'renderModule/windows/moment/store/user/user'
-
-
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'MomentItem',
   components: {
     BeaverImage,
   },
-  emits: ['momentClick', 'like', 'comment'],
   props: {
     moment: {
       type: Object as () => IMomentInfo,
-      required: true
-    }
+      required: true,
+    },
   },
+  emits: ['momentClick', 'like', 'comment'],
   setup(props, { emit }) {
-
     const momentStore = useMomentStore()
     const userStore = useUserStore()
     // 是否已点赞
@@ -153,7 +160,6 @@ export default defineComponent({
       return props.moment.comments?.length || 0
     })
 
-
     // 获取显示的文件列表（最多9个）
     const getDisplayFiles = (files: any[]) => {
       return files.slice(0, 9)
@@ -161,24 +167,29 @@ export default defineComponent({
 
     // 获取媒体网格样式类
     const getMediaGridClass = (count: number) => {
-      if (count === 1) return 'single'
-      if (count === 2) return 'double'
-      if (count === 3) return 'triple'
-      if (count === 4) return 'quad'
+      if (count === 1)
+        return 'single'
+      if (count === 2)
+        return 'double'
+      if (count === 3)
+        return 'triple'
+      if (count === 4)
+        return 'quad'
       return 'multiple'
     }
 
     // 获取点赞显示文本（最多6个，超过显示...）
     const getLikeDisplayText = (likes: any[]) => {
-      if (!likes || likes.length === 0) return ''
+      if (!likes || likes.length === 0)
+        return ''
       const names = likes
         .slice(0, 6)
-        .map(like => {
+        .map((like) => {
           const info = userStore.getContact(like.userId || '')
           return info.nickName || like.userName || like.nickName
         })
       const displayText = names.join('，')
-      return likes.length > 6 ? displayText + '...' : displayText
+      return likes.length > 6 ? `${displayText}...` : displayText
     }
 
     // 处理动态点击
@@ -198,7 +209,8 @@ export default defineComponent({
 
     // 格式化时间
     const formatMomentTime = (timeStr: string) => {
-      if (!timeStr) return ''
+      if (!timeStr)
+        return ''
       const date = new Date(timeStr)
       const now = new Date()
       const diff = now.getTime() - date.getTime()
@@ -206,14 +218,17 @@ export default defineComponent({
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
-      if (minutes < 1) return '刚刚'
-      if (minutes < 60) return `${minutes}分钟前`
-      if (hours < 24) return `${hours}小时前`
-      if (days < 30) return `${days}天前`
+      if (minutes < 1)
+        return '刚刚'
+      if (minutes < 60)
+        return `${minutes}分钟前`
+      if (hours < 24)
+        return `${hours}小时前`
+      if (days < 30)
+        return `${days}天前`
 
       return date.toLocaleDateString()
     }
-
 
     // 文件类型判断
     const isImageFile = (fileName: string) => {
@@ -272,7 +287,7 @@ export default defineComponent({
       SvgLikeActive,
       SvgLike,
     }
-  }
+  },
 })
 </script>
 

@@ -1,6 +1,6 @@
 <template>
   <div class="comment-section">
-    <div class="comments-list" v-if="comments && comments.length > 0">
+    <div v-if="comments && comments.length > 0" class="comments-list">
       <!-- 这里需要重新组织评论数据，按根节点分组 -->
       <div
         v-for="commentGroup in groupedComments"
@@ -16,11 +16,15 @@
             <div class="comment-header">
               <span class="comment-user">{{ getName(commentGroup.root) }}</span>
             </div>
-            <div class="comment-text">{{ commentGroup.root.content }}</div>
+            <div class="comment-text">
+              {{ commentGroup.root.content }}
+            </div>
             <div class="comment-footer">
               <span class="comment-time">{{ formatCommentTime(commentGroup.root.createdAt) }}</span>
               <span class="comment-separator">|</span>
-              <button class="reply-btn" @click="$emit('reply', commentGroup.root)">回复</button>
+              <button class="reply-btn" @click="$emit('reply', commentGroup.root)">
+                回复
+              </button>
             </div>
           </div>
         </div>
@@ -42,16 +46,20 @@
                 <span class="reply-target">{{ reply.replyToUserName || getName(commentGroup.root) }}</span>
               </div>
             </div>
-            <div class="comment-text">{{ reply.content }}</div>
+            <div class="comment-text">
+              {{ reply.content }}
+            </div>
             <div class="comment-footer">
               <span class="comment-time">{{ formatCommentTime(reply.createdAt) }}</span>
               <span class="comment-separator">|</span>
-              <button class="reply-btn" @click="$emit('reply', reply)">回复</button>
+              <button class="reply-btn" @click="$emit('reply', reply)">
+                回复
+              </button>
             </div>
           </div>
           <div
-            class="replies-more"
             v-if="commentGroup.root.childCount > ((commentGroup.replies && commentGroup.replies.length) || 0)"
+            class="replies-more"
             @click="$emit('loadMoreChildren', commentGroup.root)"
           >
             共 {{ commentGroup.root.childCount }} 条回复
@@ -66,10 +74,10 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useUserStore } from 'renderModule/windows/moment/store/user/user'
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'CommentSection',
@@ -79,12 +87,12 @@ export default defineComponent({
   props: {
     comments: {
       type: Array,
-      default: () => []
+      default: () => [],
     },
     commentCount: {
       type: Number,
-      default: 0
-    }
+      default: 0,
+    },
   },
   emits: ['reply', 'loadMoreComments', 'loadMoreChildren'],
   setup(props) {
@@ -92,7 +100,8 @@ export default defineComponent({
 
     // 获取分组后的评论（按根节点分组，两层）
     const groupedComments = computed(() => {
-      if (!props.comments || !Array.isArray(props.comments)) return []
+      if (!props.comments || !Array.isArray(props.comments))
+        return []
 
       const roots: any[] = []
       const rootMap = new Map<string, any>()
@@ -116,9 +125,9 @@ export default defineComponent({
         }
       })
 
-      return roots.map((item) => ({
+      return roots.map(item => ({
         rootId: item.root.id,
-        ...item
+        ...item,
       }))
     })
 
@@ -133,7 +142,8 @@ export default defineComponent({
 
     // 格式化评论时间
     const formatCommentTime = (timeStr: string) => {
-      if (!timeStr) return ''
+      if (!timeStr)
+        return ''
       const date = new Date(timeStr)
       const now = new Date()
       const diff = now.getTime() - date.getTime()
@@ -141,10 +151,14 @@ export default defineComponent({
       const hours = Math.floor(diff / (1000 * 60 * 60))
       const days = Math.floor(diff / (1000 * 60 * 60 * 24))
 
-      if (minutes < 1) return '刚刚'
-      if (minutes < 60) return `${minutes}分钟前`
-      if (hours < 24) return `${hours}小时前`
-      if (days < 30) return `${days}天前`
+      if (minutes < 1)
+        return '刚刚'
+      if (minutes < 60)
+        return `${minutes}分钟前`
+      if (hours < 24)
+        return `${hours}小时前`
+      if (days < 30)
+        return `${days}天前`
 
       return date.toLocaleDateString()
     }
@@ -156,7 +170,7 @@ export default defineComponent({
       getName,
       getAvatar,
     }
-  }
+  },
 })
 </script>
 
@@ -201,7 +215,7 @@ export default defineComponent({
                 width: 24px;
                 height: 24px;
               }
-              
+
             }
           }
           .comment-text {
@@ -235,7 +249,7 @@ export default defineComponent({
           .user-avatar {
             width: 36px;
             height: 36px;
-            
+
             border-radius: 100%;
           }
         }

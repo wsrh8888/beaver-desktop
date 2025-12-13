@@ -11,11 +11,11 @@
       @contextmenu.prevent="openContextMenu($event, emoji)"
     >
       <BeaverImage
-        :fileName="emoji.fileKey"
-        :cacheType="CacheType.USER_AVATAR"
+        :file-name="emoji.fileKey"
+        :cache-type="CacheType.USER_AVATAR"
         :alt="emoji.title"
-        imageClass="fav-img"
-        :lazyLoad="true"
+        image-class="fav-img"
+        :lazy-load="true"
       />
     </div>
 
@@ -34,10 +34,10 @@
 
 <script lang="ts">
 import type { IFavoriteEmoji } from 'renderModule/windows/app/pinia/emoji/emoji'
+import { CacheType } from 'commonModule/type/cache/cache'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { computed, defineComponent, onBeforeUnmount, onMounted, reactive } from 'vue'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import { CacheType } from 'commonModule/type/cache/cache'
 
 export default defineComponent({
   name: 'EmojiFavoriteList',
