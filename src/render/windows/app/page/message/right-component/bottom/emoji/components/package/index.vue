@@ -1,31 +1,16 @@
 <template>
-  <div class="package-wrapper">
-    <div class="package-tabs custom-scrollbar">
-      <div
-        v-for="pkg in packageList"
-        :key="pkg.packageId"
-        class="package-tab"
-        :class="{ active: pkg.packageId === activePackageId }"
-        @click="onSelectPackage(pkg.packageId)"
-      >
-        <div class="icon">
-          <img :src="pkg.coverFile" :alt="pkg.title">
-        </div>
-        <div class="name">
-          {{ pkg.title }}
-        </div>
-      </div>
-    </div>
-
-    <div class="package-emojis custom-scrollbar">
-      <div
-        v-for="emoji in emojiList"
-        :key="emoji.emojiId || emoji.name"
-        class="emoji-item"
-        @click="onSelectEmoji(emoji)"
-      >
-        <img :src="emoji.icon" :alt="emoji.name">
-      </div>
+  <div class="emoji-grid">
+    <div
+      v-for="emoji in emojiList"
+      :key="emoji.emojiId || emoji.name"
+      class="emoji-item"
+      @click="onSelectEmoji(emoji)"
+    >
+      <BeaverImage
+        :file-name="emoji.icon"
+        :alt="emoji.name"
+        image-class="pkg-img"
+      />
     </div>
   </div>
 </template>
@@ -33,34 +18,72 @@
 <script lang="ts">
 import type { IEmojiBase } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
-import { computed, defineComponent, ref, watchEffect } from 'vue'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { defineComponent, ref, watchEffect } from 'vue'
 
 export default defineComponent({
   name: 'EmojiPackageList',
+  components: {
+    BeaverImage,
+  },
   props: {
     onSelect: Function as unknown as () => ((emoji: IEmojiBase) => void) | undefined,
+    activePackageId: {
+      type: String,
+      default: '',
+    },
   },
   setup(props) {
     const emojiStore = useEmojiStore()
-    const packageList = computed(() => emojiStore.packageList)
-    const activePackageId = ref<string>('')
+    const emojiList = ref<IEmojiBase[]>([])
 
-    watchEffect(() => {
-      if (!activePackageId.value && packageList.value.length > 0) {
-        activePackageId.value = packageList.value[0].packageId
+    const loadEmojis = async () => {
+      if (!props.activePackageId) {
+        emojiList.value = []
+        return
       }
-    })
 
-    const emojiList = computed(() => {
-      if (!activePackageId.value)
-        return [] as IEmojiBase[]
-      return emojiStore.getPackageEmojis(activePackageId.value)
-    })
+      // 先检查store中是否有数据
+      let emojis = emojiStore.getPackageEmojis(props.activePackageId)
+      if (emojis && emojis.length > 0) {
+        emojiList.value = emojis
+        return
+      }
 
-    const onSelectPackage = (packageId: string) => {
-      activePackageId.value = packageId
-      // 如需拉取，可在此调用主进程并写入 store
+      // 如果store中没有数据，向主进程请求表情包详情
+      try {
+        const result = await electron.database.emoji.getEmojiPackagesByIds({
+          ids: [props.activePackageId],
+        })
+
+        if (result?.packages && result.packages.length > 0) {
+          const packageData = result.packages[0]
+          if (packageData.emojis) {
+            // 将表情数据转换为IEmojiBase格式
+            const emojiData = packageData.emojis.map(emoji => ({
+              emojiId: emoji.emojiId,
+              name: emoji.title,
+              icon: emoji.fileKey,
+            }))
+            // 将数据存储到store中
+            emojiStore.packageEmojisMap[props.activePackageId] = emojiData
+            emojiList.value = emojiData
+          } else {
+            emojiList.value = []
+          }
+        } else {
+          emojiList.value = []
+        }
+      } catch (error) {
+        console.error('获取表情包表情失败:', error)
+        emojiList.value = []
+      }
     }
+
+    // 监听activePackageId变化
+    watchEffect(() => {
+      loadEmojis()
+    })
 
     const onSelectEmoji = (emoji: IEmojiBase) => {
       if (props.onSelect) {
@@ -69,10 +92,7 @@ export default defineComponent({
     }
 
     return {
-      packageList,
       emojiList,
-      activePackageId,
-      onSelectPackage,
       onSelectEmoji,
     }
   },
@@ -80,108 +100,46 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
-.package-wrapper {
-  display: flex;
-  height: 270px;
-}
-
-.package-tabs {
-  width: 90px;
-  border-right: 1px solid #EBEEF5;
-  overflow-y: auto;
-  padding: 8px 6px;
-
-  .package-tab {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 8px 4px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: background-color 0.15s;
-    margin-bottom: 6px;
-
-    &:hover {
-      background-color: rgba(0,0,0,0.03);
-    }
-
-    &.active {
-      background-color: rgba(255, 125, 69, 0.08);
-    }
-
-    .icon {
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      margin-bottom: 4px;
-
-      img {
-        width: 32px;
-        height: 32px;
-        object-fit: contain;
-      }
-    }
-
-    .name {
-      font-size: 11px;
-      color: #636E72;
-      text-align: center;
-      line-height: 1.2;
-    }
-  }
-}
-
-.package-emojis {
-  flex: 1;
-  padding: 12px 16px;
+.emoji-grid {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 12px;
+  position: relative;
 
   .emoji-item {
-    width: 42px;
-    height: 42px;
+    width: 100%;
+    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
     border-radius: 6px;
-    transition: background-color 0.15s, transform 0.15s;
+    background-color: #fff;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.04);
+    transition: background-color 0.16s ease, box-shadow 0.16s ease;
 
     &:hover {
-      background-color: rgba(0,0,0,0.03);
-      transform: scale(1.05);
+      background-color: rgba(0,0,0,0.02);
+      box-shadow: 0 6px 18px rgba(0,0,0,0.12);
+
+      .pkg-img {
+        transform: scale(1.12);
+      }
     }
 
     &:active {
-      transform: scale(0.95);
+      .pkg-img {
+        transform: scale(0.94);
+      }
     }
 
-    img {
-      width: 32px;
-      height: 32px;
+    .pkg-img {
+      max-width: 82%;
+      max-height: 82%;
+      width: auto;
+      height: auto;
       object-fit: contain;
-    }
-  }
-}
-
-.custom-scrollbar {
-  &::-webkit-scrollbar {
-    width: 6px;
-  }
-
-  &::-webkit-scrollbar-track {
-    background: transparent;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    background-color: #e1e1e1;
-    border-radius: 3px;
-
-    &:hover {
-      background-color: #d1d1d1;
+      transition: transform 0.16s ease;
     }
   }
 }

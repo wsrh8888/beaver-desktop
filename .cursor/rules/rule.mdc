@@ -14,6 +14,7 @@ mainModule: path.resolve(__dirname, 'src/main'),
 renderModule: path.resolve(__dirname, 'src/render'),
 preloadModule: path.resolve(__dirname, 'src/preload'),
 
+
 ### 文件命名
 - 所有的文件不能以大写字母开头， 如果是多个单词采用驼峰命名
 - 文件名字如果我文件夹已经携带了xx， 这个子文件就不要在携带xxx开头的了
@@ -34,4 +35,5 @@ preloadModule: path.resolve(__dirname, 'src/preload'),
 ### 切记
 - 不要过度开发
 - 不要写md文件
+- 尽可能使用别名不要使用../之类的相对路径
 

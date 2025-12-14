@@ -4,6 +4,8 @@ import type { QueueItem } from '../base/base'
 import { getEmojiCollectsByIdsApi } from 'mainModule/api/emoji'
 import { EmojiCollectService } from 'mainModule/database/services/emoji/collect'
 import { EmojiService } from 'mainModule/database/services/emoji/emoji'
+import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
 const ensureLogin = (header: ICommonHeader) => {
@@ -98,6 +100,16 @@ export class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
         }))
 
         await EmojiCollectService.batchCreate(collectRows)
+
+        // 发送通知到render进程，告知表情收藏数据已更新
+        if (collectRows.length > 0) {
+          sendMainNotification('*', NotificationModule.EMOJI, NotificationEmojiCommand.EMOJI_COLLECT_UPDATE, {
+            updatedCollects: collectRows.map(collect => ({
+              emojiCollectId: collect.emojiCollectId,
+              version: collect.version,
+            })),
+          })
+        }
       }
     } catch (error) {
       console.error('批量同步表情收藏失败:', error)

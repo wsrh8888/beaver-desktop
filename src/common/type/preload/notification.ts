@@ -183,6 +183,7 @@ export interface NotificationCommandMap {
   [NotificationModule.DATABASE_USER]: NotificationUserCommand
   [NotificationModule.DATABASE_GROUP]: NotificationGroupCommand
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
+  [NotificationModule.EMOJI]: NotificationEmojiCommand
   [NotificationModule.APP_LIFECYCLE]: NotificationAppLifecycleCommand
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
   [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand

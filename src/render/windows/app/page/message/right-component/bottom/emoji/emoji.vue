@@ -6,6 +6,7 @@
         :on-select="handleEmojiSelect"
         :on-send="handleEmojiSend"
         :on-add="handleAddFavorite"
+        :active-package-id="activePackageId"
       />
     </div>
 
@@ -35,10 +36,10 @@
         :key="tab.id"
         class="emoji-category"
         :class="{ active: activeTab === tab.id }"
-        @click="handleTabClick(tab.id)"
+        @click="handleTabClick(tab.id, tab.packageId)"
       >
         <div class="emoji-category-icon">
-          <img :src="tab.icon" :alt="tab.label">
+          <BeaverImage :file-name="tab.icon" alt="表情" image-class="emoji-category-icon-image" />
         </div>
         <div class="emoji-category-name" />
       </div>
@@ -51,13 +52,18 @@ import favoriteIcon from 'renderModule/assets/image/emoji/favorite.svg'
 import defaultIcon from 'renderModule/assets/image/emoji/smile.svg'
 import storeIcon from 'renderModule/assets/image/emoji/store.svg'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
+import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global/index'
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import EmojiDefaultList from './components/default/index.vue'
 import EmojiFavoriteList from './components/favorite/index.vue'
 import EmojiPackageList from './components/package/index.vue'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
 
 export default defineComponent({
   name: 'EmojiComponent',
+  components: {
+    BeaverImage,
+  },
   props: {
     menuHeight: {
       type: Number,
@@ -68,6 +74,7 @@ export default defineComponent({
   emits: ['select', 'send', 'close', 'openStore', 'addFavorite'],
   setup(_props, { emit }) {
     const activeTab = ref<string>('default')
+    const activePackageId = ref<string>('')
 
     const emojiStore = useEmojiStore()
 
@@ -76,9 +83,10 @@ export default defineComponent({
       { id: 'favorite', label: '收藏', icon: favoriteIcon },
     ]
     const packageTabs = computed(() => emojiStore.packageList.map(pkg => ({
-      id: pkg.packageId,
+      id: "package",
       label: pkg.title,
-      icon: pkg.coverFile || favoriteIcon,
+      icon: pkg.coverFile,
+      packageId: pkg.packageId,
     })))
 
     const activeComponent = computed(() => {
@@ -92,13 +100,19 @@ export default defineComponent({
     })
 
     const handleStoreClick = () => {
-      emit('openStore')
+      // 使用全局store显示表情商店
+      const globalStore = useGlobalStore()
+      globalStore.setComponent('emoji-store')
     }
 
-    const handleTabClick = (tabId: string) => {
+    const handleTabClick = (tabId: string, packageId?: string) => {
       activeTab.value = tabId
-      if (tabId === 'package') {
-        // package 组件内部自行加载
+      if (packageId) {
+        // 如果是表情包tab，设置activePackageId
+        activePackageId.value = packageId
+      } else {
+        // 重置activePackageId
+        activePackageId.value = ''
       }
     }
 
@@ -138,6 +152,7 @@ export default defineComponent({
       handleEmojiSend,
       packageTabs,
       activeTab,
+      activePackageId,
       activeComponent,
       storeIcon,
       handleStoreClick,

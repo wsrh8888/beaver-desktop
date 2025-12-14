@@ -1,6 +1,7 @@
 import { favoriteEmojiBusiness } from 'mainModule/business/emoji/favorite-emoji'
 import { favoriteEmojiPackageBusiness } from 'mainModule/business/emoji/favorite-package'
 import { emojiPackageEmojiBusiness } from 'mainModule/business/emoji/package-emoji'
+import { emojiBusiness } from 'mainModule/business/emoji/emoji'
 
 /**
  * @description: 表情收藏接收器 - 处理表情收藏相关表的操作
@@ -15,7 +16,14 @@ export class CollectReceiver {
 
     // 处理各种表情相关表的更新
     for (const update of tableUpdates) {
-      if (update.table === 'emoji_collect') {
+      if (update.table === 'emoji') {
+        // 处理表情基础表更新
+        for (const dataItem of update.data) {
+          if (dataItem?.version && dataItem?.emojiId) {
+            await emojiBusiness.handleTableUpdates(dataItem.version, dataItem.emojiId)
+          }
+        }
+      } else if (update.table === 'emoji_collect') {
         // 处理表情收藏表的更新
         for (const dataItem of update.data) {
           if (update.userId && dataItem?.version && dataItem?.emojiCollectId) {
@@ -37,7 +45,6 @@ export class CollectReceiver {
           }
         }
       }
-      // emoji 表通常通过其他业务逻辑处理，不在这里处理
     }
   }
 }
