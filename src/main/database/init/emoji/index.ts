@@ -15,4 +15,5 @@ export const initEmojiTables = (db: any) => {
   initEmojiPackageTable(sqlite)
   initEmojiPackageEmojiTable(sqlite)
   initEmojiPackageCollectTable(sqlite)
+
 }

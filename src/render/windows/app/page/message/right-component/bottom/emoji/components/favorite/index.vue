@@ -46,11 +46,12 @@ export default defineComponent({
   },
   props: {
     onSelect: Function as unknown as () => ((emoji: { name: string, icon: string }) => void) | undefined,
+    onSend: Function as unknown as () => ((emoji: { emojiId: string, fileKey: string, packageId?: string }) => void) | undefined,
     onAdd: Function as unknown as () => (() => void) | undefined,
   },
   setup(props) {
     const emojiStore = useEmojiStore()
-    const list = computed(() => emojiStore.favoriteEmojis)
+    const list = computed(() => emojiStore.getFavoriteEmojis)
 
     const contextMenu = reactive({
       visible: false,
@@ -60,10 +61,14 @@ export default defineComponent({
     })
 
     const onSelect = (emoji: IFavoriteEmoji) => {
-      if (props.onSelect) {
-        (props.onSelect as (e: { name: string, icon: string }) => void)({
-          name: emoji.title,
-          icon: emoji.fileKey,
+      // 如果是图片表情（有emojiId），直接发送消息
+      if (emoji.emojiId && props.onSend) {
+        (props.onSend as (e: { emojiId: string, fileKey: string, packageId?: string, width?: number, height?: number }) => void)({
+          emojiId: emoji.emojiId,
+          fileKey: emoji.fileKey,
+          packageId: emoji.packageId,
+          width: emoji.emojiInfo?.width,
+          height: emoji.emojiInfo?.height,
         })
       }
     }

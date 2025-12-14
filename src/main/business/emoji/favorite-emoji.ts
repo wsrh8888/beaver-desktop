@@ -25,6 +25,7 @@ export class FavoriteEmojiBusiness {
           emojiId: emoji.emojiId,
           fileKey: emoji.fileKey,
           title: emoji.title,
+          emojiInfo: emoji.emojiInfo ? JSON.parse(emoji.emojiInfo) : null,
           packageId: undefined,
         }
       })

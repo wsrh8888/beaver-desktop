@@ -1,5 +1,5 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
-import { addEmojiApi } from 'renderModule/api/emoji'
+import { addEmojiApi, updateFavoriteEmojiApi } from 'renderModule/api/emoji'
 import { previewOnlineFileApi } from 'renderModule/api/file'
 import { BaseMessageHandler } from './base'
 
@@ -53,27 +53,76 @@ class ImageHandler extends BaseMessageHandler {
 
   private async handleAddToEmoji(message: any): Promise<void> {
     try {
-      const fileKey = message.msg.imageMsg?.fileKey
-      if (!fileKey) {
-        console.error('无法获取图片文件Key')
-        return
+      console.error('xxxxxxxxxxxxxxx', message)
+      // 判断消息类型
+      if (message.msg.type === 6) { // EmojiMsgType - 表情消息
+        await this.handleAddEmojiToFavorite(message)
+      } else if (message.msg.type === 2) { // ImageMsgType - 图片消息
+        await this.handleAddImageToEmoji(message)
+      } else {
+        console.error('不支持的消息类型:', message.msgType)
       }
-
-      // 生成表情标题（可以根据需要调整）
-      const title = `表情_${Date.now()}`
-
-      await addEmojiApi({
-        fileKey,
-        title,
-        // packageId 可选，不指定则添加到默认收藏中
-      })
-
-      console.log('图片已成功添加到表情收藏')
-      // TODO: 可以添加用户提示，如Toast通知
     }
     catch (error) {
       console.error('添加到表情失败:', error)
       // TODO: 可以添加错误提示
+    }
+  }
+
+  // 处理表情消息：直接添加到收藏
+  private async handleAddEmojiToFavorite(message: any): Promise<void> {
+    const emojiId = message.msg.emojiMsg?.emojiId
+    const packageId = message.msg.emojiMsg?.packageId
+
+    if (!emojiId) {
+      console.error('无法获取表情ID')
+      return
+    }
+
+    try {
+      const result = await updateFavoriteEmojiApi({
+        emojiId,
+        packageId: packageId || undefined,
+        type: 'favorite'
+      })
+
+      if (result.code === 0) {
+        console.log('表情已成功添加到收藏')
+        // TODO: 可以添加成功提示
+      } else {
+        console.error('收藏表情失败:', result.msg)
+        // TODO: 可以添加错误提示
+      }
+    } catch (error) {
+      console.error('收藏表情请求失败:', error)
+      // TODO: 可以添加错误提示
+    }
+  }
+
+  // 处理图片消息：先创建表情，再收藏
+  private async handleAddImageToEmoji(message: any): Promise<void> {
+    const fileKey = message.msg.imageMsg?.fileKey
+    if (!fileKey) {
+      console.error('无法获取图片文件Key')
+      return
+    }
+
+    // 生成表情标题（可以根据需要调整）
+    const title = `表情_${Date.now()}`
+
+    const result = await addEmojiApi({
+      fileKey,
+      title,
+      packageId: undefined,
+      emojiInfo: {
+        width: message.msg.imageMsg?.width,
+        height: message.msg.imageMsg?.height,
+      }
+    })
+
+    if (result.code === 0) {
+      console.log('图片已成功添加到表情')
+      // TODO: 可以自动收藏刚创建的表情
     }
   }
 

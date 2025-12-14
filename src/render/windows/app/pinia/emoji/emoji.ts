@@ -18,6 +18,11 @@ export interface IFavoriteEmoji {
   emojiId: string
   fileKey: string
   title: string
+  packageId?: string
+  emojiInfo?: {
+    width: number
+    height: number
+  }
 }
 
 export const useEmojiStore = defineStore('emojiStore', {
@@ -29,6 +34,9 @@ export const useEmojiStore = defineStore('emojiStore', {
   }),
 
   getters: {
+    getFavoriteEmojis: (state) => {
+      return state.favoriteEmojis
+    },
     getPackageEmojis: (state) => {
       return (packageId: string) => state.packageEmojisMap[packageId] || []
     },
@@ -46,7 +54,7 @@ export const useEmojiStore = defineStore('emojiStore', {
           size: 200,
         }),
       ])
-
+      console.log('favorit111111111eRes', favoriteRes)
       this.favoriteEmojis = favoriteRes?.list || []
 
       this.packageList = packageRes?.list || []

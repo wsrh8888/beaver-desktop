@@ -11,7 +11,7 @@ export enum EDataType {
   CHAT_CONVERSATION_SETTINGS = 'chat_conversation_settings', // 会话设置表 - 使用version
   NOTIFICATION_EVENTS = 'notification_events', // 通知事件 - 使用version
   NOTIFICATION_INBOXES = 'notification_inboxes', // 通知收件箱 - 使用version
-  NOTIFICATION_READ_CURSORS = 'notification_read_cursors', // 通知已读游标 - 使用version
+  NOTIFICATION_READS = 'notification_reads', // 通知已读游标 - 使用version
 }
 
 // 数据同步状态请求

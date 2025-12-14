@@ -1,8 +1,6 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataNotificationCommand } from 'commonModule/type/ipc/database'
-import { NotificationEventService } from 'mainModule/database/services/notification/event'
-import { NotificationInboxService } from 'mainModule/database/services/notification/inbox'
-import { NotificationReadCursorService } from 'mainModule/database/services/notification/read-cursor'
+import { notificationInboxBusiness, notificationReadCursorBusiness, notificationEventBusiness } from 'mainModule/business'
 import { store } from 'mainModule/store'
 
 export class NotificationHandler {
@@ -14,13 +12,13 @@ export class NotificationHandler {
 
     switch (command) {
       case DataNotificationCommand.GET_EVENTS_BY_IDS:
-        return await NotificationEventService.getByIds(data?.eventIds || [])
+        return await notificationEventBusiness.getByIds(data?.eventIds || [])
       case DataNotificationCommand.GET_INBOX_BY_IDS:
-        return await NotificationInboxService.getByEventIds(userId, data?.eventIds || [])
+        return await notificationInboxBusiness.getByEventIds(userId, data?.eventIds || [])
       case DataNotificationCommand.GET_READ_CURSORS:
-        return await NotificationReadCursorService.getCursors(userId, data?.categories)
+        return await notificationReadCursorBusiness.getCursors(userId, data?.categories)
       case DataNotificationCommand.GET_UNREAD_SUMMARY:
-        return await NotificationInboxService.getUnreadSummary(userId, data?.categories)
+        return await notificationInboxBusiness.getUnreadSummary(userId, data?.categories)
       default:
         throw new Error('通知数据库命令处理失败')
     }

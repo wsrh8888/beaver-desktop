@@ -4,6 +4,7 @@
       <component
         :is="activeComponent"
         :on-select="handleEmojiSelect"
+        :on-send="handleEmojiSend"
         :on-add="handleAddFavorite"
       />
     </div>
@@ -62,8 +63,9 @@ export default defineComponent({
       type: Number,
       default: 0,
     },
+    onSend: Function,
   },
-  emits: ['select', 'close', 'openStore', 'addFavorite'],
+  emits: ['select', 'send', 'close', 'openStore', 'addFavorite'],
   setup(_props, { emit }) {
     const activeTab = ref<string>('default')
 
@@ -104,6 +106,10 @@ export default defineComponent({
       emit('select', emoji.name)
     }
 
+    const handleEmojiSend = (emoji: { emojiId: string, fileKey: string, packageId?: string }) => {
+      emit('send', emoji)
+    }
+
     const handleAddFavorite = () => {
       emit('addFavorite')
     }
@@ -129,6 +135,7 @@ export default defineComponent({
 
     return {
       tabs,
+      handleEmojiSend,
       packageTabs,
       activeTab,
       activeComponent,

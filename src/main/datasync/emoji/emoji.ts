@@ -104,6 +104,7 @@ export class EmojiSyncModule {
           emojiId: batchIds[index], // 使用请求中的ID
           fileKey: emoji.fileKey,
           title: emoji.title,
+          emojiInfo: emoji.emojiInfo ? JSON.stringify(emoji.emojiInfo) : null,
           status: emoji.status,
           version: emoji.version,
           createdAt: emoji.createdAt,

@@ -28,6 +28,7 @@ export class EmojiCollectService {
           set: {
             userId: collectData.userId,
             emojiId: collectData.emojiId,
+            emojiInfo: collectData.emojiInfo,
             version: collectData.version,
             updatedAt: collectData.updatedAt,
           },

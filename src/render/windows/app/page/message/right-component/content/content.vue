@@ -40,6 +40,11 @@
           v-else-if="message.msg.type === 7 && message.msg.notificationMsg"
           :message="message"
         />
+        <!-- 表情消息组件（type=6 的表情消息） -->
+        <EmojiMessage
+          v-else-if="message.msg.type === 6 && message.msg.emojiMsg"
+          :message="message"
+        />
         <!-- 发送状态指示器 -->
         <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
@@ -82,6 +87,7 @@ import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, w
 import userInfo from './components/userInfo.vue'
 import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
+import EmojiMessage from './message/emoji.vue'
 import ImageMessage from './message/image.vue'
 import NotificationMessage from './message/notification.vue'
 import TextMessage from './message/text.vue'
@@ -96,6 +102,7 @@ export default defineComponent({
     BeaverImage,
     ContextMenu,
     AudioFileMessage,
+    EmojiMessage,
     TextMessage,
     ImageMessage,
     VideoMessage,

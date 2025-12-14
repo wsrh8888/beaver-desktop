@@ -17,7 +17,7 @@ class NotificationReadCursorSync {
       return
 
     try {
-      const cursor = await DataSyncService.get('notification_read_cursors')
+      const cursor = await DataSyncService.get('notification_reads')
       const sinceVersion = cursor?.version || 0
 
       const resp = await datasyncGetSyncNotificationReadCursorsApi({
@@ -37,7 +37,7 @@ class NotificationReadCursorSync {
       )
 
       await DataSyncService.upsert({
-        module: 'notification_read_cursors',
+        module: 'notification_reads',
         version: nextVersion,
         updatedAt: resp.result.serverTimestamp,
       }).catch(() => {})
@@ -55,18 +55,8 @@ class NotificationReadCursorSync {
   }
 
   private async filterCursorVersions(userId: string, cursorVersions: Array<{ category: string, version: number }>): Promise<string[]> {
-    if (!cursorVersions || cursorVersions.length === 0)
-      return []
-
-    const categories = cursorVersions.map(item => item.category).filter(cat => !!cat)
-    if (categories.length === 0)
-      return []
-
-    const localMap = await NotificationReadCursorService.getVersionMap(userId, categories)
-
-    return cursorVersions
-      .filter(item => (localMap.get(item.category) || 0) < item.version)
-      .map(item => item.category)
+    // 简化逻辑：由于NotificationRead表不再使用版本控制，直接返回所有分类
+    return cursorVersions.map(item => item.category).filter(cat => !!cat)
   }
 
   private async syncReadCursors(userId: string, categories: string[]) {
@@ -78,11 +68,9 @@ class NotificationReadCursorSync {
           userId,
           category: cursor.category,
           version: cursor.version,
-          lastEventId: cursor.lastEventId,
           lastReadAt: cursor.lastReadAt,
-          lastReadTime: cursor.lastReadTime,
-          updatedAt: cursor.lastReadTime || Math.floor(Date.now() / 1000),
-          createdAt: cursor.lastReadAt,
+          updatedAt: Math.floor(Date.now() / 1000),
+          createdAt: cursor.lastReadAt || Math.floor(Date.now() / 1000),
         })
       }
     }

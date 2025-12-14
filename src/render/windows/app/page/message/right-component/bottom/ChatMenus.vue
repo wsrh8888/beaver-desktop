@@ -36,6 +36,7 @@
         v-if="showEmoji"
         :menu-height="height"
         @select="handleEmojiSelect"
+        @send="handleEmojiSend"
         @close="hideEmojiPopup"
       />
     </div>
@@ -244,7 +245,7 @@ export default defineComponent({
       }
     }
 
-    // 修复后的表情选择处理函数
+    // 处理表情字符：插入到输入框
     const handleEmojiSelect = (emojiName: string) => {
       if (inputRef.value) {
         // 确保输入框获得焦点
@@ -314,6 +315,32 @@ export default defineComponent({
       }
     }
 
+    // 处理表情图片：直接发送消息
+    const handleEmojiSend = async (emoji: { emojiId: string, fileKey: string, packageId?: string, width?: number, height?: number }) => {
+      const conversationId = messageViewStore.currentChatId
+      if (!conversationId)
+        return
+
+      try {
+        const content = {
+          fileKey: emoji.fileKey,
+          emojiId: emoji.emojiId,
+          packageId: emoji.packageId,
+          width: emoji.width,
+          height: emoji.height,
+        }
+
+        await messageSenderStore.sendMessage(conversationId, content, MessageType.EMOJI, 'private')
+
+        // 发送后关闭表情面板
+        showEmoji.value = false
+      }
+      catch (error) {
+        console.error('发送表情消息失败:', error)
+        // 可以在这里添加错误提示
+      }
+    }
+
     const setHeight = (newHeight: number) => {
       height.value = newHeight
     }
@@ -373,6 +400,7 @@ export default defineComponent({
       setHeight,
       showEmoji,
       handleEmojiSelect,
+      handleEmojiSend,
       hideEmojiPopup,
       handleFileUpload,
       startResize,

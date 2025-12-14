@@ -13,6 +13,15 @@ export class CollectSync {
 
     // 过滤出需要更新的收藏记录ID
     const needUpdateCollectIds = await this.compareAndFilterCollectVersions(collectVersions)
+    console.log('11111111111111111111111111111111')
+    console.log('11111111111111111111111111111111')
+    console.log('11111111111111111111111111111111')
+    console.log('11111111111111111111111111111111')
+    console.log('11111111111111111111111111111111')
+    console.log('11111111111111111111111111111111')
+    console.log(needUpdateCollectIds)
+    console.log(collectVersions)
+
     if (needUpdateCollectIds.length > 0) {
       await this.syncEmojiCollectData(needUpdateCollectIds)
     }
@@ -21,7 +30,7 @@ export class CollectSync {
   // 对比本地数据，过滤出需要更新的收藏记录ID
   private async compareAndFilterCollectVersions(collectVersions: any[]): Promise<string[]> {
     const ids = collectVersions
-      .map(item => item.collectId || item.id)
+      .map(item => item.emojiCollectId)
       .filter(id => id && id.trim() !== '')
 
     if (ids.length === 0) {
@@ -32,7 +41,7 @@ export class CollectSync {
 
     const needUpdateIds = ids.filter((id) => {
       const existingRecord = existingRecordsMap.get(id)
-      const serverVersion = collectVersions.find(item => (item.collectId || item.id) === id)?.version || 0
+      const serverVersion = collectVersions.find(item => (item.collemojiCollectIdectId) === id)?.version || 0
       return !existingRecord || existingRecord.version < serverVersion
     })
 
@@ -58,9 +67,10 @@ export class CollectSync {
 
       if (response.result.collects.length > 0) {
         const collects = response.result.collects.map((collect: any, index: number) => ({
-          collectId: collect.collectId ?? batchIds[index],
+          emojiCollectId: collect.emojiCollectId ?? batchIds[index],
           userId: collect.userId,
           emojiId: collect.emojiId,
+          emojiInfo: collect.emojiInfo ? JSON.stringify(collect.emojiInfo) : null,
           version: collect.version,
           createdAt: collect.createdAt ?? collect.createAt,
           updatedAt: collect.updatedAt ?? collect.updateAt,
@@ -68,7 +78,7 @@ export class CollectSync {
 
         await EmojiCollectService.batchCreate(collects)
         syncedCollects.push(...collects.map(collect => ({
-          collectId: collect.collectId,
+          collectId: collect.emojiCollectId,
           version: collect.version,
         })))
       }

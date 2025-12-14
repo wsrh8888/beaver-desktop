@@ -3,7 +3,7 @@ import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // 通知已读游标：按用户+分类记录查看时间
-export const notificationReadCursors = sqliteTable('notification_read_cursors', {
+export const notificationReads = sqliteTable('notification_reads', {
   id: integer('id').primaryKey({ autoIncrement: true }),
   userId: text('user_id').notNull(),
   category: text('category').notNull(),

@@ -30,6 +30,6 @@ export { media } from './media/media'
 // 通知相关表
 export { notificationEvents } from './notification/event'
 export { notificationInboxes } from './notification/inbox'
-export { notificationReadCursors } from './notification/read-cursor'
+export { notificationReads } from './notification/read'
 // 用户相关表
 export * from './user/user'

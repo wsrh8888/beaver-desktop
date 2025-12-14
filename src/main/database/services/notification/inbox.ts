@@ -109,10 +109,10 @@ export class NotificationInboxService {
       .all()
   }
 
-  // 统计未读汇总（总数 + 按分类）
-  static async getUnreadSummary(userId: string, categories?: string[]) {
+  // 获取指定用户和分类的基础未读统计（不考虑游标时间）
+  static async getBasicUnreadByCategories(userId: string, categories?: string[]) {
     if (!userId)
-      return { total: 0, byCat: [] as Array<{ category: string, unread: number }> }
+      return [] as Array<{ category: string, unread: number }>
 
     const hasCategories = !!categories && categories.length > 0
 
@@ -132,12 +132,40 @@ export class NotificationInboxService {
       .groupBy(notificationInboxes.category)
       .all()
 
-    const byCat = rows.map((row: { category: string, unread: number }) => ({
+    return rows.map((row: { category: string, unread: number }) => ({
       category: row.category,
       unread: Number(row.unread) || 0,
     }))
-    const total = byCat.reduce((acc: number, cur: { category: string, unread: number }) => acc + cur.unread, 0)
+  }
 
-    return { total, byCat }
+  // 获取用户指定分类的通知列表（基础查询）
+  static async getByUserIdAndCategories(userId: string, categories?: string[], limit = 100) {
+    if (!userId) return []
+
+    const hasCategories = !!categories && categories.length > 0
+
+    return await this.db.select()
+      .from(notificationInboxes)
+      .where(
+        hasCategories
+          ? and(
+              eq(notificationInboxes.userId as any, userId as any),
+              inArray(notificationInboxes.category as any, categories as any),
+            )
+          : eq(notificationInboxes.userId as any, userId as any),
+      )
+      .orderBy(notificationInboxes.createdAt)
+      .limit(limit)
+      .all()
+  }
+
+  // 获取指定时间之后指定分类的未读数量
+  static async getUnreadCountAfterTime(userId: string, category: string, afterTime: number) {
+    return await this.db.$count(notificationInboxes, and(
+      eq(notificationInboxes.userId as any, userId as any),
+      eq(notificationInboxes.category as any, category as any),
+      gt(notificationInboxes.createdAt as any, afterTime),
+      eq(notificationInboxes.isRead as any, 0),
+    ))
   }
 }

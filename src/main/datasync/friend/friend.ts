@@ -31,7 +31,12 @@ export class FriendSyncModule {
 
       // 对比本地数据，过滤出需要更新的数据
       const needUpdateFriendshipIds = await this.compareAndFilterFriendVersions(serverResponse.result.friendVersions || [])
-
+      console.log('211111111111111111111111111111')
+      console.log('211111111111111111111111111111')
+      console.log('211111111111111111111111111111')
+      console.log('211111111111111111111111111111')
+      console.log('211111111111111111111111111111')
+      console.log(needUpdateFriendshipIds)
       if (needUpdateFriendshipIds.length > 0) {
         // 有需要更新的好友数据
         await this.syncFriendData(needUpdateFriendshipIds)
@@ -60,8 +65,8 @@ export class FriendSyncModule {
 
     // 提取所有变更的好友关系ID，过滤掉空字符串
     const friendshipIds = friendVersions
-      .map(item => item.friendId)
-      .filter(id => id && id.trim() !== '')
+    .map(item => item.friendId)
+    .filter(id => id && id.trim() !== '')
 
     if (friendshipIds.length === 0) {
       return []

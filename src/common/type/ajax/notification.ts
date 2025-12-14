@@ -78,6 +78,21 @@ export interface IDeleteNotificationRes {
   success: boolean
 }
 
+// 按分类拉取通知已读游标
+export interface IGetNotificationReadCursorsReq {
+  categories?: string[]
+}
+
+export interface INotificationReadCursorItem {
+  category: string
+  version: number
+  lastReadAt: number
+}
+
+export interface IGetNotificationReadCursorsRes {
+  cursors: INotificationReadCursorItem[]
+}
+
 // 按分类标记所有通知为已读
 export interface IMarkReadByCategoryReq {
   category: string // 分类

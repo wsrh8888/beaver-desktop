@@ -3,6 +3,7 @@ import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/in
 import type { IMessageHandler } from './base'
 import { MessageContentType } from '../utils/data'
 import { audioHandler } from './audio'
+import { emojiHandler } from './emoji'
 import { fileHandler } from './file'
 import { imageHandler } from './image'
 import { textHandler } from './text'
@@ -32,6 +33,8 @@ export class MessageHandlerFactory {
         return audioHandler
       case MessageContentType.FILE:
         return fileHandler
+      case MessageContentType.EMOJI:
+        return emojiHandler
       default:
         // 默认使用文本处理器
         console.warn(`未知的消息类型 ${messageType}，使用文本处理器`)

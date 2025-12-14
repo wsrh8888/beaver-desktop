@@ -11,6 +11,7 @@ export const initNotificationInboxesTable = (sqlite: any) => {
       is_read INTEGER DEFAULT 0,
       read_at INTEGER,
       status INTEGER DEFAULT 1,
+      is_deleted INTEGER DEFAULT 0,
       silent INTEGER DEFAULT 0,
       created_at INTEGER DEFAULT (strftime('%s', 'now')),
       updated_at INTEGER DEFAULT (strftime('%s', 'now')),
@@ -23,6 +24,7 @@ export const initNotificationInboxesTable = (sqlite: any) => {
     'is_read INTEGER DEFAULT 0',
     'read_at INTEGER',
     'status INTEGER DEFAULT 1',
+    'is_deleted INTEGER DEFAULT 0',
     'silent INTEGER DEFAULT 0',
   ]
 

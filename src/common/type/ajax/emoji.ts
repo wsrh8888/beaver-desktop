@@ -59,6 +59,7 @@ export interface IAddEmojiReq {
  */
 export interface IUpdateFavoriteEmojiReq {
   emojiId: string
+  packageId?: string // 可选，表情所属的表情包ID，用于扩展功能
   type: 'favorite' | 'unfavorite'
 }
 

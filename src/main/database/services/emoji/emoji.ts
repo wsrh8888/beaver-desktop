@@ -28,6 +28,7 @@ export class EmojiService {
           set: {
             fileKey: emojiData.fileKey,
             title: emojiData.title,
+            emojiInfo: emojiData.emojiInfo,
             status: emojiData.status,
             version: emojiData.version,
             updatedAt: emojiData.updatedAt,

@@ -84,6 +84,11 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
             type: MessageType.AUDIO_FILE,
             audioFileMsg: content,
           }
+        case MessageType.EMOJI:
+          return {
+            type: MessageType.EMOJI,
+            emojiMsg: content,
+          }
         default:
           return {
             type: MessageType.TEXT,
@@ -132,6 +137,11 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
           return {
             type: MessageType.AUDIO_FILE,
             audioFileMsg: message.audioFileMsg,
+          }
+        case MessageType.EMOJI:
+          return {
+            type: MessageType.EMOJI,
+            emojiMsg: message.emojiMsg,
           }
         default:
           return {
