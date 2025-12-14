@@ -28,7 +28,7 @@ export class EmojiCollectService {
           set: {
             userId: collectData.userId,
             emojiId: collectData.emojiId,
-            emojiInfo: collectData.emojiInfo,
+            packageId: collectData.packageId,
             version: collectData.version,
             updatedAt: collectData.updatedAt,
           },
@@ -49,10 +49,10 @@ export class EmojiCollectService {
     const collectList = await this.db
       .select()
       .from(emojiCollect)
-      .where(inArray(emojiCollect.emojiCollectId, ids as any))
+      .where(inArray(emojiCollect.emojiCollectId as any, ids))
 
     const collectMap = new Map<string, any>()
-    collectList.forEach((item) => {
+    collectList.forEach((item: any) => {
       collectMap.set(item.emojiCollectId, item)
     })
 
@@ -64,7 +64,7 @@ export class EmojiCollectService {
     return await this.db
       .select()
       .from(emojiCollect)
-      .where(eq(emojiCollect.userId, userId))
+      .where(eq(emojiCollect.userId as any, userId))
       .all()
   }
 
@@ -73,7 +73,7 @@ export class EmojiCollectService {
     const result = await this.db
       .select()
       .from(emojiCollect)
-      .where(eq(emojiCollect.emojiCollectId, collectId))
+      .where(eq(emojiCollect.emojiCollectId as any, collectId))
       .limit(1)
 
     return result[0] || null
@@ -83,7 +83,7 @@ export class EmojiCollectService {
   static async delete(collectId: string) {
     return await this.db
       .delete(emojiCollect)
-      .where(eq(emojiCollect.emojiCollectId, collectId))
+      .where(eq(emojiCollect.emojiCollectId as any, collectId))
       .run()
   }
 }

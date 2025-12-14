@@ -1,12 +1,7 @@
 <template>
   <div class="message-emoji">
     <div class="emoji-content" :style="{ width: emojiSize.width + 'px', height: emojiSize.height + 'px' }">
-      <BeaverImage
-        :file-name="message.msg.emojiMsg.fileKey"
-        alt="表情"
-        image-class="emoji-image"
-        @click="handleEmojiClick"
-      />
+      <BeaverImage :file-name="message.msg.emojiMsg.fileKey" alt="表情" image-class="emoji-image" />
     </div>
   </div>
 </template>
@@ -27,10 +22,8 @@ export default defineComponent({
     },
   },
   setup(props) {
-    const showEmojiInfo = ref(false)
-
     // 计算表情显示尺寸
-                                                                                                                                               const emojiSize = computed(() => {
+    const emojiSize = computed(() => {
       if (props.message.msg.type === 6 && props.message.msg.emojiMsg) {
         const emojiMsg = props.message.msg.emojiMsg
         const width = emojiMsg.width || 64
@@ -60,41 +53,8 @@ export default defineComponent({
       return { width: 64, height: 64 }
     })
 
-    // 获取表情标题（优先使用自定义标题，否则使用默认格式）
-    const emojiTitle = computed(() => {
-      if (props.message.msg.type === 6 && props.message.msg.emojiMsg) {
-        const emojiMsg = props.message.msg.emojiMsg
-        // 这里可以根据业务逻辑返回表情标题
-        // 暂时返回默认格式
-        return `表情 ${emojiMsg.emojiId || ''}`
-      }
-      return '表情'
-    })
-
-    // 获取表情包名称
-    const packageName = computed(() => {
-      if (props.message.msg.type === 6 && props.message.msg.emojiMsg) {
-        const emojiMsg = props.message.msg.emojiMsg
-        // 这里可以根据packageId查询表情包名称
-        // 暂时返回packageId
-        return emojiMsg.packageId || ''
-      }
-      return ''
-    })
-
-    // 处理表情点击
-    const handleEmojiClick = () => {
-      // 可以在这里添加表情点击的交互逻辑
-      // 比如显示表情详情、添加到收藏等
-      showEmojiInfo.value = !showEmojiInfo.value
-    }
-
     return {
-      showEmojiInfo,
       emojiSize,
-      emojiTitle,
-      packageName,
-      handleEmojiClick,
     }
   },
 })
@@ -102,47 +62,16 @@ export default defineComponent({
 
 <style lang="less" scoped>
 .message-emoji {
-    .emoji-content {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 8px;
-      background: rgba(255, 125, 69, 0.05);
-      border-radius: 8px;
-      border: 1px solid rgba(255, 125, 69, 0.1);
+  .emoji-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
 
-      .emoji-image {
-        width: 100%;
-        height: 100%;
-        object-fit: contain;
-        border-radius: 6px;
-        cursor: pointer;
-        transition: transform 0.2s ease;
-
-        &:hover {
-          transform: scale(1.05);
-        }
-      }
-
-    .emoji-info {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      font-size: 12px;
-      color: #666;
-      text-align: center;
-
-      .emoji-title {
-        font-weight: 500;
-        color: #333;
-      }
-
-      .emoji-package {
-        font-size: 10px;
-        color: #999;
-        opacity: 0.8;
-      }
+    .emoji-image {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      border-radius: 6px;
     }
   }
 }

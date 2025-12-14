@@ -5,6 +5,7 @@ export const initEmojiCollectTable = (sqlite: any) => {
     CREATE TABLE IF NOT EXISTS emoji_collect (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       emoji_collect_id TEXT NOT NULL UNIQUE,
+      package_id TEXT,
       user_id TEXT NOT NULL,
       emoji_id TEXT NOT NULL,
       is_deleted INTEGER DEFAULT 0,

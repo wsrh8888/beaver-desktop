@@ -340,25 +340,6 @@ export default defineComponent({
 })
 </script>
 
-<style>
-.message-emoji {
-  display: inline-block;
-  width: 35px;
-  height: 35px;
-  vertical-align: middle;
-  margin: 0 2px;
-  user-select: none;
-}
-
-.selectable {
-  user-select: text !important;
-  -webkit-user-select: text !important;
-  -moz-user-select: text !important;
-  -ms-user-select: text !important;
-  cursor: text;
-}
-</style>
-
 <style lang="less" scoped>
 .chat-messages {
   flex: 1;
@@ -438,7 +419,7 @@ export default defineComponent({
     }
 
     .message-content {
-      padding: 12px;
+      padding: 8px;
       border-radius: 12px;
       position: relative;
       background-color: #fff;

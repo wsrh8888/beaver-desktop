@@ -1,4 +1,3 @@
-import type { IDBNotificationInbox } from 'commonModule/type/database/notification'
 import type { QueueItem } from '../base/base'
 import { NotificationModule, NotificationNotificationCommand } from 'commonModule/type/preload/notification'
 import { getNotificationInboxByIdsApi } from 'mainModule/api/notification'
@@ -14,8 +13,8 @@ const logger = new Logger('notification-inbox-business')
  * 通知收件箱同步队列项
  */
 interface NotificationInboxSyncItem extends QueueItem {
-  eventIds: string[]
   userId: string
+  eventIds: string[]
 }
 
 /**
@@ -33,75 +32,72 @@ export class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyn
     })
   }
 
-  /**
-   * 处理通知收件箱更新通知
-   * 将同步请求加入队列，批量处理
-   */
-  async handleInboxUpdates(userId: string, eventIds: string[]) {
-    if (!eventIds.length) return
-
-    this.addToQueue({
-      key: `inbox_${userId}_${eventIds[0]}`, // 使用第一个eventId作为key标识
-      data: { userId, eventIds },
-      timestamp: Date.now(),
-      userId,
-      eventIds,
-    })
-  }
 
   /**
    * 批量处理通知收件箱同步请求
    */
   protected async processBatchRequests(items: NotificationInboxSyncItem[]): Promise<void> {
-    // 合并所有eventIds
-    const allEventIds = [...new Set(items.flatMap(item => item.eventIds))]
-    const userId = items[0]?.userId
+    // 按userId聚合eventIds
+    const userMap = new Map<string, string[]>()
 
-    if (!allEventIds.length || !userId) {
-      logger.info({ text: '通知收件箱同步完成: noValidEventIds=true' })
-      return
+    for (const item of items) {
+      const existing = userMap.get(item.userId)
+      if (existing) {
+        existing.push(...item.eventIds)
+      } else {
+        userMap.set(item.userId, [...item.eventIds])
+      }
     }
 
-    try {
-      logger.info({ text: `开始批量同步通知收件箱: count=${allEventIds.length}` })
+    // 为每个用户批量同步
+    for (const [userId, eventIds] of userMap.entries()) {
+      const uniqueEventIds = [...new Set(eventIds)]
 
-      const response = await getNotificationInboxByIdsApi({
-        eventIds: allEventIds,
-      })
+      if (uniqueEventIds.length === 0) {
+        continue
+      }
 
-      if (response.result?.inbox && response.result.inbox.length > 0) {
-        // 更新本地数据库，转换数据类型
-        const inboxRows: IDBNotificationInbox[] = response.result.inbox.map(inbox => ({
-          userId,
-          eventId: inbox.eventId,
-          eventType: inbox.eventType,
-          category: inbox.category,
-          version: inbox.version,
-          isRead: inbox.isRead ? 1 : 0,
-          readAt: inbox.readAt,
-          status: inbox.status,
-          silent: inbox.silent ? 1 : 0,
-          createdAt: inbox.createdAt,
-          updatedAt: inbox.updatedAt,
-        }))
+      try {
+        logger.info({ text: `开始批量同步通知收件箱: userId=${userId}, eventIds=${uniqueEventIds.join(',')}` })
 
-        await NotificationInboxService.batchUpsert(inboxRows)
-
-        logger.info({ text: `通知收件箱数据同步成功: count=${response.result.inbox.length}` })
-
-        // 发送通知到render进程，告知通知数据已更新
-        sendMainNotification('*', NotificationModule.DATABASE_NOTIFICATION, NotificationNotificationCommand.INBOX_UPDATE, {
-          source: 'business', // 标识来源：业务层同步
-          eventIds: allEventIds,
-          updatedCount: response.result.inbox.length,
+        // 直接通过ID获取通知收件箱数据（WS推送已给出具体ID）
+        const response = await getNotificationInboxByIdsApi({
+          eventIds: uniqueEventIds,
         })
+
+        if (response.result?.inbox && response.result.inbox.length > 0) {
+          // 更新本地数据库，转换数据类型
+          const inboxRows = response.result.inbox.map(inbox => ({
+            userId,
+            eventId: inbox.eventId,
+            eventType: inbox.eventType,
+            category: inbox.category,
+            version: inbox.version,
+            isRead: inbox.isRead ? 1 : 0,
+            readAt: inbox.readAt,
+            status: inbox.status,
+            silent: inbox.silent ? 1 : 0,
+            createdAt: inbox.createdAt,
+            updatedAt: inbox.updatedAt,
+          }))
+
+          await NotificationInboxService.batchUpsert(inboxRows)
+
+          logger.info({ text: `通知收件箱数据同步成功: userId=${userId}, count=${response.result.inbox.length}` })
+
+          // 发送通知到render进程，告知通知数据已更新
+          sendMainNotification('*', NotificationModule.DATABASE_NOTIFICATION, NotificationNotificationCommand.INBOX_UPDATE, {
+            source: 'business', // 标识来源：业务层同步
+            eventIds: uniqueEventIds,
+            updatedCount: response.result.inbox.length,
+          })
+        } else {
+          logger.info({ text: '通知收件箱数据同步完成: noUpdates=true' })
+        }
       }
-      else {
-        logger.info({ text: '通知收件箱数据同步完成: noUpdates=true' })
+      catch (error) {
+        logger.error({ text: '批量同步通知收件箱失败', data: { userId, error: (error as any)?.message } })
       }
-    }
-    catch (error) {
-      logger.error({ text: '同步通知收件箱数据失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -176,6 +172,20 @@ export class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyn
       logger.error({ text: '获取通知收件箱详情失败', data: { error: (error as any)?.message } })
       return []
     }
+  }
+
+  /**
+   * 处理通知收件箱表的更新通知
+   * 将同步请求加入队列，批量处理
+   */
+  async handleTableUpdates(version: number, eventId: string, userId: string) {
+    this.addToQueue({
+      key: `inbox_${userId}_${version}`,
+      data: { eventId, version },
+      timestamp: Date.now(),
+      userId,
+      eventIds: [eventId],
+    })
   }
 }
 

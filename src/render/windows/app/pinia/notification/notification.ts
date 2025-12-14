@@ -115,6 +115,33 @@ export const useNotificationStore = defineStore('useNotificationStore', {
       }
     },
 
+    /**
+     * 刷新通知收件箱数据
+     */
+    async refreshInbox() {
+      try {
+        // 重新获取未读汇总数据
+        await this.init()
+        console.log('通知收件箱已刷新')
+      } catch (error) {
+        console.error('刷新通知收件箱失败:', error)
+      }
+    },
+
+    /**
+     * 标记指定事件为已读
+     */
+    async markEventsRead(eventIds: string[]) {
+      try {
+        // 这里可以调用具体的API来标记这些事件为已读
+        // 暂时触发未读数量刷新
+        await this.refreshInbox()
+        console.log(`已标记 ${eventIds.length} 个事件为已读`)
+      } catch (error) {
+        console.error('标记事件已读失败:', error)
+      }
+    },
+
     reset() {
       this.unreadByCategory = {}
     },

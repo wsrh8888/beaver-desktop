@@ -5,6 +5,7 @@ import { appNotificationRouter } from './app/index'
 import { chatNotificationRouter } from './chat/index'
 import { friendNotificationRouter } from './friend/index'
 import { groupNotificationRouter } from './group/index'
+import { notificationNotificationRouter } from './notification/index'
 import { userNotificationRouter } from './user/index'
 
 /**
@@ -17,6 +18,7 @@ class NotificationManager {
     electron.notification.on(NotificationModule.DATABASE_CHAT, params => chatNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.DATABASE_FRIEND, params => friendNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.DATABASE_GROUP, params => groupNotificationRouter.handleNotification(params))
+    electron.notification.on(NotificationModule.DATABASE_NOTIFICATION, params => notificationNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.DATABASE_USER, params => userNotificationRouter.handleNotification(params))
   }
 
@@ -26,6 +28,7 @@ class NotificationManager {
     electron.notification.off(NotificationModule.DATABASE_CHAT, params => chatNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.DATABASE_FRIEND, params => friendNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.DATABASE_GROUP, params => groupNotificationRouter.handleNotification(params))
+    electron.notification.off(NotificationModule.DATABASE_NOTIFICATION, params => notificationNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.DATABASE_USER, params => userNotificationRouter.handleNotification(params))
   }
 }

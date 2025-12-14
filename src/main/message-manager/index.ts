@@ -4,8 +4,10 @@ import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 import WsManager from 'mainModule/ws-manager/index'
 import { chatMessageRouter } from './receivers/chat/inedx'
+import { emojiMessageRouter } from './receivers/emoji/index'
 import { friendMessageRouter } from './receivers/friend/index'
 import { groupMessageRouter } from './receivers/group/index'
+import { notificationMessageRouter } from './receivers/notification/index'
 import { userMessageRouter } from './receivers/user/index'
 
 /**
@@ -173,6 +175,12 @@ class MessageManager {
         break
       case 'GROUP_OPERATION':
         groupMessageRouter.processGroupMessage(wsMessage.content)
+        break
+      case 'NOTIFICATION':
+        notificationMessageRouter.processNotificationMessage(wsMessage.content)
+        break
+      case 'EMOJI':
+        emojiMessageRouter.processEmojiMessage(wsMessage.content)
         break
       case 'USER_PROFILE':
         userMessageRouter.processUserMessage(wsMessage.content)

@@ -1,14 +1,35 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IGetEmojisListRes } from 'commonModule/type/ajax/emoji'
+import type { QueueItem } from '../base/base'
+import { getEmojiCollectsByIdsApi } from 'mainModule/api/emoji'
 import { EmojiCollectService } from 'mainModule/database/services/emoji/collect'
 import { EmojiService } from 'mainModule/database/services/emoji/emoji'
+import { BaseBusiness } from '../base/base'
 
 const ensureLogin = (header: ICommonHeader) => {
   if (!header.userId)
     throw new Error('用户未登录')
 }
 
-export class FavoriteEmojiBusiness {
+/**
+ * 表情收藏同步队列项
+ */
+interface FavoriteEmojiSyncItem extends QueueItem {
+  emojiCollectIds: string[]
+}
+
+/**
+ * 表情收藏业务逻辑
+ */
+export class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
+  protected readonly businessName = 'FavoriteEmojiBusiness'
+
+  constructor() {
+    super({
+      queueSizeLimit: 30, // 表情收藏同步请求适中
+      delayMs: 1000, // 1秒延迟批量处理
+    })
+  }
   async getUserFavoriteEmojis(header: ICommonHeader): Promise<IGetEmojisListRes> {
     ensureLogin(header)
     const collects = await EmojiCollectService.getCollectsByUserId(header.userId)
@@ -26,11 +47,63 @@ export class FavoriteEmojiBusiness {
           fileKey: emoji.fileKey,
           title: emoji.title,
           emojiInfo: emoji.emojiInfo ? JSON.parse(emoji.emojiInfo) : null,
-          packageId: undefined,
+          packageId: item.packageId, // 使用收藏记录中的表情包ID
         }
       })
       .filter(Boolean) as IGetEmojisListRes['list']
 
     return { count: list.length, list }
   }
+
+  /**
+   * 处理表情收藏表的更新通知
+   * 将同步请求加入队列，批量处理
+   */
+  async handleTableUpdates(version: number, emojiCollectId: string, userId: string) {
+    this.addToQueue({
+      key: `emoji_collect_${emojiCollectId}_${version}`,
+      data: { version, emojiCollectId, userId },
+      timestamp: Date.now(),
+      emojiCollectIds: [emojiCollectId],
+    })
+  }
+
+  /**
+   * 批量处理表情收藏同步请求
+   */
+  protected async processBatchRequests(items: FavoriteEmojiSyncItem[]): Promise<void> {
+    // 聚合所有表情收藏ID
+    const allCollectIds = [...new Set(items.flatMap(item => item.emojiCollectIds))]
+
+    if (allCollectIds.length === 0) {
+      return
+    }
+
+    try {
+      // 直接用表情收藏ID获取完整的数据
+      const response = await getEmojiCollectsByIdsApi({
+        ids: allCollectIds,
+      })
+
+      if (response.result?.collects && response.result.collects.length > 0) {
+        // 更新本地数据库 - 表情收藏表
+        const collectRows = response.result.collects.map((collectData: any) => ({
+          emojiCollectId: collectData.emojiCollectId,
+          userId: collectData.userId,
+          emojiId: collectData.emojiId,
+          packageId: collectData.packageId,
+          version: collectData.version,
+          createdAt: collectData.createAt,
+          updatedAt: collectData.updateAt,
+        }))
+
+        await EmojiCollectService.batchCreate(collectRows)
+      }
+    } catch (error) {
+      console.error('批量同步表情收藏失败:', error)
+    }
+  }
 }
+
+// 导出单例实例
+export const favoriteEmojiBusiness = new FavoriteEmojiBusiness()
