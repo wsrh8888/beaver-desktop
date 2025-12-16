@@ -1,20 +1,14 @@
 /**
  * 退出登录工具
  */
+import { z } from 'zod'
+
 export const logoutTool = {
   name: 'logout',
   description: '退出当前用户的登录状态',
-  inputSchema: {
-    type: 'object',
-    properties: {
-      confirm: {
-        type: 'boolean',
-        description: '是否确认退出登录',
-        default: false
-      }
-    },
-    required: ['confirm']
-  },
+  inputSchema: z.object({
+    confirm: z.boolean().default(false).describe('是否确认退出登录')
+  }),
   handler: async (params: { confirm: boolean }) => {
     try {
       // 检查确认参数
