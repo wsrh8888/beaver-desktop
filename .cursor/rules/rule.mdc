@@ -36,4 +36,5 @@ preloadModule: path.resolve(__dirname, 'src/preload'),
 - 不要过度开发
 - 不要写md文件
 - 尽可能使用别名不要使用../之类的相对路径
-
+- 不要运行任何的npm run 命令
+- 不要运行任何的npm run build-electron  命令

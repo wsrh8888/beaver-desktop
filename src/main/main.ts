@@ -9,6 +9,7 @@ import ipcManager from './ipc'
 import { AuthHandler } from './ipc/render-to-main/auth'
 import messageManager from './message-manager'
 import { store } from './store'
+import { mcpManager } from './mcp-manager/index.js'
 
 // 屏蔽安全警告
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
@@ -42,6 +43,9 @@ class Main {
     }
     // IPC已在beforeAppReady中初始化，这里不需要重复初始化
     // ipcBase.init()
+
+    mcpManager.init()
+
   }
 
   setupEventListeners() {
