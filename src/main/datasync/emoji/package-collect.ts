@@ -22,7 +22,7 @@ class PackageCollectSync {
   // 对比本地数据，过滤出需要更新的收藏记录ID
   private async compareAndFilterPackageCollectVersions(packageCollectVersions: any[]): Promise<string[]> {
     const ids = packageCollectVersions
-      .map(item => item.id)
+      .map(item => item.packageCollectId)
       .filter(id => id && id.trim() !== '')
 
     if (ids.length === 0) {
@@ -33,7 +33,7 @@ class PackageCollectSync {
 
     const needUpdateIds = ids.filter((id) => {
       const existingRecord = existingRecordsMap.get(id)
-      const serverVersion = packageCollectVersions.find(item => item.id === id)?.version || 0
+      const serverVersion = packageCollectVersions.find(item => item.packageCollectId === id)?.version || 0
       return !existingRecord || existingRecord.version < serverVersion
     })
 

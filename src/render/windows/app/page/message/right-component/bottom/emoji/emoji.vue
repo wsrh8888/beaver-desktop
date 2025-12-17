@@ -35,7 +35,7 @@
         v-for="tab in packageTabs"
         :key="tab.id"
         class="emoji-category"
-        :class="{ active: activeTab === tab.id }"
+        :class="{ active: activeTab === tab.id && activePackageId === tab.packageId }"
         @click="handleTabClick(tab.id, tab.packageId)"
       >
         <div class="emoji-category-icon">
