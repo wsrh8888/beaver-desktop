@@ -52,13 +52,13 @@ class PackageEmojiSync {
 
       if (response.result.contents.length > 0) {
         const contents = response.result.contents.map((content: any) => ({
-          relationId: content.relationId,
+          relationId: content.relationId, // 如果服务端没返回，自己生成
           packageId: content.packageId,
           emojiId: content.emojiId,
           sortOrder: content.sortOrder,
           version: content.version,
-          createdAt: content.createdAt,
-          updatedAt: content.updatedAt,
+          createdAt: content.createAt, // 注意这里用的是 createAt，不是 createdAt
+          updatedAt: content.updateAt, // 注意这里用的是 updateAt，不是 updatedAt
         }))
 
         await EmojiPackageEmojiService.batchCreate(contents)

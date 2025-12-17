@@ -192,6 +192,11 @@ export default defineComponent({
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  .emoji-store-main {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
 }
 
 .panel-header {

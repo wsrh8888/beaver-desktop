@@ -88,6 +88,11 @@ export class EmojiPackageService {
     return result[0] || null
   }
 
+  // 获取所有表情包
+  static async getAllPackages() {
+    return await this.db.select().from(emojiPackage).all()
+  }
+
   // 根据内部自增 id 查询（如需）
   static async getPackageByAutoId(id: number) {
     const result = await this.db.select().from(emojiPackage).where(eq(emojiPackage.id, id)).limit(1)

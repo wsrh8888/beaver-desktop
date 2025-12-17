@@ -24,9 +24,8 @@ export class EmojiPackageEmojiService {
       const result = await this.db.insert(emojiPackageEmoji)
         .values(relationData)
         .onConflictDoUpdate({
-          target: [emojiPackageEmoji.packageId, emojiPackageEmoji.emojiId],
+          target: emojiPackageEmoji.relationId,
           set: {
-            relationId: relationData.relationId,
             sortOrder: relationData.sortOrder,
             version: relationData.version,
             updatedAt: relationData.updatedAt,
@@ -41,11 +40,14 @@ export class EmojiPackageEmojiService {
 
   // 根据表情包ID获取表情列表
   static async getEmojisByPackageId(packageId: string) {
-    return await this.db
+    console.log('getEmojisByPackageId called with packageId:', packageId)
+    const result = await this.db
       .select()
       .from(emojiPackageEmoji)
       .where(eq(emojiPackageEmoji.packageId, packageId))
       .all()
+    console.log('getEmojisByPackageId result:', result.length, 'records')
+    return result
   }
 
   // 根据表情包ID列表获取表情关联数据

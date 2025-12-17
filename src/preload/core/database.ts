@@ -1,5 +1,5 @@
 import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from 'commonModule/type/ajax/chat'
-import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from 'commonModule/type/ajax/emoji'
+import type { IGetEmojiPackageEmojisReq, IGetEmojiPackageEmojisRes, IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from 'commonModule/type/ajax/emoji'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from 'commonModule/type/ajax/friend'
 import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from 'commonModule/type/ajax/group'
 import type { IGetNotificationEventsByIdsReq, IGetNotificationEventsByIdsRes, IGetNotificationInboxByIdsReq, IGetNotificationInboxByIdsRes, IGetNotificationReadCursorsReq, IGetNotificationReadCursorsRes } from 'commonModule/type/ajax/notification'
@@ -155,6 +155,12 @@ export const databaseModule: IDatabaseModule = {
     getEmojiPackagesByIds: async (params: IGetEmojiPackagesByIdsReq): Promise<IGetEmojiPackagesByIdsRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.EMOJI, {
         command: DataEmojiCommand.GET_EMOJI_PACKAGES_BY_IDS,
+        data: params,
+      })
+    },
+    getEmojiPackageEmojis: async (params: IGetEmojiPackageEmojisReq): Promise<IGetEmojiPackageEmojisRes> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.EMOJI, {
+        command: DataEmojiCommand.GET_EMOJI_PACKAGE_EMOJIS,
         data: params,
       })
     },

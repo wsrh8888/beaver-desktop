@@ -29,7 +29,7 @@ export class FriendHandler {
       case DataFriendCommand.GET_VALID_BY_IDS:
         return await friendVerifyBusiness.getValidByIds(data.verifyIds)
       default:
-        throw new Error('好友数据库命令处理失败')
+        throw new Error('好友数据库命令处理失败FriendHandler')
     }
   }
 }

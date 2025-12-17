@@ -6,9 +6,9 @@ import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 // emoji_package 表同步处理器
 class PackageSync {
   // 同步表情包基础数据（emoji_package 表）
-  async sync(packageVersions: any[]) {
+  async sync(packageVersions: any[]): Promise<string[]> {
     if (!packageVersions || packageVersions.length === 0) {
-      return
+      return []
     }
 
     // 过滤出需要更新的表情包ID
@@ -16,7 +16,10 @@ class PackageSync {
 
     if (needUpdatePackageIds.length > 0) {
       await this.syncEmojiPackageData(needUpdatePackageIds)
+      return needUpdatePackageIds // 返回更新的表情包ID
     }
+
+    return []
   }
 
   // 对比本地数据，过滤出需要更新的表情包ID

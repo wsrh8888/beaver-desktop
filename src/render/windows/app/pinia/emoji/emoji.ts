@@ -43,6 +43,28 @@ export const useEmojiStore = defineStore('emojiStore', {
   },
 
   actions: {
+    async initPackageEmojis(packageId: string) {
+      // 如果已经有数据，直接返回
+      if (this.packageEmojisMap[packageId]) {
+        return this.packageEmojisMap[packageId]
+      }
+
+      // 如果没有数据，从主进程获取
+      try {
+        const res = await electron.database.emoji.getEmojiPackageEmojis({
+          packageId,
+        })
+        console.error('11111111111111111', res)
+        console.error('11111111111', packageId)
+        this.packageEmojisMap[packageId] = res?.list || []
+        return this.packageEmojisMap[packageId]
+      } catch (error) {
+        console.error('Failed to load emoji package:', error)
+        // 出错时返回空数组，避免UI崩溃
+        this.packageEmojisMap[packageId] = []
+        return []
+      }
+    },
     async init() {
       const [favoriteRes, packageRes] = await Promise.all([
         electron.database.emoji.getUserFavoriteEmojis({
@@ -55,6 +77,8 @@ export const useEmojiStore = defineStore('emojiStore', {
         }),
       ])
       console.log('favorit111111111eRes', favoriteRes)
+      console.log('22222222222222222222', packageRes)
+
       this.favoriteEmojis = favoriteRes?.list || []
 
       this.packageList = packageRes?.list || []

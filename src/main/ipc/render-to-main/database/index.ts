@@ -40,7 +40,7 @@ export class DatabaseHandler {
       }
     }
     catch (error) {
-      logger.error({ text: '数据库命令处理失败', data: { command, error } }, loggerName)
+      logger.error({ text: '数据库命令处理失败 DatabaseHandler', data: { command, error } }, loggerName)
       throw error
     }
   }

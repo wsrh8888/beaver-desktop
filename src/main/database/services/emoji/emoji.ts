@@ -43,6 +43,7 @@ export class EmojiService {
 
   // 根据ID列表获取表情
   static async getEmojisByIds(ids: string[]): Promise<Map<string, any>> {
+    console.log('EmojiService.getEmojisByIds called with ids:', ids)
     if (ids.length === 0) {
       return new Map()
     }
@@ -51,6 +52,8 @@ export class EmojiService {
       .select()
       .from(emoji)
       .where(inArray(emoji.emojiId, ids as any))
+
+    console.log('EmojiService query result:', emojiList.length, emojiList.map(e => e.emojiId))
 
     const emojiMap = new Map<string, any>()
     emojiList.forEach((item) => {

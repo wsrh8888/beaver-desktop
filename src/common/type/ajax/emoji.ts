@@ -296,6 +296,23 @@ export interface IGetEmojiPackagesByIdsRes {
 }
 
 /**
+ * @description: 获取表情包内表情列表请求参数
+ */
+export interface IGetEmojiPackageEmojisReq {
+  packageId: string
+  page?: number
+  pageSize?: number
+}
+
+/**
+ * @description: 获取表情包内表情列表响应
+ */
+export interface IGetEmojiPackageEmojisRes {
+  list: IEmojiBase[]
+  total: number
+}
+
+/**
  * @description: 批量获取表情收藏详情请求参数
  */
 export interface IGetEmojiCollectsByIdsReq {

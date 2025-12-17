@@ -1,5 +1,5 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
-import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesRes, IGetEmojisListRes } from 'commonModule/type/ajax/emoji'
+import type { IGetEmojiPackageEmojisReq, IGetEmojiPackageEmojisRes, IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesRes, IGetEmojisListRes } from 'commonModule/type/ajax/emoji'
 import { DataEmojiCommand } from 'commonModule/type/ipc/database'
 import { FavoriteEmojiBusiness } from 'mainModule/business/emoji/favorite-emoji'
 import { FavoritePackageBusiness } from 'mainModule/business/emoji/favorite-package'
@@ -15,9 +15,9 @@ export class EmojiHandler {
   static async handle(
     _event: Electron.IpcMainInvokeEvent,
     command: DataEmojiCommand,
-    data: IGetEmojiPackagesByIdsReq,
+    data: IGetEmojiPackagesByIdsReq | IGetEmojiPackageEmojisReq,
     header: ICommonHeader,
-  ): Promise<IGetEmojisListRes | IGetEmojiPackagesRes | IGetEmojiPackagesByIdsRes> {
+  ): Promise<IGetEmojisListRes | IGetEmojiPackagesRes | IGetEmojiPackagesByIdsRes | IGetEmojiPackageEmojisRes> {
     this.ensureLogin(header)
     const favoriteEmojiBiz = new FavoriteEmojiBusiness()
     const favoritePackageBiz = new FavoritePackageBusiness()
@@ -28,9 +28,12 @@ export class EmojiHandler {
       case DataEmojiCommand.GET_EMOJI_PACKAGES:
         return await favoritePackageBiz.getUserFavoritePackages(header)
       case DataEmojiCommand.GET_EMOJI_PACKAGES_BY_IDS:
-        return await packageBiz.getEmojiPackagesByIds(data)
+        return await packageBiz.getEmojiPackagesByIds(data as IGetEmojiPackagesByIdsReq)
+      case DataEmojiCommand.GET_EMOJI_PACKAGE_EMOJIS:
+        return await packageBiz.getEmojiPackageEmojis(data as IGetEmojiPackageEmojisReq)
       default:
-        throw new Error('未处理的表情命令')
+        console.error('未处理的表情命令:', command)
+        throw new Error(`未处理的表情命令: EmojiHandler`)
     }
   }
 }

@@ -29,19 +29,34 @@ class EmojiController {
       // 一次性获取服务器上所有表情相关数据的变更版本信息
       const serverResponse = await datasyncGetSyncEmojiCollectsApi({ since: lastSyncTime })
 
-      // 并行同步所有表情相关数据
-      const syncTasks = [
+      // 并行同步其他数据
+      const otherSyncTasks = [
         // emoji_collect 表同步
         collectSync.sync(serverResponse.result.emojiCollectVersions || []),
         // emoji_package_collect 表同步
         packageCollectSync.sync(serverResponse.result.emojiPackageCollectVersions || []),
-        // emoji_package 表同步
-        packageSync.sync(serverResponse.result.emojiPackageVersions || []),
-        // emoji_package_emoji 表同步
-        packageEmojiSync.sync(serverResponse.result.emojiPackageContentVersions || []),
       ]
 
-      await Promise.all(syncTasks)
+      // 先同步表情包基本信息，获取更新的表情包ID
+      const updatedPackageIds = await packageSync.sync(serverResponse.result.emojiPackageVersions || [])
+
+      await Promise.all(otherSyncTasks)
+
+      // 检查是否需要同步表情包内容：
+      // 1. 如果有表情包更新，需要同步其内容
+      // 2. 如果服务器有表情包内容版本变化，也需要同步
+      const hasPackageUpdates = updatedPackageIds.length > 0
+
+      if (hasPackageUpdates) {
+        logger.info({
+          text: '检测到表情包内容变更，开始同步',
+          data: {
+            updatedPackages: updatedPackageIds.length,
+            contentChanges: (serverResponse.result.emojiPackageContentVersions || []).length
+          }
+        })
+        await packageEmojiSync.sync(serverResponse.result.emojiPackageContentVersions || [])
+      }
 
       // 更新同步时间戳（使用服务器返回的时间戳）
       await this.updateEmojiCollectsCursor(null, serverResponse.result.serverTimestamp)

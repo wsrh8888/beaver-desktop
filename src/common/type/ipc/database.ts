@@ -37,6 +37,7 @@ export enum DataEmojiCommand {
   GET_USER_FAVORITE_EMOJIS = 'emoji:getUserFavoriteEmojis',
   GET_EMOJI_PACKAGES = 'emoji:getEmojiPackages',
   GET_EMOJI_PACKAGES_BY_IDS = 'emoji:getEmojiPackagesByIds',
+  GET_EMOJI_PACKAGE_EMOJIS = 'emoji:getEmojiPackageEmojis',
 }
 
 export enum DataNotificationCommand {

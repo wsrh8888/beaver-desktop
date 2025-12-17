@@ -8,7 +8,6 @@
       :key="emoji.emojiId"
       class="emoji-item"
       @click="onSelect(emoji)"
-      @contextmenu.prevent="openContextMenu($event, emoji)"
     >
       <BeaverImage
         :file-name="emoji.fileKey"
@@ -19,16 +18,6 @@
       />
     </div>
 
-    <div
-      v-if="contextMenu.visible"
-      class="emoji-fav-context"
-      :style="{ left: `${contextMenu.x}px`, top: `${contextMenu.y}px` }"
-      @click.stop
-    >
-      <div class="context-item" @click="handleRemove">
-        删除
-      </div>
-    </div>
   </div>
 </template>
 
@@ -37,7 +26,7 @@ import type { IFavoriteEmoji } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
-import { computed, defineComponent, onBeforeUnmount, onMounted, reactive } from 'vue'
+import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'EmojiFavoriteList',
@@ -52,13 +41,6 @@ export default defineComponent({
   setup(props) {
     const emojiStore = useEmojiStore()
     const list = computed(() => emojiStore.getFavoriteEmojis)
-
-    const contextMenu = reactive({
-      visible: false,
-      x: 0,
-      y: 0,
-      target: null as IFavoriteEmoji | null,
-    })
 
     const onSelect = (emoji: IFavoriteEmoji) => {
       // 如果是图片表情（有emojiId），直接发送消息
@@ -79,47 +61,10 @@ export default defineComponent({
       }
     }
 
-    const openContextMenu = (event: MouseEvent, emoji: IFavoriteEmoji) => {
-      contextMenu.visible = true
-      contextMenu.x = event.clientX
-      contextMenu.y = event.clientY
-      contextMenu.target = emoji
-    }
-
-    const closeContextMenu = () => {
-      contextMenu.visible = false
-      contextMenu.target = null
-    }
-
-    const handleRemove = () => {
-      if (contextMenu.target) {
-        emojiStore.removeFavorite(contextMenu.target)
-      }
-      closeContextMenu()
-    }
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as HTMLElement
-      if (!target.closest('.emoji-fav-context')) {
-        closeContextMenu()
-      }
-    }
-
-    onMounted(() => {
-      document.addEventListener('click', handleClickOutside)
-    })
-
-    onBeforeUnmount(() => {
-      document.removeEventListener('click', handleClickOutside)
-    })
-
     return {
       list,
       onSelect,
       onAdd,
-      contextMenu,
-      openContextMenu,
-      handleRemove,
       BeaverImage,
       CacheType,
     }
@@ -182,27 +127,5 @@ export default defineComponent({
     }
   }
 
-  .emoji-fav-context {
-    position: fixed;
-    min-width: 96px;
-    background: #ffffff;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-    border: 1px solid #ebeef5;
-    border-radius: 6px;
-    z-index: 9999;
-    padding: 6px 0;
-
-    .context-item {
-      padding: 8px 14px;
-      font-size: 13px;
-      color: #ff4d4f;
-      cursor: pointer;
-      line-height: 1.4;
-
-      &:hover {
-        background-color: rgba(255, 77, 79, 0.08);
-      }
-    }
-  }
 }
 </style>

@@ -6,7 +6,7 @@
         :on-select="handleEmojiSelect"
         :on-send="handleEmojiSend"
         :on-add="handleAddFavorite"
-        :active-package-id="activePackageId"
+        :package-id="activePackageId"
       />
     </div>
 

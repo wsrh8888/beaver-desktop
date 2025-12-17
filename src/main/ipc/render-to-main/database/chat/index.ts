@@ -26,7 +26,7 @@ export class ChatHandler {
       case DataChatCommand.GET_CHAT_CONVERSATIONS_BY_VER_RANGE:
         return await ChatUserConversationService.getChatConversationsByVerRange(header, data)
       default:
-        throw new Error('聊天数据库命令处理失败')
+        throw new Error('聊天数据库命令处理失败ChatHandler')
     }
   }
 }

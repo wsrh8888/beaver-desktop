@@ -30,7 +30,7 @@ export class GroupHandler {
         // 合并为同一个方法：获取用户相关的群组申请（包括用户申请的 + 别人申请用户管理的群组）
         return await groupBusiness.getGroupJoinRequests(header, data)
       default:
-        throw new Error('群组数据库命令处理失败')
+        throw new Error('群组数据库命令处理失败GroupHandler')
     }
   }
 }

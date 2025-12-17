@@ -32,28 +32,28 @@ export class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncIte
   }
   async getUserFavoritePackages(header: ICommonHeader): Promise<IGetEmojiPackagesRes> {
     ensureLogin(header)
-    const collects = await EmojiPackageCollectService.getPackageCollectsByUserId(header.userId)
-    const validCollects = collects.filter((item: any) => !item.isDeleted)
-    const packageIds = validCollects.map((item: any) => item.packageId)
-    const packageMap = await EmojiPackageService.getPackagesByIds(packageIds)
 
-    const list = validCollects
-      .map((item: any) => {
-        const pkg = packageMap.get(item.packageId)
-        if (!pkg)
-          return null
-        return {
-          packageId: pkg.packageId,
-          title: pkg.title,
-          coverFile: pkg.coverFile,
-          description: pkg.description || '',
-          type: (pkg.type as any) || 'user',
-          collectCount: 0,
-          emojiCount: 0,
-          isCollected: true,
-          isAuthor: pkg.userId === header.userId,
-        }
-      })
+    // 获取所有表情包
+    const allPackages = await EmojiPackageService.getAllPackages()
+
+    // 获取用户的收藏记录，用于标记哪些表情包已收藏
+    const collects = await EmojiPackageCollectService.getPackageCollectsByUserId(header.userId)
+    const collectedPackageIds = new Set(
+      collects.filter((item: any) => !item.isDeleted).map((item: any) => item.packageId)
+    )
+
+    const list = allPackages
+      .map((pkg: any) => ({
+        packageId: pkg.packageId,
+        title: pkg.title,
+        coverFile: pkg.coverFile,
+        description: pkg.description || '',
+        type: (pkg.type as any) || 'user',
+        collectCount: 0,
+        emojiCount: 0,
+        isCollected: collectedPackageIds.has(pkg.packageId),
+        isAuthor: pkg.userId === header.userId,
+      }))
       .filter(Boolean) as IGetEmojiPackagesRes['list']
 
     return { count: list.length, list }

@@ -19,7 +19,7 @@
 import type { IEmojiBase } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import { defineComponent, ref, watchEffect } from 'vue'
+import { computed, defineComponent, ref, watchEffect } from 'vue'
 
 export default defineComponent({
   name: 'EmojiPackageList',
@@ -28,66 +28,42 @@ export default defineComponent({
   },
   props: {
     onSelect: Function as unknown as () => ((emoji: IEmojiBase) => void) | undefined,
-    activePackageId: {
+    onSend: Function as unknown as () => ((emoji: { emojiId: string, fileKey: string, packageId?: string }) => void) | undefined,
+    packageId: {
       type: String,
       default: '',
     },
   },
   setup(props) {
     const emojiStore = useEmojiStore()
-    const emojiList = ref<IEmojiBase[]>([])
+    const emojiList = computed(() => emojiStore.getPackageEmojis(props.packageId))
 
     const loadEmojis = async () => {
-      if (!props.activePackageId) {
-        emojiList.value = []
+      if (!props.packageId) {
         return
       }
 
       // 先检查store中是否有数据
-      let emojis = emojiStore.getPackageEmojis(props.activePackageId)
-      if (emojis && emojis.length > 0) {
-        emojiList.value = emojis
-        return
-      }
-
-      // 如果store中没有数据，向主进程请求表情包详情
-      try {
-        const result = await electron.database.emoji.getEmojiPackagesByIds({
-          ids: [props.activePackageId],
-        })
-
-        if (result?.packages && result.packages.length > 0) {
-          const packageData = result.packages[0]
-          if (packageData.emojis) {
-            // 将表情数据转换为IEmojiBase格式
-            const emojiData = packageData.emojis.map(emoji => ({
-              emojiId: emoji.emojiId,
-              name: emoji.title,
-              icon: emoji.fileKey,
-            }))
-            // 将数据存储到store中
-            emojiStore.packageEmojisMap[props.activePackageId] = emojiData
-            emojiList.value = emojiData
-          } else {
-            emojiList.value = []
-          }
-        } else {
-          emojiList.value = []
-        }
-      } catch (error) {
-        console.error('获取表情包表情失败:', error)
-        emojiList.value = []
-      }
+      await emojiStore.initPackageEmojis(props.packageId)
+   
     }
 
-    // 监听activePackageId变化
+    // 监听packageId变化
     watchEffect(() => {
       loadEmojis()
     })
 
     const onSelectEmoji = (emoji: IEmojiBase) => {
-      if (props.onSelect) {
-        (props.onSelect as (e: IEmojiBase) => void)(emoji)
+      // 如果是图片表情（有emojiId），直接发送消息
+      if (emoji.emojiId && props.onSend) {
+        (props.onSend as (e: { emojiId: string, fileKey: string, packageId?: string, width?: number, height?: number }) => void)({
+          emojiId: emoji.emojiId,
+          fileKey: emoji.icon,
+          packageId: props.packageId,
+          // width 和 height 暂时设为 undefined，之后可以通过图片信息获取
+          width: undefined,
+          height: undefined,
+        })
       }
     }
 

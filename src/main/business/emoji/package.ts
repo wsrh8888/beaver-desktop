@@ -1,4 +1,6 @@
-import type { IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes } from 'commonModule/type/ajax/emoji'
+import type { IGetEmojiPackageEmojisReq, IGetEmojiPackageEmojisRes, IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes } from 'commonModule/type/ajax/emoji'
+import { EmojiPackageEmojiService } from 'mainModule/database/services/emoji/package-emoji'
+import { EmojiService } from 'mainModule/database/services/emoji/emoji'
 import { EmojiPackageService } from 'mainModule/database/services/emoji/package'
 
 export class EmojiPackageBusiness {
@@ -28,5 +30,55 @@ export class EmojiPackageBusiness {
       .filter(Boolean) as IGetEmojiPackagesByIdsRes['packages']
 
     return { packages }
+  }
+
+  async getEmojiPackageEmojis(params: IGetEmojiPackageEmojisReq): Promise<IGetEmojiPackageEmojisRes> {
+    const { packageId } = params
+    console.log('getEmojiPackageEmojis called with packageId:', packageId)
+
+    // 获取表情包关联数据
+    const packageEmojis = await EmojiPackageEmojiService.getEmojisByPackageId(packageId)
+    console.log('packageEmojis found:', packageEmojis.length, packageEmojis)
+
+    if (packageEmojis.length === 0) {
+      return { list: [], total: 0 }
+    }
+
+    // 提取表情ID列表
+    const emojiIds = packageEmojis.map(item => item.emojiId)
+    console.log('emojiIds to query:', emojiIds)
+
+    // 获取表情详情
+    const emojiMap = await EmojiService.getEmojisByIds(emojiIds)
+    console.log('emojiMap size:', emojiMap.size, 'keys:', Array.from(emojiMap.keys()))
+
+    // 组装返回数据，按关联表的排序返回
+    const list = packageEmojis
+      .map(packageEmoji => {
+        const emoji = emojiMap.get(packageEmoji.emojiId)
+
+        // 如果表情详情不存在，创建基本信息（用于调试）
+        if (!emoji) {
+          console.warn(`表情 ${packageEmoji.emojiId} 详情不存在`)
+          return {
+            emojiId: packageEmoji.emojiId,
+            name: `表情 ${packageEmoji.emojiId.slice(0, 8)}...`, // 临时名称
+            icon: '', // 空图标
+            version: packageEmoji.version || 0,
+          }
+        }
+
+        return {
+          emojiId: emoji.emojiId,
+          name: emoji.title, // 将title映射为name
+          icon: emoji.fileKey, // 将fileKey映射为icon
+          version: emoji.version,
+        }
+      })
+
+    return {
+      list,
+      total: list.length
+    }
   }
 }

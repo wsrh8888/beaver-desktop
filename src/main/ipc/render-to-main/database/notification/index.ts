@@ -20,7 +20,7 @@ export class NotificationHandler {
       case DataNotificationCommand.GET_UNREAD_SUMMARY:
         return await notificationInboxBusiness.getUnreadSummary(userId, data?.categories)
       default:
-        throw new Error('通知数据库命令处理失败')
+        throw new Error('通知数据库命令处理失败NotificationHandler')
     }
   }
 }
