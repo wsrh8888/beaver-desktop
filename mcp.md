@@ -1,198 +1,79 @@
-# Beaver IM MCP工具规划 - 基于真实代码分析
+# Beaver IM MCP Tools - 基于现有代码
 
-## 项目真实情况分析
+## 🎯 工具分类说明
+- **UI界面操作**: 打开实际的浏览器窗口，让用户可以看到和交互界面
+- **数据API操作**: 直接调用业务逻辑API，返回数据，不打开UI界面
 
-经过深入代码分析，这是一个**非常成熟的开源IM项目**，具备：
+## 消息功能 (基于MessageBusiness + ChatSender)
 
-### 🏗️ 架构成熟度
-- **多进程架构**：主进程(业务) + 渲染进程(UI) + 预加载进程
-- **9个独立窗口**：主聊天、登录、图片查看、音频播放、视频播放、朋友圈、搜索、验证、更新
-- **完整的数据层**：SQLite数据库 + 数据同步服务
-- **成熟的业务逻辑**：消息、好友、群聊、表情包、通知等完整实现
+### 数据API操作
+- send_text_message - 发送文本消息 (ChatSender.sendMessage)
+- get_chat_history - 获取聊天历史 (MessageBusiness.getChatHistory)
+- get_chat_messages_by_seq - 按序列获取消息 (MessageBusiness.getChatMessagesBySeqRange)
 
-### 💪 功能完整性
-- **消息系统**：支持文本、图片、文件、语音等消息类型
-- **社交关系**：好友管理、群聊、好友验证
-- **多媒体**：图片预览、音频播放、视频播放、文件传输
-- **数据同步**：多端数据同步、离线消息、状态同步
-- **用户体验**：丰富的表情包、朋友圈、搜索功能
+## 好友功能 (基于FriendBusiness)
 
-### 🔧 技术栈
-- **前端**：Vue3 + TypeScript + Less + Pinia
-- **后端**：Node.js + Electron + SQLite + Drizzle ORM
-- **通信**：WebSocket + IPC + HTTP API
-- **构建**：Vite + Electron Builder
+### 数据API操作
+- get_friends_list - 获取好友列表 (FriendBusiness.getFriendsList)
+- get_friends_by_ids - 根据ID批量获取好友 (FriendBusiness.getFriendsByIds)
 
-## 基于真实能力的MCP工具规划
+## 群聊功能 (基于GroupBusiness)
 
-### 1. 消息操作模块 (Messaging) ⭐⭐⭐
-**基于现有能力**：项目已有的消息发送、历史查询等功能
+### 数据API操作
+- get_group_list - 获取群聊列表 (GroupBusiness.getGroupList)
+- get_groups_batch - 批量获取群详情 (GroupBusiness.getGroupsBatch)
+- get_group_members - 获取群成员 (GroupBusiness.getGroupMembers)
+- get_group_members_batch - 批量获取群成员 (GroupBusiness.getGroupMembersBatch)
+- get_group_join_requests - 获取入群申请 (GroupBusiness.getGroupJoinRequests)
 
-**推荐工具**：
-- `send_text_message` ✅ - 利用现有的消息发送API
-- `send_image_message` - 扩展图片消息发送
-- `send_file_message` - 扩展文件消息发送
-- `get_message_history` - 利用现有的历史查询
-- `search_messages` - 扩展消息搜索功能
-- `delete_message` - 消息删除功能
-- `forward_message` - 消息转发
+## 通知功能 (基于NotificationInboxBusiness)
 
-### 2. 好友管理模块 (Friend) ⭐⭐⭐
-**基于现有能力**：完整的FriendBusiness和数据库服务
+### 数据API操作
+- get_unread_summary - 获取未读汇总 (NotificationInboxBusiness.getUnreadSummary)
+- mark_event_read - 标记事件已读 (NotificationInboxBusiness.markEventRead)
+- get_by_event_ids - 根据ID获取通知 (NotificationInboxBusiness.getByEventIds)
 
-**推荐工具**：
-- `get_friends_list` ✅ - 利用现有的好友列表查询
-- `add_friend` - 使用现有的好友验证流程
-- `remove_friend` - 删除好友关系
-- `block_friend` - 拉黑好友
-- `search_users` - 利用现有的用户搜索
+## 用户功能 (基于UserBusiness)
 
-### 3. 群聊管理模块 (Group) ⭐⭐⭐
-**基于现有能力**：完整的GroupBusiness和群聊功能
+### 数据API操作
+- handle_user_table_updates - 处理用户数据更新 (UserBusiness.handleTableUpdates)
+- process_user_sync_batch - 批量同步用户 (UserBusiness.processBatchRequests)
 
-**推荐工具**：
-- `get_groups_list` ✅ - 利用现有的群聊列表查询
-- `create_group` - 使用现有的创建群聊功能
-- `join_group` - 加入群聊
-- `leave_group` - 退出群聊
-- `invite_to_group` - 邀请成员
-- `remove_group_member` - 移除成员
-- `set_group_admin` - 设置管理员
+## 数据同步 (现有同步机制)
 
-### 4. 搜索功能模块 (Search) ⭐⭐
-**基于现有能力**：项目有独立的搜索窗口和搜索API
+### 数据API操作
+- sync_messages_by_version - 消息版本同步 (MessageBusiness.syncMessagesByVersion)
+- sync_messages_by_version_range - 消息范围同步 (MessageBusiness.syncMessagesByVersionRange)
+- handle_friend_table_updates - 好友表更新 (FriendBusiness.handleTableUpdates)
+- process_friend_sync_batch - 好友批量同步 (FriendBusiness.processBatchRequests)
+- handle_group_table_updates - 群聊表更新 (GroupBusiness.handleTableUpdates)
+- process_group_sync_batch - 群聊批量同步 (GroupBusiness.processBatchRequests)
 
-**推荐工具**：
-- `search_contacts` ✅ - 利用现有的联系人搜索
-- `search_messages` - 扩展消息内容搜索
-- `global_search` - 全局搜索（联系人+消息+群聊）
+## 界面窗口 (基于vite.config.ts配置)
 
-### 5. 通知管理模块 (Notification) ⭐⭐
-**基于现有能力**：完整的通知系统和NotificationBusiness
+### UI界面操作
+- open_image_window - 打开图片查看器窗口 (image.html)
+- open_video_window - 打开视频播放器窗口 (video.html)
+- open_audio_window - 打开音频播放器窗口 (audio.html)
 
-**推荐工具**：
-- `get_notifications` - 获取通知列表
-- `mark_notification_read` - 标记已读
-- `send_notification` - 发送系统通知
-- `clear_notifications` - 清除通知
+## 朋友圈功能 (基于MomentBusiness)
 
-### 6. 媒体处理模块 (Media) ⭐⭐
-**基于现有能力**：项目有image/audio/video三个独立窗口
+### UI界面操作
+- open_moment_window - 打开朋友圈窗口界面 (moment.html)
 
-**推荐工具**：
-- `download_media` - 文件下载功能
-- `upload_media` - 文件上传功能
-- `view_image` - 利用图片查看窗口
-- `play_audio` - 利用音频播放窗口
-- `play_video` - 利用视频播放窗口
+### 数据API操作
+- view_moments - 获取朋友圈动态数据
+- create_moment - 发布朋友圈动态
+- like_moment - 点赞动态
+- comment_moment - 评论动态
 
-### 7. 表情包管理模块 (Emoji) ⭐⭐
-**基于现有能力**：完整的EmojiBusiness和表情包系统
+## 表情包功能 (基于EmojiBusiness)
 
-**推荐工具**：
-- `get_emoji_packages` - 获取表情包列表
-- `add_emoji` - 添加表情到收藏
-- `remove_emoji` - 移除收藏表情
-- `search_emoji` - 搜索表情
+### 数据API操作
+- handle_emoji_updates - 处理表情更新 (EmojiBusiness基础功能)
 
-### 8. 朋友圈模块 (Moment) ⭐⭐
-**基于现有能力**：独立的朋友圈窗口和MomentBusiness
+## 系统功能 (现有功能)
 
-**推荐工具**：
-- `get_moments` - 获取朋友圈动态
-- `create_moment` - 发布朋友圈
-- `like_moment` - 点赞动态
-- `comment_moment` - 评论动态
-
-### 9. DOM操作模块 (DOM) ⭐⭐⭐⭐⭐
-**基于现有能力**：Electron应用天然具备DOM操作能力
-
-**推荐工具**：
-- `dom_query_selector` - 查询DOM元素
-- `dom_click_element` - 点击元素
-- `dom_input_text` - 输入文本
-- `dom_scroll_element` - 滚动页面
-- `dom_get_element_info` - 获取元素信息
-- `dom_take_screenshot` - 截取屏幕
-- `dom_wait_for_element` - 等待元素加载
-- `dom_get_page_content` - 获取页面内容
-
-### 10. 系统控制模块 (System) ⭐
-**基于现有能力**：应用设置、用户状态等
-
-**推荐工具**：
-- `logout` ✅ - 退出登录
-- `get_system_info` - 系统信息
-- `set_user_status` - 设置用户状态
-- `update_app` - 检查更新
-
-## 实际可行性评估
-
-### ✅ 高可行性 (现有API直接可用)
-1. **消息操作** - MessageBusiness有完整API
-2. **好友管理** - FriendBusiness有完整实现
-3. **群聊管理** - GroupBusiness功能完善
-4. **搜索功能** - 有独立的搜索窗口和API
-
-### ⚠️ 中等可行性 (需要扩展现有功能)
-5. **通知管理** - 通知系统存在，需要封装MCP接口
-6. **媒体处理** - 有媒体窗口，需要封装操作接口
-7. **表情包管理** - EmojiBusiness完整，需要MCP接口
-8. **朋友圈** - Moment功能完整，需要MCP接口
-
-### 🚀 高价值 (值得重点开发)
-9. **DOM操作** - 这是您的核心需求，Electron应用天然支持
-10. **系统控制** - 应用控制功能
-
-## 推荐开发顺序
-
-### Phase 1: 核心功能 (1-2周)
-1. **完善消息操作模块** - 基于现有MessageBusiness
-2. **完善好友管理模块** - 基于现有FriendBusiness
-3. **完善群聊管理模块** - 基于现有GroupBusiness
-
-### Phase 2: 扩展功能 (2-3周)
-4. **DOM操作模块** - 重点开发，满足您的核心需求
-5. **搜索功能模块** - 整合现有搜索能力
-6. **通知管理模块** - 封装通知功能
-
-### Phase 3: 高级功能 (1-2周)
-7. **媒体处理模块** - 整合多媒体窗口
-8. **表情包和朋友圈模块** - 锦上添花
-
-## 技术实现建议
-
-### DOM操作模块具体实现
-由于您的核心需求是DOM操作，建议这样实现：
-
-```typescript
-// 利用Electron的webContents API
-import { BrowserWindow } from 'electron'
-
-export const domQuerySelector = {
-  name: 'dom_query_selector',
-  inputSchema: z.object({
-    windowType: z.enum(['main', 'image', 'audio', 'video']).describe('窗口类型'),
-    selector: z.string().describe('CSS选择器'),
-    timeout: z.number().optional().default(5000).describe('超时时间(毫秒)')
-  }),
-  handler: async (params) => {
-    const window = getWindowByType(params.windowType)
-    const result = await window.webContents.executeJavaScript(`
-      (() => {
-        const element = document.querySelector('${params.selector}');
-        return element ? {
-          tagName: element.tagName,
-          className: element.className,
-          id: element.id,
-          textContent: element.textContent?.substring(0, 100),
-          innerHTML: element.innerHTML?.substring(0, 100)
-        } : null;
-      })()
-    `)
-    return result
-  }
-}
-```
-
-这个规划是基于您项目的**真实代码结构**和**现有功能**制定的，完全可行。
+### 数据API操作
+- logout - 退出登录 (已有logout功能)
+- get_app_info - 获取应用信息 (基于现有配置)

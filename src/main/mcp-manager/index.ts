@@ -3,6 +3,8 @@ import { socialTools } from './tools/social/index.js'
 import { groupTools } from './tools/group/index.js'
 import { searchTools } from './tools/search/index.js'
 import { systemTools } from './tools/system/index.js'
+import { windowTools } from './tools/window/index.js'
+import { momentTools } from './tools/moment/index.js'
 
 import { localMCPServer } from './server/index.js'
 import type { MCPTool as IMCPTool } from 'commonModule/type/ajax/mcp'
@@ -28,6 +30,8 @@ export class MCPManager {
       ...groupTools,
       ...searchTools,
       ...systemTools,
+      ...windowTools,
+      ...momentTools,
     ]
   }
 
