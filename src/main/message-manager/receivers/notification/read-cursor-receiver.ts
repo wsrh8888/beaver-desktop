@@ -1,4 +1,5 @@
-import { notificationReadCursorBusiness as readCursorBusiness } from 'mainModule/business/notification/read-cursor'
+import notificationReadCursorBusiness from 'mainModule/business/notification/read-cursor'
+const readCursorBusiness = notificationReadCursorBusiness
 
 /**
  * @description: 通知已读游标接收器 - 处理notification_read_cursor表的操作
@@ -24,3 +25,5 @@ class ReadCursorReceiver {
     }
   }
 }
+
+export default new ReadCursorReceiver()

@@ -1,6 +1,6 @@
 import type { IWsData } from 'commonModule/type/ws/command'
 import { WsType } from 'commonModule/type/ws/command'
-import { MessageService } from 'mainModule/database/services/chat/message'
+import dBServiceMessage  from 'mainModule/database/services/chat/message'
 import wsManager from 'mainModule/ws-manager'
 
 /**
@@ -14,7 +14,7 @@ class ChatSender {
    * @param userId 发送者用户ID
    * @return Promise<boolean>
    */
-  static async sendPrivateMessage(
+   async sendPrivateMessage(
     conversationId: string,
     messageData: any,
     userId: string,
@@ -22,7 +22,7 @@ class ChatSender {
     const { messageId, msg } = messageData
 
     // 1. 保存消息到本地数据库（发送中状态）
-    await MessageService.create({
+    await dBServiceMessage.create({
       messageId,
       conversationId,
       conversationType: 1, // 私聊
@@ -61,7 +61,7 @@ class ChatSender {
   /**
    * 生成消息预览文本
    */
-  private static generateMessagePreview(msg: any): string {
+  private  generateMessagePreview(msg: any): string {
     switch (msg.type) {
       case 1: // 文本消息
         return msg.textMsg?.content || '[文本消息]'
@@ -86,3 +86,5 @@ class ChatSender {
     }
   }
 }
+
+export default new ChatSender()

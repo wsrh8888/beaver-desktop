@@ -40,9 +40,7 @@ export interface DBGetNotificationEventsReq {
 /**
  * @description 批量获取通知事件响应
  */
-export interface DBGetNotificationEventsRes {
-  events: IDBNotificationEvent[]
-}
+export type DBGetNotificationEventsRes = IDBNotificationEvent[]
 
 /**
  * @description 更新通知事件状态请求

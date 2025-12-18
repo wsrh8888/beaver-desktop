@@ -15,7 +15,7 @@ class GroupSyncStatus extends BaseService {
    */
   async getModuleVersions(req: DBGetModuleVersionsReq): Promise<DBGetModuleVersionsRes> {
     if (req.groupIds.length === 0) {
-      return { versions: [] }
+      return []
     }
 
     const statuses = await this.db.select()
@@ -27,7 +27,7 @@ class GroupSyncStatus extends BaseService {
       version: status.version || 0,
     }))
 
-    return { versions }
+    return versions
   }
 
   /**

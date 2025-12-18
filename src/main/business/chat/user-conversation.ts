@@ -58,7 +58,7 @@ class UserConversationBusiness extends BaseBusiness<UserConversationSyncItem> {
         }
 
         // 使用插入或更新的方式来同步单个用户会话
-        await dbServiceChatUserConversation.batchCreate([userConversation])
+        await dbServiceChatUserConversation.batchCreate({ userConversations: [userConversation] })
 
         console.log(`用户会话同步成功: userId=${userId}, conversationId=${conversationId}, version=${version}`)
       }
@@ -136,4 +136,4 @@ class UserConversationBusiness extends BaseBusiness<UserConversationSyncItem> {
 }
 
 // 导出单例实例
-export const userConversationBusiness = new UserConversationBusiness()
+export default new UserConversationBusiness()

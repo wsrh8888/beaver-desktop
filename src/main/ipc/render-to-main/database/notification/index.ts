@@ -1,10 +1,12 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataNotificationCommand } from 'commonModule/type/ipc/database'
-import { notificationInboxBusiness, notificationReadCursorBusiness, notificationEventBusiness } from 'mainModule/business'
+import notificationInboxBusiness from 'mainModule/business/notification/inbox'
+import notificationReadCursorBusiness from 'mainModule/business/notification/read-cursor'
+import notificationEventBusiness from 'mainModule/business/notification/event'
 import { store } from 'mainModule/store'
 
 class NotificationHandler {
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataNotificationCommand, data: any, header: ICommonHeader): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: DataNotificationCommand, data: any, header: ICommonHeader): Promise<any> {
     const userInfo = store.get('userInfo')
     const userId = header.userId || userInfo?.userId
     if (!userId)
@@ -24,3 +26,5 @@ class NotificationHandler {
     }
   }
 }
+
+export default new NotificationHandler()

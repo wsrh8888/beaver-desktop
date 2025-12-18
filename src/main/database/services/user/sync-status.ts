@@ -19,7 +19,7 @@ import type {
 } from 'commonModule/type/database/server/user/sync-status'
 
 // 用户同步状态服务
-class UserSyncStatusService extends BaseService {
+class dBServiceUserSyncStatus extends BaseService {
   /**
    * @description 获取用户同步状态
    */
@@ -33,17 +33,16 @@ class UserSyncStatusService extends BaseService {
    */
   async getUsersSyncStatus(req: DBGetUsersSyncStatusReq): Promise<DBGetUsersSyncStatusRes> {
     if (req.userIds.length === 0)
-      return { syncStatuses: [] }
+      return []
     const syncStatuses = await this.db.select().from(userSyncStatus).where(inArray(userSyncStatus.userId, req.userIds)).all()
-    return { syncStatuses }
+    return syncStatuses
   }
 
   /**
    * @description 获取所有用户同步状态
    */
   async getAllUsersSyncStatus(req: DBGetAllUsersSyncStatusReq): Promise<DBGetAllUsersSyncStatusRes> {
-    const syncStatuses = await this.db.select().from(userSyncStatus).all()
-    return { syncStatuses }
+    return await this.db.select().from(userSyncStatus).all()
   }
 
   // 更新或插入用户同步状态
@@ -119,4 +118,4 @@ class UserSyncStatusService extends BaseService {
 }
 
 // 导出用户同步状态服务实例
-export default new UserSyncStatusService()
+export default new dBServiceUserSyncStatus()

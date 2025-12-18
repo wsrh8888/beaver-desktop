@@ -36,9 +36,7 @@ export interface DBGetAllConversationsReq {
 /**
  * @description 获取所有会话响应
  */
-export interface DBGetAllConversationsRes {
-  conversations: IDBChatConversationMeta[]
-}
+export type DBGetAllConversationsRes = IDBChatConversationMeta[]
 
 /**
  * @description 根据会话ID列表批量获取会话请求
@@ -50,9 +48,7 @@ export interface DBGetConversationsByIdsReq {
 /**
  * @description 根据会话ID列表批量获取会话响应
  */
-export interface DBGetConversationsByIdsRes {
-  conversations: IDBChatConversationMeta[]
-}
+export type DBGetConversationsByIdsRes = IDBChatConversationMeta[]
 
 /**
  * @description 根据会话ID获取单个会话请求
@@ -78,9 +74,7 @@ export interface DBGetConversationsByTypeReq {
 /**
  * @description 根据类型获取会话响应
  */
-export interface DBGetConversationsByTypeRes {
-  conversations: IDBChatConversationMeta[]
-}
+export type DBGetConversationsByTypeRes = IDBChatConversationMeta[]
 
 /**
  * @description 更新会话的最后消息请求

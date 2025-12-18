@@ -39,7 +39,7 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
       throw new Error('用户未登录')
     }
 
-    return await dBServiceFriendVerify.getValidByIds(verifyIds, userStore.userId)
+    return await dBServiceFriendVerify.getValidByIds({ verifyIds, currentUserId: userStore.userId })
   }
 
   /**
@@ -88,7 +88,7 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
         }))
 
         // 批量创建/更新本地数据库
-        await dBServiceFriendVerify.batchCreate(friendVerifies)
+        await dBServiceFriendVerify.batchCreate({ verifies: friendVerifies })
         console.log(`好友验证同步成功: count=${friendVerifies.length}`)
 
         // 发送通知到render进程，告知好友验证数据已更新
@@ -109,4 +109,4 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
 }
 
 // 导出单例实例
-export const friendVerifyBusiness = new FriendVerifyBusiness()
+export default new FriendVerifyBusiness()

@@ -1,18 +1,26 @@
 import type { IDBNotificationReadCursor } from 'commonModule/type/database/db/notification'
 import { and, eq, sql } from 'drizzle-orm'
+import { BaseService } from '../base'
 import { notificationReads } from 'mainModule/database/tables/notification/read'
-import dbManager from '../../db'
+import type {
+  DBUpsertCursorReq,
+  DBGetCursorReq,
+  DBGetCursorRes,
+  DBGetVersionMapReq,
+  DBGetVersionMapRes,
+  DBGetCursorsReq,
+  DBGetCursorsRes,
+} from 'commonModule/type/database/server/notification/read-cursor'
 
 // 通知已读游标服务
-class NotificationReadCursor {
-   get db() {
-    return dbManager.db
-  }
+class NotificationReadCursor extends BaseService {
 
-  // 写入或更新游标
-   async upsertCursor(cursor: IDBNotificationReadCursor): Promise<void> {
+  /**
+   * @description 写入或更新游标
+   */
+  async upsertCursor(req: DBUpsertCursorReq): Promise<void> {
     await this.db.insert(notificationReads)
-      .values(cursor)
+      .values(req)
       .onConflictDoUpdate({
         target: [notificationReads.userId, notificationReads.category],
         set: {
@@ -24,9 +32,12 @@ class NotificationReadCursor {
       .run()
   }
 
-  // 查询用户分类游标
-   async getCursor(userId: string, category: string): Promise<IDBNotificationReadCursor | undefined> {
-    return await this.db.select()
+  /**
+   * @description 查询用户分类游标
+   */
+  async getCursor(req: DBGetCursorReq): Promise<DBGetCursorRes> {
+    const { userId, category } = req
+    const cursor = await this.db.select()
       .from(notificationReads)
       .where(
         and(
@@ -35,17 +46,23 @@ class NotificationReadCursor {
         ),
       )
       .get()
+    return { cursor }
   }
 
-  // 获取用户游标版本映射（简化版）
-   async getVersionMap(userId: string, categories?: string[]): Promise<Map<string, number>> {
+  /**
+   * @description 获取用户游标版本映射（简化版）
+   */
+  async getVersionMap(req: DBGetVersionMapReq): Promise<DBGetVersionMapRes> {
     // 简化逻辑：返回空Map，表示需要同步所有数据
-    return new Map()
+    return { versionMap: new Map() }
   }
 
-  // 获取用户多个分类的游标
-   async getCursors(userId: string, categories?: string[]): Promise<IDBNotificationReadCursor[]> {
-    if (!userId) return []
+  /**
+   * @description 获取用户多个分类的游标
+   */
+  async getCursors(req: DBGetCursorsReq): Promise<DBGetCursorsRes> {
+    const { userId, categories } = req
+    if (!userId) return { cursors: [] }
 
     const query = this.db.select()
       .from(notificationReads)
@@ -57,7 +74,8 @@ class NotificationReadCursor {
       query.where(inArray(notificationReads.category as any, categories as any))
     }
 
-    return await query.all()
+    const cursors = await query.all()
+    return { cursors }
   }
 }
 

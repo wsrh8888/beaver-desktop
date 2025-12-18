@@ -100,4 +100,4 @@ class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
 }
 
 // 导出单例实例
-export const groupMemberBusiness = new GroupMemberBusiness()
+export default new GroupMemberBusiness()

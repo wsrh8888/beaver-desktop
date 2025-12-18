@@ -1,7 +1,7 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataFriendCommand } from 'commonModule/type/ipc/database'
-import { friendBusiness } from 'mainModule/business/friend/friend'
-import { friendVerifyBusiness } from 'mainModule/business/friend/friend-verify'
+import friendBusiness from 'mainModule/business/friend/friend'
+import friendVerifyBusiness from 'mainModule/business/friend/friend-verify'
 import dBServiceFriend  from 'mainModule/database/services/friend/friend'
 import dBServiceFriendVerify  from 'mainModule/database/services/friend/friend_verify'
 import { store } from 'mainModule/store'
@@ -10,7 +10,7 @@ class FriendHandler {
   /**
    * 处理用户相关的数据库命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataFriendCommand, data: any, header: ICommonHeader): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: DataFriendCommand, data: any, header: ICommonHeader): Promise<any> {
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
       throw new Error('用户未登录')
@@ -33,3 +33,5 @@ class FriendHandler {
     }
   }
 }
+
+export default new FriendHandler()

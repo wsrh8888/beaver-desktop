@@ -48,6 +48,28 @@ export interface DBGetJoinRequestsReq {
 }
 
 /**
+ * @description 获取用户相关的入群申请请求
+ */
+export interface DBGetUserRelatedJoinRequestsReq {
+  userId: string
+  managedGroupIds: string[]
+  options?: { page?: number, limit?: number }
+}
+
+/**
+ * @description 获取用户相关的入群申请响应
+ */
+export type DBGetUserRelatedJoinRequestsRes = IDBGroupJoinRequest[]
+
+/**
+ * @description 获取用户相关的入群申请数量请求
+ */
+export interface DBGetUserRelatedJoinRequestsCountReq {
+  userId: string
+  managedGroupIds: string[]
+}
+
+/**
  * @description 获取入群申请列表响应
  */
 export interface DBGetJoinRequestsRes {

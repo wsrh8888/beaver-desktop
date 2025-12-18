@@ -72,20 +72,18 @@ class MediaService extends BaseService {
       .limit(1)
 
     if (result.length === 0) {
-      return { mediaInfo: null }
+      return {  }
     }
 
     const record = result[0]
     return {
-      mediaInfo: {
-        fileName: record.fileName,
-        path: record.path,
-        type: record.type,
-        size: record.size || undefined,
-        createdAt: record.createdAt,
-        updatedAt: record.updatedAt,
-        isDeleted: record.isDeleted,
-      }
+      fileName: record.fileName,
+      path: record.path,
+      type: record.type,
+      size: record.size || undefined,
+      createdAt: record.createdAt,
+      updatedAt: record.updatedAt,
+      isDeleted: record.isDeleted,
     }
   }
 

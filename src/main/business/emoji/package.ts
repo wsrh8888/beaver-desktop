@@ -6,7 +6,7 @@ import dBServiceEmojiPackage  from 'mainModule/database/services/emoji/package'
 class EmojiPackageBusiness {
   async getEmojiPackagesByIds(params: IGetEmojiPackagesByIdsReq): Promise<IGetEmojiPackagesByIdsRes> {
     const ids = params?.ids || []
-    const packageMap = await dBServiceEmojiPackage.getPackagesByIds(ids)
+    const packageMap = await dBServiceEmojiPackage.getPackagesByIds({ ids })
 
     const packages = ids
       .map((id) => {
@@ -37,7 +37,7 @@ class EmojiPackageBusiness {
     console.log('getEmojiPackageEmojis called with packageId:', packageId)
 
     // 获取表情包关联数据
-    const packageEmojis = await dBServiceEmojiPackageEmoji.getEmojisByPackageId(packageId)
+    const packageEmojis = await dBServiceEmojiPackageEmoji.getEmojisByPackageId({ packageId })
     console.log('packageEmojis found:', packageEmojis.length, packageEmojis)
 
     if (packageEmojis.length === 0) {
@@ -49,7 +49,7 @@ class EmojiPackageBusiness {
     console.log('emojiIds to query:', emojiIds)
 
     // 获取表情详情
-    const emojiMap = await dBServiceEmoji.getEmojisByIds(emojiIds)
+    const emojiMap = await dBServiceEmoji.getEmojisByIds({ ids: emojiIds })
     console.log('emojiMap size:', emojiMap.size, 'keys:', Array.from(emojiMap.keys()))
 
     // 组装返回数据，按关联表的排序返回
@@ -82,3 +82,5 @@ class EmojiPackageBusiness {
     }
   }
 }
+
+export default new EmojiPackageBusiness()

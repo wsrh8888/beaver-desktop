@@ -11,9 +11,7 @@ export interface DBGetModuleVersionsReq {
 /**
  * @description 批量获取指定模块的版本状态响应
  */
-export interface DBGetModuleVersionsRes {
-  versions: Array<{ groupId: string; version: number }>
-}
+export type DBGetModuleVersionsRes = Array<{ groupId: string; version: number }>
 
 /**
  * @description 更新指定模块的同步状态请求

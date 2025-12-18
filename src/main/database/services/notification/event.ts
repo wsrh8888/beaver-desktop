@@ -84,13 +84,13 @@ class NotificationEvent extends BaseService {
    */
   async getByIds(req: DBGetNotificationEventsReq): Promise<DBGetNotificationEventsRes> {
     if (!req.eventIds.length)
-      return { events: [] }
+      return []
 
     const events = await this.db.select()
       .from(notificationEvents)
       .where(inArray(notificationEvents.eventId as any, req.eventIds as any))
       .all()
-    return { events }
+    return events
   }
 }
 

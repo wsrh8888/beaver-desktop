@@ -9,7 +9,7 @@ class SSEMessageHandler {
   /**
    * 处理SSE消息请求
    */
-  static async handleMessage(
+   async handleMessage(
     transports: Map<string, SSEServerTransport>,
     sessionId: string,
     req: IncomingMessage,
@@ -39,10 +39,13 @@ class SSEMessageHandler {
   /**
    * 获取消息处理函数
    */
-  static getMessageHandler(transports: Map<string, SSEServerTransport>): (req: any, res: any) => Promise<void> {
+   getMessageHandler(transports: Map<string, SSEServerTransport>): (req: any, res: any) => Promise<void> {
     return async (req: any, res: any) => {
       const sessionId = req.query.sessionId as string
-      await SSEMessageHandler.handleMessage(transports, sessionId, req, res)
+      await this.handleMessage(transports, sessionId, req, res)
     }
   }
 }
+
+
+export default new SSEMessageHandler()

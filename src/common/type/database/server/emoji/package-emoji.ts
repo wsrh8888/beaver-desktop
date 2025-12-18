@@ -26,9 +26,7 @@ export interface DBGetEmojisByPackageIdReq {
 /**
  * @description 根据表情包ID获取表情列表响应
  */
-export interface DBGetEmojisByPackageIdRes {
-  emojis: IDBEmojiPackageEmoji[]
-}
+export type DBGetEmojisByPackageIdRes = IDBEmojiPackageEmoji[]
 
 /**
  * @description 根据表情包ID列表获取表情关联数据请求
@@ -40,9 +38,7 @@ export interface DBGetEmojisByPackageIdsReq {
 /**
  * @description 根据表情包ID列表获取表情关联数据响应
  */
-export interface DBGetEmojisByPackageIdsRes {
-  relations: Map<string, IDBEmojiPackageEmoji[]>
-}
+export type DBGetEmojisByPackageIdsRes = Map<string, IDBEmojiPackageEmoji[]>
 
 /**
  * @description 根据表情ID获取所属的表情包请求
@@ -54,9 +50,7 @@ export interface DBGetPackagesByEmojiIdReq {
 /**
  * @description 根据表情ID获取所属的表情包响应
  */
-export interface DBGetPackagesByEmojiIdRes {
-  packages: IDBEmojiPackageEmoji[]
-}
+export type DBGetPackagesByEmojiIdRes = IDBEmojiPackageEmoji[]
 
 /**
  * @description 删除表情包中的表情请求

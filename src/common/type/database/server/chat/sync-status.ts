@@ -17,9 +17,7 @@ export interface DBGetSyncStatusReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetSyncStatusRes {
-  syncStatus?: IDBChatSyncStatus | undefined
-}
+export type DBGetSyncStatusRes = IDBChatSyncStatus | undefined
 
 // 获取消息同步状态请求
 /**
@@ -33,9 +31,7 @@ export interface DBGetMessageSyncStatusReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetMessageSyncStatusRes {
-  syncStatus?: IDBChatSyncStatus | undefined
-}
+export type DBGetMessageSyncStatusRes = IDBChatSyncStatus | undefined
 
 // 获取会话同步状态请求
 /**
@@ -49,9 +45,7 @@ export interface DBGetConversationSyncStatusReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetConversationSyncStatusRes {
-  syncStatus?: IDBChatSyncStatus | undefined
-}
+export type DBGetConversationSyncStatusRes = IDBChatSyncStatus | undefined
 
 // 获取用户会话同步状态请求
 /**
@@ -65,9 +59,7 @@ export interface DBGetUserConversationSyncStatusReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetUserConversationSyncStatusRes {
-  syncStatus?: IDBChatSyncStatus | undefined
-}
+export type DBGetUserConversationSyncStatusRes = IDBChatSyncStatus | undefined
 
 // 批量获取同步状态请求
 /**
@@ -82,9 +74,7 @@ export interface DBGetSyncStatusesReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetSyncStatusesRes {
-  syncStatuses: IDBChatSyncStatus[]
-}
+export type DBGetSyncStatusesRes = IDBChatSyncStatus[]
 
 // 批量获取会话版本状态请求
 /**
@@ -98,12 +88,10 @@ export interface DBGetConversationVersionsReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetConversationVersionsRes {
-  versions: Array<{
-    conversationId: string
-    version: number
-  }>
-}
+export type DBGetConversationVersionsRes = Array<{
+  conversationId: string
+  version: number
+}>
 
 // 批量获取消息版本状态请求
 /**
@@ -117,12 +105,10 @@ export interface DBGetMessageVersionsReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetMessageVersionsRes {
-  versions: Array<{
-    conversationId: string
-    seq: number
-  }>
-}
+export type DBGetMessageVersionsRes = Array<{
+  conversationId: string
+  seq: number
+}>
 
 // 批量获取用户会话版本状态请求
 /**
@@ -136,12 +122,10 @@ export interface DBGetUserConversationVersionsReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetUserConversationVersionsRes {
-  versions: Array<{
-    conversationId: string
-    version: number
-  }>
-}
+export type DBGetUserConversationVersionsRes = Array<{
+  conversationId: string
+  version: number
+}>
 
 // 获取所有同步状态请求
 export interface DBGetAllSyncStatusReq { }
@@ -150,9 +134,7 @@ export interface DBGetAllSyncStatusReq { }
 /**
  * @description 数据库服务请求
  */
-export interface DBGetAllSyncStatusRes {
-  syncStatuses: IDBChatSyncStatus[]
-}
+export type DBGetAllSyncStatusRes = IDBChatSyncStatus[]
 
 // 更新或插入同步状态请求
 /**
@@ -291,9 +273,7 @@ export interface DBGetConversationsNeedMessageSyncReq {
 /**
  * @description 数据库服务请求
  */
-export interface DBGetConversationsNeedMessageSyncRes {
-  conversationIds: string[]
-}
+export type DBGetConversationsNeedMessageSyncRes = string[]
 
 // 清空所有同步状态请求
 export interface DBClearAllSyncStatusReq { }

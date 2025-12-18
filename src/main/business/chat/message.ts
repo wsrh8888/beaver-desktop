@@ -7,7 +7,7 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { QueueItem } from '../base/base'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { chatSyncApi } from 'mainModule/api/chat'
-import { MessageService } from 'mainModule/database/services/chat/message'
+import dBServiceMessage  from 'mainModule/database/services/chat/message'
 import dBServiceUser  from 'mainModule/database/services/user/user'
 
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
@@ -46,7 +46,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     const limit = params.limit || 100
 
     // 调用服务层获取消息数据（纯数据库查询）
-    const messages = await MessageService.getChatHistory(conversationId, { seq, limit })
+    const messages = await dBServiceMessage.getChatHistory({ conversationId, seq, limit })
 
     // 判断是否还有更多数据（返回 limit+1 条，如果超过 limit 条说明有更多数据）
     const hasMore = messages.length > limit
@@ -59,7 +59,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     const senderInfoMap = new Map()
     if (senderIds.length > 0) {
       try {
-        const senderDetails = await dBServiceUser.getUsersBasicInfo(senderIds as string[])
+        const senderDetails = await dBServiceUser.getUsersBasicInfo({ userIds: senderIds as string[] })
         senderDetails.forEach((detail) => {
           senderInfoMap.set(detail.userId, {
             userId: detail.userId,
@@ -107,14 +107,14 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     const { conversationId, startSeq, endSeq } = params
 
     // 调用服务层获取消息数据（纯数据库查询）
-    const result = await MessageService.getChatMessagesBySeqRange(conversationId, startSeq, endSeq)
+    const result = await dBServiceMessage.getChatMessagesBySeqRange({ conversationId, startSeq, endSeq })
 
     // 业务逻辑：获取发送者信息（同步接口也需要完整用户信息）
     const senderIds = [...new Set(result.map((m: any) => m.sendUserId).filter((id: string) => id && id.trim()))]
     const senderInfoMap = new Map()
     if (senderIds.length > 0) {
       try {
-        const senderDetails = await dBServiceUser.getUsersBasicInfo(senderIds as string[])
+        const senderDetails = await dBServiceUser.getUsersBasicInfo({ userIds: senderIds as string[] })
         senderDetails.forEach((detail) => {
           senderInfoMap.set(detail.userId, {
             userId: detail.userId,
@@ -263,11 +263,11 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     }))
 
     // 批量保存到本地数据库
-    await MessageService.batchCreate(formattedMessages)
+    await dBServiceMessage.batchCreate(formattedMessages)
 
     console.log('消息数据保存成功:', formattedMessages.length, '条')
   }
 }
 
 // 导出单例实例
-export const messageBusiness = new MessageBusiness()
+export default new MessageBusiness()

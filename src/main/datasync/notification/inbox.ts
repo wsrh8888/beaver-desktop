@@ -2,7 +2,7 @@ import { NotificationModule, NotificationNotificationCommand } from 'commonModul
 import { datasyncGetSyncNotificationInboxesApi } from 'mainModule/api/datasync'
 import { getNotificationInboxByIdsApi } from 'mainModule/api/notification'
 import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
-import { NotificationInboxService } from 'mainModule/database/services/notification/inbox'
+import dBServiceNotificationInbox from 'mainModule/database/services/notification/inbox'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
@@ -17,7 +17,7 @@ class NotificationInboxSync {
       return
 
     try {
-      const cursor = await dbServiceDataSync.get('notification_inboxes')
+      const cursor = await dbServiceDataSync.get({ module: 'notification_inboxes' })
       const sinceVersion = cursor?.version || 0
 
       const resp = await datasyncGetSyncNotificationInboxesApi({
@@ -62,7 +62,7 @@ class NotificationInboxSync {
     if (eventIds.length === 0)
       return []
 
-    const localMap = await NotificationInboxService.getVersionMapByEventIds(userId, eventIds)
+    const localMap = await dBServiceNotificationInbox.getVersionMapByEventIds({ userId, eventIds })
 
     return inboxVersions
       .filter(item => (localMap.get(item.eventId) || 0) < item.version)
@@ -90,7 +90,7 @@ class NotificationInboxSync {
           updatedAt: inbox.updatedAt,
         }))
 
-        await NotificationInboxService.batchUpsert(rows)
+        await dBServiceNotificationInbox.batchUpsert(rows)
       }
     }
   }

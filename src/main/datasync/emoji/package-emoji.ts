@@ -2,11 +2,14 @@ import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/
 import { getEmojiPackageContentsByPackageIdsApi } from 'mainModule/api/emoji'
 import dBServiceEmojiPackageEmoji  from 'mainModule/database/services/emoji/package-emoji'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import Logger from 'mainModule/utils/logger'
 
+const logger = new Logger('datasync-emoji-package-emoji')
 // emoji_package_emoji 表同步处理器
 class PackageEmojiSync {
   // 同步表情包内容数据（emoji_package_emoji 表）
   async sync(packageContentVersions: any[]) {
+    try {
     if (!packageContentVersions || packageContentVersions.length === 0) {
       return
     }
@@ -17,10 +20,15 @@ class PackageEmojiSync {
     if (needUpdatePackageIds.length > 0) {
       await this.syncEmojiPackageContentData(needUpdatePackageIds)
     }
+    }
+    catch (error) {
+      logger.error({ text: '表情包内容数据同步失败', data: { error: (error as any)?.message } })
+    }
   }
 
   // 对比本地数据，过滤出需要更新的表情包内容
   private async compareAndFilterPackageContentVersions(packageContentVersions: any[]): Promise<string[]> {
+    try {
     const packageIds = packageContentVersions
       .map(item => item.packageId)
       .filter(id => id && id.trim() !== '')
@@ -32,10 +40,16 @@ class PackageEmojiSync {
     // 对于表情包内容，我们需要检查表情包表情关联表的版本
     // 这里简化处理，直接同步所有变更的表情包内容
     return [...new Set(packageIds)]
+    }
+    catch (error) {
+      logger.error({ text: '表情包内容版本对比失败', data: { error: (error as any)?.message } })
+      return []
+    }
   }
 
   // 同步表情包内容数据
   private async syncEmojiPackageContentData(packageIds: string[]) {
+    try {
     if (packageIds.length === 0) {
       return
     }
@@ -61,7 +75,7 @@ class PackageEmojiSync {
           updatedAt: content.updateAt, // 注意这里用的是 updateAt，不是 updatedAt
         }))
 
-        await dBServiceEmojiPackageEmoji.batchCreate(contents)
+        await dBServiceEmojiPackageEmoji.batchCreate({ relations: contents })
         syncedPackageContents.push(...contents.map(content => ({
           packageId: content.packageId,
           version: content.version,
@@ -74,6 +88,10 @@ class PackageEmojiSync {
       sendMainNotification('*', NotificationModule.EMOJI, NotificationEmojiCommand.EMOJI_PACKAGE_CONTENT_UPDATE, {
         updatedPackageContents: syncedPackageContents,
       })
+    }
+    }
+    catch (error) {
+      logger.error({ text: '表情包内容数据同步失败', data: { error: (error as any)?.message } })
     }
   }
 }

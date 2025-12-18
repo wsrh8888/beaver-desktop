@@ -1,16 +1,16 @@
 import logger from 'mainModule/utils/log'
-import { EventReceiver } from './event-receiver'
-import { InboxReceiver } from './inbox-receiver'
-import { ReadCursorReceiver } from './read-cursor-receiver'
+import eventReceiver from './event-receiver'
+import inboxReceiver from './inbox-receiver'
+import readCursorReceiver from './read-cursor-receiver'
 
 /**
  * 通知消息路由器
  * 根据消息类型路由到对应的接收器
  */
 class NotificationMessageRouter {
-  private eventReceiver = new EventReceiver()
-  private inboxReceiver = new InboxReceiver()
-  private readCursorReceiver = new ReadCursorReceiver()
+  private eventReceiver = eventReceiver
+  private inboxReceiver = inboxReceiver
+  private readCursorReceiver = readCursorReceiver
 
   /**
    * 处理通知消息
@@ -43,4 +43,4 @@ class NotificationMessageRouter {
   }
 }
 // 导出单例实例
-export const notificationMessageRouter = new NotificationMessageRouter()
+export default new NotificationMessageRouter()

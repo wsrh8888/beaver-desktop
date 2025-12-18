@@ -1,24 +1,40 @@
-import type { IValidInfo } from 'commonModule/type/ajax/friend'
 import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
-import dbManager from '../../db'
+import { BaseService } from '../base'
 import { friendVerifies } from '../../tables/friend/friend_verify'
 import { users } from '../../tables/user/user'
+import type {
+  DBCreateFriendVerifyReq,
+  DBCreateFriendVerifyRes,
+  DBGetFriendVerifiesByIdsReq,
+  DBGetFriendVerifiesByIdsRes,
+  DBBatchCreateFriendVerifiesReq,
+  DBBatchCreateFriendVerifiesRes,
+  DBGetValidListReq,
+  DBGetValidListRes,
+  DBGetValidByVerRangeReq,
+  DBGetValidByVerRangeRes,
+  DBGetValidByIdsReq,
+  DBGetValidByIdsRes,
+} from 'commonModule/type/database/server/friend/friend_verify'
 
 // 好友验证服务
-class FriendVerify {
-   get db() {
-    return dbManager.db
+class FriendVerify extends BaseService {
+
+  /**
+   * @description 创建好友验证记录
+   */
+  async create(req: DBCreateFriendVerifyReq): Promise<DBCreateFriendVerifyRes> {
+    await this.db.insert(friendVerifies).values(req).run()
+    return {}
   }
 
-  // 创建好友验证记录
-   async create(verifyData: any) {
-    return await this.db.insert(friendVerifies).values(verifyData).run()
-  }
-
-  // 根据验证记录ID批量查询好友验证记录
-   async getFriendVerifiesByIds(verifyIds: string[]): Promise<Map<string, any>> {
+  /**
+   * @description 根据验证记录ID批量查询好友验证记录
+   */
+  async getFriendVerifiesByIds(req: DBGetFriendVerifiesByIdsReq): Promise<DBGetFriendVerifiesByIdsRes> {
+    const { verifyIds } = req
     if (verifyIds.length === 0) {
-      return new Map()
+      return { verifyMap: new Map() }
     }
 
     const existingVerifies = await this.db
@@ -35,13 +51,16 @@ class FriendVerify {
     return verifyMap
   }
 
-  // 批量创建好友验证记录（支持插入或更新）
-   async batchCreate(verifiesData: any[]) {
-    if (verifiesData.length === 0)
-      return
+  /**
+   * @description 批量创建好友验证记录（支持插入或更新）
+   */
+  async batchCreate(req: DBBatchCreateFriendVerifiesReq): Promise<DBBatchCreateFriendVerifiesRes> {
+    const { verifies } = req
+    if (verifies.length === 0)
+      return {}
 
     // 使用插入或更新的方式来避免唯一约束冲突
-    for (const verify of verifiesData) {
+    for (const verify of verifies) {
       await this.db
         .insert(friendVerifies)
         .values(verify)
@@ -60,23 +79,21 @@ class FriendVerify {
         })
         .run()
     }
+    return {}
   }
 
   /**
-   * description: 获取好友验证列表
+   * @description 获取好友验证列表
    */
-   async getValidList(header: any, data: any): Promise<{ list: IValidInfo[] }> {
+  async getValidList(req: DBGetValidListReq): Promise<DBGetValidListRes> {
     try {
-      const userId = header?.userId
+      const { userId, page = 1, limit = 20 } = req
 
       if (!userId) {
         console.error('getValidList 用户ID不能为空')
         return { list: [] }
       }
 
-      // 设置默认分页参数
-      const page = data?.page || 1
-      const limit = data?.limit || 20
       const offset = (page - 1) * limit
 
       // 查询发送给当前用户的验证记录或当前用户发送的验证记录
@@ -148,19 +165,16 @@ class FriendVerify {
   }
 
   /**
-   * description: 根据版本范围获取验证列表
+   * @description 根据版本范围获取验证列表
    */
-   async getValidByVerRange(header: any, params: any): Promise<{ list: IValidInfo[] }> {
+  async getValidByVerRange(req: DBGetValidByVerRangeReq): Promise<DBGetValidByVerRangeRes> {
     try {
-      const userId = header?.userId
+      const { userId, startVersion = 0, endVersion = Number.MAX_SAFE_INTEGER } = req
 
       if (!userId) {
         console.error('用户ID不能为空')
         return { list: [] }
       }
-
-      const startVersion = params?.startVersion || 0
-      const endVersion = params?.endVersion || Number.MAX_SAFE_INTEGER
 
       // 查询指定版本范围内的验证记录
       const validRecords = await this.db
@@ -232,10 +246,13 @@ class FriendVerify {
     }
   }
 
-  // 根据验证记录ID列表批量查询验证记录
-   async getValidByIds(verifyIds: string[], currentUserId: string): Promise<{ list: IValidInfo[] }> {
+  /**
+   * @description 根据验证记录ID列表批量查询验证记录
+   */
+  async getValidByIds(req: DBGetValidByIdsReq): Promise<DBGetValidByIdsRes> {
+    const { verifyIds, currentUserId } = req
     if (verifyIds.length === 0) {
-      return { list: [] }
+      return []
     }
 
     const validRecords = await this.db
@@ -245,7 +262,7 @@ class FriendVerify {
       .all()
 
     if (validRecords.length === 0) {
-      return { list: [] }
+      return []
     }
 
     // 收集需要查询的用户ID
@@ -292,7 +309,7 @@ class FriendVerify {
       }
     })
 
-    return { list: validList }
+    return validList
   }
 }
 

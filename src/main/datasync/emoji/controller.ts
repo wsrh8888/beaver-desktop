@@ -23,7 +23,7 @@ class EmojiController {
 
     try {
       // 获取本地同步时间戳
-      const localCursor = await dbServiceDataSync.get('emoji_collects')
+      const localCursor = await dbServiceDataSync.get({ module: 'emoji_collects' })
       const lastSyncTime = localCursor?.version || 0
 
       // 一次性获取服务器上所有表情相关数据的变更版本信息

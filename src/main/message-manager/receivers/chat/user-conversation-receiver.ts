@@ -1,4 +1,4 @@
-import { userConversationBusiness } from 'mainModule/business/chat/user-conversation'
+import userConversationBusiness from 'mainModule/business/chat/user-conversation'
 
 /**
  * @description: 用户会话接收器 - 处理user_conversations表的操作
@@ -25,3 +25,5 @@ class UserConversationReceiver {
     }
   }
 }
+
+export default new UserConversationReceiver()

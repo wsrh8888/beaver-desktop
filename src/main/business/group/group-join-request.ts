@@ -104,4 +104,4 @@ class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncItem> {
 }
 
 // 导出单例实例
-export const groupJoinRequestBusiness = new GroupJoinRequestBusiness()
+export default new GroupJoinRequestBusiness()

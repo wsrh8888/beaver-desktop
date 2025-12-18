@@ -23,7 +23,7 @@ class EmojiSyncModule {
 
     try {
       // 获取本地同步时间戳
-      const localCursor = await dbServiceDataSync.get('emojis')
+      const localCursor = await dbServiceDataSync.get({ module: 'emojis' })
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器上变更的表情版本信息
@@ -68,7 +68,7 @@ class EmojiSyncModule {
     }
 
     // 查询本地已存在的记录
-    const existingEmojisMap = await dBServiceEmoji.getEmojisByIds(emojiIds)
+    const existingEmojisMap = await dBServiceEmoji.getEmojisByIds({ ids: emojiIds })
 
     // 过滤出需要更新的emojiIds（本地不存在或版本号更旧的数据）
     const needUpdateEmojiIds = emojiIds.filter((id) => {

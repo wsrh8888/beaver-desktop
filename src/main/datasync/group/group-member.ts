@@ -3,7 +3,7 @@ import { datasyncGetSyncGroupMembersApi } from 'mainModule/api/datasync'
 import { groupMemberSyncApi } from 'mainModule/api/group'
 import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
 import dBServiceGroupMember  from 'mainModule/database/services/group/group-member'
-import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
+import dBServiceGroupSyncStatus from 'mainModule/database/services/group/group-sync-status'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import Logger from 'mainModule/utils/logger/index'
 
@@ -16,7 +16,7 @@ class GroupMemberSync {
     logger.info({ text: '开始同步群成员数据' })
     try {
       // 获取本地最后同步时间
-      const lastSyncTime = await dbServiceDataSync.get('group_members').then(cursor => cursor?.version || 0).catch(() => 0)
+      const lastSyncTime = await dbServiceDataSync.get({ module: 'group_members' }).then(cursor => cursor?.version || 0).catch(() => 0)
 
       // 获取服务器上变更的群成员版本信息
       const serverResponse = await datasyncGetSyncGroupMembersApi({ since: lastSyncTime })
@@ -55,7 +55,7 @@ class GroupMemberSync {
     const groupIds = groupVersions.map(item => item.groupId)
 
     // 查询本地已存在的群成员版本状态
-    const localVersions = await GroupSyncStatusService.getModuleVersions('members', groupIds)
+    const localVersions = await dBServiceGroupSyncStatus.getModuleVersions({ module: 'members', groupIds })
     const localVersionMap = new Map(localVersions.map(v => [v.groupId, v.version]))
 
     // 过滤出需要更新的群组，并使用本地版本号（而不是服务器版本号）
@@ -93,7 +93,7 @@ class GroupMemberSync {
 
       // 更新本地群成员版本状态
       for (const member of members) {
-        await GroupSyncStatusService.upsertSyncStatus('members', member.groupId, member.version)
+        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'members', conversationId: member.groupId, version: member.version })
       }
 
       // 发送通知到render进程，告知群成员数据已同步

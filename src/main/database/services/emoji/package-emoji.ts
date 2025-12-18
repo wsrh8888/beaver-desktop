@@ -50,12 +50,11 @@ class EmojiPackageEmoji extends BaseService {
    * @description 根据表情包ID获取表情列表
    */
   async getEmojisByPackageId(req: DBGetEmojisByPackageIdReq): Promise<DBGetEmojisByPackageIdRes> {
-    const emojis = await this.db
+    return await this.db
       .select()
       .from(emojiPackageEmoji)
       .where(eq(emojiPackageEmoji.packageId, req.packageId))
       .all()
-    return { emojis }
   }
 
   /**
@@ -63,7 +62,7 @@ class EmojiPackageEmoji extends BaseService {
    */
   async getEmojisByPackageIds(req: DBGetEmojisByPackageIdsReq): Promise<DBGetEmojisByPackageIdsRes> {
     if (req.packageIds.length === 0) {
-      return { relations: new Map() }
+      return new Map()
     }
 
     const relationList = await this.db
@@ -79,20 +78,18 @@ class EmojiPackageEmoji extends BaseService {
       relations.get(item.packageId)!.push(item)
     })
 
-    return { relations }
+    return relations
   }
 
   /**
    * @description 根据表情ID获取所属的表情包
    */
   async getPackagesByEmojiId(req: DBGetPackagesByEmojiIdReq): Promise<DBGetPackagesByEmojiIdRes> {
-    const packages = await this.db
+    return await this.db
       .select()
       .from(emojiPackageEmoji)
       .where(eq(emojiPackageEmoji.emojiId, req.emojiId))
       .all()
-
-    return { packages }
   }
 
   /**

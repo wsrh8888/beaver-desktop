@@ -1,4 +1,5 @@
-import { notificationInboxBusiness as inboxBusiness } from 'mainModule/business/notification/inbox'
+import notificationInboxBusiness from 'mainModule/business/notification/inbox'
+const inboxBusiness = notificationInboxBusiness
 
 /**
  * @description: 通知收件箱接收器 - 处理notification_inbox表的操作
@@ -24,3 +25,5 @@ class InboxReceiver {
     }
   }
 }
+
+export default new InboxReceiver()

@@ -24,7 +24,7 @@ class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem> {
     })
   }
   async getEmojisByPackageIds(packageIds: string[]) {
-    return await dBServiceEmojiPackageEmoji.getEmojisByPackageIds(packageIds)
+    return await dBServiceEmojiPackageEmoji.getEmojisByPackageIds({ packageIds })
   }
 
   /**
@@ -98,4 +98,4 @@ class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem> {
 }
 
 // 导出单例实例
-export const emojiPackageEmojiBusiness = new EmojiPackageEmojiBusiness()
+export default new EmojiPackageEmojiBusiness()

@@ -145,4 +145,4 @@ class NotificationReadCursorBusiness extends BaseBusiness<NotificationReadCursor
 }
 
 // 导出单例实例
-export const notificationReadCursorBusiness = new NotificationReadCursorBusiness()
+export default new NotificationReadCursorBusiness()

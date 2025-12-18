@@ -10,7 +10,7 @@ class CacheHandler {
   /**
    * 处理缓存相关命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: CacheCommand, data: any): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: CacheCommand, data: any): Promise<any> {
     try {
       switch (command) {
         case CacheCommand.GET:
@@ -28,3 +28,5 @@ class CacheHandler {
     }
   }
 }
+
+export default new CacheHandler()

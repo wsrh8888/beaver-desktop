@@ -14,10 +14,7 @@ export interface DBGetSyncCursorReq {
 /**
  * @description 获取同步游标响应
  */
-export interface DBGetSyncCursorRes {
-  cursor?: IDBDatasync
-}
-
+export type DBGetSyncCursorRes = IDBDatasync | undefined
 /**
  * @description 获取同步游标（旧接口）请求
  */
@@ -28,27 +25,21 @@ export interface DBGetByDataTypeReq {
 /**
  * @description 获取同步游标（旧接口）响应
  */
-export interface DBGetByDataTypeRes {
-  cursor?: IDBDatasync
-}
+export type DBGetByDataTypeRes = IDBDatasync | undefined
 
 /**
  * @description 创建或更新同步游标请求
  */
 export interface DBUpsertSyncCursorReq {
-  cursorData: {
-    module: string
+  module: string
     version?: number | null
     updatedAt: number
-  }
 }
 
 /**
  * @description 创建或更新同步游标（旧接口）请求
  */
 export interface DBUpsertByDataTypeReq {
-  cursorData: {
-    dataType: string
+  dataType: string
     lastSeq: number
-  }
 }

@@ -1,6 +1,6 @@
-import { conversationBusiness } from 'mainModule/business/chat/conversation'
-import { messageBusiness } from 'mainModule/business/chat/message'
-import { userConversationBusiness } from 'mainModule/business/chat/user-conversation'
+import conversationBusiness from 'mainModule/business/chat/conversation'
+import messageBusiness from 'mainModule/business/chat/message'
+import userConversationBusiness from 'mainModule/business/chat/user-conversation'
 
 /**
  * @description: 消息接收器 - 处理messages表的操作
@@ -52,3 +52,5 @@ class MessageReceiver {
     }
   }
 }
+
+export default new MessageReceiver()

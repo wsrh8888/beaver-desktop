@@ -28,9 +28,7 @@ export interface DBGetUsersSyncStatusReq {
 /**
  * @description 批量获取用户同步状态响应
  */
-export interface DBGetUsersSyncStatusRes {
-  syncStatuses: IDBUserSyncStatus[]
-}
+export type DBGetUsersSyncStatusRes = IDBUserSyncStatus[]
 
 /**
  * @description 获取所有用户同步状态请求
@@ -40,9 +38,7 @@ export interface DBGetAllUsersSyncStatusReq {}
 /**
  * @description 获取所有用户同步状态响应
  */
-export interface DBGetAllUsersSyncStatusRes {
-  syncStatuses: IDBUserSyncStatus[]
-}
+export type DBGetAllUsersSyncStatusRes = IDBUserSyncStatus[]
 
 /**
  * @description 更新或插入用户同步状态请求

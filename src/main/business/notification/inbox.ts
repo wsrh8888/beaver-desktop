@@ -1,7 +1,7 @@
 import type { QueueItem } from '../base/base'
 import { NotificationModule, NotificationNotificationCommand } from 'commonModule/type/preload/notification'
 import { getNotificationInboxByIdsApi } from 'mainModule/api/notification'
-import { NotificationInboxService } from 'mainModule/database/services/notification/inbox'
+import dBServiceNotificationInbox from 'mainModule/database/services/notification/inbox'
 import dBServiceNotificationReadCursor  from 'mainModule/database/services/notification/read-cursor'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
@@ -81,7 +81,7 @@ class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> 
             updatedAt: inbox.updatedAt,
           }))
 
-          await NotificationInboxService.batchUpsert(inboxRows)
+          await dBServiceNotificationInbox.batchUpsert(inboxRows)
 
           logger.info({ text: `通知收件箱数据同步成功: userId=${userId}, count=${response.result.inbox.length}` })
 
@@ -115,11 +115,11 @@ class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> 
       // 为每个分类计算真正的未读数：createdAt > lastReadAt 且 isRead = 0
       const byCatPromises = filterCategories.map(async (category) => {
         // 获取该分类的游标时间
-        const cursor = await dBServiceNotificationReadCursor.getCursor(userId, category)
+        const cursor = await dBServiceNotificationReadCursor.getCursor({ userId, category })
         const lastReadAt = cursor?.lastReadAt || 0
 
         // 计算该分类的未读数
-        const unreadCount = await NotificationInboxService.getUnreadCountAfterTime(userId, category, lastReadAt)
+        const unreadCount = await dBServiceNotificationInbox.getUnreadCountAfterTime({ userId, category, afterTime: lastReadAt })
 
         return {
           category,
@@ -143,7 +143,7 @@ class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> 
    */
   async markEventRead(userId: string, eventIds: string[]) {
     try {
-      await NotificationInboxService.markReadByEventIds(userId, eventIds)
+      await dBServiceNotificationInbox.markReadByEventIds({ userId, eventIds })
 
       logger.info({ text: `标记事件已读成功: count=${eventIds.length}` })
 
@@ -166,7 +166,7 @@ class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> 
    */
   async getByEventIds(userId: string, eventIds: string[]) {
     try {
-      return await NotificationInboxService.getByEventIds(userId, eventIds)
+      return await dBServiceNotificationInbox.getByEventIds({ userId, eventIds })
     }
     catch (error) {
       logger.error({ text: '获取通知收件箱详情失败', data: { error: (error as any)?.message } })
@@ -190,4 +190,4 @@ class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> 
 }
 
 // 导出单例实例
-export const notificationInboxBusiness = new NotificationInboxBusiness()
+export default new NotificationInboxBusiness()

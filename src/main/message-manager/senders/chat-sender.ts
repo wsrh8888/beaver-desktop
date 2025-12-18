@@ -51,3 +51,5 @@ class ChatSender {
     })
   }
 }
+
+export default new ChatSender()

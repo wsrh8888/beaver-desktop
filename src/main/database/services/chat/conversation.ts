@@ -107,7 +107,7 @@ class ChatConversation extends BaseService {
       query = query.limit(limit).offset(offset)
     }
 
-    return { conversations: await query.all() }
+    return await query.all()
   }
 
   /**
@@ -115,9 +115,9 @@ class ChatConversation extends BaseService {
    */
   async getConversationsByIds(req: DBGetConversationsByIdsReq): Promise<DBGetConversationsByIdsRes> {
     if (req.conversationIds.length === 0)
-      return { conversations: [] }
+      return []
     const conversations = await this.db.select().from(chatConversations).where(inArray(chatConversations.conversationId as any, req.conversationIds as any)).all()
-    return { conversations }
+    return conversations
   }
 
   /**
@@ -133,7 +133,7 @@ class ChatConversation extends BaseService {
    */
   async getConversationsByType(req: DBGetConversationsByTypeReq): Promise<DBGetConversationsByTypeRes> {
     const conversations = await this.db.select().from(chatConversations).where(eq(chatConversations.type as any, req.type as any)).all()
-    return { conversations }
+    return conversations
   }
 
   /**

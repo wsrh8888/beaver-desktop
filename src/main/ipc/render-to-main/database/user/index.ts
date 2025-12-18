@@ -9,7 +9,7 @@ class UserHandler {
   /**
    * 处理用户相关的数据库命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataUserCommand, data: any = {}, header: any = {}): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: DataUserCommand, data: any = {}, header: any = {}): Promise<any> {
     try {
       switch (command) {
         case DataUserCommand.GET_USER_INFO:
@@ -32,3 +32,5 @@ class UserHandler {
     }
   }
 }
+
+export default new UserHandler()

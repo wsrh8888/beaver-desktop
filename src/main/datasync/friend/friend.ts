@@ -23,42 +23,45 @@ class FriendSyncModule {
 
     try {
       // 获取本地同步时间戳
-      const localCursor = await dbServiceDataSync.get('friends')
+      const localCursor = await dbServiceDataSync.get({ module: 'friends' })
+      console.error('1')
       const lastSyncTime = localCursor?.version || 0
-
+      console.error('2')
       // 获取服务器上变更的好友版本信息
       const serverResponse = await datasyncGetSyncFriendsApi({ since: lastSyncTime })
-
+      console.error('3')
       // 对比本地数据，过滤出需要更新的数据
       const needUpdateFriendshipIds = await this.compareAndFilterFriendVersions(serverResponse.result.friendVersions || [])
-      console.log('211111111111111111111111111111')
-      console.log('211111111111111111111111111111')
-      console.log('211111111111111111111111111111')
-      console.log('211111111111111111111111111111')
-      console.log('211111111111111111111111111111')
-      console.log(needUpdateFriendshipIds)
-      if (needUpdateFriendshipIds.length > 0) {
+      console.error('4')
+        if (needUpdateFriendshipIds.length > 0) {
+          console.error('5')
         // 有需要更新的好友数据
         await this.syncFriendData(needUpdateFriendshipIds)
+        console.error('6')
         // 从变更的数据中找到最大的版本号
         const maxVersion = Math.max(...(serverResponse.result.friendVersions || []).map(item => item.version))
+        console.error('7')
         await this.updateFriendsCursor(maxVersion, serverResponse.result.serverTimestamp)
+        console.error('8')
       }
       else {
         // 没有需要更新的数据，直接更新时间戳
+        console.error('9')
         await this.updateFriendsCursor(null, serverResponse.result.serverTimestamp)
+        console.error('10')
       }
-
+      console.error('11')
       this.syncStatus = SyncStatus.COMPLETED
     }
     catch (error) {
       this.syncStatus = SyncStatus.FAILED
-      logger.error({ text: '好友数据同步失败', data: { error: (error as any)?.message } })
+      logger.error({ text: '好友数据同步失败 checkAndSync', data: { error: (error as any)?.message } })
     }
   }
 
   // 对比本地数据，过滤出需要更新的好友关系ID
   private async compareAndFilterFriendVersions(friendVersions: any[]): Promise<string[]> {
+    try {
     if (!friendVersions || friendVersions.length === 0) {
       return []
     }
@@ -73,7 +76,7 @@ class FriendSyncModule {
     }
 
     // 查询本地已存在的记录
-    const existingFriendsMap = await dBServiceFriend.getFriendRecordsByIds(friendshipIds)
+    const existingFriendsMap = await dBServiceFriend.getFriendRecordsByIds({ friendshipIds })
 
     // 过滤出需要更新的friendshipIds（本地不存在或版本号更旧的数据）
     const needUpdateFriendshipIds = friendshipIds.filter((id) => {
@@ -85,10 +88,16 @@ class FriendSyncModule {
     })
 
     return needUpdateFriendshipIds
+    }
+    catch (error) {
+      logger.error({ text: '好友版本对比失败', data: { error: (error as any)?.message } })
+      return []
+    }
   }
 
   // 同步好友数据
   private async syncFriendData(friendshipIds: string[]) {
+    try {
     if (friendshipIds.length === 0) {
       return
     }
@@ -118,7 +127,7 @@ class FriendSyncModule {
           updatedAt: friend.updateAt,
         }))
 
-        await dBServiceFriend.batchCreate(friends)
+        await dBServiceFriend.batchCreate({ friends })
 
         // 收集同步的数据用于通知
         syncedFriends.push(...friends.map(friend => ({
@@ -133,6 +142,10 @@ class FriendSyncModule {
       sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_UPDATE, {
         updatedFriends: syncedFriends,
       })
+    }
+    }
+    catch (error) {
+      logger.error({ text: '好友数据同步失败', data: { error: (error as any)?.message } })
     }
   }
 

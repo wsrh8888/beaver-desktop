@@ -47,7 +47,8 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     const { page = 1, limit = 50 } = params
 
     // 1. 先获取用户会话设置，过滤掉隐藏的会话
-    const userConversations = await dbServiceChatUserConversation.getAllUserConversations(userId)
+    const userConversationsResult = await dbServiceChatUserConversation.getAllUserConversations({ userId })
+    const userConversations = userConversationsResult.conversations
     const visibleUserConversations = userConversations.filter((uc: any) => uc.isHidden === 0)
 
     if (visibleUserConversations.length === 0) {
@@ -59,7 +60,9 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
 
     // 2. 根据会话ID获取会话元数据（以 conversation_metas 为主，排序时间来源）
     const conversationIds = visibleUserConversations.map((uc: any) => uc.conversationId)
-    const conversationMetas = await dBServiceChatConversation.getConversationsByIds(conversationIds)
+    const conversationMetas = await dBServiceChatConversation.getConversationsByIds({
+      conversationIds,
+    })
     const metaMap = new Map()
     conversationMetas.forEach((meta: any) => {
       metaMap.set(meta.conversationId, meta)
@@ -124,7 +127,7 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       }
     })
 
-    const friendDetailsMap = await dBServiceFriend.getFriendDetails(userId, privateChatFriendIds)
+    const friendDetailsMap = await dBServiceFriend.getFriendDetails({ userId, friendIds: privateChatFriendIds })
     const groupDetails = await dbServiceGroup.getGroupsByIds(groupIds)
     const groupDetailsMap = new Map()
     groupDetails.forEach((group: any) => {
@@ -211,7 +214,8 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     const { conversationId } = params
 
     // 1. 获取用户会话设置
-    const userConversation = await dbServiceChatUserConversation.getConversationInfo(header, params)
+    const userConversationResult = await dbServiceChatUserConversation.getConversationInfo({ header, params })
+    const userConversation = userConversationResult.conversationInfo
     if (!userConversation) {
       return null
     }
@@ -235,7 +239,7 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         const userId2 = parts[2]
         const friendId = (userId1 === userId) ? userId2 : userId1
 
-        const friendDetailsMap = await dBServiceFriend.getFriendDetails(userId, [friendId])
+        const friendDetailsMap = await dBServiceFriend.getFriendDetails({ userId, friendIds: [friendId] })
         const friendDetail = friendDetailsMap.get(friendId)
         if (friendDetail) {
           avatar = friendDetail?.avatar || ''
@@ -402,4 +406,4 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
 }
 
 // 导出单例实例
-export const conversationBusiness = new ConversationBusiness()
+export default new ConversationBusiness()

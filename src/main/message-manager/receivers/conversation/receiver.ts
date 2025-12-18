@@ -84,13 +84,15 @@ class ConversationReceiver {
 
         // 创建用户会话关系
         await dbServiceChatUserConversation.create({
-          userId: currentUserId,
-          conversationId: message.conversationId,
-          isHidden: 0,
-          isPinned: 0,
-          isMuted: 0,
-          userReadSeq: 0,
-          version: 1,
+          userConversationData: {
+            userId: currentUserId,
+            conversationId: message.conversationId,
+            isHidden: 0,
+            isPinned: 0,
+            isMuted: 0,
+            userReadSeq: 0,
+            version: 1,
+          }
         })
 
         logger.info({
@@ -152,12 +154,14 @@ class ConversationReceiver {
     for (const message of messages) {
       try {
         // 软删除：将用户会话标记为隐藏
-        await dbServiceChatUserConversation.batchCreate([{
-          userId: currentUserId,
-          conversationId: message.conversationId,
-          isHidden: 1,
-          version: Date.now(),
-        }])
+        await dbServiceChatUserConversation.batchCreate({
+          userConversations: [{
+            userId: currentUserId,
+            conversationId: message.conversationId,
+            isHidden: 1,
+            version: Date.now(),
+          }]
+        })
 
         logger.info({
           text: '会话删除成功',
@@ -189,12 +193,14 @@ class ConversationReceiver {
         const readSeq = message.data?.readSeq || 0
 
         // 更新用户已读序列号
-        await dbServiceChatUserConversation.batchCreate([{
-          userId: currentUserId,
-          conversationId: message.conversationId,
-          userReadSeq: readSeq,
-          version: Date.now(),
-        }])
+        await dbServiceChatUserConversation.batchCreate({
+          userConversations: [{
+            userId: currentUserId,
+            conversationId: message.conversationId,
+            userReadSeq: readSeq,
+            version: Date.now(),
+          }]
+        })
 
         logger.info({
           text: '会话已读更新成功',
@@ -221,3 +227,5 @@ class ConversationReceiver {
     return userStore?.userId || null
   }
 }
+
+export default new ConversationReceiver()

@@ -23,7 +23,7 @@ class FriendVerifySyncModule {
 
     try {
       // 获取本地同步时间戳
-      const localCursor = await dbServiceDataSync.get('friend_verifies')
+      const localCursor = await dbServiceDataSync.get({ module: 'friend_verifies' })
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器上变更的好友验证版本信息
@@ -48,12 +48,13 @@ class FriendVerifySyncModule {
     }
     catch (error) {
       this.syncStatus = SyncStatus.FAILED
-      logger.error({ text: '好友验证数据同步失败', data: { error: (error as any)?.message } })
+      logger.error({ text: '好友验证数据同步失败 checkAndSync', data: { error: (error as any)?.message } })
     }
   }
 
   // 对比本地数据，过滤出需要更新的好友验证ID
   private async compareAndFilterFriendVerifyVersions(friendVerifyVersions: any[]): Promise<string[]> {
+    try {
     if (!friendVerifyVersions || friendVerifyVersions.length === 0) {
       return []
     }
@@ -67,7 +68,7 @@ class FriendVerifySyncModule {
     }
 
     // 查询本地已存在的记录
-    const existingVerifiesMap = await dBServiceFriendVerify.getFriendVerifiesByIds(verifyIds)
+    const existingVerifiesMap = await dBServiceFriendVerify.getFriendVerifiesByIds({ verifyIds })
 
     // 过滤出需要更新的ID（本地不存在或版本号更旧的数据）
     const needUpdateVerifyIds = verifyIds.filter((id) => {
@@ -79,10 +80,16 @@ class FriendVerifySyncModule {
     })
 
     return needUpdateVerifyIds
+    }
+    catch (error) {
+      logger.error({ text: '好友验证版本对比失败', data: { error: (error as any)?.message } })
+      return []
+    }
   }
 
   // 同步好友验证数据
   private async syncFriendVerifyData(verifyIds: string[]) {
+    try {
     if (verifyIds.length === 0) {
       return
     }
@@ -113,7 +120,7 @@ class FriendVerifySyncModule {
         }))
 
         // 批量插入好友验证数据
-        await dBServiceFriendVerify.batchCreate(friendVerifies)
+        await dBServiceFriendVerify.batchCreate({ verifies: friendVerifies })
 
         // 收集同步的数据用于通知
         syncedVerifies.push(...friendVerifies.map(verify => ({
@@ -128,6 +135,10 @@ class FriendVerifySyncModule {
       sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_VALID_UPDATE, {
         updatedVerifies: syncedVerifies,
       })
+    }
+    }
+    catch (error) {
+      logger.error({ text: '好友验证数据同步失败', data: { error: (error as any)?.message } })
     }
   }
 

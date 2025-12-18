@@ -1,4 +1,4 @@
-import { userBusiness } from 'mainModule/business/user/user'
+import userBusiness from 'mainModule/business/user/user'
 
 /**
  * @description: 用户资料接收器 - 处理 users 表的操作
@@ -23,3 +23,5 @@ class UserReceiver {
     }
   }
 }
+
+export default new UserReceiver()

@@ -174,7 +174,8 @@ class GroupJoinRequest extends BaseService {
   // 获取用户相关的所有群组申请记录（纯数据库查询）
   // 包括：1. 用户申请的群组（applicantUserId = userId）
   //       2. 别人申请用户管理的群组（groupId IN (用户管理的群组ID列表)）
-   async getUserRelatedJoinRequests(userId: string, managedGroupIds: string[], options?: { page?: number, limit?: number }): Promise<IDBGroupJoinRequest[]> {
+   async getUserRelatedJoinRequests(req: DBGetUserRelatedJoinRequestsReq): Promise<DBGetUserRelatedJoinRequestsRes> {
+    const { userId, managedGroupIds, options } = req
     const { page = 1, limit = 20 } = options || {}
     const offset = (page - 1) * limit
 
@@ -205,7 +206,8 @@ class GroupJoinRequest extends BaseService {
   }
 
   // 获取用户相关的所有群组申请总数（纯数据库查询）
-   async getUserRelatedJoinRequestsCount(userId: string, managedGroupIds: string[]): Promise<number> {
+   async getUserRelatedJoinRequestsCount(req: DBGetUserRelatedJoinRequestsCountReq): Promise<number> {
+    const { userId, managedGroupIds } = req
     // 构建查询条件：用户申请的 OR 别人申请用户管理的群组
     const conditions = []
 

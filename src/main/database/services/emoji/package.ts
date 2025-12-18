@@ -61,7 +61,7 @@ class EmojiPackage extends BaseService {
    */
   async getPackagesByIds(req: DBGetEmojiPackagesByIdsReq): Promise<DBGetEmojiPackagesByIdsRes> {
     if (req.ids.length === 0) {
-      return { packages: new Map() }
+      return new Map()
     }
 
     const packageList = await this.db
@@ -74,28 +74,25 @@ class EmojiPackage extends BaseService {
       packages.set(item.packageId, item)
     })
 
-    return { packages }
+    return packages
   }
 
   /**
    * @description 根据用户ID获取用户创建的表情包
    */
   async getPackagesByUserId(req: DBGetPackagesByUserIdReq): Promise<DBGetPackagesByUserIdRes> {
-    const packages = await this.db
+    return await this.db
       .select()
       .from(emojiPackage)
       .where(eq(emojiPackage.userId, req.userId))
       .all()
-
-    return { packages }
   }
 
   /**
    * @description 获取所有表情包
    */
   async getAllPackages(req: DBGetAllEmojiPackagesReq): Promise<DBGetAllEmojiPackagesRes> {
-    const packages = await this.db.select().from(emojiPackage).all()
-    return { packages }
+    return await this.db.select().from(emojiPackage).all()
   }
 
   /**
@@ -108,7 +105,7 @@ class EmojiPackage extends BaseService {
       .where(eq(emojiPackage.packageId, req.id))
       .limit(1)
 
-    return { package: result[0] || null }
+    return result[0] || null
   }
 
   /**
@@ -116,7 +113,7 @@ class EmojiPackage extends BaseService {
    */
   async getPackageByAutoId(req: DBGetPackageByAutoIdReq): Promise<DBGetPackageByAutoIdRes> {
     const result = await this.db.select().from(emojiPackage).where(eq(emojiPackage.id, req.id)).limit(1)
-    return { package: result[0] || null }
+    return result[0] || null
   }
 }
 

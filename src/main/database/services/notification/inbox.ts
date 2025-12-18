@@ -8,10 +8,23 @@ import type {
   DBGetUserInboxRes,
   DBMarkAsReadReq,
   DBDeleteInboxItemReq,
+  DBMarkReadByEventIdsReq,
+  DBGetInboxesAfterVersionReq,
+  DBGetInboxesAfterVersionRes,
+  DBGetVersionMapByEventIdsReq,
+  DBGetVersionMapByEventIdsRes,
+  DBGetByEventIdsReq,
+  DBGetByEventIdsRes,
+  DBGetUnreadCountAfterTimeReq,
+  DBGetUnreadCountAfterTimeRes,
+  DBGetBasicUnreadByCategoriesReq,
+  DBGetBasicUnreadByCategoriesRes,
+  DBGetByUserIdAndCategoriesReq,
+  DBGetByUserIdAndCategoriesRes,
 } from 'commonModule/type/database/server/notification/inbox'
 
 // 通知收件箱服务
-class NotificationInboxService extends BaseService {
+class dBServiceNotificationInbox extends BaseService {
 
   /**
    * @description 批量添加通知到收件箱
@@ -38,8 +51,11 @@ class NotificationInboxService extends BaseService {
       .run()
   }
 
-  // 标记指定事件为已读
-   async markReadByEventIds(userId: string, eventIds: string[], readAt?: number): Promise<void> {
+  /**
+   * @description 标记指定事件为已读
+   */
+  async markReadByEventIds(req: DBMarkReadByEventIdsReq): Promise<void> {
+    const { userId, eventIds, readAt } = req
     if (!eventIds.length)
       return
 
@@ -59,9 +75,12 @@ class NotificationInboxService extends BaseService {
       .run()
   }
 
-  // 按版本增量拉取用户收件箱
-   async getInboxesAfterVersion(userId: string, version: number, limit = 100): Promise<IDBNotificationInbox[]> {
-    return await this.db.select()
+  /**
+   * @description 按版本增量拉取用户收件箱
+   */
+  async getInboxesAfterVersion(req: DBGetInboxesAfterVersionReq): Promise<DBGetInboxesAfterVersionRes> {
+    const { userId, version, limit = 100 } = req
+    const inboxes = await this.db.select()
       .from(notificationInboxes)
       .where(
         and(
@@ -72,12 +91,16 @@ class NotificationInboxService extends BaseService {
       .orderBy(notificationInboxes.version)
       .limit(limit)
       .all()
+    return { inboxes }
   }
 
-  // 获取指定事件ID的收件箱本地版本映射
-   async getVersionMapByEventIds(userId: string, eventIds: string[]): Promise<Map<string, number>> {
+  /**
+   * @description 获取指定事件ID的收件箱本地版本映射
+   */
+  async getVersionMapByEventIds(req: DBGetVersionMapByEventIdsReq): Promise<DBGetVersionMapByEventIdsRes> {
+    const { userId, eventIds } = req
     if (!userId || !eventIds.length)
-      return new Map()
+      return { versionMap: new Map() }
 
     const rows = await this.db.select({
       eventId: notificationInboxes.eventId,
@@ -92,19 +115,22 @@ class NotificationInboxService extends BaseService {
       )
       .all()
 
-    const map = new Map<string, number>()
+    const versionMap = new Map<string, number>()
     rows.forEach((row: { eventId: string, version?: number }) => {
-      map.set(row.eventId, row.version || 0)
+      versionMap.set(row.eventId, row.version || 0)
     })
-    return map
+    return versionMap
   }
 
-  // 根据事件ID列表获取收件箱记录
-   async getByEventIds(userId: string, eventIds: string[]): Promise<IDBNotificationInbox[]> {
+  /**
+   * @description 根据事件ID列表获取收件箱记录
+   */
+  async getByEventIds(req: DBGetByEventIdsReq): Promise<DBGetByEventIdsRes> {
+    const { userId, eventIds } = req
     if (!userId || !eventIds.length)
-      return []
+      return { inboxes: [] }
 
-    return await this.db.select()
+    const inboxes = await this.db.select()
       .from(notificationInboxes)
       .where(
         and(
@@ -113,12 +139,16 @@ class NotificationInboxService extends BaseService {
         ),
       )
       .all()
+    return { inboxes }
   }
 
-  // 获取指定用户和分类的基础未读统计（不考虑游标时间）
-   async getBasicUnreadByCategories(userId: string, categories?: string[]) {
+  /**
+   * @description 获取基础未读统计（不考虑游标时间）
+   */
+  async getBasicUnreadByCategories(req: DBGetBasicUnreadByCategoriesReq): Promise<DBGetBasicUnreadByCategoriesRes> {
+    const { userId, categories } = req
     if (!userId)
-      return [] as Array<{ category: string, unread: number }>
+      return { unreadStats: [] }
 
     const hasCategories = !!categories && categories.length > 0
 
@@ -138,19 +168,23 @@ class NotificationInboxService extends BaseService {
       .groupBy(notificationInboxes.category)
       .all()
 
-    return rows.map((row: { category: string, unread: number }) => ({
+    const unreadStats = rows.map((row: { category: string, unread: number }) => ({
       category: row.category,
       unread: Number(row.unread) || 0,
     }))
+    return { unreadStats }
   }
 
-  // 获取用户指定分类的通知列表（基础查询）
-   async getByUserIdAndCategories(userId: string, categories?: string[], limit = 100) {
-    if (!userId) return []
+  /**
+   * @description 获取用户指定分类的通知列表（基础查询）
+   */
+  async getByUserIdAndCategories(req: DBGetByUserIdAndCategoriesReq): Promise<DBGetByUserIdAndCategoriesRes> {
+    const { userId, categories, limit = 100 } = req
+    if (!userId) return { inboxes: [] }
 
     const hasCategories = !!categories && categories.length > 0
 
-    return await this.db.select()
+    const inboxes = await this.db.select()
       .from(notificationInboxes)
       .where(
         hasCategories
@@ -163,15 +197,22 @@ class NotificationInboxService extends BaseService {
       .orderBy(notificationInboxes.createdAt)
       .limit(limit)
       .all()
+    return { inboxes }
   }
 
-  // 获取指定时间之后指定分类的未读数量
-   async getUnreadCountAfterTime(userId: string, category: string, afterTime: number) {
-    return await this.db.$count(notificationInboxes, and(
+  /**
+   * @description 获取指定时间之后指定分类的未读数量
+   */
+  async getUnreadCountAfterTime(req: DBGetUnreadCountAfterTimeReq): Promise<DBGetUnreadCountAfterTimeRes> {
+    const { userId, category, afterTime } = req
+    const unreadCount = await this.db.$count(notificationInboxes, and(
       eq(notificationInboxes.userId as any, userId as any),
       eq(notificationInboxes.category as any, category as any),
       gt(notificationInboxes.createdAt as any, afterTime),
       eq(notificationInboxes.isRead as any, 0),
     ))
+    return { unreadCount }
   }
 }
+
+export default new dBServiceNotificationInbox()

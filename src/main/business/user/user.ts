@@ -105,4 +105,4 @@ class UserBusiness extends BaseBusiness<UserSyncItem> {
 }
 
 // 导出单例实例
-export const userBusiness = new UserBusiness()
+export default new UserBusiness()

@@ -17,7 +17,7 @@ class NotificationReadCursorSync {
       return
 
     try {
-      const cursor = await dbServiceDataSync.get('notification_reads')
+      const cursor = await dbServiceDataSync.get({ module: 'notification_reads' })
       const sinceVersion = cursor?.version || 0
 
       const resp = await datasyncGetSyncNotificationReadCursorsApi({

@@ -1,4 +1,5 @@
-import { notificationEventBusiness as eventBusiness } from 'mainModule/business/notification/event'
+import notificationEventBusiness from 'mainModule/business/notification/event'
+const eventBusiness = notificationEventBusiness
 
 /**
  * @description: 通知事件接收器 - 处理notification_event表的操作
@@ -25,3 +26,5 @@ class EventReceiver {
     }
   }
 }
+
+export default new EventReceiver()

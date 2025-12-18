@@ -1,7 +1,7 @@
-import { favoriteEmojiBusiness } from 'mainModule/business/emoji/favorite-emoji'
-import { favoriteEmojiPackageBusiness } from 'mainModule/business/emoji/favorite-package'
-import { emojiPackageEmojiBusiness } from 'mainModule/business/emoji/package-emoji'
-import { emojiBusiness } from 'mainModule/business/emoji/emoji'
+import favoriteEmojiBusiness from 'mainModule/business/emoji/favorite-emoji'
+import favoriteEmojiPackageBusiness from 'mainModule/business/emoji/favorite-package'
+import emojiPackageEmojiBusiness from 'mainModule/business/emoji/package-emoji'
+import emojiBusiness from 'mainModule/business/emoji/emoji'
 
 /**
  * @description: 表情收藏接收器 - 处理表情收藏相关表的操作
@@ -48,3 +48,5 @@ class CollectReceiver {
     }
   }
 }
+
+export default new CollectReceiver()

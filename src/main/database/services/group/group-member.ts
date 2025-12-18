@@ -100,15 +100,14 @@ class GroupMember extends BaseService {
    * @description 获取群成员列表（纯数据库查询，不含业务逻辑）
    */
   async getGroupMembers(req: DBGetGroupMembersReq): Promise<DBGetGroupMembersRes> {
-    const members = await this.db.select().from(groupMembers).where(and(eq(groupMembers.groupId as any, req.groupId), eq(groupMembers.status as any, 1))).all()
-    return { members }
+    return await this.db.select().from(groupMembers).where(and(eq(groupMembers.groupId as any, req.groupId), eq(groupMembers.status as any, 1))).all()
   }
 
   /**
    * @description 获取用户加入的群组成员记录（纯数据库查询，不含业务逻辑）
    */
   async getUserMemberships(req: DBGetUserMembershipsReq): Promise<DBGetUserMembershipsRes> {
-    const memberships = await this.db
+    return await this.db
       .select()
       .from(groupMembers)
       .where(and(
@@ -116,7 +115,6 @@ class GroupMember extends BaseService {
         eq(groupMembers.status as any, 1),
       ))
       .all()
-    return { memberships }
   }
 
   // 获取用户加入的群组列表（包含群组详细信息）- 已废弃，请使用业务层

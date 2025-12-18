@@ -23,7 +23,7 @@ export interface TrayBounds {
  * Popup 窗口管理器
  * 负责管理托盘图标的 popup 窗口显示、隐藏和交互
  */
-class PopupWindow {
+export class PopupWindow {
   private window: ElectronBrowserWindow | null = null
   private hideTimer: NodeJS.Timeout | null = null
   private checkTimer: NodeJS.Timeout | null = null

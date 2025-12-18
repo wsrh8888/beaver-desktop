@@ -1,7 +1,7 @@
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { chatSyncApi } from 'mainModule/api/chat'
 import { datasyncGetSyncChatMessagesApi } from 'mainModule/api/datasync'
-import { MessageService } from 'mainModule/database/services/chat/message'
+import dBServiceMessage  from 'mainModule/database/services/chat/message'
 import  dBServiceChatSyncStatus from 'mainModule/database/services/chat/sync-status'
 import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
@@ -20,7 +20,7 @@ class MessageSync {
 
     try {
       // 获取本地最后同步时间
-      const localCursor = await dbServiceDataSync.get('chat_messages')
+      const localCursor = await dbServiceDataSync.get({ module: 'chat_messages' })
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器上变更的消息版本信息
@@ -49,6 +49,7 @@ class MessageSync {
 
   // 对比本地数据，过滤出需要同步消息的会话
   private async compareAndFilterMessageVersions(messageVersions: any[]): Promise<Array<{ conversationId: string, serverSeq: number }>> {
+    try {
     if (messageVersions.length === 0) {
       return []
     }
@@ -64,7 +65,7 @@ class MessageSync {
     const conversationIds = Array.from(serverConversationMap.keys())
 
     // 批量查询本地消息同步状态
-    const localVersions = await ChatSyncStatusService.getMessageVersions(conversationIds)
+    const localVersions = await dBServiceChatSyncStatus.getMessageVersions({ conversationIds })
     const localVersionMap = new Map(localVersions.map(v => [v.conversationId, v.seq]))
 
     // 过滤出需要同步的会话（服务器seq > 本地seq）
@@ -78,15 +79,21 @@ class MessageSync {
     }
 
     return needSyncConversations
+    }
+    catch (error) {
+      logger.error({ text: '消息版本对比失败', data: { error: (error as any)?.message } })
+      return []
+    }
   }
 
   // 同步指定会话的消息数据
   private async syncMessagesForConversations(conversationsWithSeq: Array<{ conversationId: string, serverSeq: number }>) {
+    try {
     // 同步每个会话的消息
     for (const { conversationId, serverSeq } of conversationsWithSeq) {
       // 获取本地消息同步状态
-      const localSyncStatus = await ChatSyncStatusService.getMessageSyncStatus(conversationId)
-      const localSeq = localSyncStatus?.messageSeq || 0
+      const localSyncStatus = await dBServiceChatSyncStatus.getMessageSyncStatus({ conversationId })
+      const localSeq = localSyncStatus?.seq || 0
 
       // 同步该会话的消息（从本地seq+1开始到服务器seq）
       await this.syncConversationMessages(
@@ -96,7 +103,7 @@ class MessageSync {
       )
 
       // 更新消息同步状态
-      await ChatSyncStatusService.upsertMessageSyncStatus(conversationId, serverSeq)
+      await dBServiceChatSyncStatus.upsertMessageSyncStatus({ conversationId, seq: serverSeq })
     }
 
     // 发送通知到render进程，告知消息数据已同步
@@ -108,6 +115,10 @@ class MessageSync {
         })),
       })
     }
+    }
+    catch (error) {
+      logger.error({ text: '消息同步失败', data: { error: (error as any)?.message } })
+    }
   }
 
   // 同步单个会话的消息
@@ -116,11 +127,16 @@ class MessageSync {
     fromSeq: number,
     toSeq: number,
   ) {
+    try {
     await this.doSyncConversationMessages(
       conversationId,
       fromSeq,
       toSeq,
     )
+    }
+    catch (error) {
+      logger.error({ text: '消息同步失败', data: { error: (error as any)?.message } })
+    }
   }
 
   // 执行单个会话的消息同步
@@ -129,6 +145,7 @@ class MessageSync {
     fromSeq: number,
     toSeq: number,
   ) {
+    try {
     let currentSeq = fromSeq
 
     while (currentSeq <= toSeq) {
@@ -155,13 +172,17 @@ class MessageSync {
           updatedAt: Math.floor(Date.now() / 1000),
         }))
 
-        await MessageService.batchCreate(messages)
+        await dBServiceMessage.batchCreate(messages)
 
         currentSeq = Math.min(currentSeq + 99, toSeq) + 1
       }
       else {
         break
       }
+    }
+    }
+    catch (error) {
+      logger.error({ text: '消息同步失败', data: { error: (error as any)?.message } })
     }
   }
 }

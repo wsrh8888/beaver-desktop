@@ -26,9 +26,19 @@ export interface DBGetGroupMembersReq {
 /**
  * @description 获取群成员列表响应
  */
-export interface DBGetGroupMembersRes {
-  members: IDBGroupMember[]
+export type DBGetGroupMembersRes = IDBGroupMember[]
+
+/**
+ * @description 获取用户加入的群组成员记录请求
+ */
+export interface DBGetUserMembershipsReq {
+  userId: string
 }
+
+/**
+ * @description 获取用户加入的群组成员记录响应
+ */
+export type DBGetUserMembershipsRes = IDBGroupMember[]
 
 /**
  * @description 更新群成员信息请求
@@ -45,32 +55,4 @@ export interface DBUpdateGroupMemberReq {
 export interface DBRemoveGroupMemberReq {
   groupId: string
   userId: string
-}
-
-/**
- * @description 获取群成员列表请求
- */
-export interface DBGetGroupMembersReq {
-  groupId: string
-}
-
-/**
- * @description 获取群成员列表响应
- */
-export interface DBGetGroupMembersRes {
-  members: IDBGroupMember[]
-}
-
-/**
- * @description 获取用户加入的群组成员记录请求
- */
-export interface DBGetUserMembershipsReq {
-  userId: string
-}
-
-/**
- * @description 获取用户加入的群组成员记录响应
- */
-export interface DBGetUserMembershipsRes {
-  memberships: IDBGroupMember[]
 }

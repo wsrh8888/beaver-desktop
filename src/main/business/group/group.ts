@@ -42,7 +42,7 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     const { userId } = header
 
     // 调用服务层获取用户加入的群组成员记录（纯数据库查询）
-    const userMemberships = await dBServiceGroupMember.getUserMemberships(userId)
+    const userMemberships = await dBServiceGroupMember.getUserMemberships({ userId })
 
     if (userMemberships.length === 0) {
       return { list: [], count: 0 }
@@ -83,7 +83,7 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     // 业务逻辑：获取每个群组的成员数量
     const memberCounts = new Map<string, number>()
     for (const groupId of groupIds) {
-      const members = await dBServiceGroupMember.getGroupMembers(groupId)
+      const members = await dBServiceGroupMember.getGroupMembers({ groupId })
       memberCounts.set(groupId, members.length)
     }
 
@@ -111,11 +111,11 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     const { groupId } = params
 
     // 调用服务层获取群组成员（纯数据库查询）
-    const members = await dBServiceGroupMember.getGroupMembers(groupId)
+    const members = await dBServiceGroupMember.getGroupMembers({ groupId })
 
     // 业务逻辑：获取成员的用户信息
     const userIds = members.map((m: any) => m.userId).filter((id: string) => id)
-    const userInfos = await dBServiceUser.getUsersBasicInfo(userIds)
+    const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds })
     const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
 
     // 业务逻辑：格式化数据
@@ -147,13 +147,13 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     // 调用服务层批量获取群组成员（纯数据库查询）
     const allMembers = []
     for (const groupId of groupIds) {
-      const members = await dBServiceGroupMember.getGroupMembers(groupId)
+      const members = await dBServiceGroupMember.getGroupMembers({ groupId })
       allMembers.push(...members)
     }
 
     // 业务逻辑：获取所有成员的用户信息
     const userIds = allMembers.map((m: any) => m.userId).filter((id: string) => id)
-    const userInfos = await dBServiceUser.getUsersBasicInfo(userIds)
+    const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds })
     const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
 
     // 业务逻辑：格式化数据
@@ -187,20 +187,20 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     const { page = 1, limit = 20 } = params
 
     // 调用服务层获取用户管理的群组（纯数据库查询）
-    const userMemberships = await dBServiceGroupMember.getUserMemberships(userId)
+    const userMemberships = await dBServiceGroupMember.getUserMemberships({ userId })
     const managedGroups = userMemberships.filter((m: any) => m.role === 1 || m.role === 2) // 1群主 2管理员
     const managedGroupIds = managedGroups.map((g: any) => g.groupId)
 
     // 调用服务层获取用户相关的所有群组申请记录（纯数据库查询）
     // 包括：用户申请的 + 别人申请用户管理的群组
-    const requests = await dBServiceGroupJoinRequest.getUserRelatedJoinRequests(userId, managedGroupIds, { page, limit })
-    const total = await dBServiceGroupJoinRequest.getUserRelatedJoinRequestsCount(userId, managedGroupIds)
+    const requests = await dBServiceGroupJoinRequest.getUserRelatedJoinRequests({ userId, managedGroupIds, options: { page, limit } })
+    const total = await dBServiceGroupJoinRequest.getUserRelatedJoinRequestsCount({ userId, managedGroupIds })
 
     // 业务逻辑：获取所有申请者ID
     const applicantIds = requests.map((r: any) => r.applicantUserId).filter((id: string) => id)
 
     // 业务逻辑：批量获取申请者用户信息
-    const userInfos = await dBServiceUser.getUsersBasicInfo(applicantIds)
+    const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: applicantIds })
     const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
 
     // 业务逻辑：转换为API响应格式
@@ -297,4 +297,4 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
 }
 
 // 导出单例实例
-export const groupBusiness = new GroupBusiness()
+export default new GroupBusiness()

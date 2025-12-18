@@ -36,3 +36,5 @@ class ToolListReceiver {
     }
   }
 }
+
+export default new ToolListReceiver()

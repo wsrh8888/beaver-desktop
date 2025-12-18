@@ -12,7 +12,7 @@ import type {
 } from 'commonModule/type/database/server/chat/message'
 
 // 消息服务
-class MessageService extends BaseService {
+class dBServiceMessage extends BaseService {
   /**
    * @description 创建单条消息
    */
@@ -89,7 +89,7 @@ class MessageService extends BaseService {
     // 获取消息列表 - 按seq降序排列，确保最新的消息在前
     // limit + 1 用于判断是否还有更多数据
     const messages = await query.orderBy(desc(chats.seq as any)).limit(limit + 1).all()
-    return { messages }
+    return messages
   }
 
   /**
@@ -103,9 +103,9 @@ class MessageService extends BaseService {
         eq(chats.conversationId as any, req.conversationId as any),
       ),
     ).orderBy(chats.seq, 'asc').all()
-    return { messages }
+    return messages
   }
 }
 
 // 导出消息服务实例
-export default new MessageService()
+export default new dBServiceMessage()

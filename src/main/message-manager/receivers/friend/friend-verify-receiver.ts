@@ -1,6 +1,6 @@
-import { friendBusiness } from 'mainModule/business/friend/friend'
-import { friendVerifyBusiness } from 'mainModule/business/friend/friend-verify'
-import { userBusiness } from 'mainModule/business/user/user'
+import friendBusiness from 'mainModule/business/friend/friend'
+import friendVerifyBusiness from 'mainModule/business/friend/friend-verify'
+import userBusiness from 'mainModule/business/user/user'
 
 /**
  * @description: 好友验证接收器 - 处理friend_verify表的操作
@@ -51,3 +51,5 @@ class FriendVerifyReceiver {
     }
   }
 }
+
+export default new FriendVerifyReceiver()

@@ -6,7 +6,7 @@ import trayHandler from './application/tray'
 import cacheManager from './cache'
 import { initCustom, loadConfigs } from './config'
 import ipcManager from './ipc'
-import { AuthHandler } from './ipc/render-to-main/auth'
+import authHandler from './ipc/render-to-main/auth'
 import messageManager from './message-manager'
 import { store } from './store'
 import { mcpManager } from './mcp-manager/index.js'
@@ -36,10 +36,10 @@ class Main {
 
     if (store.get('userInfo')?.token) {
       // 初始化登录状态
-      AuthHandler.handleLogin()
+      authHandler.handleLogin()
     }
     else {
-      AuthHandler.handleLogout()
+      authHandler.handleLogout()
     }
     // IPC已在beforeAppReady中初始化，这里不需要重复初始化
     // ipcBase.init()

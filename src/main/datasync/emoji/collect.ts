@@ -2,11 +2,14 @@ import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/
 import { getEmojiCollectsByIdsApi } from 'mainModule/api/emoji'
 import dBServiceEmojiCollect  from 'mainModule/database/services/emoji/collect'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import Logger from 'mainModule/utils/logger'
 
+const logger = new Logger('datasync-emoji-collect')
 // 表情收藏同步模块
 class CollectSync {
   // 同步表情收藏数据（emoji_collect 表）
   async sync(collectVersions: any[]) {
+    try {
     if (!collectVersions || collectVersions.length === 0) {
       return
     }
@@ -25,6 +28,10 @@ class CollectSync {
     if (needUpdateCollectIds.length > 0) {
       await this.syncEmojiCollectData(needUpdateCollectIds)
     }
+    }
+    catch (error) {
+      logger.error({ text: '表情收藏数据同步失败', data: { error: (error as any)?.message } })
+    }
   }
 
   // 对比本地数据，过滤出需要更新的收藏记录ID
@@ -37,7 +44,7 @@ class CollectSync {
       return []
     }
 
-    const existingRecordsMap = await dBServiceEmojiCollect.getCollectsByIds(ids)
+    const existingRecordsMap = await dBServiceEmojiCollect.getCollectsByIds({ ids })
 
     const needUpdateIds = ids.filter((id) => {
       const existingRecord = existingRecordsMap.get(id)

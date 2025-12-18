@@ -4,7 +4,7 @@ import wsManager from 'mainModule/ws-manager'
 // 数据同步处理器
 class DataSyncHandler {
   // 处理IPC命令
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataSyncCommand, _data: any = {}): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: DataSyncCommand, _data: any = {}): Promise<any> {
     console.log('11111111111111111111111111', command, _data)
     switch (command) {
       case DataSyncCommand.MANUAL_SYNC:
@@ -18,7 +18,7 @@ class DataSyncHandler {
   }
 
   // 获取应用生命周期初始状态
-  private static async getAppLifecycleStatus(): Promise<{ status: string }> {
+  private async getAppLifecycleStatus(): Promise<{ status: string }> {
     const wsStatus = wsManager.getStatus()
     const dataSyncStatus = dataSyncManager.getStatus()
 
@@ -44,3 +44,5 @@ class DataSyncHandler {
     return { status: appStatus }
   }
 }
+
+export default new DataSyncHandler()

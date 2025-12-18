@@ -1,4 +1,4 @@
-import { friendBusiness } from 'mainModule/business/friend/friend'
+import friendBusiness from 'mainModule/business/friend/friend'
 
 /**
  * @description: 好友操作接收器 - 处理friends表的操作
@@ -24,3 +24,5 @@ class FriendReceiver {
     }
   }
 }
+
+export default new FriendReceiver()

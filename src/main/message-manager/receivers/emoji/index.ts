@@ -1,12 +1,12 @@
 import logger from 'mainModule/utils/log'
-import { CollectReceiver } from './collect-receiver'
+import collectReceiver from './collect-receiver'
 
 /**
  * 表情消息路由器
  * 根据消息类型路由到对应的接收器
  */
 class EmojiMessageRouter {
-  private collectReceiver = new CollectReceiver()
+  private collectReceiver = collectReceiver
 
   /**
    * 处理表情消息
@@ -33,4 +33,4 @@ class EmojiMessageRouter {
 }
 
 // 导出单例实例
-export const emojiMessageRouter = new EmojiMessageRouter()
+export default new EmojiMessageRouter()

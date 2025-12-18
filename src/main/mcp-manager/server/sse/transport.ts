@@ -1,6 +1,6 @@
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
 import type { IncomingMessage, ServerResponse } from 'http'
-import { SSEMessageHandler } from './message-handler.js'
+import sseMessageHandler from './message-handler.js'
 
 /**
  * SSE传输管理器
@@ -59,7 +59,7 @@ class SSETransportManager {
    * 获取消息处理函数
    */
   getMessageHandler(): (req: any, res: any) => Promise<void> {
-    return SSEMessageHandler.getMessageHandler(this.transports)
+    return sseMessageHandler.getMessageHandler(this.transports)
   }
 
   /**
@@ -72,3 +72,5 @@ class SSETransportManager {
     this.transports.clear()
   }
 }
+
+export default new SSETransportManager()

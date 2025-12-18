@@ -9,6 +9,14 @@ import type {
   DBBatchCreateFriendsReq,
   DBGetFriendDetailsReq,
   DBGetFriendDetailsRes,
+  DBGetFriendsByIdsReq,
+  DBGetFriendsByIdsRes,
+  DBGetFriendRecordsByIdsReq,
+  DBGetFriendRecordsByIdsRes,
+  DBGetFriendRelationsReq,
+  DBGetFriendRelationsRes,
+  DBGetFriendsByVerRangeReq,
+  DBGetFriendsByVerRangeRes,
 } from 'commonModule/type/database/server/friend/friend'
 
 // 好友服务
@@ -24,32 +32,35 @@ class Friend extends BaseService {
    * @description 创建或更新好友关系（upsert操作）
    */
   async upsert(req: DBUpsertFriendReq): Promise<void> {
-    return await this.db.insert(friends)
-      .values(friendData)
+    await this.db.insert(friends)
+      .values(req)
       .onConflictDoUpdate({
         target: friends.friendId,
         set: {
-          sendUserId: friendData.sendUserId,
-          revUserId: friendData.revUserId,
-          sendUserNotice: friendData.sendUserNotice,
-          revUserNotice: friendData.revUserNotice,
-          source: friendData.source,
-          isDeleted: friendData.isDeleted,
-          version: friendData.version,
-          updatedAt: friendData.updatedAt,
+          sendUserId: req.sendUserId,
+          revUserId: req.revUserId,
+          sendUserNotice: req.sendUserNotice,
+          revUserNotice: req.revUserNotice,
+          source: req.source,
+          isDeleted: req.isDeleted,
+          version: req.version,
+          updatedAt: req.updatedAt,
         },
       })
       .run()
   }
 
-  // 批量获取好友详细信息（包含用户信息和备注）
-   async getFriendDetails(userId: string, friendIds: string[]): Promise<Map<string, any>> {
+  /**
+   * @description 批量获取好友详细信息（包含用户信息和备注）
+   */
+  async getFriendDetails(req: DBGetFriendDetailsReq): Promise<DBGetFriendDetailsRes> {
+    const { userId, friendIds } = req
     if (friendIds.length === 0) {
       return new Map()
     }
 
     // 查询当前用户与指定好友的好友关系
-    const friendRelations = await dbManager.db
+    const friendRelations = await this.db
       .select()
       .from(friends)
       .where(
@@ -77,7 +88,7 @@ class Friend extends BaseService {
 
     // 查询用户信息
     const userIdsArray = Array.from(userIdsToQuery)
-    const userInfos = await dbManager.db
+    const userInfos = await this.db
       .select({
         userId: users.userId,
         nickName: users.nickName,
@@ -134,8 +145,11 @@ class Friend extends BaseService {
     return friendDetailsMap
   }
 
-  // 根据好友关系ID列表批量查询好友信息
-   async getFriendsByIds(friendIds: string[], currentUserId: string): Promise<IFriendInfo[]> {
+  /**
+   * @description 根据好友关系ID列表批量查询好友信息
+   */
+  async getFriendsByIds(req: DBGetFriendsByIdsReq): Promise<DBGetFriendsByIdsRes> {
+    const { friendIds, currentUserId } = req
     if (friendIds.length === 0) {
       return []
     }
@@ -185,7 +199,7 @@ class Friend extends BaseService {
     }
 
     // 构建好友列表
-    return friendRecords.map((record: any) => {
+    const friends = friendRecords.map((record: any) => {
       // 确定好友的用户ID
       const friendUserId = record.sendUserId === currentUserId
         ? record.revUserId
@@ -211,10 +225,14 @@ class Friend extends BaseService {
         source: record.source || '',
       }
     })
+    return friends
   }
 
-  // 根据friendshipIds批量查询本地好友关系（仅原始记录映射）
-   async getFriendRecordsByIds(friendshipIds: string[]): Promise<Map<string, any>> {
+  /**
+   * @description 根据friendshipIds批量查询本地好友关系（仅原始记录映射）
+   */
+  async getFriendRecordsByIds(req: DBGetFriendRecordsByIdsReq): Promise<DBGetFriendRecordsByIdsRes> {
+    const { friendshipIds } = req
     if (friendshipIds.length === 0) {
       return new Map()
     }
@@ -225,32 +243,36 @@ class Friend extends BaseService {
       .where(inArray(friends.friendId, friendshipIds as any))
       .all()
 
-    const friendMap = new Map<string, any>()
+    const friendRecords = new Map<string, any>()
     existingFriends.forEach((friend: any) => {
-      friendMap.set(friend.friendId, friend)
+      friendRecords.set(friend.friendId, friend)
     })
 
-    return friendMap
+    return friendRecords
   }
 
-  // 批量创建好友关系（调用upsert方法，避免重复数据错误）
-   async batchCreate(friendsData: any[]) {
-    if (friendsData.length === 0)
+  /**
+   * @description 批量创建好友关系（调用upsert方法，避免重复数据错误）
+   */
+  async batchCreate(req: DBBatchCreateFriendsReq): Promise<void> {
+    const { friends } = req
+    if (friends.length === 0)
       return
 
-    for (const friend of friendsData) {
+    for (const friend of friends) {
       await this.upsert(friend)
     }
   }
 
   /**
-   * 获取好友关系记录（纯数据库查询，不含业务逻辑）
+   * @description 获取好友关系记录（纯数据库查询，不含业务逻辑）
    */
-   async getFriendRelations(req: { userId: string, options?: { page?: number, limit?: number } }): Promise<{ relations: any[] }> {
+  async getFriendRelations(req: DBGetFriendRelationsReq): Promise<DBGetFriendRelationsRes> {
+    const { userId, options } = req
     const { page = 1, limit = 20 } = options || {}
     const offset = (page - 1) * limit
 
-    return await this.db
+    const relations = await this.db
       .select()
       .from(friends)
       .where(and(
@@ -260,19 +282,21 @@ class Friend extends BaseService {
       .limit(limit)
       .offset(offset)
       .all()
+
+    return relations
   }
 
-   async getFriendsByVerRange(header: any, params: any): Promise<{ list: IFriendInfo[] }> {
+  /**
+   * @description 根据版本范围获取好友
+   */
+  async getFriendsByVerRange(req: DBGetFriendsByVerRangeReq): Promise<DBGetFriendsByVerRangeRes> {
     try {
-      const userId = header?.userId
+      const { userId, startVersion = 0, endVersion = Number.MAX_SAFE_INTEGER } = req
 
       if (!userId) {
         console.error('用户ID不能为空')
-        return { list: [] }
+        return []
       }
-
-      const startVersion = params?.startVersion || 0
-      const endVersion = params?.endVersion || Number.MAX_SAFE_INTEGER
 
       // 查询指定版本范围内的好友关系记录
       const friendRelations = await this.db
@@ -287,7 +311,7 @@ class Friend extends BaseService {
         .all()
 
       if (friendRelations.length === 0) {
-        return { list: [] }
+        return []
       }
 
       // 收集需要查询的用户ID
@@ -347,14 +371,14 @@ class Friend extends BaseService {
           }
         })
 
-        return { list: friendList }
+        return friendList
       }
 
-      return { list: [] }
+      return []
     }
     catch (error) {
       console.error('根据版本范围获取好友列表失败:', error)
-      return { list: [] }
+      return []
     }
   }
 }

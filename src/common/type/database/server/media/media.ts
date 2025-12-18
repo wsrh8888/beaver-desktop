@@ -24,8 +24,14 @@ export interface DBGetMediaInfoReq {
 /**
  * @description 根据文件名获取媒体信息响应
  */
-export interface DBGetMediaInfoRes {
-  mediaInfo?: IDBMedia | null
+export type DBGetMediaInfoRes = {
+  fileName: string
+  path: string
+  type: string
+  size?: number
+  createdAt: number
+  updatedAt: number
+  isDeleted: number
 }
 
 /**

@@ -33,7 +33,7 @@ class NotificationEventBusiness extends BaseBusiness<NotificationEventSyncItem> 
    */
   async getByIds(eventIds: string[]) {
     try {
-      return await dBServiceNotificationEvent.getByIds(eventIds)
+      return await dBServiceNotificationEvent.getByIds({ eventIds })
     }
     catch (error) {
       logger.error({ text: '获取通知事件详情失败', data: { error: (error as any)?.message } })
@@ -118,4 +118,4 @@ class NotificationEventBusiness extends BaseBusiness<NotificationEventSyncItem> 
 }
 
 // 导出单例实例
-export const notificationEventBusiness = new NotificationEventBusiness()
+export default new NotificationEventBusiness()

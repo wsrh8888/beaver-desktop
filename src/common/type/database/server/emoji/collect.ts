@@ -1,99 +1,60 @@
 // 表情收藏服务请求和响应类型定义
 
+import type { IDBEmojiCollect } from '../../db/emoji'
+
 // ===== 表情收藏操作 =====
 
-// 创建表情收藏请求
 /**
- * @description 数据库服务请求
+ * @description 创建表情收藏请求
  */
-export interface DBCreateEmojiCollectReq {
-  collectData: any
+export interface DBCreateEmojiCollectReq extends Omit<IDBEmojiCollect, 'id' | 'createdAt' | 'updatedAt'> {}
+
+/**
+ * @description 批量创建表情收藏请求
+ */
+export interface DBBatchCreateEmojiCollectsReq {
+  collects: Omit<IDBEmojiCollect, 'id' | 'createdAt' | 'updatedAt'>[]
 }
 
-// 创建表情收藏响应
 /**
- * @description 数据库服务请求
+ * @description 根据ID列表获取表情收藏请求
  */
-export interface DBCreateEmojiCollectRes {
-  success: boolean
-}
-
-// 批量创建表情收藏请求
-/**
- * @description 数据库服务请求
- */
-export interface DBBatchCreateEmojiCollectReq {
-  collectList: any[]
-}
-
-// 批量创建表情收藏响应
-/**
- * @description 数据库服务请求
- */
-export interface DBBatchCreateEmojiCollectRes {
-  results: any[]
-}
-
-// 根据ID列表获取表情收藏请求
-/**
- * @description 数据库服务请求
- */
-export interface DBGetCollectsByIdsReq {
+export interface DBGetEmojiCollectsByIdsReq {
   ids: string[]
 }
 
-// 根据ID列表获取表情收藏响应
 /**
- * @description 数据库服务请求
+ * @description 根据ID列表获取表情收藏响应
  */
-export interface DBGetCollectsByIdsRes {
-  collects: Map<string, any>
-}
+export type DBGetEmojiCollectsByIdsRes = Map<string, IDBEmojiCollect>
 
-// 根据用户ID获取用户的所有表情收藏请求
 /**
- * @description 数据库服务请求
+ * @description 根据用户ID获取表情收藏请求
  */
-export interface DBGetCollectsByUserIdReq {
+export interface DBGetEmojiCollectsByUserIdReq {
   userId: string
 }
 
-// 根据用户ID获取用户的所有表情收藏响应
 /**
- * @description 数据库服务请求
+ * @description 根据用户ID获取表情收藏响应
  */
-export interface DBGetCollectsByUserIdRes {
-  collects: any[]
+export type DBGetEmojiCollectsByUserIdRes = IDBEmojiCollect[]
+
+/**
+ * @description 根据ID获取单个表情收藏请求
+ */
+export interface DBGetEmojiCollectByIdReq {
+  id: string
 }
 
-// 根据ID获取单个表情收藏请求
 /**
- * @description 数据库服务请求
+ * @description 根据ID获取单个表情收藏响应
  */
-export interface DBGetCollectByIdReq {
-  collectId: string
-}
+export type DBGetEmojiCollectByIdRes = IDBEmojiCollect | null
 
-// 根据ID获取单个表情收藏响应
 /**
- * @description 数据库服务请求
- */
-export interface DBGetCollectByIdRes {
-  collect?: any | null
-}
-
-// 删除表情收藏请求
-/**
- * @description 数据库服务请求
+ * @description 删除表情收藏请求
  */
 export interface DBDeleteEmojiCollectReq {
-  collectId: string
-}
-
-// 删除表情收藏响应
-/**
- * @description 数据库服务请求
- */
-export interface DBDeleteEmojiCollectRes {
-  success: boolean
+  id: string
 }

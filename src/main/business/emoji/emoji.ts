@@ -87,4 +87,4 @@ class EmojiBusiness extends BaseBusiness<EmojiSyncItem> {
 }
 
 // 导出单例实例
-export const emojiBusiness = new EmojiBusiness()
+export default new EmojiBusiness()

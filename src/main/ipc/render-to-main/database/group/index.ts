@@ -1,6 +1,6 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataGroupCommand } from 'commonModule/type/ipc/database'
-import { groupBusiness } from 'mainModule/business/group/group'
+import groupBusiness from 'mainModule/business/group/group'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
@@ -10,7 +10,7 @@ class GroupHandler {
   /**
    * 处理群组相关的数据库命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataGroupCommand, data: any, header: ICommonHeader): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: DataGroupCommand, data: any, header: ICommonHeader): Promise<any> {
     logger.info({ text: '处理群组命令', data: { command, data } }, loggerName)
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
@@ -34,3 +34,5 @@ class GroupHandler {
     }
   }
 }
+
+export default new GroupHandler()

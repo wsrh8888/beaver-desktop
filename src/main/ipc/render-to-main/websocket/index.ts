@@ -1,7 +1,7 @@
 import { WebSocketCommand } from 'commonModule/type/ipc/command'
 import logger from 'mainModule/utils/log'
 import wsManager from 'mainModule/ws-manager'
-import { ChatHandler } from './chat'
+import chatHandler from './chat'
 
 const loggerName = 'websocket-handler'
 
@@ -9,7 +9,7 @@ class WebSocketHandler {
   /**
    * 处理WebSocket相关的IPC命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: WebSocketCommand, data: any = {}): Promise<unknown> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: WebSocketCommand, data: any = {}): Promise<unknown> {
     logger.info({ text: '处理WebSocket命令', data: { command, data } }, loggerName)
 
     try {
@@ -25,7 +25,7 @@ class WebSocketHandler {
           return true
 
         case WebSocketCommand.SEND_CHAT_MESSAGE:
-          return await ChatHandler.handle(_event, data?.command, data?.data)
+          return await chatHandler.handle(_event, data?.command, data?.data)
       }
     }
     catch (error) {
@@ -34,3 +34,5 @@ class WebSocketHandler {
     }
   }
 }
+
+export default new WebSocketHandler()

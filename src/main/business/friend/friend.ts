@@ -47,7 +47,10 @@ class FriendBusiness extends BaseBusiness<FriendSyncItem> {
     const { page = 1, limit = 20 } = params
 
     // 调用服务层获取好友关系记录（纯数据库查询）
-    const friendRelations = await dBServiceFriend.getFriendRelations(userId, { page, limit })
+    const friendRelations = await dBServiceFriend.getFriendRelations({
+      userId,
+      options: { page, limit }
+    })
 
     if (friendRelations.length === 0) {
       return { list: [] }
@@ -66,7 +69,7 @@ class FriendBusiness extends BaseBusiness<FriendSyncItem> {
 
     // 业务逻辑：查询所有好友的用户信息
     const userIdsArray = Array.from(userIds)
-    const userInfos = await dBServiceUser.getUsersBasicInfo(userIdsArray)
+    const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: userIdsArray })
 
     // 业务逻辑：构建用户ID到用户信息的映射
     const userMap = new Map<string, any>()
@@ -177,11 +180,14 @@ class FriendBusiness extends BaseBusiness<FriendSyncItem> {
     const { userId } = header
 
     // 调用服务层批量获取好友信息
-    const friends = await dBServiceFriend.getFriendsByIds(friendIds, userId)
+    const friends = await dBServiceFriend.getFriendsByIds({
+      friendIds,
+      currentUserId: userId
+    })
 
     return { list: friends }
   }
 }
 
 // 导出单例实例
-export const friendBusiness = new FriendBusiness()
+export default new FriendBusiness()

@@ -16,7 +16,7 @@ export interface DBUpsertFriendReq extends Omit<IDBFriend, 'id' | 'createdAt' | 
  * @description 批量创建好友关系请求
  */
 export interface DBBatchCreateFriendsReq {
-  friendsData: Omit<IDBFriend, 'id' | 'createdAt' | 'updatedAt'>[]
+  friends: Omit<IDBFriend, 'id' | 'createdAt' | 'updatedAt'>[]
 }
 
 /**
@@ -30,9 +30,7 @@ export interface DBGetFriendDetailsReq {
 /**
  * @description 批量获取好友详细信息响应
  */
-export interface DBGetFriendDetailsRes {
-  friendDetails: Map<string, any>
-}
+export type DBGetFriendDetailsRes = Map<string, any>
 
 /**
  * @description 根据好友关系ID列表批量查询好友信息请求
@@ -45,9 +43,7 @@ export interface DBGetFriendsByIdsReq {
 /**
  * @description 根据好友关系ID列表批量查询好友信息响应
  */
-export interface DBGetFriendsByIdsRes {
-  friends: any[]
-}
+export type DBGetFriendsByIdsRes = any[]
 
 /**
  * @description 根据friendshipIds批量查询本地好友关系请求
@@ -59,9 +55,7 @@ export interface DBGetFriendRecordsByIdsReq {
 /**
  * @description 根据friendshipIds批量查询本地好友关系响应
  */
-export interface DBGetFriendRecordsByIdsRes {
-  friendRecords: Map<string, any>
-}
+export type DBGetFriendRecordsByIdsRes = Map<string, any>
 
 /**
  * @description 获取好友关系记录请求
@@ -77,21 +71,18 @@ export interface DBGetFriendRelationsReq {
 /**
  * @description 获取好友关系记录响应
  */
-export interface DBGetFriendRelationsRes {
-  relations: IDBFriend[]
-}
+export type DBGetFriendRelationsRes = IDBFriend[]
 
 /**
  * @description 根据版本范围获取好友请求
  */
 export interface DBGetFriendsByVerRangeReq {
-  header: any
-  params: any
+  userId: string
+  startVersion?: number
+  endVersion?: number
 }
 
 /**
  * @description 根据版本范围获取好友响应
  */
-export interface DBGetFriendsByVerRangeRes {
-  list: any[]
-}
+export type DBGetFriendsByVerRangeRes = any[]

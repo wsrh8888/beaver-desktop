@@ -17,7 +17,7 @@ class NotificationEventSync {
       return
 
     try {
-      const cursor = await dbServiceDataSync.get('notification_events')
+      const cursor = await dbServiceDataSync.get({ module: 'notification_events' })
       const sinceVersion = cursor?.version || 0
 
       const resp = await datasyncGetSyncNotificationEventsApi({
@@ -62,7 +62,7 @@ class NotificationEventSync {
     if (eventIds.length === 0)
       return []
 
-    const localMap = await dBServiceNotificationEvent.getVersionMapByIds(eventIds)
+    const localMap = await dBServiceNotificationEvent.getVersionMapByIds({ eventIds })
 
     return eventVersions
       .filter(item => (localMap.get(item.eventId) || 0) < item.version)

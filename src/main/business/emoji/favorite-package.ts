@@ -34,10 +34,10 @@ class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncItem> {
     ensureLogin(header)
 
     // 获取所有表情包
-    const allPackages = await dBServiceEmojiPackage.getAllPackages()
+    const allPackages = await dBServiceEmojiPackage.getAllPackages({})
 
     // 获取用户的收藏记录，用于标记哪些表情包已收藏
-    const collects = await dBServiceEmojiPackageCollect.getPackageCollectsByUserId(header.userId)
+    const collects = await dBServiceEmojiPackageCollect.getPackageCollectsByUserId({ userId: header.userId })
     const collectedPackageIds = new Set(
       collects.filter((item: any) => !item.isDeleted).map((item: any) => item.packageId)
     )
@@ -109,4 +109,4 @@ class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncItem> {
 }
 
 // 导出单例实例
-export const favoriteEmojiPackageBusiness = new FavoritePackageBusiness()
+export default new FavoritePackageBusiness()

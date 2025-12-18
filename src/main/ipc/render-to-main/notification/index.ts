@@ -9,7 +9,7 @@ class NotificationHandler {
   /**
    * 统一的notification处理入口
    */
-  static handle(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: NotificationCommand | string, data: any): any {
+  handle(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: NotificationCommand | string, data: any): any {
     logger.info({ text: '收到notification消息', data: {
       command,
       data,
@@ -33,3 +33,5 @@ class NotificationHandler {
     }
   }
 }
+
+export default new NotificationHandler()

@@ -1,11 +1,11 @@
-import { UserReceiver } from './user'
+import userReceiver from './user'
 
 /**
  * @description: 用户消息路由器
  * 根据消息类型路由到对应的接收器
  */
 class UserMessageRouter {
-  private userReceiver = new UserReceiver()
+  private userReceiver = userReceiver
 
   /**
    * 处理用户消息
@@ -32,4 +32,4 @@ class UserMessageRouter {
 }
 
 // 导出单例实例
-export const userMessageRouter = new UserMessageRouter()
+export default new UserMessageRouter()

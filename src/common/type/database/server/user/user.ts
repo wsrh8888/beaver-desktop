@@ -64,13 +64,11 @@ export interface DBGetUsersBasicInfoReq {
 /**
  * @description 批量获取用户基本信息响应
  */
-export interface DBGetUsersBasicInfoRes {
-  users: Array<{
-    userId: string
-    nickName: string
-    avatar: string
-  }>
-}
+export type DBGetUsersBasicInfoRes = Array<{
+  userId: string
+  nickName: string
+  avatar: string
+}>
 
 /**
  * @description 获取所有用户请求
@@ -80,6 +78,16 @@ export interface DBGetAllUsersReq {}
 /**
  * @description 获取所有用户响应
  */
-export interface DBGetAllUsersRes {
-  users: IUserSyncItem[]
-}
+export type DBGetAllUsersRes = Array<{
+  userId: string
+  nickName: string
+  avatar: string
+  abstract: string
+  phone: string
+  email: string
+  gender: number
+  status: number
+  version: number
+  createAt: number
+  updateAt: number
+}>

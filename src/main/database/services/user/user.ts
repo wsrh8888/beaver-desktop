@@ -136,7 +136,7 @@ class User extends BaseService {
    */
   async getUsersBasicInfo(req: DBGetUsersBasicInfoReq): Promise<DBGetUsersBasicInfoRes> {
     if (req.userIds.length === 0) {
-      return { users: [] }
+      return []
     }
 
     try {
@@ -149,17 +149,15 @@ class User extends BaseService {
         .from(users)
         .where(sql`${users.userId} IN (${sql.join(req.userIds.map(id => sql`${id}`), sql`, `)})`)
 
-      return {
-        users: userData.map((user: any) => ({
-          userId: user.userId,
-          nickName: user.nickName,
-          avatar: user.avatar || '',
-        }))
-      }
+      return userData.map((user: any) => ({
+        userId: user.userId,
+        nickName: user.nickName,
+        avatar: user.avatar || '',
+      }))
     }
     catch (error) {
       console.error('批量获取用户基本信息失败:', error)
-      return { users: [] }
+      return []
     }
   }
 
@@ -184,25 +182,23 @@ class User extends BaseService {
         })
         .from(users)
 
-      return {
-        users: userData.map((user: any) => ({
-          userId: user.userId,
-          nickName: user.nickName,
-          avatar: user.avatar || '',
-          abstract: user.abstract || '',
-          phone: user.phone || '',
-          email: user.email || '',
-          gender: user.gender || 0,
-          status: user.status || 0,
-          version: user.version || 0,
-          createAt: user.createAt || 0,
-          updateAt: user.updateAt || 0,
-        }))
-      }
+      return userData.map((user: any) => ({
+        userId: user.userId,
+        nickName: user.nickName,
+        avatar: user.avatar || '',
+        abstract: user.abstract || '',
+        phone: user.phone || '',
+        email: user.email || '',
+        gender: user.gender || 0,
+        status: user.status || 0,
+        version: user.version || 0,
+        createAt: user.createAt || 0,
+        updateAt: user.updateAt || 0,
+      }))
     }
     catch (error) {
       console.error('获取所有用户失败:', error)
-      return { users: [] }
+      return []
     }
   }
 }

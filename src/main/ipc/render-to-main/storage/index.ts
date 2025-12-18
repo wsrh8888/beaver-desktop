@@ -7,7 +7,7 @@ class StorageHandler {
   /**
    * 统一的存储处理入口（同步）
    */
-  static handle(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: StorageCommand | RenderCommand, data: any): any {
+  handle(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: StorageCommand | RenderCommand, data: any): any {
     switch (command) {
       case StorageCommand.GET:
         return this.handleGet(data)
@@ -24,21 +24,23 @@ class StorageHandler {
   /**
    * 获取存储数据
    */
-  private static handleGet(data: { key: string }): any {
+  private handleGet(data: { key: string }): any {
     return store.get(data.key)
   }
 
   /**
    * 设置存储数据
    */
-  private static handleSet(data: { key: string, value: any, options?: IStoreOptions }): void {
+  private handleSet(data: { key: string, value: any, options?: IStoreOptions }): void {
     store.set(data.key, data.value, data.options)
   }
 
   /**
    * 删除存储数据
    */
-  private static handleRemove(data: { key: string, options?: IStoreOptions }): void {
+  private handleRemove(data: { key: string, options?: IStoreOptions }): void {
     store.delete(data.key, data.options)
   }
 }
+
+export default new StorageHandler()

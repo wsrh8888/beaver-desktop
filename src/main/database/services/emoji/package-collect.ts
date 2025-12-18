@@ -51,7 +51,7 @@ class EmojiPackageCollect extends BaseService {
    */
   async getPackageCollectsByIds(req: DBGetPackageCollectsByIdsReq): Promise<DBGetPackageCollectsByIdsRes> {
     if (req.ids.length === 0) {
-      return { collects: new Map() }
+      return new Map()
     }
 
     const collectList = await this.db
@@ -64,20 +64,18 @@ class EmojiPackageCollect extends BaseService {
       collectMap.set(item.packageCollectId, item)
     })
 
-    return { collects: collectMap }
+    return collectMap
   }
 
   /**
    * @description 根据用户ID获取用户的所有表情包收藏
    */
   async getPackageCollectsByUserId(req: DBGetPackageCollectsByUserIdReq): Promise<DBGetPackageCollectsByUserIdRes> {
-    const collects = await this.db
+    return await this.db
       .select()
       .from(emojiPackageCollect)
       .where(eq(emojiPackageCollect.userId, req.userId))
       .all()
-
-    return { collects }
   }
 
   /**
@@ -90,7 +88,7 @@ class EmojiPackageCollect extends BaseService {
       .where(eq(emojiPackageCollect.packageCollectId, req.packageCollectId))
       .limit(1)
 
-    return { collect: result[0] || null }
+    return result[0] || null
   }
 
   /**

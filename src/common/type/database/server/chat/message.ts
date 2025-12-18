@@ -61,9 +61,7 @@ export interface DBGetChatHistoryReq {
 /**
  * @description 获取会话的历史消息响应
  */
-export interface DBGetChatHistoryRes {
-  messages: IDBChatMessage[]
-}
+export type DBGetChatHistoryRes = IDBChatMessage[]
 
 /**
  * @description 按序列号范围获取消息请求
@@ -77,6 +75,4 @@ export interface DBGetChatMessagesBySeqRangeReq {
 /**
  * @description 按序列号范围获取消息响应
  */
-export interface DBGetChatMessagesBySeqRangeRes {
-  messages: IDBChatMessage[]
-}
+export type DBGetChatMessagesBySeqRangeRes = IDBChatMessage[]

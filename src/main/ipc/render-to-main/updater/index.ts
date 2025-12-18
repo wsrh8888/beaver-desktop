@@ -7,7 +7,7 @@ import { shell } from 'electron'
 import { previewOnlineFileApi } from 'mainModule/api/file'
 import { cacheTypeToFilePath } from 'mainModule/cache/config'
 import { getRootPath } from 'mainModule/config'
-import { mediaCacheService } from 'mainModule/database/services/media/media'
+import dBServicemediaCache from 'mainModule/database/services/media/media'
 import { downloadFile } from 'mainModule/utils/download/index'
 import logger from 'mainModule/utils/log'
 
@@ -15,7 +15,7 @@ class UpdaterHandler {
   /**
    * 统一的升级处理入口
    */
-  static handle(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: UpdateCommand, data: any) {
+  handle(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: UpdateCommand, data: any) {
     logger.info({ text: '收到render-to-main-msg升级消息', data: {
       command,
       data,
@@ -36,7 +36,7 @@ class UpdaterHandler {
   /**
    * 处理下载更新
    */
-  private static async handleDownloadUpdate(event: Electron.IpcMainEvent, data: IDownloadOptions) {
+  private async handleDownloadUpdate(event: Electron.IpcMainEvent, data: IDownloadOptions) {
     try {
       const { fileKey, md5, version } = data
       logger.info({ text: '开始下载更新', data: { fileKey, md5, version } }, 'UpdaterHandler')
@@ -67,7 +67,7 @@ class UpdaterHandler {
 
       // 保存下载记录到数据库
       try {
-        await mediaCacheService.upsert(fileKey, downloadedFile.path, CacheType.PUBLIC_UPDATE, downloadedFile.size)
+        await dBServicemediaCache.upsert(fileKey, downloadedFile.path, CacheType.PUBLIC_UPDATE, downloadedFile.size)
         logger.info({ text: '下载记录已保存到数据库', data: { fileKey, filePath: downloadedFile.path, fileSize: downloadedFile.size } }, 'UpdaterHandler')
       }
       catch (error) {
@@ -87,7 +87,7 @@ class UpdaterHandler {
   /**
    * 处理开始升级
    */
-  private static async handleStartUpdate(event: Electron.IpcMainEvent, data: IDownloadOptions) {
+  private async handleStartUpdate(event: Electron.IpcMainEvent, data: IDownloadOptions) {
     try {
       const { fileKey, md5, version } = data
       logger.info({ text: '开始升级', data: { fileKey, md5, version } }, 'UpdaterHandler')
@@ -115,3 +115,5 @@ class UpdaterHandler {
     }
   }
 }
+
+export default new UpdaterHandler()

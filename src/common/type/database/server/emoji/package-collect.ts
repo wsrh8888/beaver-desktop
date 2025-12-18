@@ -40,9 +40,7 @@ export interface DBGetPackageCollectsByIdsReq {
 /**
  * @description 根据ID列表获取表情包收藏响应
  */
-export interface DBGetPackageCollectsByIdsRes {
-  collects: Map<string, IDBEmojiPackageCollect>
-}
+export type DBGetPackageCollectsByIdsRes = Map<string, IDBEmojiPackageCollect>
 
 /**
  * @description 根据用户ID获取用户的所有表情包收藏请求
@@ -54,9 +52,7 @@ export interface DBGetPackageCollectsByUserIdReq {
 /**
  * @description 根据用户ID获取用户的所有表情包收藏响应
  */
-export interface DBGetPackageCollectsByUserIdRes {
-  collects: IDBEmojiPackageCollect[]
-}
+export type DBGetPackageCollectsByUserIdRes = IDBEmojiPackageCollect[]
 
 /**
  * @description 根据ID获取单个表情包收藏请求
@@ -68,9 +64,7 @@ export interface DBGetPackageCollectByIdReq {
 /**
  * @description 根据ID获取单个表情包收藏响应
  */
-export interface DBGetPackageCollectByIdRes {
-  collect?: IDBEmojiPackageCollect | null
-}
+export type DBGetPackageCollectByIdRes = IDBEmojiPackageCollect | null
 
 /**
  * @description 删除表情包收藏请求

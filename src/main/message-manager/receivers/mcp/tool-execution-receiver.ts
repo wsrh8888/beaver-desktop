@@ -21,3 +21,5 @@ class ToolExecutionReceiver {
     await mcpManager.executeTool(toolName, params)
   }
 }
+
+export default new ToolExecutionReceiver()

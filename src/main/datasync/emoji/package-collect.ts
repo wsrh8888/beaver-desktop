@@ -2,11 +2,14 @@ import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/
 import { getEmojiPackageCollectsByIdsApi } from 'mainModule/api/emoji'
 import dBServiceEmojiPackageCollect  from 'mainModule/database/services/emoji/package-collect'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import Logger from 'mainModule/utils/logger'
 
+const logger = new Logger('datasync-emoji-package-collect')
 // emoji_package_collect 表同步处理器
 class PackageCollectSync {
   // 同步表情包收藏数据（emoji_package_collect 表）
   async sync(packageCollectVersions: any[]) {
+    try {
     if (!packageCollectVersions || packageCollectVersions.length === 0) {
       return
     }
@@ -16,6 +19,10 @@ class PackageCollectSync {
 
     if (needUpdatePackageCollectIds.length > 0) {
       await this.syncEmojiPackageCollectData(needUpdatePackageCollectIds)
+    }
+    }
+    catch (error) {
+      logger.error({ text: '表情包收藏数据同步失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -29,7 +36,7 @@ class PackageCollectSync {
       return []
     }
 
-    const existingRecordsMap = await dBServiceEmojiPackageCollect.getPackageCollectsByIds(ids)
+    const existingRecordsMap = await dBServiceEmojiPackageCollect.getPackageCollectsByIds({ ids })
 
     const needUpdateIds = ids.filter((id) => {
       const existingRecord = existingRecordsMap.get(id)

@@ -2,11 +2,14 @@ import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/
 import { getEmojiPackagesByIdsApi } from 'mainModule/api/emoji'
 import dBServiceEmojiPackage  from 'mainModule/database/services/emoji/package'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import Logger from 'mainModule/utils/logger'
 
+const logger = new Logger('datasync-emoji-package')
 // emoji_package 表同步处理器
 class PackageSync {
   // 同步表情包基础数据（emoji_package 表）
   async sync(packageVersions: any[]): Promise<string[]> {
+    try {
     if (!packageVersions || packageVersions.length === 0) {
       return []
     }
@@ -20,6 +23,10 @@ class PackageSync {
     }
 
     return []
+    }
+    catch (error) {
+      logger.error({ text: '表情包数据同步失败', data: { error: (error as any)?.message } })
+    }
   }
 
   // 对比本地数据，过滤出需要更新的表情包ID
@@ -32,7 +39,7 @@ class PackageSync {
       return []
     }
 
-    const existingPackagesMap = await dBServiceEmojiPackage.getPackagesByIds(packageIds)
+    const existingPackagesMap = await dBServiceEmojiPackage.getPackagesByIds({ ids: packageIds })
 
     const needUpdatePackageIds = packageIds.filter((id) => {
       const existingPackage = existingPackagesMap.get(id)

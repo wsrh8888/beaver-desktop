@@ -1,14 +1,14 @@
 import logger from 'mainModule/utils/log'
-import { ToolExecutionReceiver } from './tool-execution-receiver'
-import { ToolListReceiver } from './tool-list-receiver'
+import toolExecutionReceiver from './tool-execution-receiver'
+import toolListReceiver from './tool-list-receiver'
 
 /**
  * @description: MCP消息路由器
  * 根据消息类型路由到对应的接收器
  */
 class MCPMessageRouter {
-  private toolExecutionReceiver = new ToolExecutionReceiver()
-  private toolListReceiver = new ToolListReceiver()
+  private toolExecutionReceiver = toolExecutionReceiver
+  private toolListReceiver = toolListReceiver
 
   /**
    * 处理MCP消息
@@ -40,4 +40,4 @@ class MCPMessageRouter {
 }
 
 // 导出单例实例
-export const mcpMessageRouter = new MCPMessageRouter()
+export default new MCPMessageRouter()

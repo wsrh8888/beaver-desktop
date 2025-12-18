@@ -1,5 +1,5 @@
-import { groupBusiness } from 'mainModule/business/group/group'
-import { groupMemberBusiness } from 'mainModule/business/group/group-member'
+import groupBusiness from 'mainModule/business/group/group'
+import groupMemberBusiness from 'mainModule/business/group/group-member'
 
 /**
  * @description: 群组接收器 - 处理 groups 和 group_members 表的操作
@@ -41,3 +41,5 @@ class GroupReceiver {
     }
   }
 }
+
+export default new GroupReceiver()

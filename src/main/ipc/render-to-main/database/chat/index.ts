@@ -1,7 +1,7 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataChatCommand } from 'commonModule/type/ipc/database'
-import { conversationBusiness } from 'mainModule/business/chat/conversation'
-import { messageBusiness } from 'mainModule/business/chat/message'
+import conversationBusiness from 'mainModule/business/chat/conversation'
+import messageBusiness from 'mainModule/business/chat/message'
 import dbServiceChatUserConversation  from 'mainModule/database/services/chat/user-conversation'
 import { store } from 'mainModule/store'
 
@@ -9,7 +9,7 @@ class ChatHandler {
   /**
    * 处理聊天相关的数据库命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataChatCommand, data: any, header: ICommonHeader): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: DataChatCommand, data: any, header: ICommonHeader): Promise<any> {
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
       throw new Error('用户未登录')
@@ -24,9 +24,11 @@ class ChatHandler {
       case DataChatCommand.GET_CHAT_MESSAGES_BY_SEQ_RANGE:
         return await messageBusiness.getChatMessagesBySeqRange(header, data)
       case DataChatCommand.GET_CHAT_CONVERSATIONS_BY_VER_RANGE:
-        return await dbServiceChatUserConversation.getChatConversationsByVerRange(header, data)
+        return await dbServiceChatUserConversation.getChatConversationsByVerRange({ header, params: data })
       default:
         throw new Error('聊天数据库命令处理失败ChatHandler')
     }
   }
 }
+
+export default new ChatHandler()

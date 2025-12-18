@@ -3,7 +3,7 @@ import { NotificationModule, NotificationUserCommand } from 'commonModule/type/p
 import { datasyncGetSyncAllUsersApi } from 'mainModule/api/datasync'
 import { userSyncApi } from 'mainModule/api/user'
 import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
-import { UserSyncStatusService } from 'mainModule/database/services/user/sync-status'
+import dBServiceUserSyncStatus from 'mainModule/database/services/user/sync-status'
 import dBServiceUser  from 'mainModule/database/services/user/user'
 
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
@@ -24,7 +24,7 @@ class UserSyncModule {
 
     try {
       // 获取本地最后同步时间
-      const cursor = await dbServiceDataSync.get('users').catch(() => null)
+      const cursor = await dbServiceDataSync.get({ module: 'users' }).catch(() => null)
       const lastSyncTime = cursor?.version || 0
 
       // 获取变更的用户版本摘要
@@ -74,7 +74,7 @@ class UserSyncModule {
     }
 
     // 获取所有本地用户同步状态
-    const localStatuses = await UserSyncStatusService.getAllUsersSyncStatus()
+    const localStatuses = await dBServiceUserSyncStatus.getAllUsersSyncStatus()
     const localVersionMap = new Map(localStatuses.map(s => [s.userId, s.userVersion || 0]))
 
     // 过滤出需要更新的用户，并使用本地版本号（而不是服务器版本号）
@@ -124,7 +124,7 @@ class UserSyncModule {
         userId: user.userId,
         userVersion: user.version,
       }))
-      await UserSyncStatusService.batchUpsertUserSyncStatus(statusUpdates)
+      await dBServiceUserSyncStatus.batchUpsertUserSyncStatus(statusUpdates)
 
       // 发送通知到render进程，告知用户数据已同步
       sendMainNotification('*', NotificationModule.DATABASE_USER, NotificationUserCommand.USER_UPDATE, {

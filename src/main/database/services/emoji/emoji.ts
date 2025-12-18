@@ -52,7 +52,7 @@ class Emoji extends BaseService {
    */
   async getEmojisByIds(req: DBGetEmojisByIdsReq): Promise<DBGetEmojisByIdsRes> {
     if (req.ids.length === 0) {
-      return { emojis: new Map() }
+      return new Map()
     }
 
     const emojiList = await this.db
@@ -65,15 +65,14 @@ class Emoji extends BaseService {
       emojiMap.set(item.emojiId, item)
     })
 
-    return { emojis: emojiMap }
+    return emojiMap
   }
 
   /**
    * @description 获取所有表情
    */
   async getAllEmojis(req: DBGetAllEmojisReq): Promise<DBGetAllEmojisRes> {
-    const emojis = await this.db.select().from(emoji).all()
-    return { emojis }
+    return await this.db.select().from(emoji).all()
   }
 
   /**
@@ -86,7 +85,7 @@ class Emoji extends BaseService {
       .where(eq(emoji.emojiId, req.id))
       .limit(1)
 
-    return { emoji: result[0] || null }
+    return result[0] || null
   }
 }
 

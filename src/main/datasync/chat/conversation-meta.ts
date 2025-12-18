@@ -20,7 +20,7 @@ class ConversationMetaSync {
 
     try {
       // 获取本地最后同步时间
-      const localCursor = await dbServiceDataSync.get('chat_conversations')
+      const localCursor = await dbServiceDataSync.get({ module: 'chat_conversations' })
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器变更的会话版本信息
@@ -62,7 +62,7 @@ class ConversationMetaSync {
     const conversationIds = conversationVersions.map(item => item.conversationId)
 
     // 查询本地已存在的会话版本状态
-    const localVersions = await ChatSyncStatusService.getConversationVersions(conversationIds)
+    const localVersions = await dBServiceChatSyncStatus.getConversationVersions({ conversationIds })
     const localVersionMap = new Map(localVersions.map(v => [v.conversationId, v.version]))
 
     // 过滤出需要更新的会话信息（本地不存在或版本号更旧的数据）
@@ -112,7 +112,7 @@ class ConversationMetaSync {
         // 更新同步状态（使用响应中的版本号）
         for (const conv of response.result.conversations) {
           if (conv.version !== undefined) {
-            await ChatSyncStatusService.upsertConversationSyncStatus(conv.conversationId, conv.version)
+            await dBServiceChatSyncStatus.upsertConversationSyncStatus({ conversationId: conv.conversationId, version: conv.version })
           }
         }
       }

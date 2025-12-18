@@ -39,3 +39,5 @@ class StreamableTransportManager {
     }
   }
 }
+
+export default new StreamableTransportManager()

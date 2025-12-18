@@ -34,10 +34,10 @@ class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
   }
   async getUserFavoriteEmojis(header: ICommonHeader): Promise<IGetEmojisListRes> {
     ensureLogin(header)
-    const collects = await dBServiceEmojiCollect.getCollectsByUserId(header.userId)
+    const collects = await dBServiceEmojiCollect.getCollectsByUserId({ userId: header.userId })
     const validCollects = collects.filter((item: any) => !item.isDeleted)
     const emojiIds = validCollects.map((item: any) => item.emojiId)
-    const emojiMap = await dBServiceEmoji.getEmojisByIds(emojiIds)
+    const emojiMap = await dBServiceEmoji.getEmojisByIds({ ids: emojiIds })
 
     const list = validCollects
       .map((item: any) => {
@@ -118,4 +118,4 @@ class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
 }
 
 // 导出单例实例
-export const favoriteEmojiBusiness = new FavoriteEmojiBusiness()
+export default new FavoriteEmojiBusiness()
