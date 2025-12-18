@@ -8,16 +8,6 @@ import type {
   DBDeleteMediaReq,
 } from 'commonModule/type/database/server/media/media'
 
-export interface MediaInfo {
-  fileName: string
-  path: string
-  type: string
-  size?: number
-  createdAt: number
-  updatedAt: number
-  isDeleted: number
-}
-
 /**
  * 媒体缓存数据库服务
  * 替代之前的JSON索引管理，提供数据库层面的缓存管理
@@ -34,7 +24,7 @@ class MediaService extends BaseService {
     const existing = await this.db
       .select()
       .from(media)
-      .where(eq(media.fileName, req.fileName))
+      .where(eq(media.fileKey as any, req.fileKey))
       .limit(1)
 
     if (existing.length > 0) {
@@ -45,12 +35,12 @@ class MediaService extends BaseService {
           updatedAt: now,
           isDeleted: 0, // 确保未被标记删除
         })
-        .where(eq(media.fileName, req.fileName))
+        .where(eq(media.fileKey as any, req.fileKey))
     }
     else {
       // 插入新记录
       await this.db.insert(media).values({
-        fileName: req.fileName,
+        fileKey: req.fileKey,
         path: req.path,
         type: req.type,
         size: req.size,
@@ -68,16 +58,16 @@ class MediaService extends BaseService {
     const result = await this.db
       .select()
       .from(media)
-      .where(and(eq(media.fileName, req.fileName), eq(media.isDeleted, 0)))
+      .where(and(eq(media.fileKey as any, req.fileKey), eq(media.isDeleted as any, 0)))
       .limit(1)
 
     if (result.length === 0) {
-      return {  }
+      return null
     }
 
     const record = result[0]
     return {
-      fileName: record.fileName,
+      fileKey: record.fileKey,
       path: record.path,
       type: record.type,
       size: record.size || undefined,
@@ -97,7 +87,7 @@ class MediaService extends BaseService {
         isDeleted: 1,
         updatedAt: Math.floor(Date.now() / 1000),
       })
-      .where(eq(media.fileName, req.fileName))
+      .where(eq(media.fileKey as any, req.fileKey))
   }
 }
 
