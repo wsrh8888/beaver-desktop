@@ -2,8 +2,8 @@ import { NotificationChatCommand, NotificationModule } from 'commonModule/type/p
 import { chatSyncApi } from 'mainModule/api/chat'
 import { datasyncGetSyncChatMessagesApi } from 'mainModule/api/datasync'
 import { MessageService } from 'mainModule/database/services/chat/message'
-import { ChatSyncStatusService } from 'mainModule/database/services/chat/sync-status'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
+import  dBServiceChatSyncStatus from 'mainModule/database/services/chat/sync-status'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
@@ -20,7 +20,7 @@ class MessageSync {
 
     try {
       // 获取本地最后同步时间
-      const localCursor = await DataSyncService.get('chat_messages')
+      const localCursor = await dbServiceDataSync.get('chat_messages')
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器上变更的消息版本信息
@@ -36,7 +36,7 @@ class MessageSync {
       }
 
       // 更新游标（无论是否有变更都要更新）
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'chat_messages',
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverResponse.result.serverTimestamp,

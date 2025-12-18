@@ -5,7 +5,7 @@ import logger from 'mainModule/utils/log/index.js'
 /**
  * @description: MCP工具列表接收器 - 处理工具列表注册请求
  */
-export class ToolListReceiver {
+class ToolListReceiver {
   /**
    * 处理工具列表注册请求
    * 只处理 messages 表的更新（遵循项目模式）

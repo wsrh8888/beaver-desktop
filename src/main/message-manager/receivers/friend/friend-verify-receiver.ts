@@ -6,7 +6,7 @@ import { userBusiness } from 'mainModule/business/user/user'
  * @description: 好友验证接收器 - 处理friend_verify表的操作
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
-export class FriendVerifyReceiver {
+class FriendVerifyReceiver {
   /**
    * 处理好友验证表更新通知
    * 处理 friend_verify 表和 users 表的更新

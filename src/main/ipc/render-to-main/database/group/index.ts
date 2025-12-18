@@ -6,7 +6,7 @@ import logger from 'mainModule/utils/log'
 
 const loggerName = 'group-handler'
 
-export class GroupHandler {
+class GroupHandler {
   /**
    * 处理群组相关的数据库命令
    */

@@ -2,7 +2,7 @@ import type loggerModule from 'mainModule/utils/log'
 import { LoggerCommand } from 'commonModule/type/ipc/command'
 import logger from 'mainModule/utils/log'
 
-export class LoggerHandler {
+class LoggerHandler {
   /**
    * 统一的日志处理入口
    */

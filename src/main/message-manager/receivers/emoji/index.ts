@@ -5,7 +5,7 @@ import { CollectReceiver } from './collect-receiver'
  * 表情消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class EmojiMessageRouter {
+class EmojiMessageRouter {
   private collectReceiver = new CollectReceiver()
 
   /**

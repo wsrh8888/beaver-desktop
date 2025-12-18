@@ -8,10 +8,10 @@ import type { IConversationItem } from 'commonModule/type/pinia/conversation'
 import type { QueueItem } from '../base/base'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getConversationsListByIdsApi } from 'mainModule/api/chat'
-import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
-import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
-import { FriendService } from 'mainModule/database/services/friend/friend'
-import { GroupService } from 'mainModule/database/services/group/group'
+import dBServiceChatConversation  from 'mainModule/database/services/chat/conversation'
+import dbServiceChatUserConversation  from 'mainModule/database/services/chat/user-conversation'
+import dBServiceFriend  from 'mainModule/database/services/friend/friend'
+import dbServiceGroup  from 'mainModule/database/services/group/group'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
@@ -29,7 +29,7 @@ interface ConversationSyncItem extends QueueItem {
  * 对应 chat_conversations 表
  * 负责会话的创建、更新、查询等业务逻辑
  */
-export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
+class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
   protected readonly businessName = 'ConversationBusiness'
 
   constructor() {
@@ -47,7 +47,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     const { page = 1, limit = 50 } = params
 
     // 1. 先获取用户会话设置，过滤掉隐藏的会话
-    const userConversations = await ChatUserConversationService.getAllUserConversations(userId)
+    const userConversations = await dbServiceChatUserConversation.getAllUserConversations(userId)
     const visibleUserConversations = userConversations.filter((uc: any) => uc.isHidden === 0)
 
     if (visibleUserConversations.length === 0) {
@@ -59,7 +59,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
 
     // 2. 根据会话ID获取会话元数据（以 conversation_metas 为主，排序时间来源）
     const conversationIds = visibleUserConversations.map((uc: any) => uc.conversationId)
-    const conversationMetas = await ChatConversationService.getConversationsByIds(conversationIds)
+    const conversationMetas = await dBServiceChatConversation.getConversationsByIds(conversationIds)
     const metaMap = new Map()
     conversationMetas.forEach((meta: any) => {
       metaMap.set(meta.conversationId, meta)
@@ -124,8 +124,8 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       }
     })
 
-    const friendDetailsMap = await FriendService.getFriendDetails(userId, privateChatFriendIds)
-    const groupDetails = await GroupService.getGroupsByIds(groupIds)
+    const friendDetailsMap = await dBServiceFriend.getFriendDetails(userId, privateChatFriendIds)
+    const groupDetails = await dbServiceGroup.getGroupsByIds(groupIds)
     const groupDetailsMap = new Map()
     groupDetails.forEach((group: any) => {
       groupDetailsMap.set(group.groupId, group)
@@ -200,7 +200,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     }
 
     // 调用服务层
-    await ChatConversationService.updateLastMessage(conversationId, lastMessage, maxSeq)
+    await dBServiceChatConversation.updateLastMessage(conversationId, lastMessage, maxSeq)
   }
 
   /**
@@ -211,13 +211,13 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     const { conversationId } = params
 
     // 1. 获取用户会话设置
-    const userConversation = await ChatUserConversationService.getConversationInfo(header, params)
+    const userConversation = await dbServiceChatUserConversation.getConversationInfo(header, params)
     if (!userConversation) {
       return null
     }
 
     // 2. 获取会话元数据
-    const conversationMetas = await ChatConversationService.getConversationsByIds([conversationId])
+    const conversationMetas = await dBServiceChatConversation.getConversationsByIds([conversationId])
     if (conversationMetas.length === 0) {
       return null
     }
@@ -235,7 +235,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         const userId2 = parts[2]
         const friendId = (userId1 === userId) ? userId2 : userId1
 
-        const friendDetailsMap = await FriendService.getFriendDetails(userId, [friendId])
+        const friendDetailsMap = await dBServiceFriend.getFriendDetails(userId, [friendId])
         const friendDetail = friendDetailsMap.get(friendId)
         if (friendDetail) {
           avatar = friendDetail?.avatar || ''
@@ -248,7 +248,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       const parts = conversationId.split('_')
       if (parts.length >= 2 && parts[0] === 'group') {
         const groupId = parts.slice(1).join('_') // 支持groupId中包含下划线的情况
-        const groupDetails = await GroupService.getGroupsByIds([groupId])
+        const groupDetails = await dbServiceGroup.getGroupsByIds([groupId])
         if (groupDetails.length > 0) {
           const groupDetail = groupDetails[0]
           avatar = groupDetail.avatar || ''
@@ -293,10 +293,10 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     for (const update of updates) {
       switch (update.operation) {
         case 'conversation_create':
-          await ChatConversationService.create(update.data)
+          await dBServiceChatConversation.create(update.data)
           break
         case 'conversation_update':
-          await ChatConversationService.upsert({ conversationId: update.conversationId, ...update.data })
+          await dBServiceChatConversation.upsert({ conversationId: update.conversationId, ...update.data })
           break
       }
     }
@@ -332,7 +332,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         const conversationData = response.result.conversations[0]
 
         // 更新本地数据库
-        await ChatConversationService.upsert(conversationData)
+        await dBServiceChatConversation.upsert(conversationData)
 
         console.log(`会话同步成功: conversationId=${conversationId}, versionRange=[${minVersion}, ${maxVersion}]`)
       }

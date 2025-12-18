@@ -1,8 +1,8 @@
 import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncGroupMembersApi } from 'mainModule/api/datasync'
 import { groupMemberSyncApi } from 'mainModule/api/group'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { GroupMemberService } from 'mainModule/database/services/group/group-member'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dBServiceGroupMember  from 'mainModule/database/services/group/group-member'
 import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import Logger from 'mainModule/utils/logger/index'
@@ -16,7 +16,7 @@ class GroupMemberSync {
     logger.info({ text: '开始同步群成员数据' })
     try {
       // 获取本地最后同步时间
-      const lastSyncTime = await DataSyncService.get('group_members').then(cursor => cursor?.version || 0).catch(() => 0)
+      const lastSyncTime = await dbServiceDataSync.get('group_members').then(cursor => cursor?.version || 0).catch(() => 0)
 
       // 获取服务器上变更的群成员版本信息
       const serverResponse = await datasyncGetSyncGroupMembersApi({ since: lastSyncTime })
@@ -34,7 +34,7 @@ class GroupMemberSync {
       }
 
       // 更新游标（无论是否有变更都要更新）
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'group_members',
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverResponse.result.serverTimestamp,
@@ -89,7 +89,7 @@ class GroupMemberSync {
     console.error('cxcxcxcsd11111111111111111111f', members)
 
     if (members.length > 0) {
-      await GroupMemberService.batchCreate(members)
+      await dBServiceGroupMember.batchCreate(members)
 
       // 更新本地群成员版本状态
       for (const member of members) {

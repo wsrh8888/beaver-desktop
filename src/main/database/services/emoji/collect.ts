@@ -1,20 +1,16 @@
 import { eq, inArray } from 'drizzle-orm'
-import dbManager from 'mainModule/database/db'
+import { BaseService } from '../base'
 import { emojiCollect } from 'mainModule/database/tables/emoji/collect'
 
 // 表情收藏服务
-export class EmojiCollectService {
-  static get db() {
-    return dbManager.db
-  }
-
+class EmojiCollect extends BaseService {
   // 创建表情收藏
-  static async create(collectData: any) {
+  async create(collectData: any) {
     return await this.db.insert(emojiCollect).values(collectData).run()
   }
 
   // 批量创建表情收藏（upsert操作）
-  static async batchCreate(collectList: any[]) {
+   async batchCreate(collectList: any[]) {
     if (collectList.length === 0) {
       return
     }
@@ -41,7 +37,7 @@ export class EmojiCollectService {
   }
 
   // 根据ID列表获取表情收藏
-  static async getCollectsByIds(ids: string[]): Promise<Map<string, any>> {
+   async getCollectsByIds(ids: string[]): Promise<Map<string, any>> {
     if (ids.length === 0) {
       return new Map()
     }
@@ -60,7 +56,7 @@ export class EmojiCollectService {
   }
 
   // 根据用户ID获取用户的所有表情收藏
-  static async getCollectsByUserId(userId: string) {
+   async getCollectsByUserId(userId: string) {
     return await this.db
       .select()
       .from(emojiCollect)
@@ -69,7 +65,7 @@ export class EmojiCollectService {
   }
 
   // 根据ID获取单个表情收藏
-  static async getCollectById(collectId: string) {
+   async getCollectById(collectId: string) {
     const result = await this.db
       .select()
       .from(emojiCollect)
@@ -80,10 +76,13 @@ export class EmojiCollectService {
   }
 
   // 删除表情收藏
-  static async delete(collectId: string) {
+   async delete(collectId: string) {
     return await this.db
       .delete(emojiCollect)
       .where(eq(emojiCollect.emojiCollectId as any, collectId))
       .run()
   }
 }
+
+// 导出表情收藏服务实例
+export default new EmojiCollect()

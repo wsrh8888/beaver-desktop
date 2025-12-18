@@ -1,7 +1,7 @@
 /**
  * 健康检查处理器
  */
-export class HealthHandler {
+class HealthHandler {
   /**
    * 处理健康检查请求
    */

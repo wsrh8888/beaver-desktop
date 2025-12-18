@@ -1,7 +1,7 @@
 import type { QueueItem } from '../base/base'
 import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getFriendVerifiesListByIdsApi } from 'mainModule/api/friened'
-import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
+import dBServiceFriendVerify  from 'mainModule/database/services/friend/friend_verify'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import { BaseBusiness } from '../base/base'
@@ -20,7 +20,7 @@ interface FriendVerifySyncItem extends QueueItem {
  * 对应 friend_verify 表
  * 负责好友验证管理的业务逻辑
  */
-export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
+class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
   protected readonly businessName = 'FriendVerifyBusiness'
 
   constructor() {
@@ -39,7 +39,7 @@ export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
       throw new Error('用户未登录')
     }
 
-    return await FriendVerifyService.getValidByIds(verifyIds, userStore.userId)
+    return await dBServiceFriendVerify.getValidByIds(verifyIds, userStore.userId)
   }
 
   /**
@@ -88,7 +88,7 @@ export class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
         }))
 
         // 批量创建/更新本地数据库
-        await FriendVerifyService.batchCreate(friendVerifies)
+        await dBServiceFriendVerify.batchCreate(friendVerifies)
         console.log(`好友验证同步成功: count=${friendVerifies.length}`)
 
         // 发送通知到render进程，告知好友验证数据已更新

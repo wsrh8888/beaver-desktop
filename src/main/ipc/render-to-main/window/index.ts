@@ -14,7 +14,7 @@ import videoApplication from 'mainModule/application/video'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
-export class WindowHandler {
+class WindowHandler {
   /**
    * 统一的窗口处理入口（支持同步和异步）
    */

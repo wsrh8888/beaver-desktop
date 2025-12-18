@@ -10,7 +10,7 @@ import { UserHandler } from './user'
 
 const loggerName = 'database-handler'
 
-export class DatabaseHandler {
+class DatabaseHandler {
   /**
    * 处理数据库相关的IPC命令
    */

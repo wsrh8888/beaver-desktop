@@ -4,7 +4,7 @@ import { groupMemberBusiness } from 'mainModule/business/group/group-member'
 /**
  * @description: 群组接收器 - 处理 groups 和 group_members 表的操作
  */
-export class GroupReceiver {
+class GroupReceiver {
   /**
    * 处理群组表更新通知
    * 支持处理 groups 和 group_members 表的更新

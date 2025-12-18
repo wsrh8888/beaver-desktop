@@ -1,7 +1,7 @@
 import type { NetworkCommand } from 'commonModule/type/ipc/command'
 import logger from 'mainModule/utils/log'
 
-export class NetworkHandler {
+class NetworkHandler {
   /**
    * 统一的网络和配置处理入口
    */

@@ -7,7 +7,7 @@ import { UserConversationReceiver } from './user-conversation-receiver'
  * 聊天消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class ChatMessageRouter {
+class ChatMessageRouter {
   private messageReceiver = new MessageReceiver()
   private conversationReceiver = new ConversationReceiver()
   private userConversationReceiver = new UserConversationReceiver()

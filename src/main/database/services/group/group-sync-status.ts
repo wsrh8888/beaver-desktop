@@ -1,50 +1,56 @@
 // 群组同步状态服务 - 使用独立的groupSyncStatus表
 import { and, eq, inArray } from 'drizzle-orm'
-import dbManager from '../../db'
+import { BaseService } from '../base'
 import { groupSyncStatus } from '../../tables/group/sync-status'
+import type {
+  DBGetModuleVersionsReq,
+  DBGetModuleVersionsRes,
+  DBUpsertSyncStatusReq,
+} from 'commonModule/type/database/server/group/group-sync-status'
 
-export class GroupSyncStatusService {
-  static get db() {
-    return dbManager.db
-  }
+class GroupSyncStatus extends BaseService {
 
   /**
-   * 批量获取指定模块的版本状态
+   * @description 批量获取指定模块的版本状态
    */
-  static async getModuleVersions(module: string, groupIds: string[]): Promise<Array<{ groupId: string, version: number }>> {
-    if (groupIds.length === 0) {
-      return []
+  async getModuleVersions(req: DBGetModuleVersionsReq): Promise<DBGetModuleVersionsRes> {
+    if (req.groupIds.length === 0) {
+      return { versions: [] }
     }
 
     const statuses = await this.db.select()
       .from(groupSyncStatus)
-      .where(and(eq(groupSyncStatus.module, module), inArray(groupSyncStatus.groupId, groupIds)))
+      .where(and(eq(groupSyncStatus.module, req.module), inArray(groupSyncStatus.groupId, req.groupIds)))
 
-    return statuses.map(status => ({
+    const versions = statuses.map(status => ({
       groupId: status.groupId,
       version: status.version || 0,
     }))
+
+    return { versions }
   }
 
   /**
-   * 更新指定模块的同步状态
+   * @description 更新指定模块的同步状态
    */
-  static async upsertSyncStatus(module: string, groupId: string, version: number): Promise<void> {
+  async upsertSyncStatus(req: DBUpsertSyncStatusReq): Promise<void> {
     await this.db
       .insert(groupSyncStatus)
       .values({
-        module,
-        groupId,
-        version,
+        module: req.module,
+        groupId: req.groupId,
+        version: req.version,
         updatedAt: Math.floor(Date.now() / 1000),
       })
       .onConflictDoUpdate({
         target: [groupSyncStatus.groupId, groupSyncStatus.module],
         set: {
-          version,
+          version: req.version,
           updatedAt: Math.floor(Date.now() / 1000),
         },
       })
       .run()
   }
 }
+
+export default new GroupSyncStatus()

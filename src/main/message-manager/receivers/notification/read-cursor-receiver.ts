@@ -3,7 +3,7 @@ import { notificationReadCursorBusiness as readCursorBusiness } from 'mainModule
 /**
  * @description: 通知已读游标接收器 - 处理notification_read_cursor表的操作
  */
-export class ReadCursorReceiver {
+class ReadCursorReceiver {
   /**
    * 处理通知已读游标更新通知
    * 只处理 notification_read_cursor 表的更新

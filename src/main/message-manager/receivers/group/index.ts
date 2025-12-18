@@ -6,7 +6,7 @@ import { GroupMemberReceiver } from './group-member-receiver'
  * @description: 群组消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class GroupMessageRouter {
+class GroupMessageRouter {
   private groupReceiver = new GroupReceiver()
   private groupJoinRequestReceiver = new GroupJoinRequestReceiver()
   private groupMemberReceiver = new GroupMemberReceiver()

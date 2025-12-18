@@ -1,7 +1,7 @@
 import { NotificationModule, NotificationNotificationCommand } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncNotificationInboxesApi } from 'mainModule/api/datasync'
 import { getNotificationInboxByIdsApi } from 'mainModule/api/notification'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
 import { NotificationInboxService } from 'mainModule/database/services/notification/inbox'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
@@ -17,7 +17,7 @@ class NotificationInboxSync {
       return
 
     try {
-      const cursor = await DataSyncService.get('notification_inboxes')
+      const cursor = await dbServiceDataSync.get('notification_inboxes')
       const sinceVersion = cursor?.version || 0
 
       const resp = await datasyncGetSyncNotificationInboxesApi({
@@ -36,7 +36,7 @@ class NotificationInboxSync {
         ...inboxVersions.map(item => item.version || 0),
       )
 
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'notification_inboxes',
         version: nextVersion,
         updatedAt: resp.result.serverTimestamp,

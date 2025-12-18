@@ -1,8 +1,8 @@
 import { getUserConversationSettingsListByIdsApi } from 'mainModule/api/chat'
 import { datasyncGetSyncChatUserConversationsApi } from 'mainModule/api/datasync'
-import { ChatSyncStatusService } from 'mainModule/database/services/chat/sync-status'
-import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
+import  dBServiceChatSyncStatus from 'mainModule/database/services/chat/sync-status'
+import dbServiceChatUserConversation  from 'mainModule/database/services/chat/user-conversation'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
 
@@ -18,7 +18,7 @@ class UserConversationSync {
       return
     try {
       // 获取本地同步时间戳
-      const localCursor = await DataSyncService.get('chat_user_conversations')
+      const localCursor = await dbServiceDataSync.get('chat_user_conversations')
       const lastSyncTime = localCursor?.updatedAt || 0
       // 获取服务器上变更的用户会话设置版本信息
       const serverResponse = await datasyncGetSyncChatUserConversationsApi({
@@ -34,7 +34,7 @@ class UserConversationSync {
       }
 
       // 更新游标（无论是否有变更都要更新）
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'chat_user_conversations',
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverResponse.result.serverTimestamp,
@@ -99,7 +99,7 @@ class UserConversationSync {
         }))
 
         // 批量插入用户会话关系数据
-        await ChatUserConversationService.batchCreate(userConversations)
+        await dbServiceChatUserConversation.batchCreate(userConversations)
 
         // 更新同步状态（使用响应中的版本号）
         for (const uc of response.result.userConversationSettings) {

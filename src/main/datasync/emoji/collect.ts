@@ -1,10 +1,10 @@
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getEmojiCollectsByIdsApi } from 'mainModule/api/emoji'
-import { EmojiCollectService } from 'mainModule/database/services/emoji/collect'
+import dBServiceEmojiCollect  from 'mainModule/database/services/emoji/collect'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
 // 表情收藏同步模块
-export class CollectSync {
+class CollectSync {
   // 同步表情收藏数据（emoji_collect 表）
   async sync(collectVersions: any[]) {
     if (!collectVersions || collectVersions.length === 0) {
@@ -37,7 +37,7 @@ export class CollectSync {
       return []
     }
 
-    const existingRecordsMap = await EmojiCollectService.getCollectsByIds(ids)
+    const existingRecordsMap = await dBServiceEmojiCollect.getCollectsByIds(ids)
 
     const needUpdateIds = ids.filter((id) => {
       const existingRecord = existingRecordsMap.get(id)
@@ -76,7 +76,7 @@ export class CollectSync {
           updatedAt: collect.updatedAt ?? collect.updateAt,
         }))
 
-        await EmojiCollectService.batchCreate(collects)
+        await dBServiceEmojiCollect.batchCreate(collects)
         syncedCollects.push(...collects.map(collect => ({
           collectId: collect.emojiCollectId,
           version: collect.version,

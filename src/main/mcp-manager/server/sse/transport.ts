@@ -6,7 +6,7 @@ import { SSEMessageHandler } from './message-handler.js'
  * SSE传输管理器
  * 管理SSE连接的创建、清理和消息处理
  */
-export class SSETransportManager {
+class SSETransportManager {
   private transports: Map<string, SSEServerTransport> = new Map()
 
   /**

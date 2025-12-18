@@ -2,8 +2,8 @@ import { SyncStatus } from 'commonModule/type/datasync'
 import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncFriendVerifiesApi } from 'mainModule/api/datasync'
 import { getFriendVerifiesListByIdsApi } from 'mainModule/api/friened'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dBServiceFriendVerify  from 'mainModule/database/services/friend/friend_verify'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
@@ -11,7 +11,7 @@ import Logger from 'mainModule/utils/logger/index'
 const logger = new Logger('数据同步-friend-verify')
 
 // 好友验证数据同步模块
-export class FriendVerifySyncModule {
+class FriendVerifySyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步
@@ -23,7 +23,7 @@ export class FriendVerifySyncModule {
 
     try {
       // 获取本地同步时间戳
-      const localCursor = await DataSyncService.get('friend_verifies')
+      const localCursor = await dbServiceDataSync.get('friend_verifies')
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器上变更的好友验证版本信息
@@ -67,7 +67,7 @@ export class FriendVerifySyncModule {
     }
 
     // 查询本地已存在的记录
-    const existingVerifiesMap = await FriendVerifyService.getFriendVerifiesByIds(verifyIds)
+    const existingVerifiesMap = await dBServiceFriendVerify.getFriendVerifiesByIds(verifyIds)
 
     // 过滤出需要更新的ID（本地不存在或版本号更旧的数据）
     const needUpdateVerifyIds = verifyIds.filter((id) => {
@@ -113,7 +113,7 @@ export class FriendVerifySyncModule {
         }))
 
         // 批量插入好友验证数据
-        await FriendVerifyService.batchCreate(friendVerifies)
+        await dBServiceFriendVerify.batchCreate(friendVerifies)
 
         // 收集同步的数据用于通知
         syncedVerifies.push(...friendVerifies.map(verify => ({
@@ -133,7 +133,7 @@ export class FriendVerifySyncModule {
 
   // 更新游标
   private async updateFriendVerifiesCursor(version: number | null, updatedAt: number) {
-    await DataSyncService.upsert({
+    await dbServiceDataSync.upsert({
       module: 'friend_verifies',
       version,
       updatedAt,

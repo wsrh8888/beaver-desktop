@@ -1,21 +1,27 @@
-import type { IDBNotificationInbox } from 'commonModule/type/database/notification'
+import type { IDBNotificationInbox } from 'commonModule/type/database/db/notification'
 import { and, eq, gt, inArray, sql } from 'drizzle-orm'
+import { BaseService } from '../base'
 import { notificationInboxes } from 'mainModule/database/tables/notification/inbox'
-import dbManager from '../../db'
+import type {
+  DBBatchAddToInboxReq,
+  DBGetUserInboxReq,
+  DBGetUserInboxRes,
+  DBMarkAsReadReq,
+  DBDeleteInboxItemReq,
+} from 'commonModule/type/database/server/notification/inbox'
 
 // 通知收件箱服务
-export class NotificationInboxService {
-  static get db() {
-    return dbManager.db
-  }
+class NotificationInboxService extends BaseService {
 
-  // 批量插入或更新收件箱记录（userId + eventId 唯一）
-  static async batchUpsert(inboxes: IDBNotificationInbox[]): Promise<void> {
-    if (!inboxes.length)
+  /**
+   * @description 批量添加通知到收件箱
+   */
+  async batchAdd(req: DBBatchAddToInboxReq): Promise<void> {
+    if (!req.inboxes.length)
       return
 
     await this.db.insert(notificationInboxes)
-      .values(inboxes)
+      .values(req.inboxes)
       .onConflictDoUpdate({
         target: [notificationInboxes.userId, notificationInboxes.eventId],
         set: {
@@ -33,7 +39,7 @@ export class NotificationInboxService {
   }
 
   // 标记指定事件为已读
-  static async markReadByEventIds(userId: string, eventIds: string[], readAt?: number): Promise<void> {
+   async markReadByEventIds(userId: string, eventIds: string[], readAt?: number): Promise<void> {
     if (!eventIds.length)
       return
 
@@ -54,7 +60,7 @@ export class NotificationInboxService {
   }
 
   // 按版本增量拉取用户收件箱
-  static async getInboxesAfterVersion(userId: string, version: number, limit = 100): Promise<IDBNotificationInbox[]> {
+   async getInboxesAfterVersion(userId: string, version: number, limit = 100): Promise<IDBNotificationInbox[]> {
     return await this.db.select()
       .from(notificationInboxes)
       .where(
@@ -69,7 +75,7 @@ export class NotificationInboxService {
   }
 
   // 获取指定事件ID的收件箱本地版本映射
-  static async getVersionMapByEventIds(userId: string, eventIds: string[]): Promise<Map<string, number>> {
+   async getVersionMapByEventIds(userId: string, eventIds: string[]): Promise<Map<string, number>> {
     if (!userId || !eventIds.length)
       return new Map()
 
@@ -94,7 +100,7 @@ export class NotificationInboxService {
   }
 
   // 根据事件ID列表获取收件箱记录
-  static async getByEventIds(userId: string, eventIds: string[]): Promise<IDBNotificationInbox[]> {
+   async getByEventIds(userId: string, eventIds: string[]): Promise<IDBNotificationInbox[]> {
     if (!userId || !eventIds.length)
       return []
 
@@ -110,7 +116,7 @@ export class NotificationInboxService {
   }
 
   // 获取指定用户和分类的基础未读统计（不考虑游标时间）
-  static async getBasicUnreadByCategories(userId: string, categories?: string[]) {
+   async getBasicUnreadByCategories(userId: string, categories?: string[]) {
     if (!userId)
       return [] as Array<{ category: string, unread: number }>
 
@@ -139,7 +145,7 @@ export class NotificationInboxService {
   }
 
   // 获取用户指定分类的通知列表（基础查询）
-  static async getByUserIdAndCategories(userId: string, categories?: string[], limit = 100) {
+   async getByUserIdAndCategories(userId: string, categories?: string[], limit = 100) {
     if (!userId) return []
 
     const hasCategories = !!categories && categories.length > 0
@@ -160,7 +166,7 @@ export class NotificationInboxService {
   }
 
   // 获取指定时间之后指定分类的未读数量
-  static async getUnreadCountAfterTime(userId: string, category: string, afterTime: number) {
+   async getUnreadCountAfterTime(userId: string, category: string, afterTime: number) {
     return await this.db.$count(notificationInboxes, and(
       eq(notificationInboxes.userId as any, userId as any),
       eq(notificationInboxes.category as any, category as any),

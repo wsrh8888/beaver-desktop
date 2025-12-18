@@ -1,4 +1,4 @@
-import type { IDBChatSyncStatus } from 'commonModule/type/database/chat'
+import type { IDBChatSyncStatus } from 'commonModule/type/database/db/chat'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 

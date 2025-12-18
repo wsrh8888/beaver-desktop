@@ -1,8 +1,8 @@
 import { getConversationsListByIdsApi } from 'mainModule/api/chat'
 import { datasyncGetSyncChatConversationsApi } from 'mainModule/api/datasync'
-import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
-import { ChatSyncStatusService } from 'mainModule/database/services/chat/sync-status'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
+import dBServiceChatConversation  from 'mainModule/database/services/chat/conversation'
+import dBServiceChatSyncStatus from 'mainModule/database/services/chat/sync-status'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
 
@@ -20,7 +20,7 @@ class ConversationMetaSync {
 
     try {
       // 获取本地最后同步时间
-      const localCursor = await DataSyncService.get('chat_conversations')
+      const localCursor = await dbServiceDataSync.get('chat_conversations')
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器变更的会话版本信息
@@ -39,7 +39,7 @@ class ConversationMetaSync {
       }
 
       // 更新游标（无论是否有变更都要更新）
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'chat_conversations',
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverTimestamp,
@@ -106,7 +106,7 @@ class ConversationMetaSync {
       if (response.result.conversations.length > 0) {
         // 批量更新本地会话数据
         for (const conv of response.result.conversations) {
-          await ChatConversationService.upsert(conv)
+          await dBServiceChatConversation.upsert(conv)
         }
 
         // 更新同步状态（使用响应中的版本号）

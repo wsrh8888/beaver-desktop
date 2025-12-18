@@ -1,4 +1,4 @@
-import type { IDBChatConversationMeta } from 'commonModule/type/database/chat'
+import type { IDBChatConversationMeta } from 'commonModule/type/database/db/chat'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 

@@ -6,7 +6,7 @@ import { emojiBusiness } from 'mainModule/business/emoji/emoji'
 /**
  * @description: 表情收藏接收器 - 处理表情收藏相关表的操作
  */
-export class CollectReceiver {
+class CollectReceiver {
   /**
    * 处理表情相关表的更新通知
    * 处理 emoji、emoji_collect、emoji_package_collect、emoji_package_emoji 表的更新

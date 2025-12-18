@@ -1,22 +1,29 @@
 import type { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
-import dbManager from 'mainModule/database/db'
+import { BaseService } from '../base'
 import { friends } from 'mainModule/database/tables/friend/friend'
 import { users } from 'mainModule/database/tables/user/user'
+import type {
+  DBCreateFriendReq,
+  DBUpsertFriendReq,
+  DBBatchCreateFriendsReq,
+  DBGetFriendDetailsReq,
+  DBGetFriendDetailsRes,
+} from 'commonModule/type/database/server/friend/friend'
 
 // 好友服务
-export class FriendService {
-  static get db() {
-    return dbManager.db
+class Friend extends BaseService {
+  /**
+   * @description 创建好友关系
+   */
+  async create(req: DBCreateFriendReq): Promise<void> {
+    await this.db.insert(friends).values(req).run()
   }
 
-  // 创建好友关系
-  static async create(friendData: any) {
-    return await this.db.insert(friends).values(friendData).run()
-  }
-
-  // 创建或更新好友关系（upsert操作）
-  static async upsert(friendData: any) {
+  /**
+   * @description 创建或更新好友关系（upsert操作）
+   */
+  async upsert(req: DBUpsertFriendReq): Promise<void> {
     return await this.db.insert(friends)
       .values(friendData)
       .onConflictDoUpdate({
@@ -36,7 +43,7 @@ export class FriendService {
   }
 
   // 批量获取好友详细信息（包含用户信息和备注）
-  static async getFriendDetails(userId: string, friendIds: string[]): Promise<Map<string, any>> {
+   async getFriendDetails(userId: string, friendIds: string[]): Promise<Map<string, any>> {
     if (friendIds.length === 0) {
       return new Map()
     }
@@ -128,7 +135,7 @@ export class FriendService {
   }
 
   // 根据好友关系ID列表批量查询好友信息
-  static async getFriendsByIds(friendIds: string[], currentUserId: string): Promise<IFriendInfo[]> {
+   async getFriendsByIds(friendIds: string[], currentUserId: string): Promise<IFriendInfo[]> {
     if (friendIds.length === 0) {
       return []
     }
@@ -207,7 +214,7 @@ export class FriendService {
   }
 
   // 根据friendshipIds批量查询本地好友关系（仅原始记录映射）
-  static async getFriendRecordsByIds(friendshipIds: string[]): Promise<Map<string, any>> {
+   async getFriendRecordsByIds(friendshipIds: string[]): Promise<Map<string, any>> {
     if (friendshipIds.length === 0) {
       return new Map()
     }
@@ -227,7 +234,7 @@ export class FriendService {
   }
 
   // 批量创建好友关系（调用upsert方法，避免重复数据错误）
-  static async batchCreate(friendsData: any[]) {
+   async batchCreate(friendsData: any[]) {
     if (friendsData.length === 0)
       return
 
@@ -239,7 +246,7 @@ export class FriendService {
   /**
    * 获取好友关系记录（纯数据库查询，不含业务逻辑）
    */
-  static async getFriendRelations(userId: string, options?: { page?: number, limit?: number }): Promise<any[]> {
+   async getFriendRelations(req: { userId: string, options?: { page?: number, limit?: number } }): Promise<{ relations: any[] }> {
     const { page = 1, limit = 20 } = options || {}
     const offset = (page - 1) * limit
 
@@ -255,7 +262,7 @@ export class FriendService {
       .all()
   }
 
-  static async getFriendsByVerRange(header: any, params: any): Promise<{ list: IFriendInfo[] }> {
+   async getFriendsByVerRange(header: any, params: any): Promise<{ list: IFriendInfo[] }> {
     try {
       const userId = header?.userId
 
@@ -351,3 +358,6 @@ export class FriendService {
     }
   }
 }
+
+// 导出好友服务实例
+export default new Friend()

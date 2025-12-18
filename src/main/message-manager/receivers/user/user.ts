@@ -3,7 +3,7 @@ import { userBusiness } from 'mainModule/business/user/user'
 /**
  * @description: 用户资料接收器 - 处理 users 表的操作
  */
-export class UserReceiver {
+class UserReceiver {
   /**
    * 处理用户表更新通知
    * 只处理 users 表的更新

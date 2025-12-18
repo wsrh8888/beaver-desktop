@@ -1,4 +1,4 @@
-import type { IDBMedia } from 'commonModule/type/database/media'
+import type { IDBMedia } from 'commonModule/type/database/db/media'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, unique } from 'drizzle-orm/sqlite-core'
 

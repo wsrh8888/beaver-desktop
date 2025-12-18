@@ -1,6 +1,6 @@
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getEmojiPackageContentsByPackageIdsApi } from 'mainModule/api/emoji'
-import { EmojiPackageEmojiService } from 'mainModule/database/services/emoji/package-emoji'
+import dBServiceEmojiPackageEmoji  from 'mainModule/database/services/emoji/package-emoji'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
 // emoji_package_emoji 表同步处理器
@@ -61,7 +61,7 @@ class PackageEmojiSync {
           updatedAt: content.updateAt, // 注意这里用的是 updateAt，不是 updatedAt
         }))
 
-        await EmojiPackageEmojiService.batchCreate(contents)
+        await dBServiceEmojiPackageEmoji.batchCreate(contents)
         syncedPackageContents.push(...contents.map(content => ({
           packageId: content.packageId,
           version: content.version,

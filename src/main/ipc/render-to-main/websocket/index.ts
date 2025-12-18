@@ -5,7 +5,7 @@ import { ChatHandler } from './chat'
 
 const loggerName = 'websocket-handler'
 
-export class WebSocketHandler {
+class WebSocketHandler {
   /**
    * 处理WebSocket相关的IPC命令
    */

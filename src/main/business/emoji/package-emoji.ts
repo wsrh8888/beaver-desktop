@@ -1,6 +1,6 @@
 import type { QueueItem } from '../base/base'
 import { getEmojiPackageContentsByPackageIdsApi } from 'mainModule/api/emoji'
-import { EmojiPackageEmojiService } from 'mainModule/database/services/emoji/package-emoji'
+import dBServiceEmojiPackageEmoji  from 'mainModule/database/services/emoji/package-emoji'
 import { BaseBusiness } from '../base/base'
 
 /**
@@ -14,7 +14,7 @@ interface PackageEmojiSyncItem extends QueueItem {
 /**
  * 表情包表情关联业务逻辑
  */
-export class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem> {
+class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem> {
   protected readonly businessName = 'EmojiPackageEmojiBusiness'
 
   constructor() {
@@ -24,7 +24,7 @@ export class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem
     })
   }
   async getEmojisByPackageIds(packageIds: string[]) {
-    return await EmojiPackageEmojiService.getEmojisByPackageIds(packageIds)
+    return await dBServiceEmojiPackageEmoji.getEmojisByPackageIds(packageIds)
   }
 
   /**
@@ -87,7 +87,7 @@ export class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem
               updateAt: contentData.updatedAt,
             }))
 
-            await EmojiPackageEmojiService.batchCreate(contentRows)
+            await dBServiceEmojiPackageEmoji.batchCreate(contentRows)
           }
         }
       } catch (error) {

@@ -5,18 +5,18 @@ import { friendVerifies } from '../../tables/friend/friend_verify'
 import { users } from '../../tables/user/user'
 
 // 好友验证服务
-export class FriendVerifyService {
-  static get db() {
+class FriendVerify {
+   get db() {
     return dbManager.db
   }
 
   // 创建好友验证记录
-  static async create(verifyData: any) {
+   async create(verifyData: any) {
     return await this.db.insert(friendVerifies).values(verifyData).run()
   }
 
   // 根据验证记录ID批量查询好友验证记录
-  static async getFriendVerifiesByIds(verifyIds: string[]): Promise<Map<string, any>> {
+   async getFriendVerifiesByIds(verifyIds: string[]): Promise<Map<string, any>> {
     if (verifyIds.length === 0) {
       return new Map()
     }
@@ -36,7 +36,7 @@ export class FriendVerifyService {
   }
 
   // 批量创建好友验证记录（支持插入或更新）
-  static async batchCreate(verifiesData: any[]) {
+   async batchCreate(verifiesData: any[]) {
     if (verifiesData.length === 0)
       return
 
@@ -65,7 +65,7 @@ export class FriendVerifyService {
   /**
    * description: 获取好友验证列表
    */
-  static async getValidList(header: any, data: any): Promise<{ list: IValidInfo[] }> {
+   async getValidList(header: any, data: any): Promise<{ list: IValidInfo[] }> {
     try {
       const userId = header?.userId
 
@@ -150,7 +150,7 @@ export class FriendVerifyService {
   /**
    * description: 根据版本范围获取验证列表
    */
-  static async getValidByVerRange(header: any, params: any): Promise<{ list: IValidInfo[] }> {
+   async getValidByVerRange(header: any, params: any): Promise<{ list: IValidInfo[] }> {
     try {
       const userId = header?.userId
 
@@ -233,7 +233,7 @@ export class FriendVerifyService {
   }
 
   // 根据验证记录ID列表批量查询验证记录
-  static async getValidByIds(verifyIds: string[], currentUserId: string): Promise<{ list: IValidInfo[] }> {
+   async getValidByIds(verifyIds: string[], currentUserId: string): Promise<{ list: IValidInfo[] }> {
     if (verifyIds.length === 0) {
       return { list: [] }
     }
@@ -295,3 +295,5 @@ export class FriendVerifyService {
     return { list: validList }
   }
 }
+
+export default new FriendVerify()

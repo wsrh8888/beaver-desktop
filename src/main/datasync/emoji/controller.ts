@@ -1,6 +1,6 @@
 import { SyncStatus } from 'commonModule/type/datasync'
 import { datasyncGetSyncEmojiCollectsApi } from 'mainModule/api/datasync'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
 import { collectSync } from './collect'
@@ -23,7 +23,7 @@ class EmojiController {
 
     try {
       // 获取本地同步时间戳
-      const localCursor = await DataSyncService.get('emoji_collects')
+      const localCursor = await dbServiceDataSync.get('emoji_collects')
       const lastSyncTime = localCursor?.version || 0
 
       // 一次性获取服务器上所有表情相关数据的变更版本信息
@@ -56,7 +56,7 @@ class EmojiController {
 
   // 更新游标
   private async updateEmojiCollectsCursor(version: number | null, updatedAt: number) {
-    await DataSyncService.upsert({
+    await dbServiceDataSync.upsert({
       module: 'emoji_collects',
       version,
       updatedAt,

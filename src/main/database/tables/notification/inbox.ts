@@ -1,4 +1,4 @@
-import type { IDBNotificationInbox } from 'commonModule/type/database/notification'
+import type { IDBNotificationInbox } from 'commonModule/type/database/db/notification'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 

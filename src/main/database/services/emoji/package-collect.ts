@@ -1,27 +1,37 @@
-import { eq, inArray } from 'drizzle-orm'
-import dbManager from 'mainModule/database/db'
+import { and, eq, inArray } from 'drizzle-orm'
+import { BaseService } from '../base'
 import { emojiPackageCollect } from 'mainModule/database/tables/emoji/package_collect'
+import type {
+  DBCreatePackageCollectReq,
+  DBBatchCreatePackageCollectsReq,
+  DBGetPackageCollectsByIdsReq,
+  DBGetPackageCollectsByIdsRes,
+  DBGetPackageCollectsByUserIdReq,
+  DBGetPackageCollectsByUserIdRes,
+  DBGetPackageCollectByIdReq,
+  DBGetPackageCollectByIdRes,
+  DBDeletePackageCollectReq,
+} from 'commonModule/type/database/server/emoji/package-collect'
 
 // 表情包收藏服务
-export class EmojiPackageCollectService {
-  static get db() {
-    return dbManager.db
+class EmojiPackageCollect extends BaseService {
+  /**
+   * @description 创建表情包收藏
+   */
+  async create(req: DBCreatePackageCollectReq): Promise<void> {
+    await this.db.insert(emojiPackageCollect).values(req).run()
   }
 
-  // 创建表情包收藏
-  static async create(collectData: any) {
-    return await this.db.insert(emojiPackageCollect).values(collectData).run()
-  }
-
-  // 批量创建表情包收藏（upsert操作）
-  static async batchCreate(collectList: any[]) {
-    if (collectList.length === 0) {
+  /**
+   * @description 批量创建表情包收藏（upsert操作）
+   */
+  async batchCreate(req: DBBatchCreatePackageCollectsReq): Promise<void> {
+    if (req.collects.length === 0) {
       return
     }
 
-    const results = []
-    for (const collectData of collectList) {
-      const result = await this.db.insert(emojiPackageCollect)
+    for (const collectData of req.collects) {
+      await this.db.insert(emojiPackageCollect)
         .values(collectData)
         .onConflictDoUpdate({
           target: emojiPackageCollect.packageCollectId,
@@ -33,56 +43,65 @@ export class EmojiPackageCollectService {
           },
         })
         .run()
-      results.push(result)
     }
-
-    return results
   }
 
-  // 根据ID列表获取表情包收藏
-  static async getPackageCollectsByIds(ids: string[]): Promise<Map<string, any>> {
-    if (ids.length === 0) {
-      return new Map()
+  /**
+   * @description 根据ID列表获取表情包收藏
+   */
+  async getPackageCollectsByIds(req: DBGetPackageCollectsByIdsReq): Promise<DBGetPackageCollectsByIdsRes> {
+    if (req.ids.length === 0) {
+      return { collects: new Map() }
     }
 
     const collectList = await this.db
       .select()
       .from(emojiPackageCollect)
-      .where(inArray(emojiPackageCollect.packageCollectId, ids as any))
+      .where(inArray(emojiPackageCollect.packageCollectId, req.ids as any))
 
-    const collectMap = new Map<string, any>()
+    const collectMap = new Map<string, IDBEmojiPackageCollect>()
     collectList.forEach((item) => {
       collectMap.set(item.packageCollectId, item)
     })
 
-    return collectMap
+    return { collects: collectMap }
   }
 
-  // 根据用户ID获取用户的所有表情包收藏
-  static async getPackageCollectsByUserId(userId: string) {
-    return await this.db
+  /**
+   * @description 根据用户ID获取用户的所有表情包收藏
+   */
+  async getPackageCollectsByUserId(req: DBGetPackageCollectsByUserIdReq): Promise<DBGetPackageCollectsByUserIdRes> {
+    const collects = await this.db
       .select()
       .from(emojiPackageCollect)
-      .where(eq(emojiPackageCollect.userId, userId))
+      .where(eq(emojiPackageCollect.userId, req.userId))
       .all()
+
+    return { collects }
   }
 
-  // 根据ID获取单个表情包收藏
-  static async getPackageCollectById(packageCollectId: string) {
+  /**
+   * @description 根据ID获取单个表情包收藏
+   */
+  async getPackageCollectById(req: DBGetPackageCollectByIdReq): Promise<DBGetPackageCollectByIdRes> {
     const result = await this.db
       .select()
       .from(emojiPackageCollect)
-      .where(eq(emojiPackageCollect.packageCollectId, packageCollectId))
+      .where(eq(emojiPackageCollect.packageCollectId, req.packageCollectId))
       .limit(1)
 
-    return result[0] || null
+    return { collect: result[0] || null }
   }
 
-  // 删除表情包收藏
-  static async delete(packageCollectId: string) {
-    return await this.db
+  /**
+   * @description 删除表情包收藏
+   */
+  async delete(req: DBDeletePackageCollectReq): Promise<void> {
+    await this.db
       .delete(emojiPackageCollect)
-      .where(eq(emojiPackageCollect.packageCollectId, packageCollectId))
+      .where(and(eq(emojiPackageCollect.userId, req.userId), eq(emojiPackageCollect.packageId, req.packageId)))
       .run()
   }
 }
+
+export default new EmojiPackageCollect()

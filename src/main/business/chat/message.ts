@@ -8,7 +8,8 @@ import type { QueueItem } from '../base/base'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { chatSyncApi } from 'mainModule/api/chat'
 import { MessageService } from 'mainModule/database/services/chat/message'
-import { UserService } from 'mainModule/database/services/user/user'
+import dBServiceUser  from 'mainModule/database/services/user/user'
+
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
@@ -26,7 +27,7 @@ interface MessageSyncItem extends QueueItem {
  * 对应 chat_messages 表
  * 负责消息的处理、状态更新等业务逻辑
  */
-export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
+class MessageBusiness extends BaseBusiness<MessageSyncItem> {
   protected readonly businessName = 'MessageBusiness'
 
   constructor() {
@@ -58,7 +59,7 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     const senderInfoMap = new Map()
     if (senderIds.length > 0) {
       try {
-        const senderDetails = await UserService.getUsersBasicInfo(senderIds as string[])
+        const senderDetails = await dBServiceUser.getUsersBasicInfo(senderIds as string[])
         senderDetails.forEach((detail) => {
           senderInfoMap.set(detail.userId, {
             userId: detail.userId,
@@ -113,7 +114,7 @@ export class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     const senderInfoMap = new Map()
     if (senderIds.length > 0) {
       try {
-        const senderDetails = await UserService.getUsersBasicInfo(senderIds as string[])
+        const senderDetails = await dBServiceUser.getUsersBasicInfo(senderIds as string[])
         senderDetails.forEach((detail) => {
           senderInfoMap.set(detail.userId, {
             userId: detail.userId,

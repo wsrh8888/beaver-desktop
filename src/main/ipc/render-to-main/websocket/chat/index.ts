@@ -2,7 +2,7 @@ import { WsType } from 'commonModule/type/ws/command'
 import { store } from 'mainModule/store'
 import { ChatSender } from '../senders/chat-sender'
 
-export class ChatHandler {
+class ChatHandler {
   /**
    * 处理用户相关的数据库命令
    */

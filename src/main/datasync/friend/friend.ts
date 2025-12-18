@@ -2,8 +2,8 @@ import { SyncStatus } from 'commonModule/type/datasync'
 import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncFriendsApi } from 'mainModule/api/datasync'
 import { getFriendsListByIdsApi } from 'mainModule/api/friened'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { FriendService } from 'mainModule/database/services/friend/friend'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dBServiceFriend  from 'mainModule/database/services/friend/friend'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
@@ -11,7 +11,7 @@ import Logger from 'mainModule/utils/logger/index'
 const logger = new Logger('数据同步-friend')
 
 // 好友数据同步模块
-export class FriendSyncModule {
+class FriendSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步
@@ -23,7 +23,7 @@ export class FriendSyncModule {
 
     try {
       // 获取本地同步时间戳
-      const localCursor = await DataSyncService.get('friends')
+      const localCursor = await dbServiceDataSync.get('friends')
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器上变更的好友版本信息
@@ -73,7 +73,7 @@ export class FriendSyncModule {
     }
 
     // 查询本地已存在的记录
-    const existingFriendsMap = await FriendService.getFriendRecordsByIds(friendshipIds)
+    const existingFriendsMap = await dBServiceFriend.getFriendRecordsByIds(friendshipIds)
 
     // 过滤出需要更新的friendshipIds（本地不存在或版本号更旧的数据）
     const needUpdateFriendshipIds = friendshipIds.filter((id) => {
@@ -118,7 +118,7 @@ export class FriendSyncModule {
           updatedAt: friend.updateAt,
         }))
 
-        await FriendService.batchCreate(friends)
+        await dBServiceFriend.batchCreate(friends)
 
         // 收集同步的数据用于通知
         syncedFriends.push(...friends.map(friend => ({
@@ -138,7 +138,7 @@ export class FriendSyncModule {
 
   // 更新游标
   private async updateFriendsCursor(version: number | null, updatedAt: number) {
-    await DataSyncService.upsert({
+    await dbServiceDataSync.upsert({
       module: 'friends',
       version,
       updatedAt,

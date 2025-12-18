@@ -1,8 +1,9 @@
-import type { IDBUser } from 'commonModule/type/database/user'
+import type { IDBUser } from 'commonModule/type/database/db/user'
 import type { QueueItem } from '../base/base'
 import { NotificationModule, NotificationUserCommand } from 'commonModule/type/preload/notification'
 import { userSyncApi } from 'mainModule/api/user'
-import { UserService } from 'mainModule/database/services/user/user'
+import dBServiceUser  from 'mainModule/database/services/user/user'
+
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
@@ -19,7 +20,7 @@ interface UserSyncItem extends QueueItem {
  * 对应 users 表
  * 负责用户管理的业务逻辑
  */
-export class UserBusiness extends BaseBusiness<UserSyncItem> {
+class UserBusiness extends BaseBusiness<UserSyncItem> {
   protected readonly businessName = 'UserBusiness'
 
   constructor() {
@@ -79,7 +80,7 @@ export class UserBusiness extends BaseBusiness<UserSyncItem> {
             createdAt: Math.floor(user.createAt / 1000), // 转换为秒级时间戳
             updatedAt: Math.floor(user.updateAt / 1000),
           }
-          await UserService.upsert(userData)
+          await dBServiceUser.upsert(userData)
         }
 
         console.log(`用户数据同步成功: count=${response.result.users.length}`)

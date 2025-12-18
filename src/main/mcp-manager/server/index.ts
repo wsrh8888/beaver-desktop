@@ -8,7 +8,7 @@ import { HealthHandler } from './health-handler.js'
 /**
  * 本地MCP服务器
  */
-export class LocalMCPServer {
+class LocalMCPServer {
   private server: McpServer
   private httpServer: any = null
   private sseManager: SSETransportManager

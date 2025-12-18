@@ -5,7 +5,7 @@ import { FavoriteEmojiBusiness } from 'mainModule/business/emoji/favorite-emoji'
 import { FavoritePackageBusiness } from 'mainModule/business/emoji/favorite-package'
 import { EmojiPackageBusiness } from 'mainModule/business/emoji/package'
 
-export class EmojiHandler {
+class EmojiHandler {
   static ensureLogin(header: ICommonHeader) {
     if (!header.userId) {
       throw new Error('用户未登录')

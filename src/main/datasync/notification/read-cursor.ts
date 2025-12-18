@@ -1,8 +1,8 @@
 import { NotificationModule, NotificationNotificationCommand } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncNotificationReadCursorsApi } from 'mainModule/api/datasync'
 import { getNotificationReadCursorsApi } from 'mainModule/api/notification'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { NotificationReadCursorService } from 'mainModule/database/services/notification/read-cursor'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dBServiceNotificationReadCursor  from 'mainModule/database/services/notification/read-cursor'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
@@ -17,7 +17,7 @@ class NotificationReadCursorSync {
       return
 
     try {
-      const cursor = await DataSyncService.get('notification_reads')
+      const cursor = await dbServiceDataSync.get('notification_reads')
       const sinceVersion = cursor?.version || 0
 
       const resp = await datasyncGetSyncNotificationReadCursorsApi({
@@ -36,7 +36,7 @@ class NotificationReadCursorSync {
         ...cursorVersions.map(item => item.version || 0),
       )
 
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'notification_reads',
         version: nextVersion,
         updatedAt: resp.result.serverTimestamp,
@@ -64,7 +64,7 @@ class NotificationReadCursorSync {
 
     if (resp.result.cursors?.length) {
       for (const cursor of resp.result.cursors) {
-        await NotificationReadCursorService.upsertCursor({
+        await dBServiceNotificationReadCursor.upsertCursor({
           userId,
           category: cursor.category,
           version: cursor.version,

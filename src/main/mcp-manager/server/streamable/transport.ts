@@ -5,7 +5,7 @@ import type { IncomingMessage, ServerResponse } from 'http'
  * StreamableHTTP传输管理器
  * 管理StreamableHTTP连接（为将来扩展保留）
  */
-export class StreamableTransportManager {
+class StreamableTransportManager {
   private transport: StreamableHTTPServerTransport | null = null
 
   /**

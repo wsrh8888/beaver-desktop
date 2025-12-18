@@ -1,6 +1,6 @@
 import type { QueueItem } from '../base/base'
 import { getEmojisByIdsApi } from 'mainModule/api/emoji'
-import { EmojiService } from 'mainModule/database/services/emoji/emoji'
+import dBServiceEmoji  from 'mainModule/database/services/emoji/emoji'
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
@@ -15,7 +15,7 @@ interface EmojiSyncItem extends QueueItem {
 /**
  * 表情基础数据业务逻辑
  */
-export class EmojiBusiness extends BaseBusiness<EmojiSyncItem> {
+class EmojiBusiness extends BaseBusiness<EmojiSyncItem> {
   protected readonly businessName = 'EmojiBusiness'
 
   constructor() {
@@ -68,7 +68,7 @@ export class EmojiBusiness extends BaseBusiness<EmojiSyncItem> {
         }))
 
         // 批量更新本地数据库
-        await EmojiService.batchCreate(emojis)
+        await dBServiceEmoji.batchCreate(emojis)
 
         // 发送通知到render进程，告知表情数据已更新
         if (emojis.length > 0) {

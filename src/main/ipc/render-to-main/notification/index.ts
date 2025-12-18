@@ -5,7 +5,7 @@ import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import notificationManager from 'mainModule/notification'
 import logger from 'mainModule/utils/log'
 
-export class NotificationHandler {
+class NotificationHandler {
   /**
    * 统一的notification处理入口
    */

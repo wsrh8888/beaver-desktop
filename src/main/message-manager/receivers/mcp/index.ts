@@ -6,7 +6,7 @@ import { ToolListReceiver } from './tool-list-receiver'
  * @description: MCP消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class MCPMessageRouter {
+class MCPMessageRouter {
   private toolExecutionReceiver = new ToolExecutionReceiver()
   private toolListReceiver = new ToolListReceiver()
 

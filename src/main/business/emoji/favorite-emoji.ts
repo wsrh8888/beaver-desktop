@@ -2,8 +2,8 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IGetEmojisListRes } from 'commonModule/type/ajax/emoji'
 import type { QueueItem } from '../base/base'
 import { getEmojiCollectsByIdsApi } from 'mainModule/api/emoji'
-import { EmojiCollectService } from 'mainModule/database/services/emoji/collect'
-import { EmojiService } from 'mainModule/database/services/emoji/emoji'
+import dBServiceEmojiCollect  from 'mainModule/database/services/emoji/collect'
+import dBServiceEmoji  from 'mainModule/database/services/emoji/emoji'
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
@@ -23,7 +23,7 @@ interface FavoriteEmojiSyncItem extends QueueItem {
 /**
  * 表情收藏业务逻辑
  */
-export class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
+class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
   protected readonly businessName = 'FavoriteEmojiBusiness'
 
   constructor() {
@@ -34,10 +34,10 @@ export class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
   }
   async getUserFavoriteEmojis(header: ICommonHeader): Promise<IGetEmojisListRes> {
     ensureLogin(header)
-    const collects = await EmojiCollectService.getCollectsByUserId(header.userId)
+    const collects = await dBServiceEmojiCollect.getCollectsByUserId(header.userId)
     const validCollects = collects.filter((item: any) => !item.isDeleted)
     const emojiIds = validCollects.map((item: any) => item.emojiId)
-    const emojiMap = await EmojiService.getEmojisByIds(emojiIds)
+    const emojiMap = await dBServiceEmoji.getEmojisByIds(emojiIds)
 
     const list = validCollects
       .map((item: any) => {
@@ -99,7 +99,7 @@ export class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
           updatedAt: collectData.updateAt,
         }))
 
-        await EmojiCollectService.batchCreate(collectRows)
+        await dBServiceEmojiCollect.batchCreate(collectRows)
 
         // 发送通知到render进程，告知表情收藏数据已更新
         if (collectRows.length > 0) {

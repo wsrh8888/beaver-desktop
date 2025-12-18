@@ -1,27 +1,38 @@
 import { eq, inArray } from 'drizzle-orm'
-import dbManager from 'mainModule/database/db'
+import { BaseService } from '../base'
 import { emojiPackageEmoji } from 'mainModule/database/tables/emoji/package_emoji'
+import type {
+  DBCreatePackageEmojiReq,
+  DBBatchCreatePackageEmojisReq,
+  DBGetEmojisByPackageIdReq,
+  DBGetEmojisByPackageIdRes,
+  DBGetEmojisByPackageIdsReq,
+  DBGetEmojisByPackageIdsRes,
+  DBGetPackagesByEmojiIdReq,
+  DBGetPackagesByEmojiIdRes,
+  DBDeleteByPackageIdAndEmojiIdReq,
+  DBDeleteByPackageIdReq,
+} from 'commonModule/type/database/server/emoji/package-emoji'
 
 // 表情包表情关联服务
-export class EmojiPackageEmojiService {
-  static get db() {
-    return dbManager.db
+class EmojiPackageEmoji extends BaseService {
+  /**
+   * @description 创建表情包表情关联
+   */
+  async create(req: DBCreatePackageEmojiReq): Promise<void> {
+    await this.db.insert(emojiPackageEmoji).values(req).run()
   }
 
-  // 创建表情包表情关联
-  static async create(relationData: any) {
-    return await this.db.insert(emojiPackageEmoji).values(relationData).run()
-  }
-
-  // 批量创建表情包表情关联（upsert操作）
-  static async batchCreate(relationList: any[]) {
-    if (relationList.length === 0) {
+  /**
+   * @description 批量创建表情包表情关联（upsert操作）
+   */
+  async batchCreate(req: DBBatchCreatePackageEmojisReq): Promise<void> {
+    if (req.relations.length === 0) {
       return
     }
 
-    const results = []
-    for (const relationData of relationList) {
-      const result = await this.db.insert(emojiPackageEmoji)
+    for (const relationData of req.relations) {
+      await this.db.insert(emojiPackageEmoji)
         .values(relationData)
         .onConflictDoUpdate({
           target: emojiPackageEmoji.relationId,
@@ -32,69 +43,78 @@ export class EmojiPackageEmojiService {
           },
         })
         .run()
-      results.push(result)
     }
-
-    return results
   }
 
-  // 根据表情包ID获取表情列表
-  static async getEmojisByPackageId(packageId: string) {
-    console.log('getEmojisByPackageId called with packageId:', packageId)
-    const result = await this.db
+  /**
+   * @description 根据表情包ID获取表情列表
+   */
+  async getEmojisByPackageId(req: DBGetEmojisByPackageIdReq): Promise<DBGetEmojisByPackageIdRes> {
+    const emojis = await this.db
       .select()
       .from(emojiPackageEmoji)
-      .where(eq(emojiPackageEmoji.packageId, packageId))
+      .where(eq(emojiPackageEmoji.packageId, req.packageId))
       .all()
-    console.log('getEmojisByPackageId result:', result.length, 'records')
-    return result
+    return { emojis }
   }
 
-  // 根据表情包ID列表获取表情关联数据
-  static async getEmojisByPackageIds(packageIds: string[]): Promise<Map<string, any[]>> {
-    if (packageIds.length === 0) {
-      return new Map()
+  /**
+   * @description 根据表情包ID列表获取表情关联数据
+   */
+  async getEmojisByPackageIds(req: DBGetEmojisByPackageIdsReq): Promise<DBGetEmojisByPackageIdsRes> {
+    if (req.packageIds.length === 0) {
+      return { relations: new Map() }
     }
 
     const relationList = await this.db
       .select()
       .from(emojiPackageEmoji)
-      .where(inArray(emojiPackageEmoji.packageId, packageIds as any))
+      .where(inArray(emojiPackageEmoji.packageId, req.packageIds as any))
 
-    const relationMap = new Map<string, any[]>()
+    const relations = new Map<string, IDBEmojiPackageEmoji[]>()
     relationList.forEach((item) => {
-      if (!relationMap.has(item.packageId)) {
-        relationMap.set(item.packageId, [])
+      if (!relations.has(item.packageId)) {
+        relations.set(item.packageId, [])
       }
-      relationMap.get(item.packageId)!.push(item)
+      relations.get(item.packageId)!.push(item)
     })
 
-    return relationMap
+    return { relations }
   }
 
-  // 根据表情ID获取所属的表情包
-  static async getPackagesByEmojiId(emojiId: string) {
-    return await this.db
+  /**
+   * @description 根据表情ID获取所属的表情包
+   */
+  async getPackagesByEmojiId(req: DBGetPackagesByEmojiIdReq): Promise<DBGetPackagesByEmojiIdRes> {
+    const packages = await this.db
       .select()
       .from(emojiPackageEmoji)
-      .where(eq(emojiPackageEmoji.emojiId, emojiId))
+      .where(eq(emojiPackageEmoji.emojiId, req.emojiId))
       .all()
+
+    return { packages }
   }
 
-  // 删除表情包中的表情
-  static async deleteByPackageIdAndEmojiId(packageId: string, emojiId: string) {
-    return await this.db
+  /**
+   * @description 删除表情包中的表情
+   */
+  async deleteByPackageIdAndEmojiId(req: DBDeleteByPackageIdAndEmojiIdReq): Promise<void> {
+    await this.db
       .delete(emojiPackageEmoji)
-      .where(eq(emojiPackageEmoji.packageId, packageId))
-      .where(eq(emojiPackageEmoji.emojiId, emojiId))
+      .where(eq(emojiPackageEmoji.packageId, req.packageId))
+      .where(eq(emojiPackageEmoji.emojiId, req.emojiId))
       .run()
   }
 
-  // 删除表情包中的所有表情
-  static async deleteByPackageId(packageId: string) {
-    return await this.db
+  /**
+   * @description 删除表情包中的所有表情
+   */
+  async deleteByPackageId(req: DBDeleteByPackageIdReq): Promise<void> {
+    await this.db
       .delete(emojiPackageEmoji)
-      .where(eq(emojiPackageEmoji.packageId, packageId))
+      .where(eq(emojiPackageEmoji.packageId, req.packageId))
       .run()
   }
 }
+
+export default new EmojiPackageEmoji()

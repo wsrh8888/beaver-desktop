@@ -3,7 +3,7 @@ import { notificationEventBusiness as eventBusiness } from 'mainModule/business/
 /**
  * @description: 通知事件接收器 - 处理notification_event表的操作
  */
-export class EventReceiver {
+class EventReceiver {
   /**
    * 处理通知事件更新通知
    * 只处理 notification_event 表的更新

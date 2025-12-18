@@ -4,7 +4,7 @@ import { friendBusiness } from 'mainModule/business/friend/friend'
  * @description: 好友操作接收器 - 处理friends表的操作
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
-export class FriendReceiver {
+class FriendReceiver {
   /**
    * 处理好友表更新通知
    * 只处理 friends 表的更新

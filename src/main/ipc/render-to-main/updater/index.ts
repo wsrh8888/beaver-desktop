@@ -11,7 +11,7 @@ import { mediaCacheService } from 'mainModule/database/services/media/media'
 import { downloadFile } from 'mainModule/utils/download/index'
 import logger from 'mainModule/utils/log'
 
-export class UpdaterHandler {
+class UpdaterHandler {
   /**
    * 统一的升级处理入口
    */

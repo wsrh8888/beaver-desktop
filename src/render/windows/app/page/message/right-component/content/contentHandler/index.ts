@@ -17,7 +17,7 @@ export function getMenuItems(messageType: MessageContentType, hasTextSelected: b
 /**
  * 消息处理器工厂
  */
-export class MessageHandlerFactory {
+class MessageHandlerFactory {
   /**
    * 根据消息类型获取对应的处理器实例
    */

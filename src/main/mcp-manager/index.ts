@@ -20,7 +20,7 @@ export interface MCPTool extends IMCPTool {
 /**
  * MCP Manager - MCP系统统一入口
  */
-export class MCPManager {
+class MCPManager {
   private tools: MCPTool[] = []
 
   constructor() {

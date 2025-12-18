@@ -2,7 +2,7 @@ import type { QueueItem } from '../base/base'
 import { NotificationModule, NotificationNotificationCommand } from 'commonModule/type/preload/notification'
 import { getNotificationInboxByIdsApi } from 'mainModule/api/notification'
 import { NotificationInboxService } from 'mainModule/database/services/notification/inbox'
-import { NotificationReadCursorService } from 'mainModule/database/services/notification/read-cursor'
+import dBServiceNotificationReadCursor  from 'mainModule/database/services/notification/read-cursor'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 import Logger from 'mainModule/utils/logger'
@@ -22,7 +22,7 @@ interface NotificationInboxSyncItem extends QueueItem {
  * 对应 notification_inboxes 表
  * 负责通知收件箱的数据同步和业务处理
  */
-export class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> {
+class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> {
   protected readonly businessName = 'NotificationInboxBusiness'
 
   constructor() {
@@ -115,7 +115,7 @@ export class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyn
       // 为每个分类计算真正的未读数：createdAt > lastReadAt 且 isRead = 0
       const byCatPromises = filterCategories.map(async (category) => {
         // 获取该分类的游标时间
-        const cursor = await NotificationReadCursorService.getCursor(userId, category)
+        const cursor = await dBServiceNotificationReadCursor.getCursor(userId, category)
         const lastReadAt = cursor?.lastReadAt || 0
 
         // 计算该分类的未读数

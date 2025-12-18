@@ -4,7 +4,7 @@ import { userConversationBusiness } from 'mainModule/business/chat/user-conversa
  * @description: 用户会话接收器 - 处理user_conversations表的操作
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
-export class UserConversationReceiver {
+class UserConversationReceiver {
   /**
    * 处理用户会话更新通知
    * 只处理 user_conversations 表的更新

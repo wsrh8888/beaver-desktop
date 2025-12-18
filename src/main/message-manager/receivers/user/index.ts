@@ -4,7 +4,7 @@ import { UserReceiver } from './user'
  * @description: 用户消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class UserMessageRouter {
+class UserMessageRouter {
   private userReceiver = new UserReceiver()
 
   /**

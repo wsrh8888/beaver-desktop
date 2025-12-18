@@ -3,7 +3,7 @@ import type { IStoreOptions } from 'commonModule/type/mainStore'
 import { StorageCommand } from 'commonModule/type/ipc/command'
 import { store } from 'mainModule/store'
 
-export class StorageHandler {
+class StorageHandler {
   /**
    * 统一的存储处理入口（同步）
    */

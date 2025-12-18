@@ -1,4 +1,4 @@
-import type { IDBFriend } from 'commonModule/type/database/friend'
+import type { IDBFriend } from 'commonModule/type/database/db/friend'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 

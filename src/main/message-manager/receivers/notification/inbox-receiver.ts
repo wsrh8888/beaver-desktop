@@ -3,7 +3,7 @@ import { notificationInboxBusiness as inboxBusiness } from 'mainModule/business/
 /**
  * @description: 通知收件箱接收器 - 处理notification_inbox表的操作
  */
-export class InboxReceiver {
+class InboxReceiver {
   /**
    * 处理通知收件箱更新通知
    * 只处理 notification_inbox 表的更新

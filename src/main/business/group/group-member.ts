@@ -1,7 +1,7 @@
 import type { QueueItem } from '../base/base'
 import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { groupMemberSyncApi } from 'mainModule/api/group'
-import { GroupMemberService } from 'mainModule/database/services/group/group-member'
+import dBServiceGroupMember  from 'mainModule/database/services/group/group-member'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
@@ -19,7 +19,7 @@ interface GroupMemberSyncItem extends QueueItem {
  * 对应 group_members 表
  * 负责群成员管理的业务逻辑
  */
-export class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
+class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
   protected readonly businessName = 'GroupMemberBusiness'
 
   constructor() {
@@ -75,7 +75,7 @@ export class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
             joinTime: Math.floor(member.joinTime / 1000), // 转换为秒级时间戳
             version: member.version || 0,
           }
-          await GroupMemberService.upsert(memberData)
+          await dBServiceGroupMember.upsert(memberData)
         }
 
         console.log(`群成员数据同步成功: count=${response.result.groupMembers.length}`)

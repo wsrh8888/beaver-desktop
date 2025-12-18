@@ -1,5 +1,5 @@
 import type { QueueItem } from '../base/base'
-import { NotificationEventService } from 'mainModule/database/services/notification/event'
+import dBServiceNotificationEvent  from 'mainModule/database/services/notification/event'
 import { getNotificationEventsByIdsApi } from 'mainModule/api/notification'
 import { BaseBusiness } from '../base/base'
 import Logger from 'mainModule/utils/logger'
@@ -18,7 +18,7 @@ interface NotificationEventSyncItem extends QueueItem {
  * 对应 notification_events 表
  * 负责通知事件的业务处理
  */
-export class NotificationEventBusiness extends BaseBusiness<NotificationEventSyncItem> {
+class NotificationEventBusiness extends BaseBusiness<NotificationEventSyncItem> {
   protected readonly businessName = 'NotificationEventBusiness'
 
   constructor() {
@@ -33,7 +33,7 @@ export class NotificationEventBusiness extends BaseBusiness<NotificationEventSyn
    */
   async getByIds(eventIds: string[]) {
     try {
-      return await NotificationEventService.getByIds(eventIds)
+      return await dBServiceNotificationEvent.getByIds(eventIds)
     }
     catch (error) {
       logger.error({ text: '获取通知事件详情失败', data: { error: (error as any)?.message } })
@@ -46,7 +46,7 @@ export class NotificationEventBusiness extends BaseBusiness<NotificationEventSyn
    */
   async getById(eventId: string) {
     try {
-      const events = await NotificationEventService.getByIds([eventId])
+      const events = await dBServiceNotificationEvent.getByIds([eventId])
       return events.length > 0 ? events[0] : null
     }
     catch (error) {
@@ -60,7 +60,7 @@ export class NotificationEventBusiness extends BaseBusiness<NotificationEventSyn
    */
   async batchUpsert(events: any[]) {
     try {
-      await NotificationEventService.batchUpsert(events)
+      await dBServiceNotificationEvent.batchUpsert(events)
       logger.info({ text: `批量更新通知事件成功: count=${events.length}` })
       return true
     }

@@ -5,7 +5,7 @@ import type { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js
  * SSE消息处理器
  * 处理SSE协议的消息收发
  */
-export class SSEMessageHandler {
+class SSEMessageHandler {
   /**
    * 处理SSE消息请求
    */

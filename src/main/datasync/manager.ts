@@ -9,7 +9,7 @@ import { notificationDatasync } from './notification'
 import { userDatasync } from './user'
 
 // 数据同步管理器
-export class DataSyncManager {
+class DataSyncManager {
   private isSyncing = false
 
   constructor() {

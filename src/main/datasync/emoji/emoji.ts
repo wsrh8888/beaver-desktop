@@ -2,8 +2,8 @@ import { SyncStatus } from 'commonModule/type/datasync'
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncEmojisApi } from 'mainModule/api/datasync'
 import { getEmojisByIdsApi } from 'mainModule/api/emoji'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { EmojiService } from 'mainModule/database/services/emoji/emoji'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dBServiceEmoji  from 'mainModule/database/services/emoji/emoji'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
@@ -11,7 +11,7 @@ import Logger from 'mainModule/utils/logger/index'
 const logger = new Logger('数据同步-emoji')
 
 // 表情基础数据同步模块
-export class EmojiSyncModule {
+class EmojiSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 检查并同步
@@ -23,7 +23,7 @@ export class EmojiSyncModule {
 
     try {
       // 获取本地同步时间戳
-      const localCursor = await DataSyncService.get('emojis')
+      const localCursor = await dbServiceDataSync.get('emojis')
       const lastSyncTime = localCursor?.version || 0
 
       // 获取服务器上变更的表情版本信息
@@ -68,7 +68,7 @@ export class EmojiSyncModule {
     }
 
     // 查询本地已存在的记录
-    const existingEmojisMap = await EmojiService.getEmojisByIds(emojiIds)
+    const existingEmojisMap = await dBServiceEmoji.getEmojisByIds(emojiIds)
 
     // 过滤出需要更新的emojiIds（本地不存在或版本号更旧的数据）
     const needUpdateEmojiIds = emojiIds.filter((id) => {
@@ -111,7 +111,7 @@ export class EmojiSyncModule {
           updatedAt: emoji.updatedAt,
         }))
 
-        await EmojiService.batchCreate(emojis)
+        await dBServiceEmoji.batchCreate(emojis)
 
         // 收集同步的数据用于通知
         syncedEmojis.push(...emojis.map(emoji => ({
@@ -131,7 +131,7 @@ export class EmojiSyncModule {
 
   // 更新游标
   private async updateEmojisCursor(version: number | null, updatedAt: number) {
-    await DataSyncService.upsert({
+    await dbServiceDataSync.upsert({
       module: 'emojis',
       version,
       updatedAt,

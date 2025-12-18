@@ -1,7 +1,7 @@
 import type { QueueItem } from '../base/base'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getUserConversationSettingsListByIdsApi } from 'mainModule/api/chat'
-import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
+import dbServiceChatUserConversation  from 'mainModule/database/services/chat/user-conversation'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
@@ -20,7 +20,7 @@ interface UserConversationSyncItem extends QueueItem {
  * 对应 chat_user_conversations 表
  * 负责用户会话列表、未读消息、设置等业务逻辑
  */
-export class UserConversationBusiness extends BaseBusiness<UserConversationSyncItem> {
+class UserConversationBusiness extends BaseBusiness<UserConversationSyncItem> {
   protected readonly businessName = 'UserConversationBusiness'
 
   constructor() {
@@ -58,7 +58,7 @@ export class UserConversationBusiness extends BaseBusiness<UserConversationSyncI
         }
 
         // 使用插入或更新的方式来同步单个用户会话
-        await ChatUserConversationService.batchCreate([userConversation])
+        await dbServiceChatUserConversation.batchCreate([userConversation])
 
         console.log(`用户会话同步成功: userId=${userId}, conversationId=${conversationId}, version=${version}`)
       }

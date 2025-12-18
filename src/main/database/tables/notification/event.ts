@@ -1,4 +1,4 @@
-import type { IDBNotificationEvent } from 'commonModule/type/database/notification'
+import type { IDBNotificationEvent } from 'commonModule/type/database/db/notification'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 

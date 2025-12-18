@@ -1,55 +1,72 @@
 import type { IUserInfoRes, IUserSyncItem } from 'commonModule/type/ajax/user'
-import type { IDBUser } from 'commonModule/type/database/user'
+import type { IDBUser } from 'commonModule/type/database/db/user'
 import { sql } from 'drizzle-orm'
-import dbManager from '../../db'
+import { BaseService } from '../base'
 import { users } from '../../tables/user/user'
+import type {
+  DBCreateUserReq,
+  DBUpsertUserReq,
+  DBBatchCreateUsersReq,
+  DBGetUserByIdReq,
+  DBGetUserByIdRes,
+  DBGetUserBasicInfoReq,
+  DBGetUserBasicInfoRes,
+  DBGetUsersBasicInfoReq,
+  DBGetUsersBasicInfoRes,
+  DBGetAllUsersReq,
+  DBGetAllUsersRes,
+} from 'commonModule/type/database/server/user/user'
 
 // 用户服务
-export class UserService {
-  static get db() {
-    return dbManager.db
+class User extends BaseService {
+  /**
+   * @description 创建用户
+   */
+  async create(req: DBCreateUserReq): Promise<void> {
+    await this.db.insert(users).values(req).run()
   }
 
-  // 创建用户
-  static async create(userData: IDBUser) {
-    return await this.db.insert(users).values(userData).run()
-  }
-
-  // 创建或更新用户（upsert操作）
-  static async upsert(userData: IDBUser) {
-    return await this.db.insert(users)
-      .values(userData)
+  /**
+   * @description 创建或更新用户（upsert操作）
+   */
+  async upsert(req: DBUpsertUserReq): Promise<void> {
+    await this.db.insert(users)
+      .values(req)
       .onConflictDoUpdate({
         target: users.userId,
         set: {
-          nickName: userData.nickName,
-          avatar: userData.avatar,
-          abstract: userData.abstract,
-          phone: userData.phone,
-          email: userData.email,
-          gender: userData.gender,
-          status: userData.status,
-          version: userData.version,
-          updatedAt: userData.updatedAt,
+          nickName: req.nickName,
+          avatar: req.avatar,
+          abstract: req.abstract,
+          phone: req.phone,
+          email: req.email,
+          gender: req.gender,
+          status: req.status,
+          version: req.version,
+          updatedAt: req.updatedAt,
         },
       })
       .run()
   }
 
-  // 批量创建用户（调用upsert方法，避免重复数据错误）
-  static async batchCreate(usersData: IDBUser[]) {
-    if (usersData.length === 0)
+  /**
+   * @description 批量创建用户（调用upsert方法，避免重复数据错误）
+   */
+  async batchCreate(req: DBBatchCreateUsersReq): Promise<void> {
+    if (req.usersData.length === 0)
       return
 
-    for (const user of usersData) {
+    for (const user of req.usersData) {
       await this.upsert(user)
     }
   }
 
-  // 根据用户ID获取用户信息
-  static async getUserById(header: any, _data: any): Promise<IUserInfoRes | null> {
+  /**
+   * @description 根据用户ID获取用户信息
+   */
+  async getUserById(req: DBGetUserByIdReq): Promise<DBGetUserByIdRes> {
     try {
-      const userId = header.userId as string
+      const userId = req.header.userId as string
       const userData = await this.db
         .select({
           userId: users.userId,
@@ -66,28 +83,32 @@ export class UserService {
         .limit(1)
 
       if (userData.length === 0) {
-        return null
+        return { userInfo: null }
       }
 
       const user = userData[0]
       return {
-        userId: user.userId,
-        nickName: user.nickName,
-        avatar: user.avatar || '',
-        abstract: user.abstract || '',
-        phone: user.phone,
-        email: user.email,
-        gender: user.gender || 0,
+        userInfo: {
+          userId: user.userId,
+          nickName: user.nickName,
+          avatar: user.avatar || '',
+          abstract: user.abstract || '',
+          phone: user.phone,
+          email: user.email,
+          gender: user.gender || 0,
+        }
       }
     }
     catch (error) {
       console.error('根据ID获取用户信息失败:', error)
-      return null
+      return { userInfo: null }
     }
   }
 
-  // 根据用户ID获取用户基本信息（包括版本号）
-  static async getUserBasicInfo(userId: string): Promise<{ userId: string, version: number } | null> {
+  /**
+   * @description 根据用户ID获取用户基本信息（包括版本号）
+   */
+  async getUserBasicInfo(req: DBGetUserBasicInfoReq): Promise<DBGetUserBasicInfoRes> {
     try {
       const userData = await this.db
         .select({
@@ -95,25 +116,27 @@ export class UserService {
           version: users.version,
         })
         .from(users)
-        .where(sql`${users.userId} = ${userId}`)
+        .where(sql`${users.userId} = ${req.userId}`)
         .limit(1)
 
       if (userData.length === 0) {
-        return null
+        return { userInfo: null }
       }
 
-      return userData[0]
+      return { userInfo: userData[0] }
     }
     catch (error) {
       console.error('获取用户基本信息失败:', error)
-      return null
+      return { userInfo: null }
     }
   }
 
-  // 批量获取用户基本信息（用于消息发送者信息）
-  static async getUsersBasicInfo(userIds: string[]): Promise<Array<{ userId: string, nickName: string, avatar: string }>> {
-    if (userIds.length === 0) {
-      return []
+  /**
+   * @description 批量获取用户基本信息（用于消息发送者信息）
+   */
+  async getUsersBasicInfo(req: DBGetUsersBasicInfoReq): Promise<DBGetUsersBasicInfoRes> {
+    if (req.userIds.length === 0) {
+      return { users: [] }
     }
 
     try {
@@ -124,22 +147,26 @@ export class UserService {
           avatar: users.avatar,
         })
         .from(users)
-        .where(sql`${users.userId} IN (${sql.join(userIds.map(id => sql`${id}`), sql`, `)})`)
+        .where(sql`${users.userId} IN (${sql.join(req.userIds.map(id => sql`${id}`), sql`, `)})`)
 
-      return userData.map((user: any) => ({
-        userId: user.userId,
-        nickName: user.nickName,
-        avatar: user.avatar || '',
-      }))
+      return {
+        users: userData.map((user: any) => ({
+          userId: user.userId,
+          nickName: user.nickName,
+          avatar: user.avatar || '',
+        }))
+      }
     }
     catch (error) {
       console.error('批量获取用户基本信息失败:', error)
-      return []
+      return { users: [] }
     }
   }
 
-  // 获取所有用户基本信息（用于contactStore初始化）
-  static async getAllUsers(): Promise<IUserSyncItem[]> {
+  /**
+   * @description 获取所有用户基本信息（用于contactStore初始化）
+   */
+  async getAllUsers(req: DBGetAllUsersReq): Promise<DBGetAllUsersRes> {
     try {
       const userData = await this.db
         .select({
@@ -157,23 +184,28 @@ export class UserService {
         })
         .from(users)
 
-      return userData.map((user: any) => ({
-        userId: user.userId,
-        nickName: user.nickName,
-        avatar: user.avatar || '',
-        abstract: user.abstract || '',
-        phone: user.phone || '',
-        email: user.email || '',
-        gender: user.gender || 0,
-        status: user.status || 0,
-        version: user.version || 0,
-        createAt: user.createAt || 0,
-        updateAt: user.updateAt || 0,
-      }))
+      return {
+        users: userData.map((user: any) => ({
+          userId: user.userId,
+          nickName: user.nickName,
+          avatar: user.avatar || '',
+          abstract: user.abstract || '',
+          phone: user.phone || '',
+          email: user.email || '',
+          gender: user.gender || 0,
+          status: user.status || 0,
+          version: user.version || 0,
+          createAt: user.createAt || 0,
+          updateAt: user.updateAt || 0,
+        }))
+      }
     }
     catch (error) {
       console.error('获取所有用户失败:', error)
-      return []
+      return { users: [] }
     }
   }
 }
+
+// 导出用户服务实例
+export default new User()

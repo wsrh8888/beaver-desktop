@@ -1,21 +1,29 @@
-import type { IDBNotificationEvent } from 'commonModule/type/database/notification'
+import type { IDBNotificationEvent } from 'commonModule/type/database/db/notification'
 import { gt, inArray, sql } from 'drizzle-orm'
+import { BaseService } from '../base'
 import { notificationEvents } from 'mainModule/database/tables/notification/event'
-import dbManager from '../../db'
+import type {
+  DBBatchCreateNotificationEventsReq,
+  DBGetEventsAfterVersionReq,
+  DBGetEventsAfterVersionRes,
+  DBGetVersionMapByIdsReq,
+  DBGetVersionMapByIdsRes,
+  DBGetNotificationEventsReq,
+  DBGetNotificationEventsRes,
+} from 'commonModule/type/database/server/notification/event'
 
 // 通知事件表服务
-export class NotificationEventService {
-  static get db() {
-    return dbManager.db
-  }
+class NotificationEvent extends BaseService {
 
-  // 批量写入或更新事件（以 eventId 去重）
-  static async batchUpsert(events: IDBNotificationEvent[]): Promise<void> {
-    if (!events.length)
+  /**
+   * @description 批量创建通知事件
+   */
+  async batchCreate(req: DBBatchCreateNotificationEventsReq): Promise<void> {
+    if (!req.events.length)
       return
 
     await this.db.insert(notificationEvents)
-      .values(events)
+      .values(req.events)
       .onConflictDoUpdate({
         target: notificationEvents.eventId,
         set: {
@@ -35,44 +43,55 @@ export class NotificationEventService {
       .run()
   }
 
-  // 按版本增量拉取事件
-  static async getEventsAfterVersion(version: number, limit = 100): Promise<IDBNotificationEvent[]> {
-    return await this.db.select()
+  /**
+   * @description 按版本增量拉取事件
+   */
+  async getEventsAfterVersion(req: DBGetEventsAfterVersionReq): Promise<DBGetEventsAfterVersionRes> {
+    const limit = req.limit || 100
+    const events = await this.db.select()
       .from(notificationEvents)
-      .where(gt(notificationEvents.version as any, version as any))
+      .where(gt(notificationEvents.version as any, req.version as any))
       .orderBy(notificationEvents.version)
       .limit(limit)
       .all()
+    return { events }
   }
 
-  // 获取指定事件ID的本地版本映射
-  static async getVersionMapByIds(eventIds: string[]): Promise<Map<string, number>> {
-    if (!eventIds.length)
-      return new Map()
+  /**
+   * @description 获取指定事件ID的本地版本映射
+   */
+  async getVersionMapByIds(req: DBGetVersionMapByIdsReq): Promise<DBGetVersionMapByIdsRes> {
+    if (!req.eventIds.length)
+      return { versionMap: new Map() }
 
     const rows = await this.db.select({
       eventId: notificationEvents.eventId,
       version: notificationEvents.version,
     })
       .from(notificationEvents)
-      .where(inArray(notificationEvents.eventId as any, eventIds as any))
+      .where(inArray(notificationEvents.eventId as any, req.eventIds as any))
       .all()
 
-    const map = new Map<string, number>()
+    const versionMap = new Map<string, number>()
     rows.forEach((row) => {
-      map.set(row.eventId, row.version || 0)
+      versionMap.set(row.eventId, row.version || 0)
     })
-    return map
+    return { versionMap }
   }
 
-  // 根据事件ID列表获取事件明细
-  static async getByIds(eventIds: string[]): Promise<IDBNotificationEvent[]> {
-    if (!eventIds.length)
-      return []
+  /**
+   * @description 根据事件ID列表获取事件明细
+   */
+  async getByIds(req: DBGetNotificationEventsReq): Promise<DBGetNotificationEventsRes> {
+    if (!req.eventIds.length)
+      return { events: [] }
 
-    return await this.db.select()
+    const events = await this.db.select()
       .from(notificationEvents)
-      .where(inArray(notificationEvents.eventId as any, eventIds as any))
+      .where(inArray(notificationEvents.eventId as any, req.eventIds as any))
       .all()
+    return { events }
   }
 }
+
+export default new NotificationEvent()

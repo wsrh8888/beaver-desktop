@@ -1,6 +1,12 @@
 import { and, eq } from 'drizzle-orm'
-import dbManager from '../../db'
+import { BaseService } from '../base'
 import { media } from '../../tables/media/media'
+import type {
+  DBUpsertMediaReq,
+  DBGetMediaInfoReq,
+  DBGetMediaInfoRes,
+  DBDeleteMediaReq,
+} from 'commonModule/type/database/server/media/media'
 
 export interface MediaInfo {
   fileName: string
@@ -16,22 +22,19 @@ export interface MediaInfo {
  * 媒体缓存数据库服务
  * 替代之前的JSON索引管理，提供数据库层面的缓存管理
  */
-export class MediaService {
-  private get db() {
-    return dbManager.db
-  }
+class MediaService extends BaseService {
 
   /**
-   * 添加或更新媒体记录
+   * @description 添加或更新媒体记录
    */
-  async upsert(fileName: string, path: string, type: string, size?: number): Promise<void> {
+  async upsert(req: DBUpsertMediaReq): Promise<void> {
     const now = Math.floor(Date.now() / 1000)
 
     // 先尝试查找现有记录
     const existing = await this.db
       .select()
       .from(media)
-      .where(eq(media.fileName, fileName))
+      .where(eq(media.fileName, req.fileName))
       .limit(1)
 
     if (existing.length > 0) {
@@ -42,15 +45,15 @@ export class MediaService {
           updatedAt: now,
           isDeleted: 0, // 确保未被标记删除
         })
-        .where(eq(media.fileName, fileName))
+        .where(eq(media.fileName, req.fileName))
     }
     else {
       // 插入新记录
       await this.db.insert(media).values({
-        fileName,
-        path,
-        type,
-        size,
+        fileName: req.fileName,
+        path: req.path,
+        type: req.type,
+        size: req.size,
         createdAt: now,
         updatedAt: now,
         isDeleted: 0,
@@ -59,45 +62,46 @@ export class MediaService {
   }
 
   /**
-   * 根据文件名获取媒体信息
+   * @description 根据文件名获取媒体信息
    */
-  async getMediaInfo(fileName: string): Promise<MediaInfo | null> {
+  async getMediaInfo(req: DBGetMediaInfoReq): Promise<DBGetMediaInfoRes> {
     const result = await this.db
       .select()
       .from(media)
-      .where(and(eq(media.fileName, fileName), eq(media.isDeleted, 0)))
+      .where(and(eq(media.fileName, req.fileName), eq(media.isDeleted, 0)))
       .limit(1)
 
     if (result.length === 0) {
-      return null
+      return { mediaInfo: null }
     }
 
     const record = result[0]
     return {
-      fileName: record.fileName,
-      path: record.path,
-      type: record.type,
-      size: record.size || undefined,
-      createdAt: record.createdAt,
-      updatedAt: record.updatedAt,
-      isDeleted: record.isDeleted,
+      mediaInfo: {
+        fileName: record.fileName,
+        path: record.path,
+        type: record.type,
+        size: record.size || undefined,
+        createdAt: record.createdAt,
+        updatedAt: record.updatedAt,
+        isDeleted: record.isDeleted,
+      }
     }
   }
 
   /**
-   * 标记为删除状态（软删除）
+   * @description 标记为删除状态（软删除）
    */
-  async deleteMedia(fileName: string): Promise<void> {
+  async deleteMedia(req: DBDeleteMediaReq): Promise<void> {
     await this.db
       .update(media)
       .set({
         isDeleted: 1,
         updatedAt: Math.floor(Date.now() / 1000),
       })
-      .where(eq(media.fileName, fileName))
+      .where(eq(media.fileName, req.fileName))
   }
 }
 
-// 导出单例实例
-export const mediaCacheService = new MediaService()
-export default mediaCacheService
+// 导出媒体服务实例
+export default new MediaService()

@@ -1,4 +1,4 @@
-import type { IDBDatasync } from 'commonModule/type/database/datasync'
+import type { IDBDatasync } from 'commonModule/type/database/db/datasync'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 
 // 同步游标表 - 用于记录客户端与服务器的同步状态

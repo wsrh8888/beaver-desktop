@@ -2,8 +2,8 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IGetEmojiPackagesRes } from 'commonModule/type/ajax/emoji'
 import type { QueueItem } from '../base/base'
 import { getEmojiPackageCollectsByIdsApi } from 'mainModule/api/emoji'
-import { EmojiPackageService } from 'mainModule/database/services/emoji/package'
-import { EmojiPackageCollectService } from 'mainModule/database/services/emoji/package-collect'
+import dBServiceEmojiPackage  from 'mainModule/database/services/emoji/package'
+import dBServiceEmojiPackageCollect  from 'mainModule/database/services/emoji/package-collect'
 import { BaseBusiness } from '../base/base'
 
 const ensureLogin = (header: ICommonHeader) => {
@@ -21,7 +21,7 @@ interface FavoritePackageSyncItem extends QueueItem {
 /**
  * 表情包收藏业务逻辑
  */
-export class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncItem> {
+class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncItem> {
   protected readonly businessName = 'FavoritePackageBusiness'
 
   constructor() {
@@ -34,10 +34,10 @@ export class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncIte
     ensureLogin(header)
 
     // 获取所有表情包
-    const allPackages = await EmojiPackageService.getAllPackages()
+    const allPackages = await dBServiceEmojiPackage.getAllPackages()
 
     // 获取用户的收藏记录，用于标记哪些表情包已收藏
-    const collects = await EmojiPackageCollectService.getPackageCollectsByUserId(header.userId)
+    const collects = await dBServiceEmojiPackageCollect.getPackageCollectsByUserId(header.userId)
     const collectedPackageIds = new Set(
       collects.filter((item: any) => !item.isDeleted).map((item: any) => item.packageId)
     )
@@ -100,7 +100,7 @@ export class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncIte
           updatedAt: collectData.updateAt,
         }))
 
-        await EmojiPackageCollectService.batchCreate(collectRows)
+        await dBServiceEmojiPackageCollect.batchCreate(collectRows)
       }
     } catch (error) {
       console.error('批量同步表情包收藏失败:', error)

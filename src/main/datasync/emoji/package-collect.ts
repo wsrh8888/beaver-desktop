@@ -1,6 +1,6 @@
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getEmojiPackageCollectsByIdsApi } from 'mainModule/api/emoji'
-import { EmojiPackageCollectService } from 'mainModule/database/services/emoji/package-collect'
+import dBServiceEmojiPackageCollect  from 'mainModule/database/services/emoji/package-collect'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
 // emoji_package_collect 表同步处理器
@@ -29,7 +29,7 @@ class PackageCollectSync {
       return []
     }
 
-    const existingRecordsMap = await EmojiPackageCollectService.getPackageCollectsByIds(ids)
+    const existingRecordsMap = await dBServiceEmojiPackageCollect.getPackageCollectsByIds(ids)
 
     const needUpdateIds = ids.filter((id) => {
       const existingRecord = existingRecordsMap.get(id)
@@ -66,7 +66,7 @@ class PackageCollectSync {
           updatedAt: collect.updatedAt,
         }))
 
-        await EmojiPackageCollectService.batchCreate(collects)
+        await dBServiceEmojiPackageCollect.batchCreate(collects)
         syncedPackageCollects.push(...collects.map(collect => ({
           packageCollectId: collect.packageCollectId,
           version: collect.version,

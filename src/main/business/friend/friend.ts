@@ -3,8 +3,9 @@ import type { IFriendInfo, IFriendListReq, IFriendListRes } from 'commonModule/t
 import type { QueueItem } from '../base/base'
 import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getFriendsListByIdsApi } from 'mainModule/api/friened'
-import { FriendService } from 'mainModule/database/services/friend/friend'
-import { UserService } from 'mainModule/database/services/user/user'
+import dBServiceFriend  from 'mainModule/database/services/friend/friend'
+import dBServiceUser  from 'mainModule/database/services/user/user'
+
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
@@ -28,7 +29,7 @@ interface FriendSyncItem extends QueueItem {
  * 对应 friends 表
  * 负责好友管理的业务逻辑
  */
-export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
+class FriendBusiness extends BaseBusiness<FriendSyncItem> {
   protected readonly businessName = 'FriendBusiness'
 
   constructor() {
@@ -46,7 +47,7 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
     const { page = 1, limit = 20 } = params
 
     // 调用服务层获取好友关系记录（纯数据库查询）
-    const friendRelations = await FriendService.getFriendRelations(userId, { page, limit })
+    const friendRelations = await dBServiceFriend.getFriendRelations(userId, { page, limit })
 
     if (friendRelations.length === 0) {
       return { list: [] }
@@ -65,7 +66,7 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
 
     // 业务逻辑：查询所有好友的用户信息
     const userIdsArray = Array.from(userIds)
-    const userInfos = await UserService.getUsersBasicInfo(userIdsArray)
+    const userInfos = await dBServiceUser.getUsersBasicInfo(userIdsArray)
 
     // 业务逻辑：构建用户ID到用户信息的映射
     const userMap = new Map<string, any>()
@@ -147,7 +148,7 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
             createdAt: Math.floor(friend.createAt / 1000), // 转换为秒级时间戳
             updatedAt: Math.floor(friend.updateAt / 1000),
           }
-          await FriendService.upsert(friendData)
+          await dBServiceFriend.upsert(friendData)
         }
 
         console.log(`好友数据精确同步成功: ids=${friendIds.join(',')}, count=${response.result.friends.length}`)
@@ -176,7 +177,7 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
     const { userId } = header
 
     // 调用服务层批量获取好友信息
-    const friends = await FriendService.getFriendsByIds(friendIds, userId)
+    const friends = await dBServiceFriend.getFriendsByIds(friendIds, userId)
 
     return { list: friends }
   }

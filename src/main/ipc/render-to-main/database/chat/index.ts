@@ -2,10 +2,10 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataChatCommand } from 'commonModule/type/ipc/database'
 import { conversationBusiness } from 'mainModule/business/chat/conversation'
 import { messageBusiness } from 'mainModule/business/chat/message'
-import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
+import dbServiceChatUserConversation  from 'mainModule/database/services/chat/user-conversation'
 import { store } from 'mainModule/store'
 
-export class ChatHandler {
+class ChatHandler {
   /**
    * 处理聊天相关的数据库命令
    */
@@ -24,7 +24,7 @@ export class ChatHandler {
       case DataChatCommand.GET_CHAT_MESSAGES_BY_SEQ_RANGE:
         return await messageBusiness.getChatMessagesBySeqRange(header, data)
       case DataChatCommand.GET_CHAT_CONVERSATIONS_BY_VER_RANGE:
-        return await ChatUserConversationService.getChatConversationsByVerRange(header, data)
+        return await dbServiceChatUserConversation.getChatConversationsByVerRange(header, data)
       default:
         throw new Error('聊天数据库命令处理失败ChatHandler')
     }

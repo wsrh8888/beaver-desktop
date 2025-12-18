@@ -7,7 +7,7 @@ import { ReadCursorReceiver } from './read-cursor-receiver'
  * 通知消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class NotificationMessageRouter {
+class NotificationMessageRouter {
   private eventReceiver = new EventReceiver()
   private inboxReceiver = new InboxReceiver()
   private readCursorReceiver = new ReadCursorReceiver()

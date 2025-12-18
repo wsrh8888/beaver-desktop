@@ -6,7 +6,7 @@ import wsManager from 'mainModule/ws-manager'
 /**
  * @description: 聊天消息发送器 - IPC层版本
  */
-export class ChatSender {
+class ChatSender {
   /**
    * @description: 发送私聊消息
    * @param conversationId 会话ID

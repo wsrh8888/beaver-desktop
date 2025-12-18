@@ -1,16 +1,16 @@
-import type { IDBNotificationReadCursor } from 'commonModule/type/database/notification'
+import type { IDBNotificationReadCursor } from 'commonModule/type/database/db/notification'
 import { and, eq, sql } from 'drizzle-orm'
 import { notificationReads } from 'mainModule/database/tables/notification/read'
 import dbManager from '../../db'
 
 // 通知已读游标服务
-export class NotificationReadCursorService {
-  static get db() {
+class NotificationReadCursor {
+   get db() {
     return dbManager.db
   }
 
   // 写入或更新游标
-  static async upsertCursor(cursor: IDBNotificationReadCursor): Promise<void> {
+   async upsertCursor(cursor: IDBNotificationReadCursor): Promise<void> {
     await this.db.insert(notificationReads)
       .values(cursor)
       .onConflictDoUpdate({
@@ -25,7 +25,7 @@ export class NotificationReadCursorService {
   }
 
   // 查询用户分类游标
-  static async getCursor(userId: string, category: string): Promise<IDBNotificationReadCursor | undefined> {
+   async getCursor(userId: string, category: string): Promise<IDBNotificationReadCursor | undefined> {
     return await this.db.select()
       .from(notificationReads)
       .where(
@@ -38,13 +38,13 @@ export class NotificationReadCursorService {
   }
 
   // 获取用户游标版本映射（简化版）
-  static async getVersionMap(userId: string, categories?: string[]): Promise<Map<string, number>> {
+   async getVersionMap(userId: string, categories?: string[]): Promise<Map<string, number>> {
     // 简化逻辑：返回空Map，表示需要同步所有数据
     return new Map()
   }
 
   // 获取用户多个分类的游标
-  static async getCursors(userId: string, categories?: string[]): Promise<IDBNotificationReadCursor[]> {
+   async getCursors(userId: string, categories?: string[]): Promise<IDBNotificationReadCursor[]> {
     if (!userId) return []
 
     const query = this.db.select()
@@ -60,3 +60,5 @@ export class NotificationReadCursorService {
     return await query.all()
   }
 }
+
+export default new NotificationReadCursor()

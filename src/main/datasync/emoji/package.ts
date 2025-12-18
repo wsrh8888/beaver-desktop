@@ -1,6 +1,6 @@
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getEmojiPackagesByIdsApi } from 'mainModule/api/emoji'
-import { EmojiPackageService } from 'mainModule/database/services/emoji/package'
+import dBServiceEmojiPackage  from 'mainModule/database/services/emoji/package'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 
 // emoji_package 表同步处理器
@@ -32,7 +32,7 @@ class PackageSync {
       return []
     }
 
-    const existingPackagesMap = await EmojiPackageService.getPackagesByIds(packageIds)
+    const existingPackagesMap = await dBServiceEmojiPackage.getPackagesByIds(packageIds)
 
     const needUpdatePackageIds = packageIds.filter((id) => {
       const existingPackage = existingPackagesMap.get(id)
@@ -73,7 +73,7 @@ class PackageSync {
           updatedAt: pkg.updatedAt ?? pkg.updateAt,
         }))
 
-        await EmojiPackageService.batchCreate(packages)
+        await dBServiceEmojiPackage.batchCreate(packages)
         syncedPackages.push(...packages.map(pkg => ({
           packageId: pkg.packageId,
           version: pkg.version,

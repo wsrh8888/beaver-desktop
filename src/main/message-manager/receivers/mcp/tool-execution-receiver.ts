@@ -4,7 +4,7 @@ import logger from 'mainModule/utils/log/index.js'
 /**
  * @description: MCP工具执行接收器 - 处理云端转发过来的工具执行请求
  */
-export class ToolExecutionReceiver {
+class ToolExecutionReceiver {
   /**
    * 处理工具执行请求
    * 只处理 messages 表的更新（遵循项目模式）

@@ -1,32 +1,46 @@
 import { eq, inArray } from 'drizzle-orm'
 import { chatConversations } from 'mainModule/database/tables/chat/conversation'
-import dbManager from '../../db'
+import { BaseService } from '../base'
+import type {
+  DBCreateConversationReq,
+  DBUpsertConversationReq,
+  DBBatchCreateConversationsReq,
+  DBGetAllConversationsReq,
+  DBGetAllConversationsRes,
+  DBGetConversationsByIdsReq,
+  DBGetConversationsByIdsRes,
+  DBGetConversationByIdReq,
+  DBGetConversationByIdRes,
+  DBGetConversationsByTypeReq,
+  DBGetConversationsByTypeRes,
+  DBUpdateLastMessageReq,
+} from 'commonModule/type/database/server/chat/conversation'
 
 // 聊天会话服务
-export class ChatConversationService {
-  static get db() {
-    return dbManager.db
+class ChatConversation extends BaseService {
+  /**
+   * @description 创建单个会话
+   */
+  async create(req: DBCreateConversationReq): Promise<void> {
+    await this.db.insert(chatConversations).values(req).run()
   }
 
-  // 创建单个会话
-  static async create(conversationData: any) {
-    return await this.db.insert(chatConversations).values(conversationData).run()
-  }
-
-  // upsert单个会话（插入或更新）
-  static async upsert(conversationData: any) {
+  /**
+   * @description upsert单个会话（插入或更新）
+   */
+  async upsert(req: DBUpsertConversationReq): Promise<void> {
     // 处理字段名映射：API返回的 createAt/updateAt 映射到数据库的 createdAt/updatedAt
     const dbData = {
-      conversationId: conversationData.conversationId,
-      type: conversationData.type,
-      maxSeq: conversationData.maxSeq,
-      lastMessage: conversationData.lastMessage,
-      version: conversationData.version,
-      createdAt: conversationData.createAt, // API返回的是 createAt
-      updatedAt: conversationData.updateAt, // API返回的是 updateAt
+      conversationId: req.conversationId,
+      type: req.type,
+      maxSeq: req.maxSeq,
+      lastMessage: req.lastMessage,
+      version: req.version,
+      createdAt: req.createAt, // API返回的是 createAt
+      updatedAt: req.updateAt, // API返回的是 updateAt
     }
 
-    return await this.db
+    await this.db
       .insert(chatConversations)
       .values(dbData)
       .onConflictDoUpdate({
@@ -42,13 +56,15 @@ export class ChatConversationService {
       .run()
   }
 
-  // 批量创建会话（支持插入或更新）
-  static async batchCreate(conversations: any[]) {
-    if (conversations.length === 0)
+  /**
+   * @description 批量创建会话（支持插入或更新）
+   */
+  async batchCreate(req: DBBatchCreateConversationsReq): Promise<void> {
+    if (req.conversations.length === 0)
       return
 
     // 使用插入或更新的方式来避免唯一约束冲突
-    for (const conversation of conversations) {
+    for (const conversation of req.conversations) {
       // 处理字段名映射：API返回的 createAt/updateAt 映射到数据库的 createdAt/updatedAt
       const dbData = {
         conversationId: conversation.conversationId,
@@ -77,9 +93,11 @@ export class ChatConversationService {
     }
   }
 
-  // 获取所有会话（本地数据库场景，支持分页）
-  static async getAllConversations(params?: { page?: number, limit?: number }) {
-    const { page = 1, limit } = params || {}
+  /**
+   * @description 获取所有会话（本地数据库场景，支持分页）
+   */
+  async getAllConversations(req: DBGetAllConversationsReq): Promise<DBGetAllConversationsRes> {
+    const { page = 1, limit } = req
 
     let query = this.db.select().from(chatConversations)
 
@@ -89,38 +107,52 @@ export class ChatConversationService {
       query = query.limit(limit).offset(offset)
     }
 
-    return await query.all()
+    return { conversations: await query.all() }
   }
 
-  // 根据会话ID列表批量获取会话元数据（包含最后消息）
-  static async getConversationsByIds(conversationIds: string[]) {
-    if (conversationIds.length === 0)
-      return []
-    return await this.db.select().from(chatConversations).where(inArray(chatConversations.conversationId as any, conversationIds as any)).all()
+  /**
+   * @description 根据会话ID列表批量获取会话元数据（包含最后消息）
+   */
+  async getConversationsByIds(req: DBGetConversationsByIdsReq): Promise<DBGetConversationsByIdsRes> {
+    if (req.conversationIds.length === 0)
+      return { conversations: [] }
+    const conversations = await this.db.select().from(chatConversations).where(inArray(chatConversations.conversationId as any, req.conversationIds as any)).all()
+    return { conversations }
   }
 
-  // 根据会话ID获取单个会话元数据
-  static async getConversationById(conversationId: string) {
-    return await this.db.select().from(chatConversations).where(eq(chatConversations.conversationId as any, conversationId as any)).get()
+  /**
+   * @description 根据会话ID获取单个会话元数据
+   */
+  async getConversationById(req: DBGetConversationByIdReq): Promise<DBGetConversationByIdRes> {
+    const conversation = await this.db.select().from(chatConversations).where(eq(chatConversations.conversationId as any, req.conversationId as any)).get()
+    return { conversation }
   }
 
-  // 根据类型获取会话（纯数据库查询）
-  static async getConversationsByType(type: number): Promise<any[]> {
-    return await this.db.select().from(chatConversations).where(eq(chatConversations.type as any, type as any)).all()
+  /**
+   * @description 根据类型获取会话（纯数据库查询）
+   */
+  async getConversationsByType(req: DBGetConversationsByTypeReq): Promise<DBGetConversationsByTypeRes> {
+    const conversations = await this.db.select().from(chatConversations).where(eq(chatConversations.type as any, req.type as any)).all()
+    return { conversations }
   }
 
-  // 更新会话的最后消息
-  static async updateLastMessage(conversationId: string, lastMessage: string, maxSeq?: number) {
+  /**
+   * @description 更新会话的最后消息
+   */
+  async updateLastMessage(req: DBUpdateLastMessageReq): Promise<void> {
     const updateData: any = {
-      lastMessage,
+      lastMessage: req.lastMessage,
       updatedAt: Math.floor(Date.now() / 1000), // 使用秒级时间戳
     }
-    if (maxSeq !== undefined) {
-      updateData.maxSeq = maxSeq
+    if (req.maxSeq !== undefined) {
+      updateData.maxSeq = req.maxSeq
     }
-    return await this.db.update(chatConversations)
+    await this.db.update(chatConversations)
       .set(updateData)
-      .where(eq(chatConversations.conversationId as any, conversationId))
+      .where(eq(chatConversations.conversationId as any, req.conversationId))
       .run()
   }
 }
+
+// 导出聊天会话服务实例
+export default new ChatConversation()

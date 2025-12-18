@@ -1,26 +1,41 @@
 import { eq, inArray } from 'drizzle-orm'
-import dbManager from 'mainModule/database/db'
+import { BaseService } from '../base'
 import { emojiPackage } from 'mainModule/database/tables/emoji/package'
+import type {
+  DBCreateEmojiPackageReq,
+  DBBatchCreateEmojiPackagesReq,
+  DBGetEmojiPackagesByIdsReq,
+  DBGetEmojiPackagesByIdsRes,
+  DBGetPackagesByUserIdReq,
+  DBGetPackagesByUserIdRes,
+  DBGetAllEmojiPackagesReq,
+  DBGetAllEmojiPackagesRes,
+  DBGetEmojiPackageByIdReq,
+  DBGetEmojiPackageByIdRes,
+  DBUpdateEmojiPackageReq,
+  DBDeleteEmojiPackageReq,
+  DBGetPackageByAutoIdReq,
+  DBGetPackageByAutoIdRes,
+} from 'commonModule/type/database/server/emoji/package'
 
 // 表情包服务
-export class EmojiPackageService {
-  static get db() {
-    return dbManager.db
+class EmojiPackage extends BaseService {
+  /**
+   * @description 创建表情包
+   */
+  async create(req: DBCreateEmojiPackageReq): Promise<void> {
+    await this.db.insert(emojiPackage).values(req).run()
   }
 
-  // 创建表情包
-  static async create(packageData: any) {
-    return await this.db.insert(emojiPackage).values(packageData).run()
-  }
-
-  // 批量创建表情包（upsert操作）
-  static async batchCreate(packageList: any[]) {
-    if (packageList.length === 0) {
+  /**
+   * @description 批量创建表情包（upsert操作）
+   */
+  async batchCreate(req: DBBatchCreateEmojiPackagesReq): Promise<void> {
+    if (req.packageList.length === 0) {
       return
     }
 
-    const results = []
-    for (const packageData of packageList) {
+    for (const packageData of req.packageList) {
       const result = await this.db.insert(emojiPackage)
         .values(packageData)
         .onConflictDoUpdate({
@@ -38,59 +53,71 @@ export class EmojiPackageService {
           },
         })
         .run()
-      results.push(result)
     }
-
-    return results
   }
 
-  // 根据ID列表获取表情包
-  static async getPackagesByIds(ids: string[]): Promise<Map<string, any>> {
-    if (ids.length === 0) {
-      return new Map()
+  /**
+   * @description 根据ID列表获取表情包
+   */
+  async getPackagesByIds(req: DBGetEmojiPackagesByIdsReq): Promise<DBGetEmojiPackagesByIdsRes> {
+    if (req.ids.length === 0) {
+      return { packages: new Map() }
     }
 
     const packageList = await this.db
       .select()
       .from(emojiPackage)
-      .where(inArray(emojiPackage.packageId, ids))
+      .where(inArray(emojiPackage.packageId, req.ids))
 
-    const packageMap = new Map<string, any>()
+    const packages = new Map<string, IDBEmojiPackage>()
     packageList.forEach((item) => {
-      packageMap.set(item.packageId, item)
+      packages.set(item.packageId, item)
     })
 
-    return packageMap
+    return { packages }
   }
 
-  // 根据用户ID获取用户创建的表情包
-  static async getPackagesByUserId(userId: string) {
-    return await this.db
+  /**
+   * @description 根据用户ID获取用户创建的表情包
+   */
+  async getPackagesByUserId(req: DBGetPackagesByUserIdReq): Promise<DBGetPackagesByUserIdRes> {
+    const packages = await this.db
       .select()
       .from(emojiPackage)
-      .where(eq(emojiPackage.userId, userId))
+      .where(eq(emojiPackage.userId, req.userId))
       .all()
+
+    return { packages }
   }
 
-  // 获取所有表情包
-  static async getAllPackages() {
-    return await this.db.select().from(emojiPackage).all()
+  /**
+   * @description 获取所有表情包
+   */
+  async getAllPackages(req: DBGetAllEmojiPackagesReq): Promise<DBGetAllEmojiPackagesRes> {
+    const packages = await this.db.select().from(emojiPackage).all()
+    return { packages }
   }
 
-  // 根据ID获取单个表情包
-  static async getPackageById(id: string) {
+  /**
+   * @description 根据ID获取单个表情包
+   */
+  async getPackageById(req: DBGetEmojiPackageByIdReq): Promise<DBGetEmojiPackageByIdRes> {
     const result = await this.db
       .select()
       .from(emojiPackage)
-      .where(eq(emojiPackage.packageId, id))
+      .where(eq(emojiPackage.packageId, req.id))
       .limit(1)
 
-    return result[0] || null
+    return { package: result[0] || null }
   }
 
-  // 根据内部自增 id 查询（如需）
-  static async getPackageByAutoId(id: number) {
-    const result = await this.db.select().from(emojiPackage).where(eq(emojiPackage.id, id)).limit(1)
-    return result[0] || null
+  /**
+   * @description 根据内部自增ID查询
+   */
+  async getPackageByAutoId(req: DBGetPackageByAutoIdReq): Promise<DBGetPackageByAutoIdRes> {
+    const result = await this.db.select().from(emojiPackage).where(eq(emojiPackage.id, req.id)).limit(1)
+    return { package: result[0] || null }
   }
 }
+
+export default new EmojiPackage()

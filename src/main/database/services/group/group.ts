@@ -1,46 +1,61 @@
-import type { IDBGroup } from 'commonModule/type/database/group'
+import type { IDBGroup } from 'commonModule/type/database/db/group'
 import { eq, inArray } from 'drizzle-orm'
+import { BaseService } from '../base'
 import { groups } from 'mainModule/database/tables/group/groups'
-import dbManager from '../../db'
+
+import type {
+  DBCreateGroupReq,
+  DBUpsertGroupReq,
+  DBGetGroupReq,
+  DBGetGroupRes,
+  DBUpdateGroupReq,
+  DBDeleteGroupReq,
+  DBGetUserGroupsReq,
+  DBGetUserGroupsRes,
+  DBBatchCreateGroupsReq,
+  DBBatchUpsertGroupsReq,
+} from 'commonModule/type/database/server/group/group'
 
 // 群组服务
-export class GroupService {
-  static get db() {
-    return dbManager.db
+class GroupService extends BaseService {
+  /**
+   * @description 创建群组
+   */
+  async create(req: DBCreateGroupReq): Promise<void> {
+    await this.db.insert(groups).values(req).run()
   }
 
-  // 创建群组
-  static async create(groupData: any): Promise<any> {
-    return await this.db.insert(groups).values(groupData).run()
-  }
-
-  // 创建或更新群组（upsert操作）
-  static async upsert(groupData: any): Promise<any> {
-    return await this.db.insert(groups)
-      .values(groupData)
+  /**
+   * @description 创建或更新群组（upsert操作）
+   */
+  async upsert(req: DBUpsertGroupReq): Promise<void> {
+    await this.db.insert(groups)
+      .values(req)
       .onConflictDoUpdate({
         target: groups.groupId,
         set: {
-          title: groupData.title,
-          avatar: groupData.avatar,
-          creatorId: groupData.creatorId,
-          notice: groupData.notice,
-          joinType: groupData.joinType,
-          status: groupData.status,
-          version: groupData.version,
-          updatedAt: groupData.updatedAt,
+          title: req.title,
+          avatar: req.avatar,
+          creatorId: req.creatorId,
+          notice: req.notice,
+          joinType: req.joinType,
+          status: req.status,
+          version: req.version,
+          updatedAt: req.updatedAt,
         },
       })
       .run()
   }
 
-  // 批量创建群组（支持插入或更新）
-  static async batchCreate(groupsData: any[]): Promise<void> {
-    if (groupsData.length === 0)
+  /**
+   * @description 批量创建群组（支持插入或更新）
+   */
+  async batchCreate(req: DBBatchCreateGroupsReq): Promise<void> {
+    if (req.groups.length === 0)
       return
 
     // 使用插入或更新的方式来避免唯一约束冲突
-    for (const group of groupsData) {
+    for (const group of req.groups) {
       await this.db
         .insert(groups)
         .values(group)
@@ -60,12 +75,14 @@ export class GroupService {
     }
   }
 
-  // 批量插入或更新群组（基于版本号判断是否需要更新）
-  static async batchUpsert(groupsData: any[]): Promise<void> {
-    if (groupsData.length === 0)
+  /**
+   * @description 批量插入或更新群组（基于版本号判断是否需要更新）
+   */
+  async batchUpsert(req: DBBatchUpsertGroupsReq): Promise<void> {
+    if (req.groups.length === 0)
       return
 
-    for (const group of groupsData) {
+    for (const group of req.groups) {
       // 获取本地群组数据
       const localGroup = await this.getGroupById(group.groupId)
 
@@ -93,25 +110,27 @@ export class GroupService {
   }
 
   // 根据GroupID获取群组
-  static async getGroupById(groupId: string): Promise<IDBGroup | undefined> {
+   async getGroupById(groupId: string): Promise<IDBGroup | undefined> {
     return await this.db.select().from(groups).where(eq(groups.groupId as any, groupId as any)).get()
   }
 
   // 根据GroupID列表批量获取群组
-  static async getGroupsByIds(groupIds: string[]): Promise<IDBGroup[]> {
+   async getGroupsByIds(groupIds: string[]): Promise<IDBGroup[]> {
     if (groupIds.length === 0)
       return []
     return await this.db.select().from(groups).where(inArray(groups.groupId as any, groupIds as any)).all()
   }
 
   // 更新群组信息
-  static async updateGroup(groupId: string, updateData: any): Promise<any> {
+   async updateGroup(groupId: string, updateData: any): Promise<any> {
     updateData.updatedAt = Math.floor(Date.now() / 1000)
     return await this.db.update(groups).set(updateData).where(eq(groups.groupId as any, groupId as any)).run()
   }
 
   // 删除群组
-  static async deleteGroup(groupId: string): Promise<any> {
+   async deleteGroup(groupId: string): Promise<any> {
     return await this.db.delete(groups).where(eq(groups.groupId as any, groupId as any)).run()
   }
 }
+
+export default new GroupService()

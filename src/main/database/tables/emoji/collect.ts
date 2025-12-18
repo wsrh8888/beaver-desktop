@@ -1,4 +1,4 @@
-import type { IDBEmojiCollect } from 'commonModule/type/database/emoji'
+import type { IDBEmojiCollect } from 'commonModule/type/database/db/emoji'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 

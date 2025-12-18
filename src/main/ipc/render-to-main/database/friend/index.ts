@@ -2,11 +2,11 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataFriendCommand } from 'commonModule/type/ipc/database'
 import { friendBusiness } from 'mainModule/business/friend/friend'
 import { friendVerifyBusiness } from 'mainModule/business/friend/friend-verify'
-import { FriendService } from 'mainModule/database/services/friend/friend'
-import { FriendVerifyService } from 'mainModule/database/services/friend/friend_verify'
+import dBServiceFriend  from 'mainModule/database/services/friend/friend'
+import dBServiceFriendVerify  from 'mainModule/database/services/friend/friend_verify'
 import { store } from 'mainModule/store'
 
-export class FriendHandler {
+class FriendHandler {
   /**
    * 处理用户相关的数据库命令
    */
@@ -19,11 +19,11 @@ export class FriendHandler {
       case DataFriendCommand.GET_FRIENDS:
         return await friendBusiness.getFriendsList(header, data)
       case DataFriendCommand.GET_VALID_LIST:
-        return await FriendVerifyService.getValidList(header, data)
+        return await dBServiceFriendVerify.getValidList(header, data)
       case DataFriendCommand.GET_FRIENDS_BY_VER_RANGE:
-        return await FriendService.getFriendsByVerRange(header, data)
+        return await dBServiceFriend.getFriendsByVerRange(header, data)
       case DataFriendCommand.GET_VALID_BY_VER_RANGE:
-        return await FriendVerifyService.getValidByVerRange(header, data)
+        return await dBServiceFriendVerify.getValidByVerRange(header, data)
       case DataFriendCommand.GET_FRIENDS_BY_IDS:
         return await friendBusiness.getFriendsByIds(header, data)
       case DataFriendCommand.GET_VALID_BY_IDS:

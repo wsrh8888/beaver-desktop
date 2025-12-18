@@ -5,7 +5,7 @@ import { FriendReceiver } from './receiver'
  * @description: 好友消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class FriendMessageRouter {
+class FriendMessageRouter {
   private friendReceiver = new FriendReceiver()
   private friendVerifyReceiver = new FriendVerifyReceiver()
 

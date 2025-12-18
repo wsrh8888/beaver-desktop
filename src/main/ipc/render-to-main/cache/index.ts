@@ -6,7 +6,7 @@ import logger from 'mainModule/utils/log'
 /**
  * 缓存IPC处理器 - 清晰的方法分离
  */
-export class CacheHandler {
+class CacheHandler {
   /**
    * 处理缓存相关命令
    */

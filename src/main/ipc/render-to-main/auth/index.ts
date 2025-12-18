@@ -8,7 +8,7 @@ import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import wsManager from 'mainModule/ws-manager'
 
-export class AuthHandler {
+class AuthHandler {
   /**
    * 统一的认证处理入口
    */

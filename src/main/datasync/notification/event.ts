@@ -1,8 +1,8 @@
 import { NotificationModule, NotificationNotificationCommand } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncNotificationEventsApi } from 'mainModule/api/datasync'
 import { getNotificationEventsByIdsApi } from 'mainModule/api/notification'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { NotificationEventService } from 'mainModule/database/services/notification/event'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dBServiceNotificationEvent  from 'mainModule/database/services/notification/event'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
@@ -17,7 +17,7 @@ class NotificationEventSync {
       return
 
     try {
-      const cursor = await DataSyncService.get('notification_events')
+      const cursor = await dbServiceDataSync.get('notification_events')
       const sinceVersion = cursor?.version || 0
 
       const resp = await datasyncGetSyncNotificationEventsApi({
@@ -36,7 +36,7 @@ class NotificationEventSync {
         ...eventVersions.map(item => item.version || 0),
       )
 
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'notification_events',
         version: nextVersion,
         updatedAt: resp.result.serverTimestamp,
@@ -62,7 +62,7 @@ class NotificationEventSync {
     if (eventIds.length === 0)
       return []
 
-    const localMap = await NotificationEventService.getVersionMapByIds(eventIds)
+    const localMap = await dBServiceNotificationEvent.getVersionMapByIds(eventIds)
 
     return eventVersions
       .filter(item => (localMap.get(item.eventId) || 0) < item.version)
@@ -92,7 +92,7 @@ class NotificationEventSync {
           updatedAt: event.updatedAt,
         }))
 
-        await NotificationEventService.batchUpsert(rows)
+        await dBServiceNotificationEvent.batchUpsert(rows)
       }
     }
   }

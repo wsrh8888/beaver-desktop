@@ -1,6 +1,6 @@
-import type { IDBNotificationReadCursor } from 'commonModule/type/database/notification'
+import type { IDBNotificationReadCursor } from 'commonModule/type/database/db/notification'
 import type { QueueItem } from '../base/base'
-import { NotificationReadCursorService } from 'mainModule/database/services/notification/read-cursor'
+import dBServiceNotificationReadCursor  from 'mainModule/database/services/notification/read-cursor'
 import { getNotificationReadCursorsApi } from 'mainModule/api/notification'
 import { BaseBusiness } from '../base/base'
 import Logger from 'mainModule/utils/logger'
@@ -20,7 +20,7 @@ interface NotificationReadCursorSyncItem extends QueueItem {
  * 对应 notification_reads 表
  * 负责已读游标的管理和业务处理
  */
-export class NotificationReadCursorBusiness extends BaseBusiness<NotificationReadCursorSyncItem> {
+class NotificationReadCursorBusiness extends BaseBusiness<NotificationReadCursorSyncItem> {
   protected readonly businessName = 'NotificationReadCursorBusiness'
 
   constructor() {
@@ -35,7 +35,7 @@ export class NotificationReadCursorBusiness extends BaseBusiness<NotificationRea
    */
   async getCursors(userId: string, categories?: string[]) {
     try {
-      return await NotificationReadCursorService.getCursors(userId, categories)
+      return await dBServiceNotificationReadCursor.getCursors(userId, categories)
     }
     catch (error) {
       logger.error({ text: '获取已读游标失败', data: { error: (error as any)?.message } })
@@ -48,7 +48,7 @@ export class NotificationReadCursorBusiness extends BaseBusiness<NotificationRea
    */
   async getCursor(userId: string, category: string) {
     try {
-      return await NotificationReadCursorService.getCursor(userId, category)
+      return await dBServiceNotificationReadCursor.getCursor(userId, category)
     }
     catch (error) {
       logger.error({ text: '获取单个游标失败', data: { error: (error as any)?.message } })
@@ -61,7 +61,7 @@ export class NotificationReadCursorBusiness extends BaseBusiness<NotificationRea
    */
   async upsertCursor(cursor: IDBNotificationReadCursor) {
     try {
-      await NotificationReadCursorService.upsertCursor(cursor)
+      await dBServiceNotificationReadCursor.upsertCursor(cursor)
       logger.info({ text: '更新游标成功', data: { userId: cursor.userId, category: cursor.category } })
       return true
     }
@@ -77,7 +77,7 @@ export class NotificationReadCursorBusiness extends BaseBusiness<NotificationRea
   async batchUpsertCursors(cursors: IDBNotificationReadCursor[]) {
     try {
       for (const cursor of cursors) {
-        await NotificationReadCursorService.upsertCursor(cursor)
+        await dBServiceNotificationReadCursor.upsertCursor(cursor)
       }
       logger.info({ text: `批量更新游标成功: count=${cursors.length}` })
       return true

@@ -3,7 +3,7 @@ import { DataNotificationCommand } from 'commonModule/type/ipc/database'
 import { notificationInboxBusiness, notificationReadCursorBusiness, notificationEventBusiness } from 'mainModule/business'
 import { store } from 'mainModule/store'
 
-export class NotificationHandler {
+class NotificationHandler {
   static async handle(_event: Electron.IpcMainInvokeEvent, command: DataNotificationCommand, data: any, header: ICommonHeader): Promise<any> {
     const userInfo = store.get('userInfo')
     const userId = header.userId || userInfo?.userId

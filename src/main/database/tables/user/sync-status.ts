@@ -1,4 +1,4 @@
-import type { IDBUserSyncStatus } from 'commonModule/type/database/user'
+import type { IDBUserSyncStatus } from 'commonModule/type/database/db/user'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
