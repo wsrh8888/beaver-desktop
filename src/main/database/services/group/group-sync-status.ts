@@ -7,6 +7,7 @@ import type {
   DBGetModuleVersionsRes,
   DBUpsertSyncStatusReq,
 } from 'commonModule/type/database/server/group/group-sync-status'
+import { IDBGroupSyncStatus } from 'commonModule/type/database/db/group'
 
 class GroupSyncStatus extends BaseService {
 
@@ -22,7 +23,7 @@ class GroupSyncStatus extends BaseService {
       .from(groupSyncStatus)
       .where(and(eq(groupSyncStatus.module, req.module), inArray(groupSyncStatus.groupId, req.groupIds)))
 
-    const versions = statuses.map(status => ({
+    const versions = statuses.map((status: IDBGroupSyncStatus) => ({
       groupId: status.groupId,
       version: status.version || 0,
     }))

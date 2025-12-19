@@ -30,7 +30,7 @@ export interface DBGetFriendDetailsReq {
 /**
  * @description 批量获取好友详细信息响应
  */
-export type DBGetFriendDetailsRes = Map<string, any>
+export type DBGetFriendDetailsRes = IDBFriend[]
 
 /**
  * @description 根据好友关系ID列表批量查询好友信息请求
@@ -43,7 +43,7 @@ export interface DBGetFriendsByIdsReq {
 /**
  * @description 根据好友关系ID列表批量查询好友信息响应
  */
-export type DBGetFriendsByIdsRes = any[]
+export type DBGetFriendsByIdsRes = IDBFriend[]
 
 /**
  * @description 根据friendshipIds批量查询本地好友关系请求
@@ -55,7 +55,7 @@ export interface DBGetFriendRecordsByIdsReq {
 /**
  * @description 根据friendshipIds批量查询本地好友关系响应
  */
-export type DBGetFriendRecordsByIdsRes = Map<string, any>
+export type DBGetFriendRecordsByIdsRes = Map<string, IDBFriend>
 
 /**
  * @description 获取好友关系记录请求
@@ -85,4 +85,4 @@ export interface DBGetFriendsByVerRangeReq {
 /**
  * @description 根据版本范围获取好友响应
  */
-export type DBGetFriendsByVerRangeRes = any[]
+export type DBGetFriendsByVerRangeRes = IDBFriend[]

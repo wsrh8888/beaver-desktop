@@ -10,30 +10,6 @@ import type { IDBGroupJoinRequest } from '../../db/group'
 export interface DBCreateGroupJoinRequestReq extends Omit<IDBGroupJoinRequest, 'id' | 'createdAt' | 'updatedAt'> {}
 
 /**
- * @description 获取群组的入群申请请求
- */
-export interface DBGetGroupJoinRequestsReq {
-  groupId: string
-  status?: number
-}
-
-/**
- * @description 获取群组的入群申请响应
- */
-export interface DBGetGroupJoinRequestsRes {
-  requests: IDBGroupJoinRequest[]
-}
-
-/**
- * @description 处理入群申请请求
- */
-export interface DBHandleGroupJoinRequestReq {
-  requestId: string
-  status: number
-  handledBy: string
-}
-
-/**
  * @description 批量创建入群申请请求
  */
 export interface DBBatchCreateGroupJoinRequestsReq {
@@ -41,68 +17,51 @@ export interface DBBatchCreateGroupJoinRequestsReq {
 }
 
 /**
- * @description 获取入群申请列表请求
+ * @description 根据群组ID列表获取入群申请记录请求（简化版）
  */
-export interface DBGetJoinRequestsReq {
-  options?: { page?: number, limit?: number }
-}
-
-/**
- * @description 获取用户相关的入群申请请求
- */
-export interface DBGetUserRelatedJoinRequestsReq {
-  userId: string
-  managedGroupIds: string[]
-  options?: { page?: number, limit?: number }
-}
-
-/**
- * @description 获取用户相关的入群申请响应
- */
-export type DBGetUserRelatedJoinRequestsRes = IDBGroupJoinRequest[]
-
-/**
- * @description 获取用户相关的入群申请数量请求
- */
-export interface DBGetUserRelatedJoinRequestsCountReq {
-  userId: string
-  managedGroupIds: string[]
-}
-
-/**
- * @description 获取入群申请列表响应
- */
-export interface DBGetJoinRequestsRes {
-  requests: IDBGroupJoinRequest[]
-}
-
-/**
- * @description 根据群组ID列表获取入群申请请求
- */
-export interface DBGetJoinRequestsByGroupIdsReq {
+export interface DBGetJoinRequestsByGroupIdsSimpleReq {
   groupIds: string[]
   options?: { page?: number, limit?: number }
 }
 
 /**
- * @description 根据群组ID列表获取入群申请响应
+ * @description 根据群组ID列表获取入群申请记录响应（简化版）
  */
-export interface DBGetJoinRequestsByGroupIdsRes {
-  requests: IDBGroupJoinRequest[]
-}
+export type DBGetJoinRequestsByGroupIdsSimpleRes = IDBGroupJoinRequest[]
 
 /**
- * @description 获取用户相关的入群申请请求
+ * @description 根据申请者ID获取群组申请记录请求
  */
-export interface DBGetUserRelatedJoinRequestsReq {
-  userId: string
-  managedGroupIds: string[]
+export interface DBGetJoinRequestsByApplicantIdReq {
+  applicantUserId: string
   options?: { page?: number, limit?: number }
 }
 
 /**
- * @description 获取用户相关的入群申请响应
+ * @description 根据申请者ID获取群组申请记录响应
  */
-export interface DBGetUserRelatedJoinRequestsRes {
-  requests: IDBGroupJoinRequest[]
+export type DBGetJoinRequestsByApplicantIdRes = IDBGroupJoinRequest[]
+
+/**
+ * @description 根据申请者ID获取群组申请数量请求
+ */
+export interface DBGetJoinRequestsCountByApplicantIdReq {
+  applicantUserId: string
 }
+
+/**
+ * @description 根据申请者ID获取群组申请数量
+ */
+export type DBGetJoinRequestsCountByApplicantIdRes = number
+
+/**
+ * @description 根据群组ID列表获取群组申请数量请求
+ */
+export interface DBGetJoinRequestsCountByGroupIdsReq {
+  groupIds: string[]
+}
+
+/**
+ * @description 根据群组ID列表获取群组申请数量
+ */
+export type DBGetJoinRequestsCountByGroupIdsRes = number

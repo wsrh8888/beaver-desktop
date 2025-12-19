@@ -7,12 +7,12 @@ import type { IDBGroup } from '../../db/group'
 /**
  * @description 创建群组请求
  */
-export interface DBCreateGroupReq extends Omit<IDBGroup, 'id' | 'createdAt' | 'updatedAt'> {}
+export interface DBCreateGroupReq extends Omit<IDBGroup, 'id' > {}
 
 /**
  * @description 创建或更新群组请求
  */
-export interface DBUpsertGroupReq extends Omit<IDBGroup, 'id' | 'createdAt' | 'updatedAt'> {}
+export interface DBUpsertGroupReq extends Omit<IDBGroup, 'id' > {}
 
 /**
  * @description 获取群组信息请求
@@ -61,12 +61,12 @@ export interface DBGetUserGroupsRes {
  * @description 批量创建群组请求
  */
 export interface DBBatchCreateGroupsReq {
-  groups: Omit<IDBGroup, 'id' | 'createdAt' | 'updatedAt'>[]
+  groups: Omit<IDBGroup, 'id' >[]
 }
 
 /**
  * @description 批量插入或更新群组请求
  */
 export interface DBBatchUpsertGroupsReq {
-  groups: Omit<IDBGroup, 'id' | 'createdAt' | 'updatedAt'>[]
+  groups: Omit<IDBGroup, 'id' >[]
 }

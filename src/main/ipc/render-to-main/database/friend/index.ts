@@ -19,11 +19,11 @@ class FriendHandler {
       case DataFriendCommand.GET_FRIENDS:
         return await friendBusiness.getFriendsList(header, data)
       case DataFriendCommand.GET_VALID_LIST:
-        return await dBServiceFriendVerify.getValidList(header, data)
+        return await friendVerifyBusiness.getValidList(header, data)
       case DataFriendCommand.GET_FRIENDS_BY_VER_RANGE:
-        return await dBServiceFriend.getFriendsByVerRange(header, data)
+        return await friendBusiness.getFriendsByVerRange(header, data)
       case DataFriendCommand.GET_VALID_BY_VER_RANGE:
-        return await dBServiceFriendVerify.getValidByVerRange(header, data)
+        return await friendVerifyBusiness.getValidByVerRange(header, data)
       case DataFriendCommand.GET_FRIENDS_BY_IDS:
         return await friendBusiness.getFriendsByIds(header, data)
       case DataFriendCommand.GET_VALID_BY_IDS:

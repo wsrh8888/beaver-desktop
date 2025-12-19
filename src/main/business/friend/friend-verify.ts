@@ -1,4 +1,7 @@
+import type { ICommonHeader } from 'commonModule/type/ajax/common'
+import type { IValidInfo } from 'commonModule/type/ajax/friend'
 import type { QueueItem } from '../base/base'
+import dBServiceUser from 'mainModule/database/services/user/user'
 import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getFriendVerifiesListByIdsApi } from 'mainModule/api/friened'
 import dBServiceFriendVerify  from 'mainModule/database/services/friend/friend_verify'
@@ -33,13 +36,195 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
   /**
    * 根据验证记录ID列表批量查询验证记录
    */
-  async getValidByIds(verifyIds: string[]): Promise<{ list: any[] }> {
+  async getValidByIds(verifyIds: string[]): Promise<{ list: IValidInfo[] }> {
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
       throw new Error('用户未登录')
     }
 
-    return await dBServiceFriendVerify.getValidByIds({ verifyIds, currentUserId: userStore.userId })
+    const { userId } = userStore
+    if (verifyIds.length === 0) {
+      return { list: [] }
+    }
+
+    try {
+      // 调用数据库服务层获取验证记录
+      const validRecords = await dBServiceFriendVerify.getValidByIds({
+        verifyIds,
+        currentUserId: userId
+      })
+
+      if (validRecords.length === 0) {
+        return { list: [] }
+      }
+
+      // 收集需要查询的用户ID
+      const userIds = new Set<string>()
+      validRecords.forEach((record: any) => {
+        userIds.add(record.sendUserId)
+        userIds.add(record.revUserId)
+      })
+
+      // 调用用户服务获取用户信息
+      const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+      // 构建用户映射
+      const userMap = new Map<string, any>()
+      userInfos.forEach((user: any) => {
+        userMap.set(user.userId, user)
+      })
+
+      // 构建验证列表（业务逻辑）
+      const validList: IValidInfo[] = validRecords.map((record: any) => {
+        // 确定对方用户ID和用户信息
+        const otherUserId = record.sendUserId === userId ? record.revUserId : record.sendUserId
+        const otherUser = userMap.get(otherUserId)
+
+        return {
+          verifyId: record.verifyId,
+          userId: otherUserId,
+          nickName: otherUser?.nickName || '',
+          avatar: otherUser?.avatar || '',
+          message: record.message || '',
+          flag: record.sendUserId === userId ? 'send' : 'receive', // 发送或接收标识
+          status: record.sendUserId === userId ? record.sendStatus : record.revStatus,
+          createdAt: new Date(record.createdAt * 1000).toISOString(),
+        }
+      })
+
+      return { list: validList }
+    } catch (error) {
+      console.error('根据验证记录ID列表批量查询验证记录失败:', error)
+      return { list: [] }
+    }
+  }
+
+  /**
+   * 获取有效的验证列表
+   */
+  async getValidList(header: ICommonHeader, params: any): Promise<{ list: IValidInfo[] }> {
+    const { userId } = header
+    const { page = 1, limit = 20 } = params
+
+    if (!userId) {
+      throw new Error('用户ID不能为空')
+    }
+
+    try {
+      // 调用数据库服务层获取验证记录
+      const validRecords = await dBServiceFriendVerify.getValidList({
+        userId,
+        page,
+        limit
+      })
+
+      if (validRecords.length === 0) {
+        return { list: [] }
+      }
+
+      // 收集需要查询的用户ID
+      const userIds = new Set<string>()
+      validRecords.forEach((record: any) => {
+        userIds.add(record.sendUserId)
+        userIds.add(record.revUserId)
+      })
+
+      // 调用用户服务获取用户信息
+      const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+      // 构建用户映射
+      const userMap = new Map<string, any>()
+      userInfos.forEach((user: any) => {
+        userMap.set(user.userId, user)
+      })
+
+      // 构建验证列表（业务逻辑）
+      const validList: IValidInfo[] = validRecords.map((record: any) => {
+        // 确定对方用户ID和用户信息
+        const otherUserId = record.sendUserId === userId ? record.revUserId : record.sendUserId
+        const otherUser = userMap.get(otherUserId)
+
+        return {
+          verifyId: record.verifyId,
+          userId: otherUserId,
+          nickName: otherUser?.nickName || '',
+          avatar: otherUser?.avatar || '',
+          message: record.message || '',
+          flag: record.sendUserId === userId ? 'send' : 'receive', // 发送或接收标识
+          status: record.sendUserId === userId ? record.revStatus : record.sendStatus,
+          createdAt: new Date(record.createdAt * 1000).toISOString(),
+        }
+      })
+
+      return { list: validList }
+    } catch (error) {
+      console.error('获取好友验证列表失败:', error)
+      return { list: [] }
+    }
+  }
+
+  /**
+   * 根据版本范围获取有效的验证记录
+   */
+  async getValidByVerRange(header: ICommonHeader, params: any): Promise<{ list: IValidInfo[] }> {
+    const { userId } = header
+    const { startVersion = 0, endVersion = Number.MAX_SAFE_INTEGER } = params
+
+    if (!userId) {
+      throw new Error('用户ID不能为空')
+    }
+
+    try {
+      // 调用数据库服务层获取验证记录
+      const validRecords = await dBServiceFriendVerify.getValidByVerRange({
+        userId,
+        startVersion,
+        endVersion
+      })
+
+      if (validRecords.length === 0) {
+        return { list: [] }
+      }
+
+      // 收集需要查询的用户ID
+      const userIds = new Set<string>()
+      validRecords.forEach((record: any) => {
+        userIds.add(record.sendUserId)
+        userIds.add(record.revUserId)
+      })
+
+      // 调用用户服务获取用户信息
+      const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+      // 构建用户映射
+      const userMap = new Map<string, any>()
+      userInfos.forEach((user: any) => {
+        userMap.set(user.userId, user)
+      })
+
+      // 构建验证列表（业务逻辑）
+      const validList: IValidInfo[] = validRecords.map((record: any) => {
+        // 确定对方用户ID和用户信息
+        const otherUserId = record.sendUserId === userId ? record.revUserId : record.sendUserId
+        const otherUser = userMap.get(otherUserId)
+
+        return {
+          verifyId: record.verifyId,
+          userId: otherUserId,
+          nickName: otherUser?.nickName || '',
+          avatar: otherUser?.avatar || '',
+          message: record.message || '',
+          flag: record.sendUserId === userId ? 'send' : 'receive', // 发送或接收标识
+          status: record.sendUserId === userId ? record.sendStatus : record.revStatus,
+          createdAt: new Date(record.createdAt * 1000).toISOString(),
+        }
+      })
+
+      return { list: validList }
+    } catch (error) {
+      console.error('根据版本范围获取验证列表失败:', error)
+      return { list: [] }
+    }
   }
 
   /**

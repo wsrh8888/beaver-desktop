@@ -1,6 +1,7 @@
 // 好友验证服务请求和响应类型定义
 
 import type { IValidInfo } from '../../../ajax/friend'
+import type { IDBFriendVerify } from '../../db/friend'
 
 // ===== 好友验证操作 =====
 
@@ -76,9 +77,7 @@ export interface DBGetValidListReq {
 /**
  * @description 获取好友验证列表响应
  */
-export interface DBGetValidListRes {
-  list: IValidInfo[]
-}
+export type DBGetValidListRes = IDBFriendVerify[]
 
 /**
  * @description 根据版本范围获取验证列表请求
@@ -92,9 +91,7 @@ export interface DBGetValidByVerRangeReq {
 /**
  * @description 根据版本范围获取验证列表响应
  */
-export interface DBGetValidByVerRangeRes {
-  list: IValidInfo[]
-}
+export type DBGetValidByVerRangeRes = IDBFriendVerify[]
 
 /**
  * @description 根据验证记录ID列表批量查询验证记录请求
@@ -107,4 +104,4 @@ export interface DBGetValidByIdsReq {
 /**
  * @description 根据验证记录ID列表批量查询验证记录响应
  */
-export type DBGetValidByIdsRes = Array<IValidInfo>
+export type DBGetValidByIdsRes = IDBFriendVerify[]

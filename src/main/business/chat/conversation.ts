@@ -127,7 +127,63 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       }
     })
 
-    const friendDetailsMap = await dBServiceFriend.getFriendDetails({ userId, friendIds: privateChatFriendIds })
+    const friendRelations = await dBServiceFriend.getFriendDetails({ userId, friendIds: privateChatFriendIds })
+
+    // 构建好友详细信息映射
+    const friendDetailsMap = new Map<string, any>()
+    if (friendRelations.length > 0) {
+      // 收集需要查询的用户ID
+      const userIds = new Set<string>()
+      friendRelations.forEach((relation: any) => {
+        if (relation.sendUserId === userId) {
+          userIds.add(relation.revUserId)
+        } else {
+          userIds.add(relation.sendUserId)
+        }
+      })
+
+      // 调用用户服务获取用户信息
+      const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+      // 构建用户映射
+      const userMap = new Map<string, any>()
+      userInfos.forEach((user: any) => {
+        userMap.set(user.userId, user)
+      })
+
+      // 构建好友关系映射
+      const friendRelationMap = new Map<string, any>()
+      friendRelations.forEach((relation: any) => {
+        if (relation.sendUserId === userId) {
+          friendRelationMap.set(relation.revUserId, relation)
+        } else {
+          friendRelationMap.set(relation.sendUserId, relation)
+        }
+      })
+
+      // 构建完整的返回值
+      for (const friendId of privateChatFriendIds) {
+        const userInfo = userMap.get(friendId)
+        const friendRelation = friendRelationMap.get(friendId)
+
+        if (userInfo && friendRelation) {
+          // 确定备注信息
+          const notice = friendRelation.sendUserId === userId
+            ? friendRelation.revUserNotice || ''
+            : friendRelation.sendUserNotice || ''
+
+          friendDetailsMap.set(friendId, {
+            userId: userInfo.userId,
+            nickName: userInfo.nickName || '',
+            avatar: userInfo.avatar || '',
+            abstract: userInfo.abstract || '',
+            email: userInfo.email || '',
+            notice,
+            friendAt: friendRelation.createdAt,
+          })
+        }
+      }
+    }
     const groupDetails = await dbServiceGroup.getGroupsByIds(groupIds)
     const groupDetailsMap = new Map()
     groupDetails.forEach((group: any) => {
@@ -239,8 +295,61 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         const userId2 = parts[2]
         const friendId = (userId1 === userId) ? userId2 : userId1
 
-        const friendDetailsMap = await dBServiceFriend.getFriendDetails({ userId, friendIds: [friendId] })
-        const friendDetail = friendDetailsMap.get(friendId)
+        const friendRelations = await dBServiceFriend.getFriendDetails({ userId, friendIds: [friendId] })
+
+        // 构建好友详细信息
+        let friendDetail = null
+        if (friendRelations.length > 0) {
+          // 从好友关系中提取用户ID
+          const userIds = new Set<string>()
+          friendRelations.forEach((relation: any) => {
+            if (relation.sendUserId === userId) {
+              userIds.add(relation.revUserId)
+            } else {
+              userIds.add(relation.sendUserId)
+            }
+          })
+
+          // 调用用户服务获取用户信息
+          const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+          // 构建用户映射
+          const userMap = new Map<string, any>()
+          userInfos.forEach((user: any) => {
+            userMap.set(user.userId, user)
+          })
+
+          // 构建好友关系映射
+          const friendRelationMap = new Map<string, any>()
+          friendRelations.forEach((relation: any) => {
+            if (relation.sendUserId === userId) {
+              friendRelationMap.set(relation.revUserId, relation)
+            } else {
+              friendRelationMap.set(relation.sendUserId, relation)
+            }
+          })
+
+          const userInfo = userMap.get(friendId)
+          const friendRelation = friendRelationMap.get(friendId)
+
+          if (userInfo && friendRelation) {
+            // 确定备注信息
+            const notice = friendRelation.sendUserId === userId
+              ? friendRelation.revUserNotice || ''
+              : friendRelation.sendUserNotice || ''
+
+            friendDetail = {
+              userId: userInfo.userId,
+              nickName: userInfo.nickName || '',
+              avatar: userInfo.avatar || '',
+              abstract: userInfo.abstract || '',
+              email: userInfo.email || '',
+              notice,
+              friendAt: friendRelation.createdAt,
+            }
+          }
+        }
+
         if (friendDetail) {
           avatar = friendDetail?.avatar || ''
           nickName = friendDetail?.nickName || ''

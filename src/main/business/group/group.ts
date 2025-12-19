@@ -191,10 +191,29 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     const managedGroups = userMemberships.filter((m: any) => m.role === 1 || m.role === 2) // 1群主 2管理员
     const managedGroupIds = managedGroups.map((g: any) => g.groupId)
 
-    // 调用服务层获取用户相关的所有群组申请记录（纯数据库查询）
-    // 包括：用户申请的 + 别人申请用户管理的群组
-    const requests = await dBServiceGroupJoinRequest.getUserRelatedJoinRequests({ userId, managedGroupIds, options: { page, limit } })
-    const total = await dBServiceGroupJoinRequest.getUserRelatedJoinRequestsCount({ userId, managedGroupIds })
+    // 业务逻辑：获取用户相关的所有群组申请记录
+    // 包括：1. 用户申请的群组 2. 别人申请用户管理的群组
+    const userRequests = await dBServiceGroupJoinRequest.getJoinRequestsByApplicantId({
+      applicantUserId: userId,
+      options: { page: 1, limit: Math.ceil(limit / 2) } // 分页分配
+    })
+
+    const managedRequests = managedGroupIds.length > 0 ? await dBServiceGroupJoinRequest.getJoinRequestsByGroupIdsSimple({
+      groupIds: managedGroupIds,
+      options: { page: 1, limit: Math.ceil(limit / 2) } // 分页分配
+    }) : []
+
+    // 合并并排序
+    const allRequests = [...userRequests, ...managedRequests]
+      .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0))
+      .slice(0, limit)
+
+    // 计算总数
+    const userCount = await dBServiceGroupJoinRequest.getJoinRequestsCountByApplicantId({ applicantUserId: userId })
+    const managedCount = managedGroupIds.length > 0 ? await dBServiceGroupJoinRequest.getJoinRequestsCountByGroupIds({ groupIds: managedGroupIds }) : 0
+    const total = userCount + managedCount
+
+    const requests = allRequests
 
     // 业务逻辑：获取所有申请者ID
     const applicantIds = requests.map((r: any) => r.applicantUserId).filter((id: string) => id)

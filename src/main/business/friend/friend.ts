@@ -179,13 +179,137 @@ class FriendBusiness extends BaseBusiness<FriendSyncItem> {
     const { friendIds } = params
     const { userId } = header
 
-    // 调用服务层批量获取好友信息
-    const friends = await dBServiceFriend.getFriendsByIds({
+    // 调用服务层批量获取好友关系记录
+    const friendRecords = await dBServiceFriend.getFriendsByIds({
       friendIds,
       currentUserId: userId
     })
 
+    if (friendRecords.length === 0) {
+      return { list: [] }
+    }
+
+    // 收集需要查询的用户ID
+    const userIds = new Set<string>()
+    friendRecords.forEach((record: any) => {
+      userIds.add(record.sendUserId)
+      userIds.add(record.revUserId)
+    })
+
+    // 调用用户服务获取用户信息
+    const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+    // 构建用户映射
+    const userMap = new Map<string, any>()
+    userInfos.forEach((user: any) => {
+      userMap.set(user.userId, user)
+    })
+
+    // 构建好友列表
+    const friends = friendRecords.map((record: any) => {
+      // 确定好友的用户ID
+      const friendUserId = record.sendUserId === userId
+        ? record.revUserId
+        : record.sendUserId
+
+      // 获取好友用户信息
+      const friendUser = userMap.get(friendUserId)
+
+      // 确定备注信息
+      const notice = record.sendUserId === userId
+        ? record.sendUserNotice || ''
+        : record.revUserNotice || ''
+
+      return {
+        userId: friendUserId,
+        nickName: friendUser?.nickName || '',
+        avatar: friendUser?.avatar || '',
+        abstract: friendUser?.abstract || '',
+        notice,
+        isFriend: true,
+        conversationId: generateConversationId(userId, friendUserId),
+        email: friendUser?.email || '',
+        source: record.source || '',
+      }
+    })
+
     return { list: friends }
+  }
+
+  /**
+   * 根据版本范围获取好友列表
+   */
+  async getFriendsByVerRange(header: ICommonHeader, params: { startVersion?: number, endVersion?: number }): Promise<{ list: IFriendInfo[] }> {
+    const { userId } = header
+    const { startVersion = 0, endVersion = Number.MAX_SAFE_INTEGER } = params
+
+    if (!userId) {
+      throw new Error('用户ID不能为空')
+    }
+
+    try {
+      // 调用数据库服务层获取好友关系记录
+      const friendRelations = await dBServiceFriend.getFriendRelationsByVerRange({
+        userId,
+        startVersion,
+        endVersion,
+      })
+
+      if (friendRelations.length === 0) {
+        return { list: [] }
+      }
+
+      // 收集需要查询的用户ID
+      const userIds = new Set<string>()
+      friendRelations.forEach((relation: any) => {
+        if (relation.sendUserId === userId) {
+          userIds.add(relation.revUserId)
+        }
+        else {
+          userIds.add(relation.sendUserId)
+        }
+      })
+
+      // 查询用户信息
+      const userIdsArray = Array.from(userIds)
+      const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: userIdsArray })
+
+      // 构建用户映射
+      const userMap = new Map<string, any>()
+      userInfos.forEach((user: any) => {
+        userMap.set(user.userId, user)
+      })
+
+      // 构建好友列表
+      const friendList: IFriendInfo[] = friendRelations.map((relation: any) => {
+        const friendUserId = relation.sendUserId === userId
+          ? relation.revUserId
+          : relation.sendUserId
+
+        const friendUser = userMap.get(friendUserId)
+        const notice = relation.sendUserId === userId
+          ? relation.sendUserNotice
+          : relation.revUserNotice
+
+        return {
+          userId: friendUserId,
+          nickName: friendUser?.nickName || '',
+          avatar: friendUser?.avatar || '',
+          abstract: friendUser?.abstract || '',
+          notice: notice || '',
+          isFriend: true,
+          conversationId: generateConversationId(userId, friendUserId),
+          email: friendUser?.email || '',
+          source: relation.source || '',
+        }
+      })
+
+      return { list: friendList }
+    }
+    catch (error) {
+      console.error('根据版本范围获取好友列表失败:', error)
+      return { list: [] }
+    }
   }
 }
 

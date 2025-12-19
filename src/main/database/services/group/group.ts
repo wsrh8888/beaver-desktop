@@ -109,26 +109,34 @@ class GroupService extends BaseService {
     }
   }
 
-  // 根据GroupID获取群组
-   async getGroupById(groupId: string): Promise<IDBGroup | undefined> {
+  /**
+   * @description 根据群组ID获取群组信息
+   */
+  async getGroupById(groupId: string): Promise<IDBGroup | undefined> {
     return await this.db.select().from(groups).where(eq(groups.groupId as any, groupId as any)).get()
   }
 
-  // 根据GroupID列表批量获取群组
-   async getGroupsByIds(groupIds: string[]): Promise<IDBGroup[]> {
+  /**
+   * @description 根据群组ID列表批量获取群组信息
+   */
+  async getGroupsByIds(groupIds: string[]): Promise<IDBGroup[]> {
     if (groupIds.length === 0)
       return []
     return await this.db.select().from(groups).where(inArray(groups.groupId as any, groupIds as any)).all()
   }
 
-  // 更新群组信息
-   async updateGroup(groupId: string, updateData: any): Promise<any> {
+  /**
+   * @description 更新群组信息
+   */
+  async updateGroup(groupId: string, updateData: any): Promise<any> {
     updateData.updatedAt = Math.floor(Date.now() / 1000)
     return await this.db.update(groups).set(updateData).where(eq(groups.groupId as any, groupId as any)).run()
   }
 
-  // 删除群组
-   async deleteGroup(groupId: string): Promise<any> {
+  /**
+   * @description 删除群组
+   */
+  async deleteGroup(groupId: string): Promise<any> {
     return await this.db.delete(groups).where(eq(groups.groupId as any, groupId as any)).run()
   }
 }
