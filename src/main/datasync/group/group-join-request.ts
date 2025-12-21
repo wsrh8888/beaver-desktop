@@ -1,9 +1,9 @@
 import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncGroupRequestsApi } from 'mainModule/api/datasync'
 import { groupJoinRequestSyncApi } from 'mainModule/api/group'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
-import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dBServiceGroupJoinRequest  from 'mainModule/database/services/group/group-join-request'
+import dBServiceGroupSyncStatus from 'mainModule/database/services/group/group-sync-status'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import Logger from 'mainModule/utils/logger'
 
@@ -16,7 +16,7 @@ class GroupJoinRequestSync {
     logger.info({ text: '开始同步入群申请数据' })
     try {
     // 获取本地最后同步时间
-      const lastSyncTime = await DataSyncService.get('group_join_requests').then(cursor => cursor?.version || 0).catch(() => 0)
+      const lastSyncTime = await dbServiceDataSync.get({ module: 'group_join_requests' }).then(cursor => cursor?.version || 0).catch(() => 0)
 
       // 获取服务器上变更的入群申请版本信息
       const serverResponse = await datasyncGetSyncGroupRequestsApi({ since: lastSyncTime })
@@ -30,7 +30,7 @@ class GroupJoinRequestSync {
       }
 
       // 更新游标（无论是否有变更都要更新）
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'group_join_requests',
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverResponse.result.serverTimestamp,
@@ -53,7 +53,7 @@ class GroupJoinRequestSync {
     const groupIds = groupVersions.map(item => item.groupId)
 
     // 查询本地已存在的入群申请版本状态
-    const localVersions = await GroupSyncStatusService.getModuleVersions('requests', groupIds)
+    const localVersions = await dBServiceGroupSyncStatus.getModuleVersions({ module: 'requests', groupIds })
     const localVersionMap = new Map(localVersions.map(v => [v.groupId, v.version]))
 
     // 过滤出需要更新的群组，并使用本地版本号（而不是服务器版本号）
@@ -84,11 +84,11 @@ class GroupJoinRequestSync {
     const requests = response.result.groupJoinRequests
 
     if (requests.length > 0) {
-      await GroupJoinRequestService.batchCreate(requests)
+      await dBServiceGroupJoinRequest.batchCreate(requests)
 
       // 更新本地入群申请版本状态
       for (const request of requests) {
-        await GroupSyncStatusService.upsertSyncStatus('requests', request.groupId, request.version)
+        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'requests', conversationId: request.groupId, version: request.version })
       }
 
       // 发送通知到render进程，告知入群申请数据已同步

@@ -2,15 +2,16 @@ import { SyncStatus } from 'commonModule/type/datasync'
 import { NotificationModule, NotificationUserCommand } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncAllUsersApi } from 'mainModule/api/datasync'
 import { userSyncApi } from 'mainModule/api/user'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { UserSyncStatusService } from 'mainModule/database/services/user/sync-status'
-import { UserService } from 'mainModule/database/services/user/user'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dBServiceUserSyncStatus from 'mainModule/database/services/user/sync-status'
+import dBServiceUser  from 'mainModule/database/services/user/user'
+
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
 // 用户数据同步模块（两阶段增量同步）
-export class UserSyncModule {
+class UserSyncModule {
   syncStatus: SyncStatus = SyncStatus.PENDING
 
   // 登录时同步用户数据
@@ -23,7 +24,7 @@ export class UserSyncModule {
 
     try {
       // 获取本地最后同步时间
-      const cursor = await DataSyncService.get('users').catch(() => null)
+      const cursor = await dbServiceDataSync.get({ module: 'users' }).catch(() => null)
       const lastSyncTime = cursor?.version || 0
 
       // 获取变更的用户版本摘要
@@ -43,7 +44,7 @@ export class UserSyncModule {
         await this.syncUserData(needUpdateUsers)
         // 从变更的数据中找到最大的版本号
         const maxVersion = Math.max(...changedUserVersions.map(item => item.version))
-        await DataSyncService.upsert({
+        await dbServiceDataSync.upsert({
           module: 'users',
           version: maxVersion,
           updatedAt: serverTimestamp,
@@ -51,7 +52,7 @@ export class UserSyncModule {
       }
       else {
         // 没有需要更新的数据，直接更新时间戳
-        await DataSyncService.upsert({
+        await dbServiceDataSync.upsert({
           module: 'users',
           version: null,
           updatedAt: serverTimestamp,
@@ -73,7 +74,7 @@ export class UserSyncModule {
     }
 
     // 获取所有本地用户同步状态
-    const localStatuses = await UserSyncStatusService.getAllUsersSyncStatus()
+    const localStatuses = await dBServiceUserSyncStatus.getAllUsersSyncStatus()
     const localVersionMap = new Map(localStatuses.map(s => [s.userId, s.userVersion || 0]))
 
     // 过滤出需要更新的用户，并使用本地版本号（而不是服务器版本号）
@@ -103,7 +104,7 @@ export class UserSyncModule {
     const syncResponse = await userSyncApi({ userVersions: usersWithVersions })
     if (syncResponse.result.users?.length > 0) {
       const usersModels = syncResponse.result.users.map((user: any) => ({
-        uuid: user.userId,
+        userId: user.userId,
         nickName: user.nickName,
         avatar: user.avatar,
         abstract: user.abstract,
@@ -112,24 +113,24 @@ export class UserSyncModule {
         gender: user.gender,
         status: user.status,
         version: user.version,
-        createdAt: user.createAt,
-        updatedAt: user.updateAt,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       }))
 
-      await UserService.batchCreate(usersModels)
+      await dBServiceUser.batchCreate(usersModels)
 
       // 更新本地用户版本状态
       const statusUpdates = usersModels.map(user => ({
-        userId: user.uuid,
+        userId: user.userId,
         userVersion: user.version,
       }))
-      await UserSyncStatusService.batchUpsertUserSyncStatus(statusUpdates)
+      await dBServiceUserSyncStatus.batchUpsertUserSyncStatus(statusUpdates)
 
       // 发送通知到render进程，告知用户数据已同步
       sendMainNotification('*', NotificationModule.DATABASE_USER, NotificationUserCommand.USER_UPDATE, {
         source: 'datasync', // 标识来源：批量同步
         updatedUsers: usersModels.map(user => ({
-          userId: user.uuid,
+          userId: user.userId,
           version: user.version,
         })),
       })

@@ -1,9 +1,9 @@
-import { groupJoinRequestBusiness } from 'mainModule/business/group/group-join-request'
+import groupJoinRequestBusiness from 'mainModule/business/group/group-join-request'
 
 /**
  * @description: 群加入请求接收器 - 处理 group_join_requests 表的操作
  */
-export class GroupJoinRequestReceiver {
+class GroupJoinRequestReceiver {
   /**
    * 处理群加入请求表更新通知
    * 只处理 group_join_requests 表的更新
@@ -26,3 +26,5 @@ export class GroupJoinRequestReceiver {
     }
   }
 }
+
+export default new GroupJoinRequestReceiver()

@@ -1,11 +1,11 @@
 import type { NetworkCommand } from 'commonModule/type/ipc/command'
 import logger from 'mainModule/utils/log'
 
-export class NetworkHandler {
+class NetworkHandler {
   /**
    * 统一的网络和配置处理入口
    */
-  static async handle(event: Electron.IpcMainEvent, command: NetworkCommand, _data: any): Promise<unknown> {
+  async handle(event: Electron.IpcMainEvent, command: NetworkCommand, _data: any): Promise<unknown> {
     // switch (command) {
 
     //   // default:
@@ -16,3 +16,5 @@ export class NetworkHandler {
     return null
   }
 }
+
+export default new NetworkHandler()

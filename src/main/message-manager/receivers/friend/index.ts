@@ -1,13 +1,13 @@
-import { FriendVerifyReceiver } from './friend-verify-receiver'
-import { FriendReceiver } from './receiver'
+import friendVerifyReceiver from './friend-verify-receiver'
+import friendReceiver from './receiver'
 
 /**
  * @description: 好友消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class FriendMessageRouter {
-  private friendReceiver = new FriendReceiver()
-  private friendVerifyReceiver = new FriendVerifyReceiver()
+class FriendMessageRouter {
+  private friendReceiver = friendReceiver
+  private friendVerifyReceiver = friendVerifyReceiver
 
   /**
    * 处理好友消息
@@ -39,4 +39,4 @@ export class FriendMessageRouter {
 }
 
 // 导出单例实例
-export const friendMessageRouter = new FriendMessageRouter()
+export default new FriendMessageRouter()

@@ -18,7 +18,7 @@ class Image extends ApplicationBase implements Application {
       frame: false,
       resizable: true,
       webPreferences: {
-        preload: path.join(__dirname, './preload/electron.js'),
+        preload: path.join(__dirname, './preload/index.mjs'),
         nodeIntegration: false,
         nodeIntegrationInWorker: false,
         contextIsolation: true,

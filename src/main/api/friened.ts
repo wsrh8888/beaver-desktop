@@ -7,8 +7,6 @@ import type {
   IFriendVerifySyncRes,
   IGetFriendsListByIdsReq,
   IGetFriendsListByIdsRes,
-  IGetFriendsListByUuidsReq,
-  IGetFriendsListByUuidsRes,
   IGetFriendVerifiesListByIdsReq,
   IGetFriendVerifiesListByIdsRes,
 } from 'commonModule/type/ajax/friend'
@@ -60,23 +58,14 @@ export const getFriendsListByIdsApi = (data: IGetFriendsListByIdsReq) => {
 }
 
 /**
- * @description: 批量获取好友数据（通过UUID）
- */
-export const getFriendsListByUuidsApi = (data: IGetFriendsListByUuidsReq) => {
-  return ajax<IGetFriendsListByUuidsRes>({
-    method: 'POST',
-    data,
-    url: `${getBaseUrl()}/api/friend/getFriendsListByUuids`,
-  })
-}
-
-/**
- * @description: 批量获取好友验证数据（通过UUID）
+ * @description: 批量获取好友验证数据
  */
 export const getFriendVerifiesListByIdsApi = (data: IGetFriendVerifiesListByIdsReq) => {
   return ajax<IGetFriendVerifiesListByIdsRes>({
     method: 'POST',
-    data,
+    data: {
+      verifyIds: data.verifyIds, // 后端期望的字段名
+    },
     url: `${getBaseUrl()}/api/friend/getFriendVerifiesListByIds`,
   })
 }

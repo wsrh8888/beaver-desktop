@@ -27,13 +27,20 @@
               {{ chat.nickName }}
             </div>
             <div class="chat-time">
-              {{ chat.updateAt }}
+              {{ chat.updatedAtStr }}
             </div>
           </div>
           <div class="chat-preview">
             <span class="preview-text">{{ chat.msgPreview }}</span>
-            <div v-if="chat.unreadCount" class="unread-badge">
-              {{ chat.unreadCount }}
+            <div class="chat-indicators">
+              <div v-if="chat.unreadCount && !chat.isMuted" class="unread-badge">
+                {{ chat.unreadCount }}
+              </div>
+              <div v-if="chat.isMuted" class="mute-indicator">
+                <img src="renderModule/assets/image/chat/mute.svg" alt="muted" />
+                <!-- 红色小点 -->
+                <div class="red-point" v-if="chat.unreadCount"></div>
+              </div>
             </div>
           </div>
         </div>
@@ -222,19 +229,46 @@ export default defineComponent({
             text-overflow: ellipsis;
           }
 
-          .unread-badge {
-            min-width: 18px;
-            height: 18px;
-            border-radius: 9px;
-            background: #FF5252;
-            color: white;
-            font-size: 11px;
+          .chat-indicators {
             display: flex;
             align-items: center;
-            justify-content: center;
-            padding: 0 5px;
+            gap: 4px;
             margin-left: 8px;
             flex-shrink: 0;
+
+            .unread-badge {
+              min-width: 18px;
+              height: 18px;
+              border-radius: 9px;
+              background: #FF5252;
+              color: white;
+              font-size: 11px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              padding: 0 5px;
+            }
+
+            .mute-indicator {
+              position: relative;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+
+              img {
+                width: 14px;
+                height: 14px;
+              }
+
+              .red-point {
+                width: 8px;
+                height: 8px;
+                border-radius: 50%;
+                margin-left: 4px;
+                background: #FF5252;
+                border: 1px solid white;
+              }
+            }
           }
         }
       }

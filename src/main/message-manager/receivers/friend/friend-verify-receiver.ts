@@ -1,12 +1,12 @@
-import { friendBusiness } from 'mainModule/business/friend/friend'
-import { friendVerifyBusiness } from 'mainModule/business/friend/friend-verify'
-import { userBusiness } from 'mainModule/business/user/user'
+import friendBusiness from 'mainModule/business/friend/friend'
+import friendVerifyBusiness from 'mainModule/business/friend/friend-verify'
+import userBusiness from 'mainModule/business/user/user'
 
 /**
  * @description: 好友验证接收器 - 处理friend_verify表的操作
  * 不使用批量处理框架，直接在handle方法中处理消息
  */
-export class FriendVerifyReceiver {
+class FriendVerifyReceiver {
   /**
    * 处理好友验证表更新通知
    * 处理 friend_verify 表和 users 表的更新
@@ -28,7 +28,7 @@ export class FriendVerifyReceiver {
       // update.data 是数组，需要遍历每个数据项
       for (const dataItem of update.data) {
         // 使用business的队列处理机制，避免频繁请求
-        await friendVerifyBusiness.handleTableUpdates(dataItem.userId, dataItem.uuid, dataItem.version)
+        await friendVerifyBusiness.handleTableUpdates(dataItem.userId, dataItem.verifyId, dataItem.version)
       }
     }
 
@@ -37,7 +37,7 @@ export class FriendVerifyReceiver {
       // update.data 是数组，需要遍历每个数据项
       for (const dataItem of update.data) {
         // 使用business的队列处理机制，避免频繁请求
-        await friendBusiness.handleTableUpdates(dataItem.version, dataItem.uuid)
+        await friendBusiness.handleTableUpdates(dataItem.version, dataItem.friendId)
       }
     }
 
@@ -51,3 +51,5 @@ export class FriendVerifyReceiver {
     }
   }
 }
+
+export default new FriendVerifyReceiver()

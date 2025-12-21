@@ -1,4 +1,4 @@
-import type { IDBGroupSyncStatus } from 'commonModule/type/database/group'
+import type { IDBGroupSyncStatus } from 'commonModule/type/database/db/group'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text, uniqueIndex } from 'drizzle-orm/sqlite-core'
 

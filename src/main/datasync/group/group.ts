@@ -1,9 +1,9 @@
 import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { datasyncGetSyncGroupInfoApi } from 'mainModule/api/datasync'
 import { groupSyncApi } from 'mainModule/api/group'
-import { DataSyncService } from 'mainModule/database/services/datasync/datasync'
-import { GroupService } from 'mainModule/database/services/group/group'
-import { GroupSyncStatusService } from 'mainModule/database/services/group/group-sync-status'
+import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
+import dbServiceGroup  from 'mainModule/database/services/group/group'
+import dBServiceGroupSyncStatus from 'mainModule/database/services/group/group-sync-status'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
@@ -14,7 +14,7 @@ class GroupSync {
     logger.info({ text: '开始同步群资料数据' })
     try {
       // 获取本地最后同步时间
-      const lastSyncTime = await DataSyncService.get('groups').then(cursor => cursor?.version || 0).catch(() => 0)
+      const lastSyncTime = await dbServiceDataSync.get({ module: 'groups' }).then(cursor => cursor?.version || 0).catch(() => 0)
 
       // 获取服务器上变更的群组版本信息
       const serverResponse = await datasyncGetSyncGroupInfoApi({ since: lastSyncTime })
@@ -28,7 +28,7 @@ class GroupSync {
       }
 
       // 更新游标（无论是否有变更都要更新）
-      await DataSyncService.upsert({
+      await dbServiceDataSync.upsert({
         module: 'groups',
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverResponse.result.serverTimestamp,
@@ -49,7 +49,7 @@ class GroupSync {
     const groupIds = groupVersions.map(item => item.groupId)
 
     // 查询本地已存在的群组资料版本状态
-    const localVersions = await GroupSyncStatusService.getModuleVersions('info', groupIds)
+    const localVersions = await dBServiceGroupSyncStatus.getModuleVersions({ module: 'info', groupIds })
     const localVersionMap = new Map(localVersions.map(v => [v.groupId, v.version]))
 
     // 过滤出需要更新的群组，并使用本地版本号（而不是服务器版本号）
@@ -89,15 +89,15 @@ class GroupSync {
         joinType: group.joinType,
         status: group.isDeleted ? 0 : 1,
         version: group.version,
-        createdAt: group.createAt,
-        updatedAt: group.updateAt,
+        createdAt: group.createdAt,
+        updatedAt: group.updatedAt,
       }))
 
-      await GroupService.batchUpsert(localGroups)
+      await dbServiceGroup.batchUpsert(localGroups)
 
       // 更新本地群组版本状态
       for (const group of localGroups) {
-        await GroupSyncStatusService.upsertSyncStatus('info', group.groupId, group.version)
+        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'info', conversationId: group.groupId, version: group.version })
       }
 
       // 发送通知到render进程，告知群组数据已同步

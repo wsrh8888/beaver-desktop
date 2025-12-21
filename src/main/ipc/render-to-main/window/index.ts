@@ -6,6 +6,7 @@ import appApplication from 'mainModule/application/app'
 import audioApplication from 'mainModule/application/audio'
 import imageApplication from 'mainModule/application/image'
 import loginApplication from 'mainModule/application/login'
+import momentApplication from 'mainModule/application/moment'
 import searchApplication from 'mainModule/application/search'
 import updateApplication from 'mainModule/application/updater'
 import verifyApplication from 'mainModule/application/verify'
@@ -13,11 +14,11 @@ import videoApplication from 'mainModule/application/video'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
-export class WindowHandler {
+class WindowHandler {
   /**
    * 统一的窗口处理入口（支持同步和异步）
    */
-  static handle(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: WinHook | string, data: any): any {
+  handle(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: WinHook | string, data: any): any {
     logger.info({ text: '收到render-to-main-msg窗口消息', data: {
       command,
       data,
@@ -46,7 +47,7 @@ export class WindowHandler {
   /**
    * 关闭窗口
    */
-  private static handleClose(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, name: string, options: IWinodwCloseOptions) {
+  private handleClose(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, name: string, options: IWinodwCloseOptions) {
     const { hideOnly = false } = options
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
@@ -66,7 +67,7 @@ export class WindowHandler {
   /**
    * 最小化窗口
    */
-  private static handleMinimize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, _name: string, _options: IWindowOpenOptions) {
+  private handleMinimize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, _name: string, _options: IWindowOpenOptions) {
     logger.info({ text: `[render][${event.sender.id}] 最小化窗口` })
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
@@ -80,7 +81,7 @@ export class WindowHandler {
   /**
    * 切换窗口最大化状态
    */
-  private static handleToggleMaximize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, _name: string, _options: IWindowOpenOptions) {
+  private handleToggleMaximize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, _name: string, _options: IWindowOpenOptions) {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
       if (window.isMaximized()) {
@@ -100,7 +101,7 @@ export class WindowHandler {
   /**
    * 打开指定窗口
    */
-  private static async handleOpen(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, name: string, options: IWindowOpenOptions): Promise<void> {
+  private async handleOpen(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, name: string, options: IWindowOpenOptions): Promise<void> {
     const unique = options.unique || true // 默认唯一
     const params = options.params || {}
     // 通过name搜素进程
@@ -147,6 +148,10 @@ export class WindowHandler {
           audioApplication.createBrowserWindow()
           newWindow = (audioApplication as any).win
           break
+        case 'moment':
+          momentApplication.createBrowserWindow()
+          newWindow = (momentApplication as any).win
+          break
         case 'updater':
           updateApplication.createBrowserWindow()
           newWindow = (updateApplication as any).win
@@ -179,7 +184,7 @@ export class WindowHandler {
   /**
    * 更新窗口内容（通过notification）
    */
-  private static updateWindowContent(name: string, params: Record<string, any>): void {
+  private updateWindowContent(name: string, params: Record<string, any>): void {
     switch (name) {
       case 'image':
         sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateImage', params)
@@ -199,3 +204,5 @@ export class WindowHandler {
     }
   }
 }
+
+export default new WindowHandler()

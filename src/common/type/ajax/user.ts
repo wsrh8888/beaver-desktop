@@ -114,6 +114,6 @@ export interface IUserSyncItem {
   gender: number
   status: number
   version: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }

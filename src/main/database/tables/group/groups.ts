@@ -1,4 +1,4 @@
-import type { IDBGroup } from 'commonModule/type/database/group'
+import type { IDBGroup } from 'commonModule/type/database/db/group'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 

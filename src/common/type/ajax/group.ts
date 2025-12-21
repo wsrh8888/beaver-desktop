@@ -458,11 +458,11 @@ export interface IGroupInfoRes {
   /**
    * @description: 创建时间戳
    */
-  createAt: number
+  createdAt: number
   /**
    * @description: 更新时间戳
    */
-  updateAt: number
+  updatedAt: number
   /**
    * @description: 数据版本号
    */
@@ -506,14 +506,6 @@ export interface IGroupSyncReq {
 export interface IGroupSyncRes {
   groups: IGroupSyncItem[]
 }
-
-// [2025-11-25T01:15:11.724] [INFO] info - [main-ajax] {"text":"ajax接口正常","spendTime":"8ms","uuid":"3814b157-614e-43b1-ae0e-1c7
-//   9897169d5","response":"{\"code\":0,\"msg\":\"\",\"result\":{\"groups\":[{\"groupId\":\"ecddee8a-f62c-4f09-80db-925e4690ff5f\",\"
-//   title\":\"群1\",\"avatar\":\"a8ba5d19ea54a91aec17dec0ad5000e6.png\",\"creatorId\":\"100000\",\"joinType\":0,\"status\":3,\"versi
-//   on\":9,\"createAt\":1763999516,\"updateAt\":1764004509}]}}","config":"{\"method\":\"POST\",\"data\":{\"groups\":[{\"groupId\":\"
-//   ecddee8a-f62c-4f09-80db-925e4690ff5f\",\"version\":9}]},\"url\":\"http://127.0.0.1:20800/api/group/sync\",\"headers\":{\"uuid\":
-//   \"3814b157-614e-43b1-ae0e-1c79897169d5\"}}"}
-
 export interface IGroupSyncItem {
   groupId: string
   title: string
@@ -522,8 +514,8 @@ export interface IGroupSyncItem {
   joinType: number
   status: number
   version: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 // 群聊搜索请求
@@ -591,7 +583,7 @@ export interface IGroupJoinRequestItem {
   /**
    * @description: 申请时间戳
    */
-  createAt: number
+  createdAt: number
   /**
    * @description: 数据版本号
    */

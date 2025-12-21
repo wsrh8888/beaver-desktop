@@ -10,8 +10,8 @@ export enum DataFriendCommand {
   GET_VALID_LIST = 'friend:getValidList',
   GET_FRIENDS_BY_VER_RANGE = 'friend:getFriendsByVerRange',
   GET_VALID_BY_VER_RANGE = 'friend:getValidByVerRange',
-  GET_FRIENDS_BY_UUID = 'friend:getFriendsByUuid',
-  GET_VALID_BY_UUID = 'friend:getValidByUuid',
+  GET_FRIENDS_BY_IDS = 'friend:getFriendsByIds',
+  GET_VALID_BY_IDS = 'friend:getValidByIds',
 }
 
 export enum DataGroupCommand {
@@ -31,4 +31,18 @@ export enum DataChatCommand {
   GET_CHAT_HISTORY = 'chat:getChatHistory',
   GET_CHAT_MESSAGES_BY_SEQ_RANGE = 'chat:getChatMessagesBySeqRange',
   GET_CHAT_CONVERSATIONS_BY_VER_RANGE = 'chat:getChatConversationsByVerRange',
+}
+
+export enum DataEmojiCommand {
+  GET_USER_FAVORITE_EMOJIS = 'emoji:getUserFavoriteEmojis',
+  GET_EMOJI_PACKAGES = 'emoji:getEmojiPackages',
+  GET_EMOJI_PACKAGES_BY_IDS = 'emoji:getEmojiPackagesByIds',
+  GET_EMOJI_PACKAGE_EMOJIS = 'emoji:getEmojiPackageEmojis',
+}
+
+export enum DataNotificationCommand {
+  GET_EVENTS_BY_IDS = 'notification:getEventsByIds',
+  GET_INBOX_BY_IDS = 'notification:getInboxByIds',
+  GET_READ_CURSORS = 'notification:getReadCursors',
+  GET_UNREAD_SUMMARY = 'notification:getUnreadSummary',
 }

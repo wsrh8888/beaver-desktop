@@ -45,18 +45,22 @@ class NotificationManager {
       body: options.body,
       icon: options.icon,
       silent: options.silent ?? false,
-      // Windows 10+ 会自动使用 Toast 通知并显示在通知中心
-      // 不需要手动关闭，系统会自动管理
     })
 
-    // 点击通知时的回调 - 默认打开应用窗口
+    // 点击通知时的回调
     notification.on('click', () => {
-      // 确保窗口显示在最前面
-      const windows = BrowserWindow.getAllWindows()
-      const appWindow = windows.find(win => (win as any).__appName === 'app')
-      if (appWindow) {
-        appWindow.show()
-        appWindow.focus()
+      // 如果有自定义的点击回调，使用自定义回调
+      if (options.onClick) {
+        options.onClick()
+      }
+      else {
+        // 默认行为：打开应用窗口
+        const windows = BrowserWindow.getAllWindows()
+        const appWindow = windows.find(win => (win as any).__appName === 'app')
+        if (appWindow) {
+          appWindow.show()
+          appWindow.focus()
+        }
       }
     })
 

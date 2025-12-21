@@ -124,18 +124,17 @@ export const useFriendStore = defineStore('friendStore', {
     /**
      * @description: 根据用户ID列表更新好友数据
      */
-    async updateFriendsByUserIds(updatedFriends: Array<{ uuid: string, version: number }>) {
+    async updateFriendsByUserIds(updatedFriends: Array<{ friendId: string, version: number }>) {
       if (updatedFriends.length === 0) {
         return
       }
 
       try {
         // 提取用户ID列表
-        const userIds = updatedFriends.map(f => f.uuid)
-
-        // 使用好友关系UUID列表查询获取最新的好友数据
-        const result = await electron.database.friend.getFriendsByUuid({
-          uuids: userIds,
+        const friendIds = updatedFriends.map(f => f.friendId)
+        // 使用好友关系ID列表查询获取最新的好友数据
+        const result = await electron.database.friend.getFriendsByIds({
+          friendIds,
         })
 
         // 更新friend store

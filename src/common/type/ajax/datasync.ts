@@ -9,6 +9,9 @@ export enum EDataType {
   CHAT_MESSAGES = 'chat_messages', // 消息表 - 使用seq
   CHAT_DATASYNC = 'chat_datasync', // 数据同步表 - 使用version
   CHAT_CONVERSATION_SETTINGS = 'chat_conversation_settings', // 会话设置表 - 使用version
+  NOTIFICATION_EVENTS = 'notification_events', // 通知事件 - 使用version
+  NOTIFICATION_INBOXES = 'notification_inboxes', // 通知收件箱 - 使用version
+  NOTIFICATION_READS = 'notification_reads', // 通知已读游标 - 使用version
 }
 
 // 数据同步状态请求
@@ -188,6 +191,117 @@ export interface IGetSyncFriendVerifiesRes {
 
 // 好友验证版本信息
 export interface IFriendVerifyVersionItem {
-  uuid: string // 验证记录UUID
+  verifyId: string // 验证记录ID
   version: number // 验证记录版本号
+}
+
+// 获取表情同步请求
+export interface IGetSyncEmojisReq {
+  since?: number // 从这个时间戳之后开始同步，不传则同步所有
+}
+
+// 获取表情同步响应
+export interface IGetSyncEmojisRes {
+  emojiVersions: IEmojiVersionItem[] // 表情基础数据摘要
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 表情版本信息
+export interface IEmojiVersionItem {
+  emojiId: string // 表情ID
+  version: number // 表情版本号
+}
+
+// 获取表情收藏同步请求
+export interface IGetSyncEmojiCollectsReq {
+  since?: number // 从这个时间戳之后开始同步，不传则同步所有
+}
+
+// 获取表情收藏同步响应
+export interface IGetSyncEmojiCollectsRes {
+  emojiCollectVersions: IEmojiCollectVersionItem[] // 用户收藏的表情变更摘要
+  emojiPackageCollectVersions: IEmojiPackageCollectVersionItem[] // 用户收藏的表情包变更摘要
+  emojiPackageVersions: IEmojiPackageVersionItem[] // 表情包数据变更摘要
+  emojiPackageContentVersions: IEmojiPackageContentVersionItem[] // 表情包内容变更摘要
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 表情收藏版本信息
+export interface IEmojiCollectVersionItem {
+  emojiCollectId: string // 表情收藏记录ID
+  version: number // 收藏版本号
+}
+
+// 表情包收藏版本信息
+export interface IEmojiPackageCollectVersionItem {
+  packageCollectId: string // 表情包收藏记录ID
+  version: number // 收藏版本号
+}
+
+// 表情包版本信息
+export interface IEmojiPackageVersionItem {
+  packageId: string // 表情包ID
+  version: number // 表情包版本号
+}
+
+// 表情包内容版本信息
+export interface IEmojiPackageContentVersionItem {
+  packageId: string // 表情包ID
+  version: number // 表情包内容版本号
+}
+
+// 获取通知事件同步请求
+export interface IGetSyncNotificationEventsReq {
+  sinceVersion?: number // 事件表的版本游标，>sinceVersion
+  limit?: number // 分页大小
+}
+
+// 获取通知事件同步响应
+export interface IGetSyncNotificationEventsRes {
+  eventVersions: INotificationEventVersionItem[] // 事件版本摘要
+  maxVersion: number // 本次返回的最大版本
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 通知事件版本信息
+export interface INotificationEventVersionItem {
+  eventId: string // 事件ID
+  version: number // 事件版本
+}
+
+// 获取通知收件箱同步请求
+export interface IGetSyncNotificationInboxesReq {
+  sinceVersion?: number // 收件箱表的版本游标，>sinceVersion
+  limit?: number // 分页大小
+}
+
+// 获取通知收件箱同步响应
+export interface IGetSyncNotificationInboxesRes {
+  inboxVersions: INotificationInboxVersionItem[] // 收件箱版本摘要
+  maxVersion: number // 本次返回的最大版本
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 通知收件箱版本信息
+export interface INotificationInboxVersionItem {
+  eventId: string // 事件ID
+  version: number // 收件箱版本
+}
+
+// 获取通知已读游标同步请求
+export interface IGetSyncNotificationReadCursorsReq {
+  sinceVersion?: number // 已读游标表的版本游标，>sinceVersion
+}
+
+// 获取通知已读游标同步响应
+export interface IGetSyncNotificationReadCursorsRes {
+  cursorVersions: INotificationReadCursorVersionItem[] // 已读游标版本摘要
+  maxVersion: number // 本次返回的最大版本
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 通知已读游标版本信息
+export interface INotificationReadCursorVersionItem {
+  category: string // 分类
+  version: number // 已读游标版本
 }

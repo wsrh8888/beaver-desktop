@@ -6,11 +6,11 @@ import logger from 'mainModule/utils/log'
 /**
  * 缓存IPC处理器 - 清晰的方法分离
  */
-export class CacheHandler {
+class CacheHandler {
   /**
    * 处理缓存相关命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: CacheCommand, data: any): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: CacheCommand, data: any): Promise<any> {
     try {
       switch (command) {
         case CacheCommand.GET:
@@ -28,3 +28,5 @@ export class CacheHandler {
     }
   }
 }
+
+export default new CacheHandler()

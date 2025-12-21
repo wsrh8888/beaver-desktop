@@ -1,6 +1,8 @@
 import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from '../ajax/chat'
+import type { IGetEmojiPackageEmojisReq, IGetEmojiPackageEmojisRes, IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from '../ajax/emoji'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
 import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, IGetGroupsBatchReq, IGroupJoinRequestListReq, IGroupJoinRequestListRes, IGroupListRes, IGroupMemberListRes } from '../ajax/group'
+import type { IGetNotificationEventsByIdsReq, IGetNotificationEventsByIdsRes, IGetNotificationInboxByIdsReq, IGetNotificationInboxByIdsRes, IGetNotificationReadCursorsReq, IGetNotificationReadCursorsRes } from '../ajax/notification'
 import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from '../ajax/user'
 
 /**
@@ -37,13 +39,13 @@ export interface IDatabaseModule {
      */
     getValidByVerRange(params: IValidVerRangeReq): Promise<IValidListRes>
     /**
-     * 根据好友关系UUID列表获取好友信息
+     * 根据好友关系ID列表获取好友信息
      */
-    getFriendsByUuid(params: { uuids: string[] }): Promise<IFriendListRes>
+    getFriendsByIds(params: { friendIds: string[] }): Promise<IFriendListRes>
     /**
-     * 根据验证记录UUID列表获取验证记录
+     * 根据验证记录ID列表获取验证记录
      */
-    getValidByUuid(params: { uuids: string[] }): Promise<IValidListRes>
+    getValidByIds(params: { verifyIds: string[] }): Promise<IValidListRes>
   }
 
   /**
@@ -78,5 +80,44 @@ export interface IDatabaseModule {
     getGroupMembersBatch(params: IGetGroupMembersBatchReq): Promise<IGroupMemberListRes>
     getGroupJoinRequestList(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
     getAllGroupJoinRequests(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
+  }
+  /**
+   * @description: 表情相关
+   */
+  emoji: {
+    /**
+     * @description: 获取用户收藏的表情列表
+     */
+    getUserFavoriteEmojis(params: IGetEmojisListReq): Promise<IGetEmojisListRes>
+    /**
+     * @description: 获取表情包列表
+     */
+    getEmojiPackages(params: IGetEmojiPackagesReq): Promise<IGetEmojiPackagesRes>
+    /**
+     * @description: 获取表情包详情
+     */
+    getEmojiPackagesByIds(params: IGetEmojiPackagesByIdsReq): Promise<IGetEmojiPackagesByIdsRes>
+    /**
+     * @description: 获取表情包内表情列表
+     */
+    getEmojiPackageEmojis(params: IGetEmojiPackageEmojisReq): Promise<IGetEmojiPackageEmojisRes>
+  }
+  notification: {
+    /**
+     * @description: 按ID获取通知事件
+     */
+    getEventsByIds(params: IGetNotificationEventsByIdsReq): Promise<IGetNotificationEventsByIdsRes>
+    /**
+     * @description: 按ID获取通知收件箱
+     */
+    getInboxByIds(params: IGetNotificationInboxByIdsReq): Promise<IGetNotificationInboxByIdsRes>
+    /**
+     * @description: 获取已读游标（可按分类）
+     */
+    getReadCursors(params: IGetNotificationReadCursorsReq): Promise<IGetNotificationReadCursorsRes>
+    /**
+     * @description: 获取未读汇总（总数 + 按分类）
+     */
+    getUnreadSummary(params: { categories?: string[] }): Promise<{ total: number, byCat: Array<{ category: string, unread: number }> }>
   }
 }

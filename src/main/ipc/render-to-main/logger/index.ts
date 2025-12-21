@@ -2,11 +2,11 @@ import type loggerModule from 'mainModule/utils/log'
 import { LoggerCommand } from 'commonModule/type/ipc/command'
 import logger from 'mainModule/utils/log'
 
-export class LoggerHandler {
+class LoggerHandler {
   /**
    * 统一的日志处理入口
    */
-  static handle(event: Electron.IpcMainEvent, command: LoggerCommand, data: any) {
+  handle(event: Electron.IpcMainEvent, command: LoggerCommand, data: any) {
     switch (command) {
       case LoggerCommand.LOG:
         this.handleLog(data)
@@ -19,8 +19,10 @@ export class LoggerHandler {
   /**
    * 处理日志记录
    */
-  private static handleLog(data: any) {
+  private handleLog(data: any) {
     const { level, message, moduleName } = data
     logger[level as keyof typeof loggerModule](message, moduleName, 'render')
   }
 }
+
+export default new LoggerHandler()

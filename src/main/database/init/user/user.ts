@@ -4,7 +4,7 @@ export const initUserTable = (sqlite: any) => {
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      uuid TEXT NOT NULL UNIQUE,
+      user_id TEXT NOT NULL UNIQUE,
       nick_name TEXT NOT NULL,
       email TEXT,
       phone TEXT,

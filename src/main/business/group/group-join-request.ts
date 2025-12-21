@@ -1,7 +1,7 @@
 import type { QueueItem } from '../base/base'
 import { NotificationGroupCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { groupJoinRequestSyncApi } from 'mainModule/api/group'
-import { GroupJoinRequestService } from 'mainModule/database/services/group/group-join-request'
+import dBServiceGroupJoinRequest  from 'mainModule/database/services/group/group-join-request'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
@@ -19,7 +19,7 @@ interface GroupJoinRequestSyncItem extends QueueItem {
  * 对应 group_join_requests 表
  * 负责群加入请求管理的业务逻辑
  */
-export class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncItem> {
+class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncItem> {
   protected readonly businessName = 'GroupJoinRequestBusiness'
 
   constructor() {
@@ -78,7 +78,7 @@ export class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncI
             handledBy: request.handledBy,
             version: request.version || 0,
           }
-          await GroupJoinRequestService.upsert(requestData)
+          await dBServiceGroupJoinRequest.upsert(requestData)
         }
 
         console.log(`群加入请求数据同步成功: count=${response.result.groupJoinRequests.length}`)
@@ -104,4 +104,4 @@ export class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncI
 }
 
 // 导出单例实例
-export const groupJoinRequestBusiness = new GroupJoinRequestBusiness()
+export default new GroupJoinRequestBusiness()

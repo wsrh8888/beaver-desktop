@@ -2,14 +2,15 @@ import path from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import postcssPxtorem from 'postcss-pxtorem'
 import { defineConfig } from 'vite'
-import electron from 'vite-plugin-electron'
 import electronRenderer from 'vite-plugin-electron-renderer'
+import electron from 'vite-plugin-electron/simple'
 import svgLoader from 'vite-svg-loader'
 
 const alias = {
   commonModule: path.resolve(__dirname, 'src/common'),
   mainModule: path.resolve(__dirname, 'src/main'),
   renderModule: path.resolve(__dirname, 'src/render'),
+  preloadModule: path.resolve(__dirname, 'src/preload'),
 }
 
 export default defineConfig(({ command: _command }) => {
@@ -19,19 +20,14 @@ export default defineConfig(({ command: _command }) => {
       svgLoader({
         defaultImport: 'url', // or 'raw'
       }),
-      electron([
-        {
+      electron({
+        main: {
           entry: path.resolve(__dirname, 'src/main/main.ts'),
           vite: {
             build: {
               outDir: 'dist-electron',
               rollupOptions: {
                 external: ['electron', 'electron-screenshots', 'ws'],
-                output: {
-                  globals: {
-                    electron: 'electron',
-                  },
-                },
               },
             },
             resolve: {
@@ -39,11 +35,8 @@ export default defineConfig(({ command: _command }) => {
             },
           },
         },
-        {
-          entry: path.resolve(__dirname, 'src/main/preload/electron.ts'),
-          onstart({ reload }) {
-            reload()
-          },
+        preload: {
+          input: path.resolve(__dirname, 'src/preload/index.ts'),
           vite: {
             resolve: {
               alias,
@@ -52,18 +45,11 @@ export default defineConfig(({ command: _command }) => {
               outDir: 'dist-electron/preload',
               rollupOptions: {
                 external: ['electron', 'electron-screenshots'],
-                output: {
-                  inlineDynamicImports: true,
-                  format: 'cjs', // 确保输出 CommonJS 格式
-                  globals: {
-                    electron: 'electron',
-                  },
-                },
               },
             },
           },
         },
-      ]),
+      }),
       electronRenderer(),
     ],
     resolve: {
@@ -80,6 +66,7 @@ export default defineConfig(({ command: _command }) => {
         input: {
           app: path.resolve(__dirname, 'app.html'),
           login: path.resolve(__dirname, 'login.html'),
+          moment: path.resolve(__dirname, 'moment.html'),
           updater: path.resolve(__dirname, 'updater.html'),
           search: path.resolve(__dirname, 'search.html'),
           verify: path.resolve(__dirname, 'verify.html'),

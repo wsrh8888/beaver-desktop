@@ -34,7 +34,7 @@ import GroupDetailsComponent from './detail-components/GroupDetails.vue'
 import PrivateDetailsComponent from './detail-components/PrivateDetails.vue'
 import MessageLeftComponent from './left-components/MessageLeft.vue'
 import ChatMenusComponent from './right-component/bottom/ChatMenus.vue'
-import ChatContentComponent from './right-component/content/ChatContent.vue'
+import ChatContentComponent from './right-component/content/content.vue'
 
 import ChatHeaderComponent from './right-component/header/header.vue'
 

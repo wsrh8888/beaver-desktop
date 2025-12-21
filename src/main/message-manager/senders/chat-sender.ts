@@ -6,7 +6,7 @@ import { v4 as uuidv4 } from 'uuid'
 /**
  * @description: 聊天消息发送器 - 主进程版本
  */
-export class ChatSender {
+class ChatSender {
   /**
    * @description: 发送消息
    * @param {string} conversationId - 会话ID
@@ -51,3 +51,5 @@ export class ChatSender {
     })
   }
 }
+
+export default new ChatSender()

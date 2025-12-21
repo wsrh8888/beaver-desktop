@@ -38,47 +38,6 @@ const base64ToFile = (base64: string, filename: string): File => {
   return new File([u8arr], filename, { type: mime })
 }
 
-/**
- * @description: 统一的文件上传方法
- * @param file 要上传的文件
- * @returns Promise<UploadResult>
- */
-export const uploadFile = async (file: File): Promise<UploadResult> => {
-  // 自动检测文件类型
-  const detectedType = getFileType(file.type)
-  const fileType: UploadFileType = detectedType === 'other' ? 'file' : detectedType as UploadFileType
-
-  // 先上传文件
-  const uploadResult = await uploadFileApi(file, file.name)
-
-  // 根据类型获取样式信息
-  const style = await getFileStyle(file, fileType)
-
-  let thumbnailKey: string | undefined
-
-  // 如果是视频，生成并上传封面图
-  if (fileType === 'video') {
-    try {
-      const thumbnailBase64 = await getVideoThumbnail(file, 0)
-      const thumbnailFile = base64ToFile(thumbnailBase64, `${uploadResult.fileKey}_thumb.jpg`)
-      const thumbnailUploadResult = await uploadFileApi(thumbnailFile, `${uploadResult.fileKey}_thumb.jpg`)
-      thumbnailKey = thumbnailUploadResult.fileKey
-    }
-    catch (error) {
-      console.error('生成视频封面失败:', error)
-      // 封面生成失败不影响主文件上传
-    }
-  }
-
-  return {
-    fileKey: uploadResult.fileKey,
-    style,
-    type: fileType,
-    originalName: uploadResult.originalName,
-    size: file.size,
-    thumbnailKey,
-  }
-}
 
 /**
  * @description: 根据文件类型获取样式信息
@@ -121,7 +80,7 @@ const getFileStyle = async (file: File, type: UploadFileType): Promise<UploadSty
  * @param multiple 是否支持多选，默认 false
  * @returns Promise<File[]>
  */
-export const selectFile = (accept?: string, multiple: boolean = false): Promise<File[]> => {
+const selectFile = (accept?: string, multiple: boolean = false): Promise<File[]> => {
   return new Promise((resolve) => {
     const input = document.createElement('input')
     input.type = 'file'
@@ -163,4 +122,46 @@ export const selectAndUploadFile = async (accept?: string, multiple: boolean = f
   // 并发上传所有文件
   const uploadPromises = files.map(file => uploadFile(file))
   return Promise.all(uploadPromises)
+}
+
+/**
+ * @description: 统一的文件上传方法
+ * @param file 要上传的文件
+ * @returns Promise<UploadResult>
+ */
+export const uploadFile = async (file: File): Promise<UploadResult> => {
+  // 自动检测文件类型
+  const detectedType = getFileType(file.type)
+  const fileType: UploadFileType = detectedType === 'other' ? 'file' : detectedType as UploadFileType
+
+  // 先上传文件
+  const uploadResult = await uploadFileApi(file, file.name)
+
+  // 根据类型获取样式信息
+  const style = await getFileStyle(file, fileType)
+
+  let thumbnailKey: string | undefined
+
+  // 如果是视频，生成并上传封面图
+  if (fileType === 'video') {
+    try {
+      const thumbnailBase64 = await getVideoThumbnail(file, 0)
+      const thumbnailFile = base64ToFile(thumbnailBase64, `${uploadResult.fileKey}_thumb.jpg`)
+      const thumbnailUploadResult = await uploadFileApi(thumbnailFile, `${uploadResult.fileKey}_thumb.jpg`)
+      thumbnailKey = thumbnailUploadResult.fileKey
+    }
+    catch (error) {
+      console.error('生成视频封面失败:', error)
+      // 封面生成失败不影响主文件上传
+    }
+  }
+
+  return {
+    fileKey: uploadResult.fileKey,
+    style,
+    type: fileType,
+    originalName: uploadResult.originalName,
+    size: file.size,
+    thumbnailKey,
+  }
 }

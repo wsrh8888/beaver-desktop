@@ -1,12 +1,12 @@
 import type { IWsData } from 'commonModule/type/ws/command'
 import { WsType } from 'commonModule/type/ws/command'
-import { MessageService } from 'mainModule/database/services/chat/message'
+import dBServiceMessage  from 'mainModule/database/services/chat/message'
 import wsManager from 'mainModule/ws-manager'
 
 /**
  * @description: 聊天消息发送器 - IPC层版本
  */
-export class ChatSender {
+class ChatSender {
   /**
    * @description: 发送私聊消息
    * @param conversationId 会话ID
@@ -14,7 +14,7 @@ export class ChatSender {
    * @param userId 发送者用户ID
    * @return Promise<boolean>
    */
-  static async sendPrivateMessage(
+   async sendPrivateMessage(
     conversationId: string,
     messageData: any,
     userId: string,
@@ -22,7 +22,7 @@ export class ChatSender {
     const { messageId, msg } = messageData
 
     // 1. 保存消息到本地数据库（发送中状态）
-    await MessageService.create({
+    await dBServiceMessage.create({
       messageId,
       conversationId,
       conversationType: 1, // 私聊
@@ -32,7 +32,7 @@ export class ChatSender {
       msg: JSON.stringify(msg),
       seq: 0, // 临时seq，实际seq由服务器返回
       sendStatus: 0, // 发送状态：发送中（客户端新消息）
-      createAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     })
 
     // 2. 立即返回，让前端可以显示消息（大厂IM的标准做法）
@@ -61,7 +61,7 @@ export class ChatSender {
   /**
    * 生成消息预览文本
    */
-  private static generateMessagePreview(msg: any): string {
+  private  generateMessagePreview(msg: any): string {
     switch (msg.type) {
       case 1: // 文本消息
         return msg.textMsg?.content || '[文本消息]'
@@ -86,3 +86,5 @@ export class ChatSender {
     }
   }
 }
+
+export default new ChatSender()

@@ -26,7 +26,7 @@ export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFile
 /**
  * @description: 通用文件上传函数
  */
-export const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
+const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
   // 根据目标选择URL
   const baseEndpoint = target === 'qiniu' ? 'uploadQiniu' : 'uploadLocal'
   let uploadUrl = `${baseUrl}/api/file/${baseEndpoint}`
@@ -66,9 +66,9 @@ export const uploadFileApiWithTarget = async (file: File, fileKey?: string, targ
 /**
  * @description: 上传文件到本地
  */
-export const uploadToLocalApi = (file: File, fileKey?: string) => uploadFileApiWithTarget(file, fileKey, 'local')
+ const uploadToLocalApi = (file: File, fileKey?: string) => uploadFileApiWithTarget(file, fileKey, 'local')
 
 /**
  * @description: 上传文件到七牛云
  */
-export const uploadQiniuApi = (file: File, fileKey?: string) => uploadFileApiWithTarget(file, fileKey, 'qiniu')
+ const uploadQiniuApi = (file: File, fileKey?: string) => uploadFileApiWithTarget(file, fileKey, 'qiniu')

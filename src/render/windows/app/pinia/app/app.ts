@@ -5,7 +5,9 @@ import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useContactStore } from '../contact/contact'
+import { useEmojiStore } from '../emoji/emoji'
 import { useFriendVerifyStore } from '../friend/friend_verify'
+import { useNotificationStore } from '../notification/notification'
 import { useUpdateStore } from '../update/index'
 
 /**
@@ -53,6 +55,8 @@ export const useAppStore = defineStore('useAppStore', {
       const groupStore = useGroupStore()
       const updateStore = useUpdateStore()
       const contactStore = useContactStore()
+      const emojiStore = useEmojiStore()
+      const notificationStore = useNotificationStore()
 
       try {
         // 首先获取应用生命周期的初始状态
@@ -66,6 +70,8 @@ export const useAppStore = defineStore('useAppStore', {
           conversationStore.init(),
           groupStore.init(),
           updateStore.init(),
+          emojiStore.init(),
+          notificationStore.init(),
         ]
 
         await Promise.all(promises)

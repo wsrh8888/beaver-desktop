@@ -3,6 +3,7 @@
   <Teleport v-if="currentComponent" to="body">
     <ProfileComponent v-if="currentComponent === 'profile'" @close="hideComponent" />
     <AboutComponent v-if="currentComponent === 'about'" @close="hideComponent" />
+    <EmojiStoreComponent v-if="currentComponent === 'emoji-store'" @close="hideComponent" />
   </Teleport>
 </template>
 
@@ -10,6 +11,7 @@
 import { computed, defineComponent } from 'vue'
 import { useGlobalStore } from '../../pinia/view/global/index'
 import AboutComponent from './component/about/index.vue'
+import EmojiStoreComponent from './component/emoji-store/index.vue'
 import ProfileComponent from './component/profile/index.vue'
 
 export default defineComponent({
@@ -17,6 +19,7 @@ export default defineComponent({
   components: {
     ProfileComponent,
     AboutComponent,
+    EmojiStoreComponent,
   },
   setup() {
     const globalStore = useGlobalStore()

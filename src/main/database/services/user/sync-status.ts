@@ -1,33 +1,52 @@
-import type { IDBUserSyncStatus } from 'commonModule/type/database/user'
+import type { IDBUserSyncStatus } from 'commonModule/type/database/db/user'
 import { eq, inArray } from 'drizzle-orm'
-import dbManager from '../../db'
+import { BaseService } from '../base'
 import { userSyncStatus } from '../../tables/user/sync-status'
+import type {
+  DBGetUserSyncStatusReq,
+  DBGetUserSyncStatusRes,
+  DBGetUsersSyncStatusReq,
+  DBGetUsersSyncStatusRes,
+  DBGetAllUsersSyncStatusReq,
+  DBGetAllUsersSyncStatusRes,
+  DBUpsertUserSyncStatusReq,
+  DBBatchUpsertUserSyncStatusReq,
+  DBDeleteUserSyncStatusReq,
+  DBBatchDeleteUserSyncStatusReq,
+  DBClearAllSyncStatusReq,
+  DBGetUsersNeedSyncReq,
+  DBGetUsersNeedSyncRes,
+} from 'commonModule/type/database/server/user/sync-status'
 
 // 用户同步状态服务
-export class UserSyncStatusService {
-  static get db() {
-    return dbManager.db
+class dBServiceUserSyncStatus extends BaseService {
+  /**
+   * @description 获取用户同步状态
+   */
+  async getUserSyncStatus(req: DBGetUserSyncStatusReq): Promise<DBGetUserSyncStatusRes> {
+    const syncStatus = await this.db.select().from(userSyncStatus).where(eq(userSyncStatus.userId, req.userId)).get()
+    return { syncStatus }
   }
 
-  // 获取用户同步状态
-  static async getUserSyncStatus(userId: string): Promise<IDBUserSyncStatus | undefined> {
-    return await this.db.select().from(userSyncStatus).where(eq(userSyncStatus.userId, userId)).get()
-  }
-
-  // 批量获取用户同步状态
-  static async getUsersSyncStatus(userIds: string[]): Promise<IDBUserSyncStatus[]> {
-    if (userIds.length === 0)
+  /**
+   * @description 批量获取用户同步状态
+   */
+  async getUsersSyncStatus(req: DBGetUsersSyncStatusReq): Promise<DBGetUsersSyncStatusRes> {
+    if (req.userIds.length === 0)
       return []
-    return await this.db.select().from(userSyncStatus).where(inArray(userSyncStatus.userId, userIds)).all()
+    const syncStatuses = await this.db.select().from(userSyncStatus).where(inArray(userSyncStatus.userId, req.userIds)).all()
+    return syncStatuses
   }
 
-  // 获取所有用户同步状态
-  static async getAllUsersSyncStatus(): Promise<IDBUserSyncStatus[]> {
+  /**
+   * @description 获取所有用户同步状态
+   */
+  async getAllUsersSyncStatus(req: DBGetAllUsersSyncStatusReq): Promise<DBGetAllUsersSyncStatusRes> {
     return await this.db.select().from(userSyncStatus).all()
   }
 
   // 更新或插入用户同步状态
-  static async upsertUserSyncStatus(
+   async upsertUserSyncStatus(
     userId: string,
     userVersion: number,
   ): Promise<void> {
@@ -51,7 +70,7 @@ export class UserSyncStatusService {
   }
 
   // 批量更新用户同步状态
-  static async batchUpsertUserSyncStatus(statuses: Array<{
+   async batchUpsertUserSyncStatus(statuses: Array<{
     userId: string
     userVersion: number
   }>): Promise<void> {
@@ -64,22 +83,22 @@ export class UserSyncStatusService {
   }
 
   // 删除用户同步状态
-  static async deleteUserSyncStatus(userId: string): Promise<any> {
+   async deleteUserSyncStatus(userId: string): Promise<any> {
     return await this.db.delete(userSyncStatus).where(eq(userSyncStatus.userId, userId)).run()
   }
 
   // 批量删除用户同步状态
-  static async batchDeleteUserSyncStatus(userIds: string[]): Promise<any> {
+   async batchDeleteUserSyncStatus(userIds: string[]): Promise<any> {
     return await this.db.delete(userSyncStatus).where(inArray(userSyncStatus.userId, userIds)).run()
   }
 
   // 清空所有同步状态（用于重置）
-  static async clearAllSyncStatus(): Promise<any> {
+   async clearAllSyncStatus(): Promise<any> {
     return await this.db.delete(userSyncStatus).run()
   }
 
   // 获取需要同步的用户列表
-  static async getUsersNeedSync(serverVersions: Record<string, number>): Promise<string[]> {
+   async getUsersNeedSync(serverVersions: Record<string, number>): Promise<string[]> {
     const localStatuses = await this.getAllUsersSyncStatus()
     const statusMap = new Map(localStatuses.map(s => [s.userId, s]))
 
@@ -99,4 +118,4 @@ export class UserSyncStatusService {
 }
 
 // 导出用户同步状态服务实例
-export default UserSyncStatusService
+export default new dBServiceUserSyncStatus()

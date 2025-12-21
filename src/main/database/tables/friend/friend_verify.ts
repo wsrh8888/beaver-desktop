@@ -1,11 +1,11 @@
-import type { IDBFriendVerify } from 'commonModule/type/database/friend'
+import type { IDBFriendVerify } from 'commonModule/type/database/db/friend'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 // 好友验证表
 export const friendVerifies = sqliteTable('friend_verifies', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique(),
+  verifyId: text('verify_id').notNull().unique(),
   sendUserId: text('send_user_id').notNull(),
   revUserId: text('rev_user_id').notNull(),
   sendStatus: integer('send_status').default(0), // 发起方状态 0:未处理 1:已通过 2:已拒绝 3:忽略 4:删除

@@ -34,6 +34,14 @@ export enum NotificationModule {
    * 媒体查看器更新通知
    */
   MEDIA_VIEWER = 'media:viewer',
+  /**
+   * 表情通知
+   */
+  EMOJI = 'database:emoji',
+  /**
+   * 通知中心相关数据
+   */
+  DATABASE_NOTIFICATION = 'database:notification',
 }
 
 export enum NotificationFriendCommand {
@@ -89,6 +97,44 @@ export enum NotificationChatCommand {
   USER_CONVERSATION_UPDATE = 'userConversationUpdate',
 }
 
+export enum NotificationEmojiCommand {
+  /**
+   * 表情更新
+   */
+  EMOJI_UPDATE = 'emojiUpdate',
+  /**
+   * 表情收藏更新
+   */
+  EMOJI_COLLECT_UPDATE = 'emojiCollectUpdate',
+  /**
+   * 表情包收藏更新
+   */
+  EMOJI_PACKAGE_COLLECT_UPDATE = 'emojiPackageCollectUpdate',
+  /**
+   * 表情包更新
+   */
+  EMOJI_PACKAGE_UPDATE = 'emojiPackageUpdate',
+  /**
+   * 表情包内容更新
+   */
+  EMOJI_PACKAGE_CONTENT_UPDATE = 'emojiPackageContentUpdate',
+}
+
+export enum NotificationNotificationCommand {
+  /**
+   * 通知事件更新
+   */
+  EVENT_UPDATE = 'eventUpdate',
+  /**
+   * 通知收件箱更新
+   */
+  INBOX_UPDATE = 'inboxUpdate',
+  /**
+   * 通知已读游标更新
+   */
+  READ_CURSOR_UPDATE = 'readCursorUpdate',
+}
+
 export enum NotificationAppLifecycleCommand {
   /**
    * 应用生命周期状态变更 - 统一的状态变更通知
@@ -137,9 +183,11 @@ export interface NotificationCommandMap {
   [NotificationModule.DATABASE_USER]: NotificationUserCommand
   [NotificationModule.DATABASE_GROUP]: NotificationGroupCommand
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
+  [NotificationModule.EMOJI]: NotificationEmojiCommand
   [NotificationModule.APP_LIFECYCLE]: NotificationAppLifecycleCommand
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
   [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand
+  [NotificationModule.DATABASE_NOTIFICATION]: NotificationNotificationCommand
 }
 
 export interface INotificationPayload<M extends NotificationModule> {

@@ -6,6 +6,8 @@ import { getRecentChatInfoApi } from 'renderModule/api/chat'
 import { useContactStore } from '../contact/contact'
 import { useGroupStore } from '../group/group'
 import { useUserStore } from '../user/user'
+import { useMessageStore } from '../message/message'
+import { updateReadSeqApi } from 'renderModule/api/chat'
 
 /**
  * @description: 会话管理
@@ -18,16 +20,21 @@ export const useConversationStore = defineStore('useConversationStore', {
     conversations: [] as IConversationItem[],
 
     /**
-     * @description: 分页加载状态
+     * @description: 当前加载的最大版本号（用于增量同步）
      */
-    hasMore: true,
-    isLoadingMore: false,
-    pageSize: 50, // 每次加载的数量
-    currentPage: 1, // 当前加载的页码
-    currentMaxVersion: 0, // 当前加载的最大版本号（用于增量同步）
+    currentMaxVersion: 0,
+
+    /**
+     * @description: 已读序列号更新缓存，避免重复API调用
+     */
+    lastReadSeqUpdate: null as Map<string, number> | null,
+
   }),
 
   getters: {
+    /**
+     * @description 获取会话列表
+     */
     getConversations(): IConversationInfoRes[] {
       const contactStore = useContactStore()
       const userStore = useUserStore()
@@ -43,7 +50,7 @@ export const useConversationStore = defineStore('useConversationStore', {
         // 转换为组件使用的类型，包含格式化后的时间
         let result: IConversationInfoRes = {
           ...conversation,
-          updateAt: formattedTime,
+          updatedAtStr: formattedTime,
         }
 
         // 如果是私聊，从 contactStore 获取最新的用户信息
@@ -88,7 +95,9 @@ export const useConversationStore = defineStore('useConversationStore', {
     getTopConversations(): IConversationInfoRes[] {
       return this.getConversations.filter(conversation => conversation.isTop)
     },
-
+    /**
+     * @description  通过会话id获取会话信息
+     */
     getConversationInfo: state => (conversationId: string) => {
       const conversation = state.conversations.find((c: IConversationItem) => c.conversationId === conversationId)
       if (!conversation)
@@ -102,7 +111,7 @@ export const useConversationStore = defineStore('useConversationStore', {
       // 转换为组件使用的类型，包含格式化后的时间
       let result: IConversationInfoRes = {
         ...conversation,
-        updateAt: formattedTime,
+        updatedAtStr: formattedTime,
       }
 
       const contactStore = useContactStore()
@@ -134,37 +143,34 @@ export const useConversationStore = defineStore('useConversationStore', {
       return result
     },
 
+    /**
+     * @description: 获取总未读消息数（排除免打扰的会话）
+     */
+    getTotalUnreadCount(): number {
+      return this.conversations.reduce((total, conversation) => {
+        if (conversation.isMuted) {
+          return total
+        }
+        return total + (conversation.unreadCount || 0)
+      }, 0)
+    },
+
   },
 
   actions: {
-    /**
-     * @description: 重置store状态
-     */
-    reset() {
-      this.conversations = []
-      this.hasMore = true
-      this.isLoadingMore = false
-      this.currentPage = 1
-      this.currentMaxVersion = 0
-    },
 
     /**
-     * @description: 初始化会话列表（获取第一页会话）
+     * @description: 初始化会话列表（递归获取全部会话）
      */
     async init() {
-      this.currentPage = 1
+      this.conversations = []
 
-      const result = await electron.database.chat.getRecentChatList({
-        page: this.currentPage,
-        limit: this.pageSize,
-      })
+      // 递归获取全部会话数据
+      const allConversations = await this.loadAllConversations()
 
-      if (result.list && result.list.length > 0) {
-        // 转换为 Store 内部类型（移除 updateAt，只保留 updatedAt）
-        const conversationItems: IConversationItem[] = result.list.map((conv: IConversationInfoRes) => {
-          const { updateAt, ...rest } = conv
-          return rest as IConversationItem
-        })
+      if (allConversations.length > 0) {
+        // 服务器返回的数据已经是 IConversationItem 格式，直接使用
+        const conversationItems: IConversationItem[] = allConversations as IConversationItem[]
 
         // 后端已经按时间排序，这里只需要处理置顶排序
         this.conversations = conversationItems.sort((a: IConversationItem, b: IConversationItem) => {
@@ -175,78 +181,58 @@ export const useConversationStore = defineStore('useConversationStore', {
           // 时间排序由后端保证，这里保持原有顺序
           return 0
         })
-        console.log('conversations', this.conversations)
+
 
         // 记录当前最大版本号，用于增量同步
-        this.currentMaxVersion = Math.max(...result.list.map(c => c.version))
+        this.currentMaxVersion = Math.max(...allConversations.map(c => c.version))
 
-        // 判断是否还有更多数据
-        this.hasMore = result.list.length >= this.pageSize
-      }
-      else {
-        this.hasMore = false
+        // 初始化完成后，通知托盘更新未读消息菜单项
+        electron.notification.updateTray({
+          menuItems: this.conversations
+            .filter(conversation => !conversation.isMuted && (conversation.unreadCount || 0) > 0)
+            .map(conversation => ({
+              id: conversation.conversationId,
+              label: `${conversation.nickName}`,
+              count: conversation.unreadCount,
+              type: 'chat' as const
+            }))
+        })
       }
     },
 
     /**
-     * @description: 加载更多会话（页码分页）
+     * @description: 递归加载全部会话数据
      */
-    async loadMoreConversations() {
-      if (!this.hasMore || this.isLoadingMore) {
-        return
+    async loadAllConversations(page: number = 1): Promise<IConversationInfoRes[]> {
+      const result = await electron.database.chat.getRecentChatList({
+        page,
+        limit: 500,
+      })
+
+      if (!result.list || result.list.length === 0) {
+        return []
       }
 
-      this.isLoadingMore = true
+      const currentPageData = result.list
 
-      try {
-        this.currentPage += 1
-
-        const result = await electron.database.chat.getRecentChatList({
-          page: this.currentPage,
-          limit: this.pageSize,
-        })
-
-        if (result.list && result.list.length > 0) {
-          // 转换为 Store 内部类型（移除 updateAt，只保留 updatedAt）
-          const conversationItems: IConversationItem[] = result.list.map((conv: IConversationInfoRes) => {
-            const { updateAt, ...rest } = conv
-            return rest as IConversationItem
-          })
-
-          // 对新数据进行置顶排序，然后追加到列表末尾
-          const sortedNewConversations = conversationItems.sort((a: IConversationItem, b: IConversationItem) => {
-            if (a.isTop !== b.isTop) {
-              return b.isTop ? 1 : -1
-            }
-            return 0 // 时间排序由后端保证
-          })
-
-          // 追加到列表末尾
-          this.conversations.push(...sortedNewConversations)
-
-          // 更新最大版本号
-          const newMaxVersion = Math.max(...result.list.map(c => c.version))
-          this.currentMaxVersion = Math.max(this.currentMaxVersion, newMaxVersion)
-
-          // 判断是否还有更多数据
-          this.hasMore = result.list.length >= this.pageSize
-        }
-        else {
-          this.hasMore = false
-        }
+      // 如果当前页数据达到 500，可能还有更多数据，继续递归
+      if (currentPageData.length >= 500) {
+        const nextPageData = await this.loadAllConversations(page + 1)
+        return [...currentPageData, ...nextPageData]
       }
-      finally {
-        this.isLoadingMore = false
+      else {
+        // 当前页数据不足 500，说明已经是最后一页
+        return currentPageData
       }
     },
+
 
     /**
      * @description: 添加或更新会话（新消息时调用，插入到顶部）
      */
     upsertConversation(conversation: IConversationInfoRes) {
-      // 转换为 Store 内部类型（移除 updateAt，只保留 updatedAt）
-      const { updateAt, ...conversationItem } = conversation
-      const item: IConversationItem = conversationItem as IConversationItem
+      // 服务器返回的数据已经是 IConversationItem 格式，直接使用
+      const item: IConversationItem = conversation as IConversationItem
 
       const index = this.conversations.findIndex((c: IConversationItem) => c.conversationId === item.conversationId)
 
@@ -267,6 +253,87 @@ export const useConversationStore = defineStore('useConversationStore', {
         // 更新最大版本号
         this.currentMaxVersion = Math.max(this.currentMaxVersion, item.version)
       }
+    },
+
+    /**
+     * @description: 标记会话为已读（本地立即更新 + API同步）
+     */
+    async markConversationAsRead(conversationId: string) {
+      console.error('55555555555555555555555', conversationId)
+      electron.notification.deleteTrayItem(conversationId)
+
+      // 1. 立即在本地清零未读数（乐观更新）
+      const conversationIndex = this.conversations.findIndex(conv => conv.conversationId === conversationId)
+
+      if (conversationIndex !== -1) {
+        // 将未读数设为0
+        this.conversations[conversationIndex].unreadCount = 0
+
+        console.log(`[ConversationStore] 本地清零未读数: conversationId=${conversationId}`)
+      }
+
+      // 2. 同步更新托盘
+
+      // 3. 异步调用API更新后端已读数
+      setTimeout(async () => {
+        await this.syncReadSeqToServer(conversationId)
+      }, 100)
+    },
+
+
+    /**
+     * @description: 同步已读序列号到服务器
+     */
+    async syncReadSeqToServer(conversationId: string) {
+      try {
+        // 获取最新消息序列号
+        const messageStore = useMessageStore()
+        const messages = messageStore.getChatHistory(conversationId)
+
+        if (!messages || messages.length === 0) {
+          return
+        }
+
+        const maxSeq = Math.max(...messages.map((m: any) => m.seq || 0))
+
+        // 检查是否已经更新过这个序列号
+        const lastUpdate = this.lastReadSeqUpdate?.get(conversationId)
+        if (lastUpdate === maxSeq) {
+          return // 已经更新过
+        }
+
+        if (maxSeq > 0) {
+          // 调用API更新已读数
+          await updateReadSeqApi({ conversationId, readSeq: maxSeq })
+
+          // 记录更新状态
+          if (!this.lastReadSeqUpdate) {
+            this.lastReadSeqUpdate = new Map()
+          }
+          this.lastReadSeqUpdate.set(conversationId, maxSeq)
+
+          console.log(`[ConversationStore] 同步已读数到服务器: conversationId=${conversationId}, readSeq=${maxSeq}`)
+        }
+      }
+      catch (error) {
+        console.error('[ConversationStore] 同步已读数失败:', error)
+      }
+    },
+
+    /**
+     * @description: 更新托盘未读消息菜单项
+     */
+    updateTrayUnreadItems() {
+      electron.notification.updateTray({
+        menuItems: this.conversations
+          .filter(conversation => !conversation.isMuted && (conversation.unreadCount || 0) > 0)
+          .map(conversation => ({
+            id: conversation.conversationId,
+            label: `${conversation.nickName}`,
+            count: conversation.unreadCount,
+            type: 'chat' as const
+          }))
+      })
     },
 
     /**
@@ -350,7 +417,7 @@ export const useConversationStore = defineStore('useConversationStore', {
             const localResult = await electron.database.chat.getConversationInfo({
               conversationId,
             })
-
+            console.error('批量更新会话了', localResult)
             if (localResult) {
               // 2. 更新本地store中的会话信息
               this.upsertConversation(localResult)

@@ -16,7 +16,8 @@
     "paths": {
       "commonModule/*": ["src/common/*"],
       "renderModule/*": ["src/render/*"],
-      "mainModule/*": ["src/main/*"]
+      "mainModule/*": ["src/main/*"],
+      "preloadModule/*": ["src/preload/*"]
     },
     "resolveJsonModule": true,
     "types": ["vite/client", "@types/node"],

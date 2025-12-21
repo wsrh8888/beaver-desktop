@@ -8,10 +8,20 @@ import type {
   ICreateEmojiPackageReq,
   ICreateEmojiPackageRes,
   IDeleteEmojiFromPackageReq,
+  IGetEmojiCollectsByIdsReq,
+  IGetEmojiCollectsByIdsRes,
+  IGetEmojiPackageCollectsByIdsReq,
+  IGetEmojiPackageCollectsByIdsRes,
+  IGetEmojiPackageContentsByPackageIdsReq,
+  IGetEmojiPackageContentsByPackageIdsRes,
   IGetEmojiPackageDetailReq,
   IGetEmojiPackageDetailRes,
+  IGetEmojiPackagesByIdsReq,
+  IGetEmojiPackagesByIdsRes,
   IGetEmojiPackagesReq,
   IGetEmojiPackagesRes,
+  IGetEmojisByIdsReq,
+  IGetEmojisByIdsRes,
   IGetEmojisListReq,
   IGetEmojisListRes,
   IGetUserFavoritePackagesReq,
@@ -139,6 +149,17 @@ export const getUserFavoritePackagesApi = (data: IGetUserFavoritePackagesReq) =>
   return ajax<IGetUserFavoritePackagesRes>({
     method: 'POST',
     url: `${baseUrl}/api/emoji/favoritePackageList`,
+    data,
+  })
+}
+
+/**
+ * @description: 批量获取表情详情
+ */
+export const getEmojisByIdsApi = (data: IGetEmojisByIdsReq) => {
+  return ajax<IGetEmojisByIdsRes>({
+    method: 'POST',
+    url: `${baseUrl}/api/emoji/emojis-by-ids`,
     data,
   })
 }

@@ -22,9 +22,15 @@
 
     <!-- 通知入口 -->
     <div class="notification-entries">
-      <div v-for="item in notificationList" :key="item.key" class="notification-entry" @click="handleNotificationClick(item.key)">
+      <div
+        v-for="item in notificationList"
+        :key="item.key"
+        class="notification-entry"
+        @click="handleNotificationClick(item.key)"
+      >
         <span class="entry-name">{{ item.text }}</span>
-        <span class="entry-arrow">
+        <span class="entry-right">
+          <span v-if="badgeCount(item) > 0" class="badge">{{ badgeCount(item) }}</span>
           <svg viewBox="0 0 24 24" width="16" height="16">
             <path fill="currentColor" d="M8.59 16.59L13.17 12 8.59 7.41 10 6l6 6-6 6-1.41-1.41z" />
           </svg>
@@ -116,6 +122,7 @@
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
+import { useNotificationStore } from 'renderModule/windows/app/pinia/notification/notification'
 import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
 import { computed, ref } from 'vue'
 import { notificationList, POPUP_MENU_CONFIG, TABS_CONFIG } from '../data'
@@ -130,6 +137,7 @@ export default {
     const friendStore = useFriendStore()
     const groupStore = useGroupStore()
     const friendViewStore = useFriendViewStore()
+    const notificationStore = useNotificationStore()
 
     const showPopupMenu = ref(false)
 
@@ -145,7 +153,17 @@ export default {
       friendViewStore.setCurrentTab(tab)
     }
 
-    const handleNotificationClick = (value: string) => {
+    const handleNotificationClick = async (value: string) => {
+      // 点击通知入口：跳转到通知页面，并标记该分类为已读
+      // 这符合用户习惯：点击查看通知后，红点消失
+      const notificationItem = notificationList.find(item => item.key === value)
+      if (notificationItem && notificationItem.badgeCategories) {
+        // 标记相关分类为已读（调用后端API）
+        for (const category of notificationItem.badgeCategories) {
+          await notificationStore.markCategoryAsViewed(category)
+        }
+      }
+
       friendViewStore.setSelectedConversationWithType('', value as 'friend-notification' | 'group-notification')
     }
     const changePopupMenu = (visible: boolean) => {
@@ -178,6 +196,16 @@ export default {
       friendViewStore.setSelectedConversationWithType(id, type)
     }
 
+    const badgeCount = (item: any) => {
+      if (item.badgeCategories && Array.isArray(item.badgeCategories)) {
+        return item.badgeCategories.reduce((sum: number, cat: string) => sum + notificationStore.getCategoryUnread(cat), 0)
+      }
+      if (item.badgeCategory) {
+        return notificationStore.getCategoryUnread(item.badgeCategory)
+      }
+      return 0
+    }
+
     return {
       currentTab,
       tabs,
@@ -189,6 +217,7 @@ export default {
       handleNotificationClick,
       selectedId,
       notificationList,
+      badgeCount,
       friendStore,
       changePopupMenu,
       friendViewStore,
@@ -306,6 +335,27 @@ export default {
 
   &:last-child {
     border-bottom: none;
+  }
+}
+
+.entry-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .badge {
+    min-width: 18px;
+    padding: 0 6px;
+    height: 18px;
+    border-radius: 9px;
+    background: #FF5252;
+    color: #FFFFFF;
+    font-size: 11px;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(255, 82, 82, 0.15);
   }
 }
 

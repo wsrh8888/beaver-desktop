@@ -1,25 +1,26 @@
 import { DataUserCommand } from 'commonModule/type/ipc/database'
-import { UserService } from 'mainModule/database/services/user/user'
+import dBServiceUser  from 'mainModule/database/services/user/user'
+
 import logger from 'mainModule/utils/log'
 
 const loggerName = 'database-user-handler'
 
-export class UserHandler {
+class UserHandler {
   /**
    * 处理用户相关的数据库命令
    */
-  static async handle(_event: Electron.IpcMainInvokeEvent, command: DataUserCommand, data: any = {}, header: any = {}): Promise<any> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: DataUserCommand, data: any = {}, header: any = {}): Promise<any> {
     try {
       switch (command) {
         case DataUserCommand.GET_USER_INFO:
-          return await UserService.getUserById(header, data)
+          return await dBServiceUser.getUserById(header, data)
         case DataUserCommand.GET_USERS_BASIC_INFO:
           return {
-            users: await UserService.getUsersBasicInfo(data.userIds),
+            users: await dBServiceUser.getUsersBasicInfo(data.userIds),
           }
         case DataUserCommand.GET_ALL_USERS:
           return {
-            users: await UserService.getAllUsers(),
+            users: await dBServiceUser.getAllUsers(),
           }
         default:
           throw new Error(`不支持的用户数据库命令: ${command}`)
@@ -31,3 +32,5 @@ export class UserHandler {
     }
   }
 }
+
+export default new UserHandler()

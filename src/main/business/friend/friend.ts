@@ -2,9 +2,10 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IFriendInfo, IFriendListReq, IFriendListRes } from 'commonModule/type/ajax/friend'
 import type { QueueItem } from '../base/base'
 import { NotificationFriendCommand, NotificationModule } from 'commonModule/type/preload/notification'
-import { getFriendsListByUuidsApi } from 'mainModule/api/friened'
-import { FriendService } from 'mainModule/database/services/friend/friend'
-import { UserService } from 'mainModule/database/services/user/user'
+import { getFriendsListByIdsApi } from 'mainModule/api/friened'
+import dBServiceFriend  from 'mainModule/database/services/friend/friend'
+import dBServiceUser  from 'mainModule/database/services/user/user'
+
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
@@ -19,7 +20,7 @@ function generateConversationId(userId1: string, userId2: string): string {
  * 好友同步队列项
  */
 interface FriendSyncItem extends QueueItem {
-  uuid: string
+  friendId: string
   version: number
 }
 
@@ -28,7 +29,7 @@ interface FriendSyncItem extends QueueItem {
  * 对应 friends 表
  * 负责好友管理的业务逻辑
  */
-export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
+class FriendBusiness extends BaseBusiness<FriendSyncItem> {
   protected readonly businessName = 'FriendBusiness'
 
   constructor() {
@@ -46,7 +47,10 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
     const { page = 1, limit = 20 } = params
 
     // 调用服务层获取好友关系记录（纯数据库查询）
-    const friendRelations = await FriendService.getFriendRelations(userId, { page, limit })
+    const friendRelations = await dBServiceFriend.getFriendRelations({
+      userId,
+      options: { page, limit }
+    })
 
     if (friendRelations.length === 0) {
       return { list: [] }
@@ -65,7 +69,7 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
 
     // 业务逻辑：查询所有好友的用户信息
     const userIdsArray = Array.from(userIds)
-    const userInfos = await UserService.getUsersBasicInfo(userIdsArray)
+    const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: userIdsArray })
 
     // 业务逻辑：构建用户ID到用户信息的映射
     const userMap = new Map<string, any>()
@@ -110,12 +114,12 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
    * 处理好友表的更新通知
    * 将同步请求加入队列，1秒后批量处理
    */
-  async handleTableUpdates(version: number, uuid: string) {
+  async handleTableUpdates(version: number, friendId: string) {
     this.addToQueue({
-      key: uuid,
-      data: { uuid, version },
+      key: friendId,
+      data: { friendId, version },
       timestamp: Date.now(),
-      uuid,
+      friendId,
       version,
     })
   }
@@ -124,19 +128,19 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
    * 批量处理好友同步请求
    */
   protected async processBatchRequests(items: FriendSyncItem[]): Promise<void> {
-    // 检查是否有具体的 uuid
-    const uuids = items.map(item => item.uuid).filter((uuid): uuid is string => Boolean(uuid))
+    // 检查是否有具体的 ID
+    const friendIds = items.map(item => item.friendId).filter((id): id is string => Boolean(id))
 
     try {
-      const response = await getFriendsListByUuidsApi({
-        uuids,
+      const response = await getFriendsListByIdsApi({
+        friendIds,
       })
 
       if (response.result.friends && response.result.friends.length > 0) {
         // 更新本地数据库，转换数据类型
         for (const friend of response.result.friends) {
           const friendData = {
-            uuid: friend.uuid,
+            friendId: friend.friendId,
             sendUserId: friend.sendUserId,
             revUserId: friend.revUserId,
             sendUserNotice: friend.sendUserNotice || '',
@@ -144,18 +148,18 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
             source: friend.source || '',
             isDeleted: friend.isDeleted ? 1 : 0, // 转换为整数
             version: friend.version || 0,
-            createdAt: Math.floor(friend.createAt / 1000), // 转换为秒级时间戳
-            updatedAt: Math.floor(friend.updateAt / 1000),
+            createdAt: Math.floor(friend.createdAt / 1000), // 转换为秒级时间戳
+            updatedAt: Math.floor(friend.updatedAt / 1000),
           }
-          await FriendService.upsert(friendData)
+          await dBServiceFriend.upsert(friendData)
         }
 
-        console.log(`好友数据精确同步成功: uuids=${uuids.join(',')}, count=${response.result.friends.length}`)
+        console.log(`好友数据精确同步成功: ids=${friendIds.join(',')}, count=${response.result.friends.length}`)
 
         // 发送通知到render进程，告知好友数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_UPDATE, {
           updatedFriends: response.result.friends.map((friend: any) => ({
-            uuid: friend.uuid,
+            friendId: friend.friendId,
             sendUserId: friend.sendUserId,
             revUserId: friend.revUserId,
             version: friend.version,
@@ -169,18 +173,145 @@ export class FriendBusiness extends BaseBusiness<FriendSyncItem> {
   }
 
   /**
-   * 根据好友关系UUID列表批量获取好友信息
+   * 根据好友关系ID列表批量获取好友信息
    */
-  async getFriendsByUuid(header: ICommonHeader, params: { uuids: string[] }): Promise<{ list: IFriendInfo[] }> {
-    const { uuids } = params
+  async getFriendsByIds(header: ICommonHeader, params: { friendIds: string[] }): Promise<{ list: IFriendInfo[] }> {
+    const { friendIds } = params
     const { userId } = header
 
-    // 调用服务层批量获取好友信息
-    const friends = await FriendService.getFriendsByUuid(uuids, userId)
+    // 调用服务层批量获取好友关系记录
+    const friendRecords = await dBServiceFriend.getFriendsByIds({
+      friendIds,
+      currentUserId: userId
+    })
+
+    if (friendRecords.length === 0) {
+      return { list: [] }
+    }
+
+    // 收集需要查询的用户ID
+    const userIds = new Set<string>()
+    friendRecords.forEach((record: any) => {
+      userIds.add(record.sendUserId)
+      userIds.add(record.revUserId)
+    })
+
+    // 调用用户服务获取用户信息
+    const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+    // 构建用户映射
+    const userMap = new Map<string, any>()
+    userInfos.forEach((user: any) => {
+      userMap.set(user.userId, user)
+    })
+
+    // 构建好友列表
+    const friends = friendRecords.map((record: any) => {
+      // 确定好友的用户ID
+      const friendUserId = record.sendUserId === userId
+        ? record.revUserId
+        : record.sendUserId
+
+      // 获取好友用户信息
+      const friendUser = userMap.get(friendUserId)
+
+      // 确定备注信息
+      const notice = record.sendUserId === userId
+        ? record.sendUserNotice || ''
+        : record.revUserNotice || ''
+
+      return {
+        userId: friendUserId,
+        nickName: friendUser?.nickName || '',
+        avatar: friendUser?.avatar || '',
+        abstract: friendUser?.abstract || '',
+        notice,
+        isFriend: true,
+        conversationId: generateConversationId(userId, friendUserId),
+        email: friendUser?.email || '',
+        source: record.source || '',
+      }
+    })
 
     return { list: friends }
+  }
+
+  /**
+   * 根据版本范围获取好友列表
+   */
+  async getFriendsByVerRange(header: ICommonHeader, params: { startVersion?: number, endVersion?: number }): Promise<{ list: IFriendInfo[] }> {
+    const { userId } = header
+    const { startVersion = 0, endVersion = Number.MAX_SAFE_INTEGER } = params
+
+    if (!userId) {
+      throw new Error('用户ID不能为空')
+    }
+
+    try {
+      // 调用数据库服务层获取好友关系记录
+      const friendRelations = await dBServiceFriend.getFriendRelationsByVerRange({
+        userId,
+        startVersion,
+        endVersion,
+      })
+
+      if (friendRelations.length === 0) {
+        return { list: [] }
+      }
+
+      // 收集需要查询的用户ID
+      const userIds = new Set<string>()
+      friendRelations.forEach((relation: any) => {
+        if (relation.sendUserId === userId) {
+          userIds.add(relation.revUserId)
+        }
+        else {
+          userIds.add(relation.sendUserId)
+        }
+      })
+
+      // 查询用户信息
+      const userIdsArray = Array.from(userIds)
+      const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: userIdsArray })
+
+      // 构建用户映射
+      const userMap = new Map<string, any>()
+      userInfos.forEach((user: any) => {
+        userMap.set(user.userId, user)
+      })
+
+      // 构建好友列表
+      const friendList: IFriendInfo[] = friendRelations.map((relation: any) => {
+        const friendUserId = relation.sendUserId === userId
+          ? relation.revUserId
+          : relation.sendUserId
+
+        const friendUser = userMap.get(friendUserId)
+        const notice = relation.sendUserId === userId
+          ? relation.sendUserNotice
+          : relation.revUserNotice
+
+        return {
+          userId: friendUserId,
+          nickName: friendUser?.nickName || '',
+          avatar: friendUser?.avatar || '',
+          abstract: friendUser?.abstract || '',
+          notice: notice || '',
+          isFriend: true,
+          conversationId: generateConversationId(userId, friendUserId),
+          email: friendUser?.email || '',
+          source: relation.source || '',
+        }
+      })
+
+      return { list: friendList }
+    }
+    catch (error) {
+      console.error('根据版本范围获取好友列表失败:', error)
+      return { list: [] }
+    }
   }
 }
 
 // 导出单例实例
-export const friendBusiness = new FriendBusiness()
+export default new FriendBusiness()

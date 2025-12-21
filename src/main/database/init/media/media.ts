@@ -4,7 +4,7 @@ export const initMediaTable = (sqlite: any) => {
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS media (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      file_name TEXT NOT NULL UNIQUE, -- 文件名（MD5 + 后缀）
+      file_key TEXT NOT NULL UNIQUE, -- 文件名（MD5 + 后缀）
       path TEXT NOT NULL,             -- 文件相对路径或绝对路径
       type TEXT NOT NULL,             -- 媒体类型：image/video/voice/file/avatar/emoticon/temp/thumbnail
       size INTEGER,                    -- 文件大小（字节）

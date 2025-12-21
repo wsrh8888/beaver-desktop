@@ -84,6 +84,11 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
             type: MessageType.AUDIO_FILE,
             audioFileMsg: content,
           }
+        case MessageType.EMOJI:
+          return {
+            type: MessageType.EMOJI,
+            emojiMsg: content,
+          }
         default:
           return {
             type: MessageType.TEXT,
@@ -133,6 +138,11 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
             type: MessageType.AUDIO_FILE,
             audioFileMsg: message.audioFileMsg,
           }
+        case MessageType.EMOJI:
+          return {
+            type: MessageType.EMOJI,
+            emojiMsg: message.emojiMsg,
+          }
         default:
           return {
             type: MessageType.TEXT,
@@ -170,7 +180,7 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
             avatar: userStore.getUserInfo.avatar,
             nickName: userStore.getUserInfo.nickName,
           },
-          create_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           status: 1, // 正常状态
           sendStatus: 0, // 发送中状态
         }

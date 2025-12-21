@@ -83,10 +83,24 @@ export default defineComponent({
 
     const handleFriendRequest = async (item: any, action: 'approve' | 'reject') => {
       const status = action === 'approve' ? 1 : 2
-      await valiFrienddAPi({
-        verifyId: item.id,
-        status,
-      })
+
+      try {
+        await valiFrienddAPi({
+          verifyId: item.id,
+          status,
+        })
+
+        // API调用成功后，立即更新本地store中的状态
+        const verifyItem = friendVerifyStore.friendVerifyList.find(v => v.verifyId === item.id)
+        if (verifyItem) {
+          verifyItem.status = status
+        }
+        console.log(friendVerifyStore.friendVerifyList, '111')
+        console.log(item, '222')
+      } catch (error) {
+        console.error('处理好友申请失败:', error)
+        // 可以在这里显示错误提示给用户
+      }
     }
 
     return {

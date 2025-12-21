@@ -2,6 +2,8 @@ import chatSvg from 'renderModule/assets/image/leftBar/chat.svg'
 import chatActive from 'renderModule/assets/image/leftBar/chat_active.svg'
 import friendSvg from 'renderModule/assets/image/leftBar/friend.svg'
 import friendActive from 'renderModule/assets/image/leftBar/friend_active.svg'
+import momentSvg from 'renderModule/assets/image/leftBar/moment.svg'
+import momentActive from 'renderModule/assets/image/leftBar/moment_active.svg'
 import aboutIcon from 'renderModule/assets/image/leftBar/settings/about.svg'
 import logoutIcon from 'renderModule/assets/image/leftBar/settings/logout.svg'
 import settingsIcon from 'renderModule/assets/image/leftBar/settings/settings.svg'
@@ -20,6 +22,14 @@ export const outsideList = [
     title: '好友',
     defaultIcon: friendSvg,
     activeIcon: friendActive,
+    badgeCategories: ['social', 'group'],
+  },
+  {
+    id: 'moment',
+    router: '/moment',
+    title: '朋友圈',
+    defaultIcon: momentSvg,
+    activeIcon: momentActive,
   },
 ]
 

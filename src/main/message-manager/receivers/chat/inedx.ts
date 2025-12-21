@@ -1,16 +1,16 @@
 import logger from 'mainModule/utils/log'
-import { ConversationReceiver } from './conversation-receiver'
-import { MessageReceiver } from './message-receiver'
-import { UserConversationReceiver } from './user-conversation-receiver'
+import conversationReceiver from './conversation-receiver'
+import messageReceiver from './message-receiver'
+import userConversationReceiver from './user-conversation-receiver'
 
 /**
  * 聊天消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class ChatMessageRouter {
-  private messageReceiver = new MessageReceiver()
-  private conversationReceiver = new ConversationReceiver()
-  private userConversationReceiver = new UserConversationReceiver()
+class ChatMessageRouter {
+  private messageReceiver = messageReceiver
+  private conversationReceiver = conversationReceiver
+  private userConversationReceiver = userConversationReceiver
 
   /**
    * 处理聊天消息
@@ -47,4 +47,4 @@ export class ChatMessageRouter {
 }
 
 // 导出单例实例
-export const chatMessageRouter = new ChatMessageRouter()
+export default new ChatMessageRouter()

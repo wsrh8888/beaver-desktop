@@ -1,11 +1,11 @@
-import type { IDBUser } from 'commonModule/type/database/user'
+import type { IDBUser } from 'commonModule/type/database/db/user'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 
 // 用户表
 export const users = sqliteTable('users', {
   id: integer('id').primaryKey({ autoIncrement: true }),
-  uuid: text('uuid').notNull().unique(),
+  userId: text('user_id').notNull().unique(),
   nickName: text('nick_name').notNull(),
   email: text('email'),
   phone: text('phone'),

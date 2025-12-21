@@ -1,48 +1,65 @@
 import type { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
-import dbManager from 'mainModule/database/db'
+import { BaseService } from '../base'
 import { friends } from 'mainModule/database/tables/friend/friend'
 import { users } from 'mainModule/database/tables/user/user'
+import type {
+  DBCreateFriendReq,
+  DBUpsertFriendReq,
+  DBBatchCreateFriendsReq,
+  DBGetFriendDetailsReq,
+  DBGetFriendDetailsRes,
+  DBGetFriendsByIdsReq,
+  DBGetFriendsByIdsRes,
+  DBGetFriendRecordsByIdsReq,
+  DBGetFriendRecordsByIdsRes,
+  DBGetFriendRelationsReq,
+  DBGetFriendRelationsRes,
+  DBGetFriendsByVerRangeReq,
+} from 'commonModule/type/database/server/friend/friend'
 
 // 好友服务
-export class FriendService {
-  static get db() {
-    return dbManager.db
+class Friend extends BaseService {
+  /**
+   * @description 创建好友关系
+   */
+  async create(req: DBCreateFriendReq): Promise<void> {
+    await this.db.insert(friends).values(req).run()
   }
 
-  // 创建好友关系
-  static async create(friendData: any) {
-    return await this.db.insert(friends).values(friendData).run()
-  }
-
-  // 创建或更新好友关系（upsert操作）
-  static async upsert(friendData: any) {
-    return await this.db.insert(friends)
-      .values(friendData)
+  /**
+   * @description 创建或更新好友关系（upsert操作）
+   */
+  async upsert(req: DBUpsertFriendReq): Promise<void> {
+    await this.db.insert(friends)
+      .values(req)
       .onConflictDoUpdate({
-        target: friends.uuid,
+        target: friends.friendId,
         set: {
-          sendUserId: friendData.sendUserId,
-          revUserId: friendData.revUserId,
-          sendUserNotice: friendData.sendUserNotice,
-          revUserNotice: friendData.revUserNotice,
-          source: friendData.source,
-          isDeleted: friendData.isDeleted,
-          version: friendData.version,
-          updatedAt: friendData.updatedAt,
+          sendUserId: req.sendUserId,
+          revUserId: req.revUserId,
+          sendUserNotice: req.sendUserNotice,
+          revUserNotice: req.revUserNotice,
+          source: req.source,
+          isDeleted: req.isDeleted,
+          version: req.version,
+          updatedAt: req.updatedAt,
         },
       })
       .run()
   }
 
-  // 批量获取好友详细信息（包含用户信息和备注）
-  static async getFriendDetails(userId: string, friendIds: string[]): Promise<Map<string, any>> {
+  /**
+   * @description 批量获取好友详细信息（包含用户信息和备注）
+   */
+  async getFriendDetails(req: DBGetFriendDetailsReq): Promise<DBGetFriendDetailsRes> {
+    const { userId, friendIds } = req
     if (friendIds.length === 0) {
-      return new Map()
+      return []
     }
 
     // 查询当前用户与指定好友的好友关系
-    const friendRelations = await dbManager.db
+    const friendRelations = await this.db
       .select()
       .from(friends)
       .where(
@@ -53,161 +70,32 @@ export class FriendService {
       )
       .all()
 
-    if (friendRelations.length === 0) {
-      return new Map()
-    }
-
-    // 收集需要查询的用户ID
-    const userIdsToQuery = new Set<string>()
-    friendRelations.forEach((relation: any) => {
-      if (relation.sendUserId === userId) {
-        userIdsToQuery.add(relation.revUserId)
-      }
-      else {
-        userIdsToQuery.add(relation.sendUserId)
-      }
-    })
-
-    // 查询用户信息
-    const userIdsArray = Array.from(userIdsToQuery)
-    const userInfos = await dbManager.db
-      .select({
-        uuid: users.uuid,
-        nickName: users.nickName,
-        avatar: users.avatar,
-        abstract: users.abstract,
-        email: users.email,
-      })
-      .from(users)
-      .where(inArray(users.uuid, userIdsArray))
-      .all()
-
-    // 构建用户信息的映射
-    const userInfoMap = new Map<string, any>()
-    userInfos.forEach((user: any) => {
-      userInfoMap.set(user.uuid, user)
-    })
-
-    // 构建好友关系的映射
-    const friendRelationMap = new Map<string, any>()
-    friendRelations.forEach((relation: any) => {
-      if (relation.sendUserId === userId) {
-        friendRelationMap.set(relation.revUserId, relation)
-      }
-      else {
-        friendRelationMap.set(relation.sendUserId, relation)
-      }
-    })
-
-    // 构建完整的返回值
-    const friendDetailsMap = new Map<string, any>()
-
-    for (const friendId of friendIds) {
-      const userInfo = userInfoMap.get(friendId)
-      const friendRelation = friendRelationMap.get(friendId)
-
-      if (userInfo && friendRelation) {
-        // 确定备注信息
-        const notice = friendRelation.sendUserId === userId
-          ? friendRelation.revUserNotice || ''
-          : friendRelation.sendUserNotice || ''
-
-        friendDetailsMap.set(friendId, {
-          userId: userInfo.uuid,
-          nickName: userInfo.nickName || '',
-          avatar: userInfo.avatar || '',
-          abstract: userInfo.abstract || '',
-          email: userInfo.email || '',
-          notice,
-          friendAt: friendRelation.createdAt,
-        })
-      }
-    }
-
-    return friendDetailsMap
+    return friendRelations
   }
 
-  // 根据好友关系UUID列表批量查询好友信息
-  static async getFriendsByUuid(uuids: string[], currentUserId: string): Promise<IFriendInfo[]> {
-    if (uuids.length === 0) {
+  /**
+   * @description 根据好友关系ID列表批量查询好友关系记录
+   */
+  async getFriendsByIds(req: DBGetFriendsByIdsReq): Promise<DBGetFriendsByIdsRes> {
+    const { friendIds } = req
+    if (friendIds.length === 0) {
       return []
     }
 
     const friendRecords = await this.db
       .select()
       .from(friends)
-      .where(inArray(friends.uuid, uuids as any))
+      .where(inArray(friends.friendId, friendIds as any))
       .all()
 
-    if (friendRecords.length === 0) {
-      return []
-    }
-
-    // 收集需要查询的用户ID
-    const userIds = new Set<string>()
-    friendRecords.forEach((record: any) => {
-      userIds.add(record.sendUserId)
-      userIds.add(record.revUserId)
-    })
-
-    // 查询用户信息
-    const userIdsArray = Array.from(userIds)
-    const conditions = userIdsArray.map(id => eq(users.uuid, id))
-    const userInfos = await this.db
-      .select({
-        uuid: users.uuid,
-        nickName: users.nickName,
-        avatar: users.avatar,
-        abstract: users.abstract,
-        email: users.email,
-      })
-      .from(users)
-      .where(or(...conditions))
-      .all()
-
-    // 构建用户映射
-    const userMap = new Map<string, any>()
-    userInfos.forEach((user: any) => {
-      userMap.set(user.uuid, user)
-    })
-
-    // 生成会话ID的辅助函数
-    const generateConversationId = (userId1: string, userId2: string): string => {
-      const sortedIds = [userId1, userId2].sort()
-      return `private_${sortedIds[0]}_${sortedIds[1]}`
-    }
-
-    // 构建好友列表
-    return friendRecords.map((record: any) => {
-      // 确定好友的用户ID
-      const friendUserId = record.sendUserId === currentUserId
-        ? record.revUserId
-        : record.sendUserId
-
-      // 获取好友用户信息
-      const friendUser = userMap.get(friendUserId)
-
-      // 确定备注信息
-      const notice = record.sendUserId === currentUserId
-        ? record.sendUserNotice || ''
-        : record.revUserNotice || ''
-
-      return {
-        userId: friendUserId,
-        nickName: friendUser?.nickName || '',
-        avatar: friendUser?.avatar || '',
-        abstract: friendUser?.abstract || '',
-        notice,
-        isFriend: true,
-        conversationId: generateConversationId(currentUserId, friendUserId),
-        email: friendUser?.email || '',
-        source: record.source || '',
-      }
-    })
+    return friendRecords
   }
 
-  // 根据friendshipIds批量查询本地好友关系
-  static async getFriendsByIds(friendshipIds: string[]): Promise<Map<string, any>> {
+  /**
+   * @description 根据friendshipIds批量查询本地好友关系（仅原始记录映射）
+   */
+  async getFriendRecordsByIds(req: DBGetFriendRecordsByIdsReq): Promise<DBGetFriendRecordsByIdsRes> {
+    const { friendshipIds } = req
     if (friendshipIds.length === 0) {
       return new Map()
     }
@@ -215,35 +103,39 @@ export class FriendService {
     const existingFriends = await this.db
       .select()
       .from(friends)
-      .where(inArray(friends.uuid, friendshipIds as any))
+      .where(inArray(friends.friendId, friendshipIds as any))
       .all()
 
-    const friendMap = new Map<string, any>()
+    const friendRecords = new Map<string, any>()
     existingFriends.forEach((friend: any) => {
-      friendMap.set(friend.uuid, friend)
+      friendRecords.set(friend.friendId, friend)
     })
 
-    return friendMap
+    return friendRecords
   }
 
-  // 批量创建好友关系（调用upsert方法，避免重复数据错误）
-  static async batchCreate(friendsData: any[]) {
-    if (friendsData.length === 0)
+  /**
+   * @description 批量创建好友关系（调用upsert方法，避免重复数据错误）
+   */
+  async batchCreate(req: DBBatchCreateFriendsReq): Promise<void> {
+    const { friends } = req
+    if (friends.length === 0)
       return
 
-    for (const friend of friendsData) {
+    for (const friend of friends) {
       await this.upsert(friend)
     }
   }
 
   /**
-   * 获取好友关系记录（纯数据库查询，不含业务逻辑）
+   * @description 获取好友关系记录（纯数据库查询，不含业务逻辑）
    */
-  static async getFriendRelations(userId: string, options?: { page?: number, limit?: number }): Promise<any[]> {
+  async getFriendRelations(req: DBGetFriendRelationsReq): Promise<DBGetFriendRelationsRes> {
+    const { userId, options } = req
     const { page = 1, limit = 20 } = options || {}
     const offset = (page - 1) * limit
 
-    return await this.db
+    const relations = await this.db
       .select()
       .from(friends)
       .where(and(
@@ -253,101 +145,31 @@ export class FriendService {
       .limit(limit)
       .offset(offset)
       .all()
+
+    return relations
   }
 
-  static async getFriendsByVerRange(header: any, params: any): Promise<{ list: IFriendInfo[] }> {
-    try {
-      const userId = header?.userId
+  /**
+   * @description 根据版本范围获取好友关系记录（纯数据库查询）
+   */
+  async getFriendRelationsByVerRange(req: DBGetFriendsByVerRangeReq): Promise<DBGetFriendsByVerRangeRes> {
+    const { userId, startVersion = 0, endVersion = Number.MAX_SAFE_INTEGER } = req
 
-      if (!userId) {
-        console.error('用户ID不能为空')
-        return { list: [] }
-      }
+    // 查询指定版本范围内的好友关系记录
+    const friendRelations = await this.db
+      .select()
+      .from(friends)
+      .where(and(
+        or(eq(friends.sendUserId, userId), eq(friends.revUserId, userId)),
+        eq(friends.isDeleted, 0),
+        gte(friends.version, startVersion),
+        lte(friends.version, endVersion),
+      ))
+      .all()
 
-      const startVersion = params?.startVersion || 0
-      const endVersion = params?.endVersion || Number.MAX_SAFE_INTEGER
-
-      // 查询指定版本范围内的好友关系记录
-      const friendRelations = await this.db
-        .select()
-        .from(friends)
-        .where(and(
-          or(eq(friends.sendUserId, userId), eq(friends.revUserId, userId)),
-          eq(friends.isDeleted, 0),
-          gte(friends.version, startVersion),
-          lte(friends.version, endVersion),
-        ))
-        .all()
-
-      if (friendRelations.length === 0) {
-        return { list: [] }
-      }
-
-      // 收集需要查询的用户ID
-      const userIds = new Set<string>()
-      friendRelations.forEach((relation: any) => {
-        if (relation.sendUserId === userId) {
-          userIds.add(relation.revUserId)
-        }
-        else {
-          userIds.add(relation.sendUserId)
-        }
-      })
-
-      // 查询用户信息
-      const userIdsArray = Array.from(userIds)
-      if (userIdsArray.length > 0) {
-        const conditions = userIdsArray.map(id => eq(users.uuid, id))
-        const userInfos = await this.db
-          .select({
-            uuid: users.uuid,
-            nickName: users.nickName,
-            avatar: users.avatar,
-            abstract: users.abstract,
-            email: users.email,
-          })
-          .from(users)
-          .where(or(...conditions))
-          .all()
-
-        // 构建用户映射
-        const userMap = new Map<string, any>()
-        userInfos.forEach((user: any) => {
-          userMap.set(user.uuid, user)
-        })
-
-        // 构建好友列表
-        const friendList: IFriendInfo[] = friendRelations.map((relation: any) => {
-          const friendUserId = relation.sendUserId === userId
-            ? relation.revUserId
-            : relation.sendUserId
-
-          const friendUser = userMap.get(friendUserId)
-          const notice = relation.sendUserId === userId
-            ? relation.sendUserNotice
-            : relation.revUserNotice
-
-          return {
-            userId: friendUserId,
-            nickName: friendUser?.nickName || '',
-            fileName: friendUser?.avatar || '',
-            abstract: friendUser?.abstract || '',
-            notice: notice || '',
-            isFriend: true,
-            conversationId: generateConversationId(userId, friendUserId),
-            email: friendUser?.email || '',
-            source: relation.source || '',
-          }
-        })
-
-        return { list: friendList }
-      }
-
-      return { list: [] }
-    }
-    catch (error) {
-      console.error('根据版本范围获取好友列表失败:', error)
-      return { list: [] }
-    }
+    return friendRelations
   }
 }
+
+// 导出好友服务实例
+export default new Friend()

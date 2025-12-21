@@ -54,18 +54,18 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
     /**
      * @description: 根据用户ID列表更新好友验证数据
      */
-    async updateVerifiesByUserIds(updatedVerifies: Array<{ uuid: string, version: number }>) {
+    async updateVerifiesByUserIds(updatedVerifies: Array<{ verifyId: string, version: number }>) {
       if (updatedVerifies.length === 0) {
         return
       }
 
       try {
         // 提取用户ID列表
-        const userIds = updatedVerifies.map(v => v.uuid)
+        const verifyIds = updatedVerifies.map(v => v.verifyId)
 
-        // 使用验证记录UUID列表查询获取最新的验证数据
-        const result = await electron.database.friend.getValidByUuid({
-          uuids: userIds,
+        // 使用验证记录ID列表查询获取最新的验证数据
+        const result = await electron.database.friend.getValidByIds({
+          verifyIds,
         })
 
         // 更新friend verify store

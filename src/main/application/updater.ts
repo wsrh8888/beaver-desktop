@@ -16,7 +16,7 @@ class Updater extends ApplicationBase implements Application {
       frame: false, // 无边框设计
       resizable: false,
       webPreferences: {
-        preload: path.join(__dirname, './preload/electron.js'), // 复用你的预加载脚本
+        preload: path.join(__dirname, './preload/index.mjs'), // 复用你的预加载脚本
         nodeIntegration: false,
         contextIsolation: true,
         webSecurity: false,

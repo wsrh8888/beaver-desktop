@@ -282,7 +282,7 @@ export const useMessageStore = defineStore('useMessageStore', {
       const existingConversation = conversationStore.getConversationInfo(conversationId)
       if (existingConversation) {
         // 获取消息的时间戳（用于排序和格式化）
-        const messageTimestamp = message.create_at ? new Date(message.create_at).getTime() : Date.now()
+        const messageTimestamp = message.created_at ? new Date(message.created_at).getTime() : Date.now()
         // 转换为秒级时间戳（与数据库保持一致）
         const messageTimestampSeconds = Math.floor(messageTimestamp / 1000)
 

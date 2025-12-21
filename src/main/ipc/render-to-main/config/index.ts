@@ -1,11 +1,11 @@
 import { getCurrentConfig } from 'commonModule/config'
 import { ConfigCommand } from 'commonModule/type/ipc/command'
 
-export class ConfigHandler {
+class ConfigHandler {
   /**
    * 统一的配置处理入口
    */
-  static handle(event: Electron.IpcMainEvent, command: ConfigCommand, _data: any) {
+  handle(event: Electron.IpcMainEvent, command: ConfigCommand, _data: any) {
     switch (command) {
       case ConfigCommand.GET:
         event.returnValue = getCurrentConfig()
@@ -15,3 +15,5 @@ export class ConfigHandler {
     }
   }
 }
+
+export default new ConfigHandler()

@@ -1,5 +1,5 @@
-import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
-import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
+import dBServiceChatConversation  from 'mainModule/database/services/chat/conversation'
+import dbServiceChatUserConversation  from 'mainModule/database/services/chat/user-conversation'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 
@@ -17,7 +17,7 @@ interface ConversationOperationData {
 /**
  * @description: 会话操作接收器 - 处理会话相关的操作
  */
-export class ConversationReceiver {
+class ConversationReceiver {
   protected readonly receiverName = 'ConversationReceiver'
 
   constructor() {
@@ -74,7 +74,7 @@ export class ConversationReceiver {
     for (const message of messages) {
       try {
         // 创建会话元数据
-        await ChatConversationService.create({
+        await dBServiceChatConversation.create({
           conversationId: message.conversationId,
           type: message.data?.type || 1,
           maxSeq: 0,
@@ -83,14 +83,16 @@ export class ConversationReceiver {
         })
 
         // 创建用户会话关系
-        await ChatUserConversationService.create({
-          userId: currentUserId,
-          conversationId: message.conversationId,
-          isHidden: 0,
-          isPinned: 0,
-          isMuted: 0,
-          userReadSeq: 0,
-          version: 1,
+        await dbServiceChatUserConversation.create({
+          userConversationData: {
+            userId: currentUserId,
+            conversationId: message.conversationId,
+            isHidden: 0,
+            isPinned: 0,
+            isMuted: 0,
+            userReadSeq: 0,
+            version: 1,
+          }
         })
 
         logger.info({
@@ -118,7 +120,7 @@ export class ConversationReceiver {
       try {
         // 更新会话元数据
         if (message.data?.lastMessage) {
-          await ChatConversationService.updateLastMessage(
+          await dBServiceChatConversation.updateLastMessage(
             message.conversationId,
             message.data.lastMessage,
           )
@@ -152,12 +154,14 @@ export class ConversationReceiver {
     for (const message of messages) {
       try {
         // 软删除：将用户会话标记为隐藏
-        await ChatUserConversationService.batchCreate([{
-          userId: currentUserId,
-          conversationId: message.conversationId,
-          isHidden: 1,
-          version: Date.now(),
-        }])
+        await dbServiceChatUserConversation.batchCreate({
+          userConversations: [{
+            userId: currentUserId,
+            conversationId: message.conversationId,
+            isHidden: 1,
+            version: Date.now(),
+          }]
+        })
 
         logger.info({
           text: '会话删除成功',
@@ -189,12 +193,14 @@ export class ConversationReceiver {
         const readSeq = message.data?.readSeq || 0
 
         // 更新用户已读序列号
-        await ChatUserConversationService.batchCreate([{
-          userId: currentUserId,
-          conversationId: message.conversationId,
-          userReadSeq: readSeq,
-          version: Date.now(),
-        }])
+        await dbServiceChatUserConversation.batchCreate({
+          userConversations: [{
+            userId: currentUserId,
+            conversationId: message.conversationId,
+            userReadSeq: readSeq,
+            version: Date.now(),
+          }]
+        })
 
         logger.info({
           text: '会话已读更新成功',
@@ -221,3 +227,5 @@ export class ConversationReceiver {
     return userStore?.userId || null
   }
 }
+
+export default new ConversationReceiver()

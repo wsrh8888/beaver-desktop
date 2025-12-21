@@ -8,12 +8,13 @@ import type { IConversationItem } from 'commonModule/type/pinia/conversation'
 import type { QueueItem } from '../base/base'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getConversationsListByIdsApi } from 'mainModule/api/chat'
-import { ChatConversationService } from 'mainModule/database/services/chat/conversation'
-import { ChatUserConversationService } from 'mainModule/database/services/chat/user-conversation'
-import { FriendService } from 'mainModule/database/services/friend/friend'
-import { GroupService } from 'mainModule/database/services/group/group'
+import dBServiceChatConversation from 'mainModule/database/services/chat/conversation'
+import dbServiceChatUserConversation from 'mainModule/database/services/chat/user-conversation'
+import dBServiceFriend from 'mainModule/database/services/friend/friend'
+import dbServiceGroup from 'mainModule/database/services/group/group'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
+import dBServiceUser  from 'mainModule/database/services/user/user'
 
 /**
  * 会话同步队列项
@@ -29,7 +30,7 @@ interface ConversationSyncItem extends QueueItem {
  * 对应 chat_conversations 表
  * 负责会话的创建、更新、查询等业务逻辑
  */
-export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
+class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
   protected readonly businessName = 'ConversationBusiness'
 
   constructor() {
@@ -43,150 +44,215 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
    * 获取聚合后的最近聊天列表
    */
   async getAggregatedRecentChatList(header: ICommonHeader, params: IRecentChatReq): Promise<IRecentChatRes> {
-    const { userId } = header
-    const { page = 1, limit = 50 } = params
+    try {
+      const { userId } = header
+      const { page = 1, limit = 50 } = params
 
-    // 1. 先获取用户会话设置，过滤掉隐藏的会话
-    const userConversations = await ChatUserConversationService.getAllUserConversations(userId)
-    const visibleUserConversations = userConversations.filter((uc: any) => uc.isHidden === 0)
+      // 1. 先获取用户会话设置，过滤掉隐藏的会话
+      const userConversationsResult = await dbServiceChatUserConversation.getAllUserConversations({ userId })
+      const userConversations = userConversationsResult.conversations
+      const visibleUserConversations = userConversations.filter((uc: any) => uc.isHidden === 0)
 
-    if (visibleUserConversations.length === 0) {
-      return {
-        count: 0,
-        list: [],
-      }
-    }
-
-    // 2. 根据会话ID获取会话元数据（以 conversation_metas 为主，排序时间来源）
-    const conversationIds = visibleUserConversations.map((uc: any) => uc.conversationId)
-    const conversationMetas = await ChatConversationService.getConversationsByIds(conversationIds)
-    const metaMap = new Map()
-    conversationMetas.forEach((meta: any) => {
-      metaMap.set(meta.conversationId, meta)
-    })
-
-    // 3. 合并数据：合并用户设置和会话元数据
-    const mergedConversations = visibleUserConversations
-      .map((uc: any) => {
-        const meta = metaMap.get(uc.conversationId)
-        // 如果会话元数据不存在，跳过（会话可能已删除）
-        if (!meta) {
-          return null
-        }
+      if (visibleUserConversations.length === 0) {
         return {
-          ...meta, // 以 conversation_metas 为主，包含 updatedAt（消息时间）
-          isPinned: uc.isPinned || 0,
-          isMuted: uc.isMuted || 0,
-          userReadSeq: uc.userReadSeq || 0,
-          version: uc.version || 0,
+          count: 0,
+          list: [],
+        }
+      }
+
+      // 2. 根据会话ID获取会话元数据（以 conversation_metas 为主，排序时间来源）
+      const conversationIds = visibleUserConversations.map((uc: any) => uc.conversationId)
+      const conversationMetas = await dBServiceChatConversation.getConversationsByIds({
+        conversationIds,
+      })
+      const metaMap = new Map()
+      conversationMetas.forEach((meta: any) => {
+        metaMap.set(meta.conversationId, meta)
+      })
+
+      // 3. 合并数据：合并用户设置和会话元数据
+      const mergedConversations = visibleUserConversations
+        .map((uc: any) => {
+          const meta = metaMap.get(uc.conversationId)
+          // 如果会话元数据不存在，跳过（会话可能已删除）
+          if (!meta) {
+            return null
+          }
+          return {
+            ...meta, // 以 conversation_metas 为主，包含 updatedAt（消息时间）
+            isPinned: uc.isPinned || 0,
+            isMuted: uc.isMuted || 0,
+            userReadSeq: uc.userReadSeq || 0,
+            version: uc.version || 0,
+          }
+        })
+        .filter((conv: any) => conv !== null) // 过滤掉已删除的会话
+
+      // 4. 排序：置顶优先，然后按消息时间（conversation_metas.updatedAt）排序
+      mergedConversations.sort((a: any, b: any) => {
+        // 置顶优先
+        if (a.isPinned !== b.isPinned) {
+          return b.isPinned - a.isPinned
+        }
+        // 然后按消息时间倒序（conversation_metas.updatedAt）
+        return (b.updatedAt || 0) - (a.updatedAt || 0)
+      })
+
+      // 5. 应用用户传入的分页参数
+      const offset = (page - 1) * limit
+      const paginatedConversations = mergedConversations.slice(offset, offset + limit)
+
+      // 6. 获取好友信息（私聊需要）和群组信息（群聊需要）
+      const privateChatFriendIds: string[] = []
+      const groupIds: string[] = []
+
+      paginatedConversations.forEach((conv: any) => {
+        if (conv.type === 1) { // 私聊
+          const parts = conv.conversationId.split('_')
+          if (parts.length >= 3) {
+            const userId1 = parts[1]
+            const userId2 = parts[2]
+            if (userId1 === userId) {
+              privateChatFriendIds.push(userId2)
+            }
+            else if (userId2 === userId) {
+              privateChatFriendIds.push(userId1)
+            }
+          }
+        }
+        else if (conv.type === 2) { // 群聊
+          // conversationId格式: group_${groupId}
+          const parts = conv.conversationId.split('_')
+          if (parts.length >= 2 && parts[0] === 'group') {
+            groupIds.push(parts.slice(1).join('_')) // 支持groupId中包含下划线的情况
+          }
         }
       })
-      .filter((conv: any) => conv !== null) // 过滤掉已删除的会话
 
-    // 4. 排序：置顶优先，然后按消息时间（conversation_metas.updatedAt）排序
-    mergedConversations.sort((a: any, b: any) => {
-      // 置顶优先
-      if (a.isPinned !== b.isPinned) {
-        return b.isPinned - a.isPinned
-      }
-      // 然后按消息时间倒序（conversation_metas.updatedAt）
-      return (b.updatedAt || 0) - (a.updatedAt || 0)
-    })
+      const friendRelations = await dBServiceFriend.getFriendDetails({ userId, friendIds: privateChatFriendIds })
 
-    // 5. 应用用户传入的分页参数
-    const offset = (page - 1) * limit
-    const paginatedConversations = mergedConversations.slice(offset, offset + limit)
-
-    // 6. 获取好友信息（私聊需要）和群组信息（群聊需要）
-    const privateChatFriendIds: string[] = []
-    const groupIds: string[] = []
-
-    paginatedConversations.forEach((conv: any) => {
-      if (conv.type === 1) { // 私聊
-        const parts = conv.conversationId.split('_')
-        if (parts.length >= 3) {
-          const userId1 = parts[1]
-          const userId2 = parts[2]
-          if (userId1 === userId) {
-            privateChatFriendIds.push(userId2)
+      // 构建好友详细信息映射
+      const friendDetailsMap = new Map<string, any>()
+      if (friendRelations.length > 0) {
+        // 收集需要查询的用户ID
+        const userIds = new Set<string>()
+        friendRelations.forEach((relation: any) => {
+          if (relation.sendUserId === userId) {
+            userIds.add(relation.revUserId)
+          } else {
+            userIds.add(relation.sendUserId)
           }
-          else if (userId2 === userId) {
-            privateChatFriendIds.push(userId1)
+        })
+
+        // 调用用户服务获取用户信息
+        const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+        // 构建用户映射
+        const userMap = new Map<string, any>()
+        userInfos.forEach((user: any) => {
+          userMap.set(user.userId, user)
+        })
+
+        // 构建好友关系映射
+        const friendRelationMap = new Map<string, any>()
+        friendRelations.forEach((relation: any) => {
+          if (relation.sendUserId === userId) {
+            friendRelationMap.set(relation.revUserId, relation)
+          } else {
+            friendRelationMap.set(relation.sendUserId, relation)
           }
-        }
-      }
-      else if (conv.type === 2) { // 群聊
-        // conversationId格式: group_${groupId}
-        const parts = conv.conversationId.split('_')
-        if (parts.length >= 2 && parts[0] === 'group') {
-          groupIds.push(parts.slice(1).join('_')) // 支持groupId中包含下划线的情况
-        }
-      }
-    })
+        })
 
-    const friendDetailsMap = await FriendService.getFriendDetails(userId, privateChatFriendIds)
-    const groupDetails = await GroupService.getGroupsByUuids(groupIds)
-    const groupDetailsMap = new Map()
-    groupDetails.forEach((group: any) => {
-      groupDetailsMap.set(group.groupId, group)
-    })
+        // 构建完整的返回值
+        for (const friendId of privateChatFriendIds) {
+          const userInfo = userMap.get(friendId)
+          const friendRelation = friendRelationMap.get(friendId)
 
-    // 7. 业务逻辑处理：数据聚合、未读消息计算等
-    const list = paginatedConversations.map((conv: any): IConversationInfoRes => {
-      // 业务逻辑：计算未读消息数量
-      const unreadCount = Math.max(0, (conv.maxSeq || 0) - (conv.userReadSeq || 0))
+          if (userInfo && friendRelation) {
+            // 确定备注信息
+            const notice = friendRelation.sendUserId === userId
+              ? friendRelation.revUserNotice || ''
+              : friendRelation.sendUserNotice || ''
 
-      // 业务逻辑：获取会话显示信息
-      let avatar = ''
-      let nickName = ''
-      let notice = ''
-
-      if (conv.type === 1) { // 私聊：从好友信息获取显示数据
-        const parts = conv.conversationId.split('_')
-        if (parts.length >= 3) {
-          const userId1 = parts[1]
-          const userId2 = parts[2]
-          const friendId = (userId1 === userId) ? userId2 : userId1
-
-          const friendDetail = friendDetailsMap.get(friendId)
-          if (friendDetail) {
-            avatar = friendDetail?.avatar || ''
-            nickName = friendDetail?.nickName || ''
-            notice = friendDetail.notice || ''
+            friendDetailsMap.set(friendId, {
+              userId: userInfo.userId,
+              nickName: userInfo.nickName || '',
+              avatar: userInfo.avatar || '',
+              abstract: userInfo.abstract || '',
+              email: userInfo.email || '',
+              notice,
+              friendAt: friendRelation.createdAt,
+            })
           }
         }
       }
-      else if (conv.type === 2) { // 群聊：从群组信息获取显示数据
-        const parts = conv.conversationId.split('_')
-        if (parts.length >= 2 && parts[0] === 'group') {
-          const groupId = parts.slice(1).join('_') // 支持groupId中包含下划线的情况
-          const groupDetail = groupDetailsMap.get(groupId)
-          if (groupDetail) {
-            avatar = groupDetail.avatar || ''
-            nickName = groupDetail.title || ''
-            notice = groupDetail.notice || ''
+      const groupDetails = await dbServiceGroup.getGroupsByIds(groupIds)
+      const groupDetailsMap = new Map()
+      groupDetails.forEach((group: any) => {
+        groupDetailsMap.set(group.groupId, group)
+      })
+
+      // 7. 业务逻辑处理：数据聚合、未读消息计算等
+      const list = paginatedConversations.map((conv: any): IConversationInfoRes => {
+        // 业务逻辑：计算未读消息数量
+        const unreadCount = Math.max(0, (conv.maxSeq || 0) - (conv.userReadSeq || 0))
+
+        // 业务逻辑：获取会话显示信息
+        let avatar = ''
+        let nickName = ''
+        let notice = ''
+
+        if (conv.type === 1) { // 私聊：从好友信息获取显示数据
+          const parts = conv.conversationId.split('_')
+          if (parts.length >= 3) {
+            const userId1 = parts[1]
+            const userId2 = parts[2]
+            const friendId = (userId1 === userId) ? userId2 : userId1
+
+            const friendDetail = friendDetailsMap.get(friendId)
+            if (friendDetail) {
+              avatar = friendDetail?.avatar || ''
+              nickName = friendDetail?.nickName || ''
+              notice = friendDetail.notice || ''
+            }
           }
         }
-      }
+        else if (conv.type === 2) { // 群聊：从群组信息获取显示数据
+          const parts = conv.conversationId.split('_')
+          if (parts.length >= 2 && parts[0] === 'group') {
+            const groupId = parts.slice(1).join('_') // 支持groupId中包含下划线的情况
+            const groupDetail = groupDetailsMap.get(groupId)
+            if (groupDetail) {
+              avatar = groupDetail.avatar || ''
+              nickName = groupDetail.title || ''
+              notice = groupDetail.notice || ''
+            }
+          }
+        }
+
+        return {
+          conversationId: conv.conversationId,
+          avatar,
+          nickName,
+          msgPreview: conv.lastMessage || '',
+          updatedAt: conv.updatedAt, // 原始时间戳（秒级），前端负责格式化
+          isTop: conv.isPinned === 1,
+          chatType: conv.type || 1,
+          notice,
+          version: conv.version || 0,
+          unreadCount,
+          isMuted: conv.isMuted === 1,
+        }
+      })
 
       return {
-        conversationId: conv.conversationId,
-        avatar,
-        nickName,
-        msgPreview: conv.lastMessage || '',
-        updatedAt: conv.updatedAt, // 原始时间戳（秒级），前端负责格式化
-        isTop: conv.isPinned === 1,
-        chatType: conv.type || 1,
-        notice,
-        version: conv.version || 0,
-        unreadCount,
-        isMuted: conv.isMuted === 1,
+        count: mergedConversations.length, // 返回排序后的总数
+        list,
       }
-    })
-
-    return {
-      count: mergedConversations.length, // 返回排序后的总数
-      list,
+    }
+    catch (error) {
+      console.error('获取聚合后的最近聊天列表失败:', error)
+      throw error
     }
   }
 
@@ -200,24 +266,26 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     }
 
     // 调用服务层
-    await ChatConversationService.updateLastMessage(conversationId, lastMessage, maxSeq)
+    await dBServiceChatConversation.updateLastMessage({ conversationId, lastMessage, maxSeq })
   }
 
   /**
    * 获取单个会话信息（包含用户设置和会话元数据）
    */
   async getConversationInfo(header: ICommonHeader, params: any): Promise<IConversationItem | null> {
+    try {
     const { userId } = header
     const { conversationId } = params
 
     // 1. 获取用户会话设置
-    const userConversation = await ChatUserConversationService.getConversationInfo(header, params)
+    const userConversationResult = await dbServiceChatUserConversation.getConversationInfo({ header, params })
+    const userConversation = userConversationResult.conversationInfo
     if (!userConversation) {
       return null
     }
 
     // 2. 获取会话元数据
-    const conversationMetas = await ChatConversationService.getConversationsByIds([conversationId])
+    const conversationMetas = await dBServiceChatConversation.getConversationsByIds({ conversationIds: [conversationId] })
     if (conversationMetas.length === 0) {
       return null
     }
@@ -235,8 +303,61 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         const userId2 = parts[2]
         const friendId = (userId1 === userId) ? userId2 : userId1
 
-        const friendDetailsMap = await FriendService.getFriendDetails(userId, [friendId])
-        const friendDetail = friendDetailsMap.get(friendId)
+        const friendRelations = await dBServiceFriend.getFriendDetails({ userId, friendIds: [friendId] })
+
+        // 构建好友详细信息
+        let friendDetail = null
+        if (friendRelations.length > 0) {
+          // 从好友关系中提取用户ID
+          const userIds = new Set<string>()
+          friendRelations.forEach((relation: any) => {
+            if (relation.sendUserId === userId) {
+              userIds.add(relation.revUserId)
+            } else {
+              userIds.add(relation.sendUserId)
+            }
+          })
+
+          // 调用用户服务获取用户信息
+          const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: Array.from(userIds) })
+
+          // 构建用户映射
+          const userMap = new Map<string, any>()
+          userInfos.forEach((user: any) => {
+            userMap.set(user.userId, user)
+          })
+
+          // 构建好友关系映射
+          const friendRelationMap = new Map<string, any>()
+          friendRelations.forEach((relation: any) => {
+            if (relation.sendUserId === userId) {
+              friendRelationMap.set(relation.revUserId, relation)
+            } else {
+              friendRelationMap.set(relation.sendUserId, relation)
+            }
+          })
+
+          const userInfo = userMap.get(friendId)
+          const friendRelation = friendRelationMap.get(friendId)
+
+          if (userInfo && friendRelation) {
+            // 确定备注信息
+            const notice = friendRelation.sendUserId === userId
+              ? friendRelation.revUserNotice || ''
+              : friendRelation.sendUserNotice || ''
+
+            friendDetail = {
+              userId: userInfo.userId,
+              nickName: userInfo.nickName || '',
+              avatar: userInfo.avatar || '',
+              abstract: userInfo.abstract || '',
+              email: userInfo.email || '',
+              notice,
+              friendAt: friendRelation.createdAt,
+            }
+          }
+        }
+
         if (friendDetail) {
           avatar = friendDetail?.avatar || ''
           nickName = friendDetail?.nickName || ''
@@ -248,7 +369,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       const parts = conversationId.split('_')
       if (parts.length >= 2 && parts[0] === 'group') {
         const groupId = parts.slice(1).join('_') // 支持groupId中包含下划线的情况
-        const groupDetails = await GroupService.getGroupsByUuids([groupId])
+        const groupDetails = await dbServiceGroup.getGroupsByIds([groupId])
         if (groupDetails.length > 0) {
           const groupDetail = groupDetails[0]
           avatar = groupDetail.avatar || ''
@@ -258,7 +379,9 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       }
     }
 
-    // 4. 合并数据
+    // 4. 计算未读数并合并数据
+    const unreadCount = Math.max(0, (meta.maxSeq || 0) - (userConversation.userReadSeq || 0))
+
     const mergedConversation: IConversationItem = {
       conversationId: userConversation.conversationId,
       avatar,
@@ -269,11 +392,16 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       chatType: meta.type || 1,
       notice,
       version: userConversation.version || 0,
-      unreadCount: 0, // 暂时设为0，后续可以计算
+      unreadCount, // 使用计算出的未读数
       isMuted: userConversation.isMuted === 1,
     }
 
     return mergedConversation
+    }
+    catch (error) {
+      console.error('获取单个会话信息失败:', error)
+      throw error
+    }
   }
 
   /**
@@ -293,10 +421,10 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     for (const update of updates) {
       switch (update.operation) {
         case 'conversation_create':
-          await ChatConversationService.create(update.data)
+          await dBServiceChatConversation.create(update.data)
           break
         case 'conversation_update':
-          await ChatConversationService.upsert({ conversationId: update.conversationId, ...update.data })
+          await dBServiceChatConversation.upsert({ conversationId: update.conversationId, ...update.data })
           break
       }
     }
@@ -332,7 +460,7 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         const conversationData = response.result.conversations[0]
 
         // 更新本地数据库
-        await ChatConversationService.upsert(conversationData)
+        await dBServiceChatConversation.upsert(conversationData)
 
         console.log(`会话同步成功: conversationId=${conversationId}, versionRange=[${minVersion}, ${maxVersion}]`)
       }
@@ -402,4 +530,4 @@ export class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
 }
 
 // 导出单例实例
-export const conversationBusiness = new ConversationBusiness()
+export default new ConversationBusiness()

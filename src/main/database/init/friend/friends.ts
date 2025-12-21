@@ -4,7 +4,7 @@ export const initFriendsTable = (sqlite: any) => {
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS friends (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
-      uuid TEXT NOT NULL UNIQUE,
+      friend_id TEXT NOT NULL UNIQUE,
       send_user_id TEXT NOT NULL,
       rev_user_id TEXT NOT NULL,
       send_user_notice TEXT,

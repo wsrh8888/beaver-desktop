@@ -8,11 +8,11 @@ import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import wsManager from 'mainModule/ws-manager'
 
-export class AuthHandler {
+class AuthHandler {
   /**
    * 统一的认证处理入口
    */
-  static async handle(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: AuthCommand, _data: any) {
+  async handle(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: AuthCommand, _data: any) {
     switch (command) {
       case AuthCommand.LOGIN:
         await this.handleLogin()
@@ -28,7 +28,7 @@ export class AuthHandler {
   /**
    * 处理登录
    */
-  public static async handleLogin() {
+  async handleLogin() {
     try {
       logger.info({ text: '开始登录流程' }, 'AuthHandler')
 
@@ -75,7 +75,7 @@ export class AuthHandler {
   /**
    * 处理登出
    */
-  public static async handleLogout() {
+  async handleLogout() {
     try {
       logger.info({ text: '开始登出流程' }, 'AuthHandler')
       // cache初始化
@@ -111,7 +111,7 @@ export class AuthHandler {
   /**
    * 关闭所有应用窗口（排除登录窗口）
    */
-  private static closeAllWindows() {
+  private closeAllWindows() {
     const windows = BrowserWindow.getAllWindows()
     let closedCount = 0
     windows.forEach((window) => {
@@ -126,7 +126,7 @@ export class AuthHandler {
   /**
    * 关闭登录窗口
    */
-  private static closeLoginWindow() {
+  private closeLoginWindow() {
     const windows = BrowserWindow.getAllWindows()
     let closedCount = 0
     windows.forEach((window) => {
@@ -138,3 +138,5 @@ export class AuthHandler {
     logger.info({ text: `已关闭 ${closedCount} 个登录窗口` }, 'AuthHandler')
   }
 }
+
+export default new AuthHandler()

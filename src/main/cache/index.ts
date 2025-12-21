@@ -9,7 +9,7 @@ import * as path from 'node:path'
 import { previewOnlineFileApi } from 'mainModule/api/file'
 import { getRootPath } from 'mainModule/config'
 import { downloadFile } from 'mainModule/utils/file/download'
-import { mediaCacheService } from '../database/services/media/media'
+import dBServicemediaCache  from '../database/services/media/media'
 import { calculateFileMD5, createDir, deleteFile, fileExists, getFileSize } from '../utils/file'
 import { cacheConfig, cacheTypeToFilePath } from './config'
 
@@ -121,7 +121,7 @@ class MediaManager {
             // 获取文件大小
             const fileSize = await getFileSize(outputPath)
             // 保存到数据库（直接使用 fileKey 作为主键）
-            await mediaCacheService.upsert(fileKey, outputPath, type, fileSize)
+            await dBServicemediaCache.upsert({ fileKey, path: outputPath, type, size: fileSize })
             return outputPath
           }
           else {
@@ -151,7 +151,7 @@ class MediaManager {
       }
 
       // 保存到数据库（直接使用 fileKey 作为主键）
-      await mediaCacheService.upsert(fileKey, outputPath, type, downloadedFile.size)
+      await dBServicemediaCache.upsert({ fileKey: fileKey, path: outputPath, type, size: downloadedFile.size })
 
       return outputPath
     }
@@ -178,11 +178,11 @@ class MediaManager {
     }
 
     if (!fileKey) {
-      console.warn('fileName is not set')
+      console.warn('fileKey is not set')
       return fileUrl
     }
 
-    const cacheInfo = await mediaCacheService.getMediaInfo(fileKey)
+    const cacheInfo = await dBServicemediaCache.getMediaInfo({ fileKey: fileKey })
     if (cacheInfo) {
       console.log('缓存文件存在: ', cacheInfo.path)
       this.cacheFile[fileKey] = `file://${cacheInfo.path}`
@@ -204,7 +204,7 @@ class MediaManager {
    * 删除缓存（软删除 + 物理删除文件）
    */
   async remove(fileKey: string): Promise<void> {
-    const cacheInfo = await mediaCacheService.getMediaInfo(fileKey)
+    const cacheInfo = await dBServicemediaCache.getMediaInfo({ fileKey: fileKey })
     if (this.cacheFile[fileKey]) {
       delete this.cacheFile[fileKey]
     }
@@ -212,7 +212,7 @@ class MediaManager {
       // 物理删除文件
       await deleteFile(cacheInfo.path)
       // 数据库软删除
-      await mediaCacheService.deleteMedia(fileKey)
+      await dBServicemediaCache.deleteMedia({ fileKey: fileKey })
     }
   }
 }

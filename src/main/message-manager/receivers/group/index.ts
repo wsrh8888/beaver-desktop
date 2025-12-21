@@ -1,15 +1,15 @@
-import { GroupReceiver } from './group'
-import { GroupJoinRequestReceiver } from './group-join-request-receiver'
-import { GroupMemberReceiver } from './group-member-receiver'
+import groupReceiver from './group'
+import groupJoinRequestReceiver from './group-join-request-receiver'
+import groupMemberReceiver from './group-member-receiver'
 
 /**
  * @description: 群组消息路由器
  * 根据消息类型路由到对应的接收器
  */
-export class GroupMessageRouter {
-  private groupReceiver = new GroupReceiver()
-  private groupJoinRequestReceiver = new GroupJoinRequestReceiver()
-  private groupMemberReceiver = new GroupMemberReceiver()
+class GroupMessageRouter {
+  private groupReceiver = groupReceiver
+  private groupJoinRequestReceiver = groupJoinRequestReceiver
+  private groupMemberReceiver = groupMemberReceiver
 
   /**
    * 处理群组消息
@@ -46,4 +46,4 @@ export class GroupMessageRouter {
 }
 
 // 导出单例实例
-export const groupMessageRouter = new GroupMessageRouter()
+export default new GroupMessageRouter()
