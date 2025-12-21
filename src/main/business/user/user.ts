@@ -77,8 +77,8 @@ class UserBusiness extends BaseBusiness<UserSyncItem> {
             gender: user.gender,
             status: user.status,
             version: user.version,
-            createdAt: Math.floor(user.createAt / 1000), // 转换为秒级时间戳
-            updatedAt: Math.floor(user.updateAt / 1000),
+            createdAt: Math.floor(user.createdAt / 1000), // 转换为秒级时间戳
+            updatedAt: Math.floor(user.updatedAt / 1000),
           }
           await dBServiceUser.upsert(userData)
         }

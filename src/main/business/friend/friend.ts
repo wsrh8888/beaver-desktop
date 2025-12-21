@@ -148,8 +148,8 @@ class FriendBusiness extends BaseBusiness<FriendSyncItem> {
             source: friend.source || '',
             isDeleted: friend.isDeleted ? 1 : 0, // 转换为整数
             version: friend.version || 0,
-            createdAt: Math.floor(friend.createAt / 1000), // 转换为秒级时间戳
-            updatedAt: Math.floor(friend.updateAt / 1000),
+            createdAt: Math.floor(friend.createdAt / 1000), // 转换为秒级时间戳
+            updatedAt: Math.floor(friend.updatedAt / 1000),
           }
           await dBServiceFriend.upsert(friendData)
         }

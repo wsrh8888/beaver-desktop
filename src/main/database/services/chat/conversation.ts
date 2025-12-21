@@ -29,15 +29,15 @@ class ChatConversation extends BaseService {
    * @description upsert单个会话（插入或更新）
    */
   async upsert(req: DBUpsertConversationReq): Promise<void> {
-    // 处理字段名映射：API返回的 createAt/updateAt 映射到数据库的 createdAt/updatedAt
+    // 处理字段名映射：API返回的 createdAt/updatedAt 映射到数据库的 createdAt/updatedAt
     const dbData = {
       conversationId: req.conversationId,
       type: req.type,
       maxSeq: req.maxSeq,
       lastMessage: req.lastMessage,
       version: req.version,
-      createdAt: req.createAt, // API返回的是 createAt
-      updatedAt: req.updateAt, // API返回的是 updateAt
+      createdAt: req.createdAt, // API返回的是 createdAt
+      updatedAt: req.updatedAt, // API返回的是 updatedAt
     }
 
     await this.db
@@ -65,15 +65,15 @@ class ChatConversation extends BaseService {
 
     // 使用插入或更新的方式来避免唯一约束冲突
     for (const conversation of req.conversations) {
-      // 处理字段名映射：API返回的 createAt/updateAt 映射到数据库的 createdAt/updatedAt
+      // 处理字段名映射：API返回的 createdAt/updatedAt 映射到数据库的 createdAt/updatedAt
       const dbData = {
         conversationId: conversation.conversationId,
         type: conversation.type,
         maxSeq: conversation.maxSeq,
         lastMessage: conversation.lastMessage,
         version: conversation.version,
-        createdAt: conversation.createAt, // API返回的是 createAt
-        updatedAt: conversation.updateAt, // API返回的是 updateAt
+        createdAt: conversation.createdAt, // API返回的是 createdAt
+        updatedAt: conversation.updatedAt, // API返回的是 updatedAt
       }
 
       await this.db

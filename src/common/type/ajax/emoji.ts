@@ -207,8 +207,8 @@ export interface IEmojiDetailItem {
   status: number
   version: number
   packageId?: string
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 /**
@@ -224,8 +224,8 @@ export interface IEmojiPackageDetailItem {
   type: string
   status: number
   collectCount: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
   version: number
 }
 
@@ -238,8 +238,8 @@ export interface IEmojiCollectDetailItem {
   emojiId: string
   isDeleted: boolean
   version: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 /**
@@ -251,8 +251,8 @@ export interface IEmojiPackageCollectDetailItem {
   packageId: string
   isDeleted: boolean
   version: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 /**
@@ -263,8 +263,8 @@ export interface IEmojiPackageContentDetailItem {
   emojiId: string
   sortOrder: number
   version: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 /**

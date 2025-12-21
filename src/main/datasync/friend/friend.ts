@@ -123,8 +123,8 @@ class FriendSyncModule {
           source: friend.source,
           isDeleted: friend.isDeleted ? 1 : 0, // 转换为整数
           version: friend.version,
-          createdAt: friend.createAt,
-          updatedAt: friend.updateAt,
+          createdAt: friend.createdAt,
+          updatedAt: friend.updatedAt,
         }))
 
         await dBServiceFriend.batchCreate({ friends })

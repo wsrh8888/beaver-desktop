@@ -50,7 +50,7 @@ export default defineComponent({
           id: item.requestId.toString(),
           name: item.applicantName,
           avatar: item.applicantAvatar,
-          time: new Date(item.createAt).toLocaleString(),
+          time: new Date(item.createdAt).toLocaleString(),
           message: item.message || '申请加入群聊',
           status: item.status,
           isGroup: false, // 申请者是个人，不是群

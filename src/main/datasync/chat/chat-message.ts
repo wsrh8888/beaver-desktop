@@ -168,7 +168,7 @@ class MessageSync {
           msg: msg.msg,
           seq: msg.seq,
           // sendStatus: 默认值1（已发送）- 服务端同步的消息
-          createdAt: msg.createAt,
+          createdAt: msg.createdAt,
           updatedAt: Math.floor(Date.now() / 1000),
         }))
 

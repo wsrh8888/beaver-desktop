@@ -121,7 +121,7 @@ class MediaManager {
             // 获取文件大小
             const fileSize = await getFileSize(outputPath)
             // 保存到数据库（直接使用 fileKey 作为主键）
-            await dBServicemediaCache.upsert(fileKey, outputPath, type, fileSize)
+            await dBServicemediaCache.upsert({ fileKey, path: outputPath, type, size: fileSize })
             return outputPath
           }
           else {

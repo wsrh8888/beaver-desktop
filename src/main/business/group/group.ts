@@ -234,7 +234,7 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
         applicantAvatar: userInfo?.avatar || '',
         message: request.message || '',
         status: request.status || 0,
-        createAt: request.createdAt || 0,
+        createdAt: request.createdAt || 0,
         version: request.version || 0,
       }
     })
@@ -289,8 +289,8 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
             joinType: group.joinType || 0,
             status: group.status || 1, // 直接使用服务器返回的状态：1正常 2冻结 3解散
             version: group.version || 0,
-            createdAt: Math.floor(group.createAt / 1000), // 转换为秒级时间戳
-            updatedAt: Math.floor(group.updateAt / 1000),
+            createdAt: Math.floor(group.createdAt / 1000), // 转换为秒级时间戳
+            updatedAt: Math.floor(group.updatedAt / 1000),
           }
           await dbServiceGroup.upsert(groupData)
         }

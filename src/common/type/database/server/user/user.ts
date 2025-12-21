@@ -88,6 +88,6 @@ export type DBGetAllUsersRes = Array<{
   gender: number
   status: number
   version: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }>

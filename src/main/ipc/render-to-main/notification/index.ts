@@ -10,10 +10,12 @@ class NotificationHandler {
    * 统一的notification处理入口
    */
   handle(_event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: NotificationCommand | string, data: any): any {
-    logger.info({ text: '收到notification消息', data: {
-      command,
-      data,
-    } }, 'NotificationHandler')
+    logger.info({
+      text: '收到notification消息', data: {
+        command,
+        data,
+      }
+    }, 'NotificationHandler')
 
     switch (command) {
       case NotificationCommand.Send:

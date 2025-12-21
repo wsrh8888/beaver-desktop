@@ -83,8 +83,8 @@ class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem> {
               emojiId: contentData.emojiId,
               sortOrder: contentData.sortOrder,
               version: contentData.version,
-              createAt: contentData.createdAt,
-              updateAt: contentData.updatedAt,
+              createdAt: contentData.createdAt,
+              updatedAt: contentData.updatedAt,
             }))
 
             await dBServiceEmojiPackageEmoji.batchCreate(contentRows)

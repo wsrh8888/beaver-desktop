@@ -41,6 +41,9 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
    * 获取聊天历史
    */
   async getChatHistory(_header: ICommonHeader, params: IChatHistoryReq): Promise<IChatHistoryRes> {
+    try {
+      
+  
     const conversationId = params.conversationId
     const seq = params.seq // 可选，用于加载历史消息（比这个seq更小的消息）
     const limit = params.limit || 100
@@ -88,7 +91,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
           avatar: senderDetail?.avatar || '',
           nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
         },
-        create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
+        created_at: new Date(message.createdAt * 1000), // 转换为前端期望的格式
         status: 0, // 消息状态：正常（只增不修改原则）
         sendStatus: message.sendStatus || 0, // 发送状态（前端需要）
       }
@@ -98,6 +101,13 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       count: formattedMessages.length, // 当前页的数量
       list: formattedMessages,
     }
+  } catch (error) {
+    console.error('Failed to get chat history:', error)
+    return {
+      count: 0,
+      list: [],
+    }
+  }
   }
 
   /**
@@ -142,7 +152,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
           avatar: senderDetail?.avatar || '',
           nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
         },
-        create_at: new Date(message.createdAt * 1000).toISOString().slice(0, 19).replace('T', ' '), // 转换为前端期望的格式
+        created_at: new Date(message.createdAt * 1000), // 转换为前端期望的格式
         status: 0, // 消息状态：正常（只增不修改原则）
         sendStatus: message.sendStatus || 1, // 发送状态（客户端使用）
       }
@@ -258,12 +268,12 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       seq: msg.seq,
       // sendStatus: 默认值1（已发送）- 服务端同步的消息
       sendStatus: 1,
-      createdAt: msg.createAt,
+      createdAt: msg.createdAt,
       updatedAt: Math.floor(Date.now() / 1000),
     }))
 
     // 批量保存到本地数据库
-    await dBServiceMessage.batchCreate(formattedMessages)
+    await dBServiceMessage.batchCreate({ messages: formattedMessages })
 
     console.log('消息数据保存成功:', formattedMessages.length, '条')
   }

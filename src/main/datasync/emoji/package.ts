@@ -76,8 +76,8 @@ class PackageSync {
           type: pkg.type,
           status: pkg.status,
           version: pkg.version,
-          createdAt: pkg.createdAt ?? pkg.createAt,
-          updatedAt: pkg.updatedAt ?? pkg.updateAt,
+          createdAt: pkg.createdAt ?? pkg.createdAt,
+          updatedAt: pkg.updatedAt ?? pkg.updatedAt,
         }))
 
         await dBServiceEmojiPackage.batchCreate(packages)

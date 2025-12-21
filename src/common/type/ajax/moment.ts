@@ -20,7 +20,18 @@ export interface ICreateMomentReq {
 
 // 创建朋友圈响应
 export interface ICreateMomentRes {
-  // 空响应
+  id: string // 动态ID
+  userId: string // 用户ID
+  userName: string // 用户名
+  avatar: string // 用户头像
+  content: string // 动态内容
+  files: IFileInfo[] // 文件信息列表
+  comments: IMomentCommentModel[] // 评论列表（创建时为空）
+  likes: IMomentLikeModel[] // 点赞列表（创建时为空）
+  commentCount: number // 总评论数（创建时为0）
+  likeCount: number // 总点赞数（创建时为0）
+  isLiked: boolean // 当前用户是否已点赞（创建时为false）
+  createdAt: string // 动态创建时间
 }
 
 // 获取朋友圈列表请求

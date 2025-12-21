@@ -189,8 +189,9 @@ class WsManager {
     try {
       const messageStr = JSON.stringify(message)
       if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+        logger.info({ text: '发送ws消息', data: messageStr })
+
         this.socket.send(messageStr)
-        logger.info({ text: '消息发送成功', data: { command: message.command } })
       }
       else {
         throw new Error('WebSocket not ready')

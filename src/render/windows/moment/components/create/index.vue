@@ -15,13 +15,8 @@
       <div class="publish-content">
         <!-- 文本输入 -->
         <div class="publish-text-section">
-          <textarea
-            v-model="content"
-            placeholder="这一刻的想法..."
-            class="publish-textarea"
-            maxlength="500"
-            @input="handleTextInput"
-          />
+          <textarea v-model="content" placeholder="这一刻的想法..." class="publish-textarea" maxlength="500"
+            @input="handleTextInput" />
           <div class="text-counter">
             {{ content.length }}/500
           </div>
@@ -31,19 +26,11 @@
         <div class="publish-media-section">
           <div class="media-grid">
             <!-- 已选择的媒体文件 -->
-            <div
-              v-for="(file, index) in mediaFiles"
-              :key="index"
-              class="media-item"
-            >
+            <div v-for="(file, index) in mediaFiles" :key="index" class="media-item">
               <!-- 图片预览 -->
               <div class="media-preview-wrapper">
-                <BeaverImage
-                  :file-name="file.fileKey"
-                  alt="图片预览"
-                  image-class="media-preview"
-                  @click="handleMediaClick(file, index)"
-                />
+                <BeaverImage :file-name="file.fileKey" alt="图片预览" image-class="media-preview"
+                  @click="handleMediaClick(file, index)" />
               </div>
 
               <button class="media-remove" @click="removeMediaFile(index)">
@@ -71,13 +58,8 @@
         <BeaverButton size="small" :disabled="isPublishing" @click="$emit('close')">
           取消
         </BeaverButton>
-        <BeaverButton
-          type="primary"
-          size="small"
-          :disabled="!canPublish || isPublishing"
-          :loading="isPublishing"
-          @click="handlePublish"
-        >
+        <BeaverButton type="primary" size="small" :disabled="!canPublish || isPublishing" :loading="isPublishing"
+          @click="handlePublish">
           发布
         </BeaverButton>
       </div>
@@ -93,6 +75,7 @@ import { createMomentApi } from 'renderModule/api/moment'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { selectAndUploadFile } from 'renderModule/utils/upload'
+import { useMomentStore } from '../../store/moment/moment'
 import { computed, defineComponent, ref } from 'vue'
 
 interface MediaFile {
@@ -115,6 +98,7 @@ export default defineComponent({
   },
   emits: ['close', 'published'],
   setup(props, { emit }) {
+    const momentStore = useMomentStore()
     const content = ref('')
     const mediaFiles = ref<MediaFile[]>([])
     const isPublishing = ref(false)
@@ -201,33 +185,23 @@ export default defineComponent({
 
       isPublishing.value = true
 
-      try {
-        const publishData: ICreateMomentReq = {
-          content: content.value.trim(),
-          files: mediaFiles.value.map(f => ({
-            fileKey: f.fileKey,
-            type: f.type,
-          })),
-        }
+      const publishData: ICreateMomentReq = {
+        content: content.value.trim(),
+        files: mediaFiles.value.map(f => ({
+          fileKey: f.fileKey,
+          type: f.type,
+        })),
+      }
 
-        const result = await createMomentApi(publishData)
+      const result = await createMomentApi(publishData)
 
-        if (result.code === 0) {
-          emit('published')
-          emit('close')
-        }
-        else {
-          console.error('发布失败:', result.message)
-          // TODO: 显示错误提示
-        }
+      if (result.code === 0) {
+        // 直接使用返回的数据添加到列表
+        momentStore.addNewMoment(result.result)
+        emit('published')
+        emit('close')
       }
-      catch (error) {
-        console.error('发布失败:', error)
-        // TODO: 显示错误提示
-      }
-      finally {
-        isPublishing.value = false
-      }
+      isPublishing.value = false
     }
 
     return {
@@ -283,6 +257,7 @@ export default defineComponent({
     opacity: 0;
     transform: scale(0.95) translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: scale(1) translateY(0);
@@ -317,10 +292,12 @@ export default defineComponent({
     align-items: center;
     justify-content: center;
     border-radius: 5px;
+
     img {
       width: 14px;
       height: 14px;
     }
+
     &:hover {
       background: rgba(255, 125, 69, 0.1);
     }

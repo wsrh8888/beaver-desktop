@@ -71,8 +71,8 @@ class PackageEmojiSync {
           emojiId: content.emojiId,
           sortOrder: content.sortOrder,
           version: content.version,
-          createdAt: content.createAt, // 注意这里用的是 createAt，不是 createdAt
-          updatedAt: content.updateAt, // 注意这里用的是 updateAt，不是 updatedAt
+          createdAt: content.createdAt, // 注意这里用的是 createdAt，不是 createdAt
+          updatedAt: content.updatedAt, // 注意这里用的是 updatedAt，不是 updatedAt
         }))
 
         await dBServiceEmojiPackageEmoji.batchCreate({ relations: contents })

@@ -41,6 +41,13 @@ export const useMomentStore = defineStore('useMomentStore', {
 
   actions: {
     /**
+     * @description: 添加新动态到列表开头
+     */
+    addNewMoment(moment: IMomentInfo) {
+      this.momentList.unshift(moment)
+    },
+
+    /**
      * @description: 加载动态列表
      */
     async loadMoments(page: number = 1) {

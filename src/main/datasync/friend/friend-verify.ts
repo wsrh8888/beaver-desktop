@@ -115,8 +115,8 @@ class FriendVerifySyncModule {
           message: verify.message,
           source: verify.source,
           version: verify.version,
-          createdAt: verify.createAt,
-          updatedAt: verify.updateAt,
+          createdAt: verify.createdAt,
+          updatedAt: verify.updatedAt,
         }))
 
         // 批量插入好友验证数据

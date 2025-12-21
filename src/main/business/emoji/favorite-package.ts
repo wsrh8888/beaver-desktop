@@ -96,8 +96,8 @@ class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncItem> {
           userId: collectData.userId,
           packageId: collectData.packageId,
           version: collectData.version,
-          createdAt: collectData.createAt,
-          updatedAt: collectData.updateAt,
+          createdAt: collectData.createdAt,
+          updatedAt: collectData.updatedAt,
         }))
 
         await dBServiceEmojiPackageCollect.batchCreate(collectRows)

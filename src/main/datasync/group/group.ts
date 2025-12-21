@@ -89,8 +89,8 @@ class GroupSync {
         joinType: group.joinType,
         status: group.isDeleted ? 0 : 1,
         version: group.version,
-        createdAt: group.createAt,
-        updatedAt: group.updateAt,
+        createdAt: group.createdAt,
+        updatedAt: group.updatedAt,
       }))
 
       await dbServiceGroup.batchUpsert(localGroups)

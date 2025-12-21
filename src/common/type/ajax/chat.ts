@@ -119,7 +119,7 @@ export interface ISendMsgRes {
   conversationId: string // 会话ID
   msg: IMessage
   sender: ISender // 发送者
-  createAt: string // 消息时间
+  createdAt: string // 消息时间
   msgPreview: string // 消息预览
   status: number // 消息状态 1:正常 2:已撤回 3:已编辑
 }
@@ -151,13 +151,13 @@ export interface IConversationInfoRes {
    */
   msgPreview: string
   /**
-   * @description: 消息时间（格式化后的字符串，前端计算属性，可选）
-   */
-  updateAt?: string
-  /**
    * @description: 消息时间戳（原始时间戳，秒级，用于排序和格式化）
    */
   updatedAt: number
+  /**
+   * @description: 消息时间（格式化后的字符串，前端展示用）
+   */
+  updatedAtStr?: string
   /**
    * @description: 是否置顶
    */
@@ -316,7 +316,7 @@ export interface IChatHistory {
   seq: number // 消息序列号
   msg: IMessage // 消息内容对象
   sender: ISender // 发送者信息
-  create_at: string // 创建时间
+  created_at: string // 创建时间
   status: number // 消息状态
   sendStatus?: MessageStatus // 发送状态（本地发送状态）
 }
@@ -340,7 +340,7 @@ export interface IChatSyncMessage {
   msg: string // 消息内容JSON字符串
   isDeleted: boolean // 是否已删除
   seq: number // 序列号，用于数据同步
-  createAt: number // 创建时间戳
+  createdAt: number // 创建时间戳
 }
 
 // 聊天数据同步响应
@@ -364,8 +364,8 @@ export interface IConversationSyncItem {
   maxSeq: number // 会话消息的最大Seq
   lastMessage: string // 会话最后一条消息预览
   version: number // 版本号
-  createAt: number // 创建时间戳
-  updateAt: number // 更新时间戳
+  createdAt: number // 创建时间戳
+  updatedAt: number // 更新时间戳
 }
 
 // 会话数据同步响应
@@ -390,8 +390,8 @@ export interface IUserConversationSyncItem {
   isDeleted: boolean // 是否已删除
   isPinned: boolean // 是否置顶
   version: number // 版本号
-  createAt: number // 创建时间戳
-  updateAt: number // 更新时间戳
+  createdAt: number // 创建时间戳
+  updatedAt: number // 更新时间戳
 }
 
 // 用户会话关系数据同步响应
@@ -418,8 +418,8 @@ export interface IConversationById {
   maxSeq: number // 会话消息的最大Seq
   lastMessage: string // 会话最后一条消息预览
   version: number // 版本号
-  createAt: number // 创建时间戳
-  updateAt: number // 更新时间戳
+  createdAt: number // 创建时间戳
+  updatedAt: number // 更新时间戳
 }
 
 // 批量获取用户会话设置数据请求
@@ -441,8 +441,8 @@ export interface IUserConversationSettingById {
   isMuted: boolean // 是否免打扰
   userReadSeq: number // 用户已读序列号
   version: number // 版本号
-  createAt: number // 创建时间戳
-  updateAt: number // 更新时间戳
+  createdAt: number // 创建时间戳
+  updatedAt: number // 更新时间戳
 }
 
 // 更新已读序列号请求

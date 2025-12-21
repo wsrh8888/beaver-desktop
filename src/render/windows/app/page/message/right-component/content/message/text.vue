@@ -45,6 +45,7 @@ export default defineComponent({
   line-height: 1.5;
   word-break: break-word;
   color: #2D3436;
+  padding: 5px;
 }
 
 :deep(.message-emoji) {

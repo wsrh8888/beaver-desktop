@@ -101,8 +101,8 @@ class UserConversationSync {
             isMuted: uc.isMuted ? 1 : 0,
             userReadSeq: uc.userReadSeq,
             version: uc.version,
-            createdAt: uc.createAt,
-            updatedAt: uc.updateAt,
+            createdAt: uc.createdAt,
+            updatedAt: uc.updatedAt,
           }))
 
           // 批量插入用户会话关系数据

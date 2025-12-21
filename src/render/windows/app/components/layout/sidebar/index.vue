@@ -13,12 +13,19 @@
         @click="handleClick(item.router, item.id)"
       >
         <div class="nav-icon">
+          
           <img :src="item.router === route.path ? item.activeIcon : item.defaultIcon" :alt="item.title">
           <span
-            v-if="badgeCount(item) > 0"
+            v-if="badgeCount(item) > 0 && item.id !== 'message'"
             class="badge"
           >
             {{ badgeCount(item) }}
+          </span>
+          <span
+            v-if="item.id === 'message' && totalUnreadCount > 0"
+            class="badge"
+          >
+            {{ totalUnreadCount }}
           </span>
         </div>
         <div class="nav-label">
@@ -27,7 +34,7 @@
       </div>
     </div>
     <!-- 更新图标 -->
-    <div v-if="updateStore?.updateInfo?.hasUpdate" class="update-icon app__no_drag" @click="handleUpdateClick">
+    <div v-if=" updateStore?.updateInfo?.hasUpdate" class="update-icon app__no_drag" @click="handleUpdateClick">
       <img src="renderModule/assets/image/update/update.svg" alt="更新">
       <span class="update-badge" />
     </div>
@@ -50,6 +57,7 @@ import { computed, nextTick, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { outsideList } from './data'
 import UserInfoSidebar from './userInfo.vue'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 
 export default {
   components: {
@@ -62,6 +70,9 @@ export default {
     const userStore = useUserStore()
     const updateStore = useUpdateStore()
     const notificationStore = useNotificationStore()
+    const conversationStore = useConversationStore()
+
+    const totalUnreadCount = computed(() => conversationStore.getTotalUnreadCount)
 
     const userInfo = computed(() => userStore.getUserInfo)
     const badgeCount = (item: any) => {
@@ -100,6 +111,7 @@ export default {
     }
 
     return {
+      totalUnreadCount,
       CacheType,
       userInfo,
       route,

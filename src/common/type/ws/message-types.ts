@@ -22,7 +22,7 @@ export interface IMessageSender {
 export interface IPrivateMessageReceiveBody {
   conversationId: string
   conversationType: number
-  createAt: string
+  createdAt: string
   id?: number
   messageId: string
   msg: IMessageMsg

@@ -113,8 +113,8 @@ class UserSyncModule {
         gender: user.gender,
         status: user.status,
         version: user.version,
-        createdAt: user.createAt,
-        updatedAt: user.updateAt,
+        createdAt: user.createdAt,
+        updatedAt: user.updatedAt,
       }))
 
       await dBServiceUser.batchCreate(usersModels)

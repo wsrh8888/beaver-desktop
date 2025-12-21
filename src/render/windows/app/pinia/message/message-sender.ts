@@ -180,7 +180,7 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
             avatar: userStore.getUserInfo.avatar,
             nickName: userStore.getUserInfo.nickName,
           },
-          create_at: new Date().toISOString(),
+          created_at: new Date().toISOString(),
           status: 1, // 正常状态
           sendStatus: 0, // 发送中状态
         }

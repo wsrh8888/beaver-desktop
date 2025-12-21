@@ -53,8 +53,8 @@ class UserConversationBusiness extends BaseBusiness<UserConversationSyncItem> {
           isMuted: userConversationData.isMuted ? 1 : 0,
           userReadSeq: userConversationData.userReadSeq,
           version: userConversationData.version,
-          createdAt: userConversationData.createAt,
-          updatedAt: userConversationData.updateAt,
+          createdAt: userConversationData.createdAt,
+          updatedAt: userConversationData.updatedAt,
         }
 
         // 使用插入或更新的方式来同步单个用户会话

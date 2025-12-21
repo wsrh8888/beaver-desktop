@@ -155,8 +155,8 @@ export interface IFriendSyncItem {
   revUserNotice: string
   isDeleted: boolean
   version: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 // 获取好友用户版本信息（用于数据同步）
@@ -197,8 +197,8 @@ export interface IFriendVerifySyncItem {
   message: string // 附加消息
   source: string // 添加好友来源：qrcode/search/group/recommend
   version: number // 版本号
-  createAt: number // 创建时间戳
-  updateAt: number // 更新时间戳
+  createdAt: number // 创建时间戳
+  updatedAt: number // 更新时间戳
 }
 
 // 批量获取好友数据
@@ -228,6 +228,6 @@ export interface IFriendVerifyById {
   message: string // 附加消息
   source: string // 添加好友来源
   version: number // 版本号
-  createAt: number // 创建时间戳
-  updateAt: number // 更新时间戳
+  createdAt: number // 创建时间戳
+  updatedAt: number // 更新时间戳
 }

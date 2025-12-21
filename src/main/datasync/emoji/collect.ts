@@ -79,8 +79,8 @@ class CollectSync {
           emojiId: collect.emojiId,
           emojiInfo: collect.emojiInfo ? JSON.stringify(collect.emojiInfo) : null,
           version: collect.version,
-          createdAt: collect.createdAt ?? collect.createAt,
-          updatedAt: collect.updatedAt ?? collect.updateAt,
+          createdAt: collect.createdAt ?? collect.createdAt,
+          updatedAt: collect.updatedAt ?? collect.updatedAt,
         }))
 
         await dBServiceEmojiCollect.batchCreate(collects)

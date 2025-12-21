@@ -22,8 +22,8 @@ class EmojiPackageBusiness {
           type: pkg.type,
           status: pkg.status,
           collectCount: 0,
-          createAt: pkg.createdAt,
-          updateAt: pkg.updatedAt,
+          createdAt: pkg.createdAt,
+          updatedAt: pkg.updatedAt,
           version: pkg.version,
         }
       })

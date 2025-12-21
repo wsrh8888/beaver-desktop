@@ -177,8 +177,8 @@ class User extends BaseService {
           gender: users.gender,
           status: users.status,
           version: users.version,
-          createAt: users.createdAt,
-          updateAt: users.updatedAt,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt,
         })
         .from(users)
 
@@ -192,8 +192,8 @@ class User extends BaseService {
         gender: user.gender || 0,
         status: user.status || 0,
         version: user.version || 0,
-        createAt: user.createAt || 0,
-        updateAt: user.updateAt || 0,
+        createdAt: user.createdAt || 0,
+        updatedAt: user.updatedAt || 0,
       }))
     }
     catch (error) {

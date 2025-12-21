@@ -32,7 +32,7 @@ class ChatSender {
       msg: JSON.stringify(msg),
       seq: 0, // 临时seq，实际seq由服务器返回
       sendStatus: 0, // 发送状态：发送中（客户端新消息）
-      createAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
     })
 
     // 2. 立即返回，让前端可以显示消息（大厂IM的标准做法）

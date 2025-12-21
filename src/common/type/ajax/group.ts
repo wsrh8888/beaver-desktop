@@ -458,11 +458,11 @@ export interface IGroupInfoRes {
   /**
    * @description: 创建时间戳
    */
-  createAt: number
+  createdAt: number
   /**
    * @description: 更新时间戳
    */
-  updateAt: number
+  updatedAt: number
   /**
    * @description: 数据版本号
    */
@@ -514,8 +514,8 @@ export interface IGroupSyncItem {
   joinType: number
   status: number
   version: number
-  createAt: number
-  updateAt: number
+  createdAt: number
+  updatedAt: number
 }
 
 // 群聊搜索请求
@@ -583,7 +583,7 @@ export interface IGroupJoinRequestItem {
   /**
    * @description: 申请时间戳
    */
-  createAt: number
+  createdAt: number
   /**
    * @description: 数据版本号
    */

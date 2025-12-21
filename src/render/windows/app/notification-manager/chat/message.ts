@@ -1,5 +1,7 @@
 import Logger from 'renderModule/utils/logger'
 import { useMessageStore } from '../../pinia/message/message'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 
 const logger = new Logger('DatabaseChatMessageEventManager')
 
@@ -21,7 +23,6 @@ class DatabaseChatMessageEventManager {
 
       // 根据消息序列号拉取最新消息
       await messageStore.fetchMessagesBySeqRange(conversationId, seq, seq)
-
       logger.info({
         text: `成功处理消息更新: conversation=${conversationId}, seq=${seq}`,
       })

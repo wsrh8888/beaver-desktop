@@ -95,8 +95,8 @@ class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
           emojiId: collectData.emojiId,
           packageId: collectData.packageId,
           version: collectData.version,
-          createdAt: collectData.createAt,
-          updatedAt: collectData.updateAt,
+          createdAt: collectData.createdAt,
+          updatedAt: collectData.updatedAt,
         }))
 
         await dBServiceEmojiCollect.batchCreate(collectRows)
