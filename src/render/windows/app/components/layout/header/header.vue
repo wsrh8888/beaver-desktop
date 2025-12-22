@@ -18,13 +18,6 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-// import { ipcRenderer } from 'electron';
-
-declare global {
-  interface Window {
-    electron: any
-  }
-}
 
 export default defineComponent({
   setup() {
@@ -33,11 +26,11 @@ export default defineComponent({
     }
 
     const handleMaximize = () => {
-      window.electron.window.toggleMaximize()
+      window.electron.window.maximize()
     }
 
     const handleClose = () => {
-      window.electron.window.close()
+      window.electron.window.closeWindow('app', { hideOnly: true })
     }
 
     return {
