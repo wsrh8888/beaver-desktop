@@ -68,7 +68,7 @@ class EmojiBusiness extends BaseBusiness<EmojiSyncItem> {
         }))
 
         // 批量更新本地数据库
-        await dBServiceEmoji.batchCreate(emojis)
+        await dBServiceEmoji.batchCreate({ emojiList: emojis })
 
         // 发送通知到render进程，告知表情数据已更新
         if (emojis.length > 0) {

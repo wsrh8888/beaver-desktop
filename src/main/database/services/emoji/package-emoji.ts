@@ -104,6 +104,21 @@ class EmojiPackageEmoji extends BaseService {
   }
 
   /**
+   * @description 根据关联ID列表获取表情关联数据
+   */
+  async getEmojisByRelationIds(req: { relationIds: string[] }): Promise<IDBEmojiPackageEmoji[]> {
+    if (req.relationIds.length === 0) {
+      return []
+    }
+
+    return await this.db
+      .select()
+      .from(emojiPackageEmoji)
+      .where(inArray(emojiPackageEmoji.relationId, req.relationIds as any))
+      .all()
+  }
+
+  /**
    * @description 删除表情包中的所有表情
    */
   async deleteByPackageId(req: DBDeleteByPackageIdReq): Promise<void> {

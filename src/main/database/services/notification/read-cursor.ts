@@ -46,7 +46,7 @@ class NotificationReadCursor extends BaseService {
         ),
       )
       .get()
-    return { cursor }
+    return cursor
   }
 
   /**

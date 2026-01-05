@@ -93,11 +93,11 @@ class GroupSync {
         updatedAt: group.updatedAt,
       }))
 
-      await dbServiceGroup.batchUpsert(localGroups)
+      await dbServiceGroup.batchUpsert({ groups: localGroups })
 
       // 更新本地群组版本状态
       for (const group of localGroups) {
-        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'info', conversationId: group.groupId, version: group.version })
+        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'info', groupId: group.groupId, version: group.version })
       }
 
       // 发送通知到render进程，告知群组数据已同步

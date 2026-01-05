@@ -28,6 +28,7 @@ class PackageCollectSync {
 
   // 对比本地数据，过滤出需要更新的收藏记录ID
   private async compareAndFilterPackageCollectVersions(packageCollectVersions: any[]): Promise<string[]> {
+    try {
     const ids = packageCollectVersions
       .map(item => item.packageCollectId)
       .filter(id => id && id.trim() !== '')
@@ -44,11 +45,16 @@ class PackageCollectSync {
       return !existingRecord || existingRecord.version < serverVersion
     })
 
-    return needUpdateIds
+      return needUpdateIds
+    }
+    catch (error) {
+      logger.error({ text: '表情包收藏数据同步失败2', data: { error: (error as any)?.message } })
+    }
   }
 
   // 同步表情包收藏数据
   private async syncEmojiPackageCollectData(packageCollectIds: string[]) {
+    try {
     if (packageCollectIds.length === 0) {
       return
     }
@@ -73,7 +79,7 @@ class PackageCollectSync {
           updatedAt: collect.updatedAt,
         }))
 
-        await dBServiceEmojiPackageCollect.batchCreate(collects)
+        await dBServiceEmojiPackageCollect.batchCreate({ collects })
         syncedPackageCollects.push(...collects.map(collect => ({
           packageCollectId: collect.packageCollectId,
           version: collect.version,
@@ -86,6 +92,10 @@ class PackageCollectSync {
       sendMainNotification('*', NotificationModule.EMOJI, NotificationEmojiCommand.EMOJI_PACKAGE_COLLECT_UPDATE, {
         updatedPackageCollects: syncedPackageCollects,
       })
+    }
+    }
+    catch (error) {
+      logger.error({ text: '表情包收藏数据同步失败3', data: { error: (error as any)?.message } })
     }
   }
 }

@@ -65,7 +65,7 @@ class NotificationEventSync {
     const localMap = await dBServiceNotificationEvent.getVersionMapByIds({ eventIds })
 
     return eventVersions
-      .filter(item => (localMap.get(item.eventId) || 0) < item.version)
+      .filter(item => (localMap.versionMap.get(item.eventId) || 0) < item.version)
       .map(item => item.eventId)
   }
 
@@ -92,7 +92,7 @@ class NotificationEventSync {
           updatedAt: event.updatedAt,
         }))
 
-        await dBServiceNotificationEvent.batchUpsert(rows)
+        await dBServiceNotificationEvent.batchCreate({ events: rows })
       }
     }
   }

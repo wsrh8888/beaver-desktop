@@ -25,13 +25,15 @@ class EmojiSyncModule {
       // 获取本地同步时间戳
       const localCursor = await dbServiceDataSync.get({ module: 'emojis' })
       const lastSyncTime = localCursor?.version || 0
-
+      console.log('lastSyncTime', lastSyncTime)
       // 获取服务器上变更的表情版本信息
       const serverResponse = await datasyncGetSyncEmojisApi({ since: lastSyncTime })
-
+      console.log('serverResponse', serverResponse)
       // 对比本地数据，过滤出需要更新的数据
       const needUpdateEmojiIds = await this.compareAndFilterEmojiVersions(serverResponse.result.emojiVersions || [])
-
+      console.log('454444444444444444444')
+      console.log('454444444444444444444')
+      console.log(needUpdateEmojiIds)
       if (needUpdateEmojiIds.length > 0) {
         // 有需要更新的表情数据
         await this.syncEmojiData(needUpdateEmojiIds)
@@ -54,6 +56,7 @@ class EmojiSyncModule {
 
   // 对比本地数据，过滤出需要更新的表情ID
   private async compareAndFilterEmojiVersions(emojiVersions: any[]): Promise<string[]> {
+    try {
     if (!emojiVersions || emojiVersions.length === 0) {
       return []
     }
@@ -70,6 +73,12 @@ class EmojiSyncModule {
     // 查询本地已存在的记录
     const existingEmojisMap = await dBServiceEmoji.getEmojisByIds({ ids: emojiIds })
 
+    console.log('existingEmojisMap', existingEmojisMap)
+    console.log('emojiVersions', emojiVersions)
+    console.log('emojiIds', emojiIds)
+    console.log('existingEmojisMap', existingEmojisMap)
+    console.log('emojiVersions', emojiVersions)
+    console.log('emojiIds', emojiIds)
     // 过滤出需要更新的emojiIds（本地不存在或版本号更旧的数据）
     const needUpdateEmojiIds = emojiIds.filter((id) => {
       const existingEmoji = existingEmojisMap.get(id)
@@ -79,11 +88,16 @@ class EmojiSyncModule {
       return !existingEmoji || existingEmoji.version < serverVersion
     })
 
-    return needUpdateEmojiIds
+    return needUpdateEmojiIds || []
+    }
+    catch (error) {
+      logger.error({ text: '表情基础数据同步失败2', data: { error: (error as any)?.message } })
+    }
   }
 
   // 同步表情数据
   private async syncEmojiData(emojiIds: string[]) {
+    try {
     if (emojiIds.length === 0) {
       return
     }
@@ -111,7 +125,7 @@ class EmojiSyncModule {
           updatedAt: emoji.updatedAt,
         }))
 
-        await dBServiceEmoji.batchCreate(emojis)
+        await dBServiceEmoji.batchCreate({ emojiList: emojis })
 
         // 收集同步的数据用于通知
         syncedEmojis.push(...emojis.map(emoji => ({
@@ -127,15 +141,24 @@ class EmojiSyncModule {
         updatedEmojis: syncedEmojis,
       })
     }
+    }
+    catch (error) {
+      logger.error({ text: '表情基础数据同步失败4', data: { error: (error as any)?.message } })
+    }
   }
 
   // 更新游标
   private async updateEmojisCursor(version: number | null, updatedAt: number) {
+    try {
     await dbServiceDataSync.upsert({
       module: 'emojis',
       version,
       updatedAt,
     })
+    }
+    catch (error) {
+      logger.error({ text: '表情基础数据同步失败3', data: { error: (error as any)?.message } })
+    }
   }
 
   async getStatus() {

@@ -81,7 +81,7 @@ class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> 
             updatedAt: inbox.updatedAt,
           }))
 
-          await dBServiceNotificationInbox.batchUpsert(inboxRows)
+          await dBServiceNotificationInbox.batchAdd({ inboxes: inboxRows })
 
           logger.info({ text: `通知收件箱数据同步成功: userId=${userId}, count=${response.result.inbox.length}` })
 

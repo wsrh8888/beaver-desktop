@@ -43,7 +43,7 @@ class MessageSync {
       }).catch(() => {})
     }
     catch (error) {
-      logger.error({ text: '消息同步失败', data: { error: (error as any)?.message } })
+      logger.error({ text: '消息同步失败1', data: { error: (error as any)?.message } })
     }
   }
 
@@ -117,7 +117,7 @@ class MessageSync {
     }
     }
     catch (error) {
-      logger.error({ text: '消息同步失败', data: { error: (error as any)?.message } })
+      logger.error({ text: '消息同步失败2', data: { error: (error as any)?.message } })
     }
   }
 
@@ -135,7 +135,7 @@ class MessageSync {
     )
     }
     catch (error) {
-      logger.error({ text: '消息同步失败', data: { error: (error as any)?.message } })
+      logger.error({ text: '消息同步失败3', data: { error: (error as any)?.message } })
     }
   }
 
@@ -172,7 +172,7 @@ class MessageSync {
           updatedAt: Math.floor(Date.now() / 1000),
         }))
 
-        await dBServiceMessage.batchCreate(messages)
+        await dBServiceMessage.batchCreate({ messages: messages })
 
         currentSeq = Math.min(currentSeq + 99, toSeq) + 1
       }

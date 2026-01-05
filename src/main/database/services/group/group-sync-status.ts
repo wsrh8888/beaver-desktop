@@ -7,14 +7,18 @@ import type {
   DBGetModuleVersionsRes,
   DBUpsertSyncStatusReq,
 } from 'commonModule/type/database/server/group/group-sync-status'
-import { IDBGroupSyncStatus } from 'commonModule/type/database/db/group'
 
+import { IDBGroupSyncStatus } from 'commonModule/type/database/db/group'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('group-sync-status')
 class GroupSyncStatus extends BaseService {
 
   /**
    * @description 批量获取指定模块的版本状态
    */
   async getModuleVersions(req: DBGetModuleVersionsReq): Promise<DBGetModuleVersionsRes> {
+    try {
     if (req.groupIds.length === 0) {
       return []
     }
@@ -29,6 +33,11 @@ class GroupSyncStatus extends BaseService {
     }))
 
     return versions
+    }
+    catch (error) {
+      logger.error({ text: '获取群组版本状态失败', data: { error: (error as any)?.message } })
+      return []
+    }
   }
 
   /**

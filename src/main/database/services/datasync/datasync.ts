@@ -48,6 +48,7 @@ class DataSync extends BaseService {
    * @description 创建或更新同步游标 (新接口)
    */
   async upsert(req: DBUpsertSyncCursorReq): Promise<void> {
+    try {
     const existing = await this.get({ module: req.module })
 
     if (existing) {
@@ -61,6 +62,10 @@ class DataSync extends BaseService {
     }
     else {
       await this.db.insert(datasync).values(req).run()
+    }
+    }
+    catch (error) {
+      logger.error({ text: '创建或更新同步游标失败', data: { error: (error as any)?.message } })
     }
   }
 

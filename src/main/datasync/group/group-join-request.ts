@@ -84,11 +84,11 @@ class GroupJoinRequestSync {
     const requests = response.result.groupJoinRequests
 
     if (requests.length > 0) {
-      await dBServiceGroupJoinRequest.batchCreate(requests)
+      await dBServiceGroupJoinRequest.batchCreate({ requests: requests })
 
       // 更新本地入群申请版本状态
       for (const request of requests) {
-        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'requests', conversationId: request.groupId, version: request.version })
+        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'requests', groupId: request.groupId, version: request.version })
       }
 
       // 发送通知到render进程，告知入群申请数据已同步
