@@ -30,12 +30,13 @@ class CollectSync {
     }
     }
     catch (error) {
-      logger.error({ text: '表情收藏数据同步失败', data: { error: (error as any)?.message } })
+      logger.error({ text: '表情收藏数据同步失败1', data: { error: (error as any)?.message } })
     }
   }
 
   // 对比本地数据，过滤出需要更新的收藏记录ID
   private async compareAndFilterCollectVersions(collectVersions: any[]): Promise<string[]> {
+    try {
     const ids = collectVersions
       .map(item => item.emojiCollectId)
       .filter(id => id && id.trim() !== '')
@@ -53,6 +54,10 @@ class CollectSync {
     })
 
     return needUpdateIds
+    }
+    catch (error) {
+      logger.error({ text: '表情收藏数据同步失败2', data: { error: (error as any)?.message } })
+    }
   }
 
   // 同步表情收藏数据
@@ -83,7 +88,7 @@ class CollectSync {
           updatedAt: collect.updatedAt ?? collect.updatedAt,
         }))
 
-        await dBServiceEmojiCollect.batchCreate(collects)
+        await dBServiceEmojiCollect.batchCreate({ collects })
         syncedCollects.push(...collects.map(collect => ({
           collectId: collect.emojiCollectId,
           version: collect.version,

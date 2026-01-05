@@ -1,9 +1,29 @@
+import type { QueueItem } from '../base/base'
 import type { IGetEmojiPackageEmojisReq, IGetEmojiPackageEmojisRes, IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes } from 'commonModule/type/ajax/emoji'
+import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { getEmojiPackagesByIdsApi } from 'mainModule/api/emoji'
 import dBServiceEmojiPackageEmoji  from 'mainModule/database/services/emoji/package-emoji'
 import dBServiceEmoji  from 'mainModule/database/services/emoji/emoji'
 import dBServiceEmojiPackage  from 'mainModule/database/services/emoji/package'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { BaseBusiness } from '../base/base'
 
-class EmojiPackageBusiness {
+/**
+ * 表情包同步队列项
+ */
+interface PackageSyncItem extends QueueItem {
+  packageIds: string[]
+}
+
+class EmojiPackageBusiness extends BaseBusiness<PackageSyncItem> {
+  protected readonly businessName = 'EmojiPackageBusiness'
+
+  constructor() {
+    super({
+      queueSizeLimit: 20,
+      delayMs: 1000,
+    })
+  }
   async getEmojiPackagesByIds(params: IGetEmojiPackagesByIdsReq): Promise<IGetEmojiPackagesByIdsRes> {
     const ids = params?.ids || []
     const packageMap = await dBServiceEmojiPackage.getPackagesByIds({ ids })
@@ -79,6 +99,66 @@ class EmojiPackageBusiness {
     return {
       list,
       total: list.length
+    }
+  }
+
+  /**
+   * 处理表情包表的更新通知
+   */
+  async handleTableUpdates(version: number, packageId: string) {
+    this.addToQueue({
+      key: `emoji_package_${packageId}_${version}`,
+      data: { version, packageId },
+      timestamp: Date.now(),
+      packageIds: [packageId],
+    })
+  }
+
+  /**
+   * 批量处理表情包同步请求
+   */
+  protected async processBatchRequests(items: PackageSyncItem[]): Promise<void> {
+    // 聚合所有需要同步的表情包ID
+    const packageIds = [...new Set(items.flatMap(item => item.packageIds))]
+
+    if (packageIds.length === 0) {
+      return
+    }
+
+    try {
+      // 获取表情包详情
+      const response = await getEmojiPackagesByIdsApi({
+        ids: packageIds,
+      })
+
+      if (response.result?.packages && response.result.packages.length > 0) {
+        // 更新本地数据库
+        const packageRows = response.result.packages.map((packageData: any) => ({
+          packageId: packageData.packageId,
+          title: packageData.title,
+          coverFile: packageData.coverFile,
+          userId: packageData.userId,
+          description: packageData.description || '',
+          type: packageData.type,
+          status: packageData.status,
+          collectCount: packageData.collectCount || 0,
+          createdAt: packageData.createdAt,
+          updatedAt: packageData.updatedAt,
+          version: packageData.version,
+        }))
+
+        await dBServiceEmojiPackage.batchCreate({ packageList: packageRows })
+
+        // 发送通知到render进程，告知表情包数据已同步
+        sendMainNotification('*', NotificationModule.EMOJI, NotificationEmojiCommand.EMOJI_PACKAGE_UPDATE, {
+          updatedPackages: response.result.packages.map((pkg: any) => ({
+            packageId: pkg.packageId,
+            version: pkg.version,
+          })),
+        })
+      }
+    } catch (error) {
+      console.error('批量同步表情包失败:', error)
     }
   }
 }

@@ -50,6 +50,7 @@ class EmojiPackageCollect extends BaseService {
    * @description 根据ID列表获取表情包收藏
    */
   async getPackageCollectsByIds(req: DBGetPackageCollectsByIdsReq): Promise<DBGetPackageCollectsByIdsRes> {
+    try {
     if (req.ids.length === 0) {
       return new Map()
     }
@@ -65,6 +66,10 @@ class EmojiPackageCollect extends BaseService {
     })
 
     return collectMap
+    }
+    catch (error) {
+      logger.error({ text: '表情包收藏数据获取失败2', data: { error: (error as any)?.message } })
+    }
   }
 
   /**

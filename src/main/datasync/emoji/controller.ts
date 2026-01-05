@@ -28,7 +28,7 @@ class EmojiController {
 
       // 一次性获取服务器上所有表情相关数据的变更版本信息
       const serverResponse = await datasyncGetSyncEmojiCollectsApi({ since: lastSyncTime })
-
+      
       // 并行同步其他数据
       const otherSyncTasks = [
         // emoji_collect 表同步

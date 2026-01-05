@@ -99,7 +99,7 @@ class FavoriteEmojiBusiness extends BaseBusiness<FavoriteEmojiSyncItem> {
           updatedAt: collectData.updatedAt,
         }))
 
-        await dBServiceEmojiCollect.batchCreate(collectRows)
+        await dBServiceEmojiCollect.batchCreate({ collects: collectRows })
 
         // 发送通知到render进程，告知表情收藏数据已更新
         if (collectRows.length > 0) {

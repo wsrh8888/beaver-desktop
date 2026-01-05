@@ -74,11 +74,16 @@ class dBServiceUserSyncStatus extends BaseService {
     userId: string
     userVersion: number
   }>): Promise<void> {
+    try {
     for (const status of statuses) {
       await this.upsertUserSyncStatus(
         status.userId,
         status.userVersion,
       )
+    }
+    }
+    catch (error) {
+      console.error('批量更新用户同步状态失败:', error)
     }
   }
 

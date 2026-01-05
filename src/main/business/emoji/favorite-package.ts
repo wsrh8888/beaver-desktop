@@ -1,10 +1,15 @@
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IGetEmojiPackagesRes } from 'commonModule/type/ajax/emoji'
 import type { QueueItem } from '../base/base'
+import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getEmojiPackageCollectsByIdsApi } from 'mainModule/api/emoji'
 import dBServiceEmojiPackage  from 'mainModule/database/services/emoji/package'
 import dBServiceEmojiPackageCollect  from 'mainModule/database/services/emoji/package-collect'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('favorite-package')
 
 const ensureLogin = (header: ICommonHeader) => {
   if (!header.userId)
@@ -100,10 +105,20 @@ class FavoritePackageBusiness extends BaseBusiness<FavoritePackageSyncItem> {
           updatedAt: collectData.updatedAt,
         }))
 
-        await dBServiceEmojiPackageCollect.batchCreate(collectRows)
+        await dBServiceEmojiPackageCollect.batchCreate({ collects: collectRows })
+
+        // 发送通知到render进程，告知表情包收藏数据已同步
+        sendMainNotification('*', NotificationModule.EMOJI, NotificationEmojiCommand.EMOJI_PACKAGE_COLLECT_UPDATE, {
+          updatedPackageCollects: response.result.collects.map((collect: any) => ({
+            packageCollectId: collect.packageCollectId,
+            userId: collect.userId,
+            packageId: collect.packageId,
+            version: collect.version,
+          })),
+        })
       }
     } catch (error) {
-      console.error('批量同步表情包收藏失败:', error)
+      logger.error({ text: '批量同步表情包收藏失败', data: { error: (error as any)?.message } })
     }
   }
 }

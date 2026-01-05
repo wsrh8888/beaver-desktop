@@ -1,6 +1,7 @@
 import favoriteEmojiBusiness from 'mainModule/business/emoji/favorite-emoji'
 import favoriteEmojiPackageBusiness from 'mainModule/business/emoji/favorite-package'
 import emojiPackageEmojiBusiness from 'mainModule/business/emoji/package-emoji'
+import emojiPackageBusiness from 'mainModule/business/emoji/package'
 import emojiBusiness from 'mainModule/business/emoji/emoji'
 
 /**
@@ -30,6 +31,13 @@ class CollectReceiver {
             await favoriteEmojiBusiness.handleTableUpdates(dataItem.version, dataItem.emojiCollectId, update.userId)
           }
         }
+      } else if (update.table === 'emoji_package') {
+        // 处理表情包基础表更新
+        for (const dataItem of update.data) {
+          if (dataItem?.version && dataItem?.packageId) {
+            await emojiPackageBusiness.handleTableUpdates(dataItem.version, dataItem.packageId)
+          }
+        }
       } else if (update.table === 'emoji_package_collect') {
         // 处理表情包收藏表的更新
         for (const dataItem of update.data) {
@@ -40,8 +48,8 @@ class CollectReceiver {
       } else if (update.table === 'emoji_package_emoji') {
         // 处理表情包表情关联表的更新
         for (const dataItem of update.data) {
-          if (dataItem?.version && dataItem?.emojiId && dataItem?.packageId) {
-            emojiPackageEmojiBusiness.handleTableUpdates(dataItem.version, dataItem.emojiId, dataItem.packageId)
+          if (dataItem?.version && dataItem?.relationId) {
+            emojiPackageEmojiBusiness.handleTableUpdates(dataItem.version, dataItem.relationId)
           }
         }
       }

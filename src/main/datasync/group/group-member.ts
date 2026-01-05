@@ -89,11 +89,11 @@ class GroupMemberSync {
     console.error('cxcxcxcsd11111111111111111111f', members)
 
     if (members.length > 0) {
-      await dBServiceGroupMember.batchCreate(members)
+      await dBServiceGroupMember.batchCreate({ members: members })
 
       // 更新本地群成员版本状态
       for (const member of members) {
-        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'members', conversationId: member.groupId, version: member.version })
+        await dBServiceGroupSyncStatus.upsertSyncStatus({ module: 'members', groupId: member.groupId, version: member.version })
       }
 
       // 发送通知到render进程，告知群成员数据已同步

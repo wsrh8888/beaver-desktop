@@ -53,11 +53,16 @@ class User extends BaseService {
    * @description 批量创建用户（调用upsert方法，避免重复数据错误）
    */
   async batchCreate(req: DBBatchCreateUsersReq): Promise<void> {
+    try {
     if (req.usersData.length === 0)
       return
 
     for (const user of req.usersData) {
       await this.upsert(user)
+    }
+    }
+    catch (error) {
+      console.error('批量创建用户失败:', error)
     }
   }
 

@@ -90,7 +90,7 @@ class NotificationInboxSync {
           updatedAt: inbox.updatedAt,
         }))
 
-        await dBServiceNotificationInbox.batchUpsert(rows)
+        await dBServiceNotificationInbox.batchAdd({ inboxes: rows })
       }
     }
   }

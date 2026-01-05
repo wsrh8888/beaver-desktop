@@ -60,7 +60,7 @@ class NotificationEventBusiness extends BaseBusiness<NotificationEventSyncItem> 
    */
   async batchUpsert(events: any[]) {
     try {
-      await dBServiceNotificationEvent.batchUpsert(events)
+      await dBServiceNotificationEvent.batchCreate({ events })
       logger.info({ text: `批量更新通知事件成功: count=${events.length}` })
       return true
     }

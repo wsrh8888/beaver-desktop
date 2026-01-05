@@ -69,6 +69,7 @@ class UserSyncModule {
 
   // 对比本地数据，过滤出需要更新的用户
   private async compareAndFilterUserVersions(userVersions: any[]): Promise<Array<{ userId: string, version: number }>> {
+    try {
     if (userVersions.length === 0) {
       return []
     }
@@ -92,10 +93,16 @@ class UserSyncModule {
     }
 
     return needUpdateUsers
+    }
+    catch (error) {
+      logger.error({ text: '用户版本对比失败', data: { error: (error as any)?.message } })
+      return []
+    }
   }
 
   // 同步用户数据
   private async syncUserData(usersWithVersions: Array<{ userId: string, version: number }>) {
+    try {
     if (usersWithVersions.length === 0) {
       return
     }
@@ -117,7 +124,7 @@ class UserSyncModule {
         updatedAt: user.updatedAt,
       }))
 
-      await dBServiceUser.batchCreate(usersModels)
+      await dBServiceUser.batchCreate({ usersData: usersModels })
 
       // 更新本地用户版本状态
       const statusUpdates = usersModels.map(user => ({
@@ -134,6 +141,10 @@ class UserSyncModule {
           version: user.version,
         })),
       })
+    }
+    }
+    catch (error) {
+      logger.error({ text: '用户数据同步失败', data: { error: (error as any)?.message } })
     }
   }
 }

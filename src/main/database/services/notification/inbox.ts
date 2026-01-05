@@ -211,7 +211,7 @@ class dBServiceNotificationInbox extends BaseService {
       gt(notificationInboxes.createdAt as any, afterTime),
       eq(notificationInboxes.isRead as any, 0),
     ))
-    return { unreadCount }
+    return unreadCount
   }
 }
 
