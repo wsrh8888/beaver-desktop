@@ -124,6 +124,30 @@ export default defineComponent({
   flex: 1;
   overflow-y: auto;
   padding: 16px 0;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: #F9FAFB;
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #FF7D45 0%, #E86835 100%);
+    border-radius: 2px;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: linear-gradient(135deg, #E86835 0%, #FF7D45 100%);
+      box-shadow: 0 0 6px rgba(255, 125, 69, 0.3);
+    }
+  }
+
+  &::-webkit-scrollbar-corner {
+    background: #F9FAFB;
+  }
 }
 
 .empty-state {

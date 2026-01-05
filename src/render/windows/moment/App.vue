@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
 import MomentContent from './components/content/index.vue'
 import MomentCreate from './components/create/index.vue'
 
@@ -34,6 +34,7 @@ import MomentDetail from './components/details/index.vue'
 import MomentHeader from './components/header/index.vue'
 import { useMomentStore } from './store/moment/moment'
 import { useUserStore } from './store/user/user'
+import notificationManager from './notification-manager'
 
 export default defineComponent({
   components: {
@@ -53,6 +54,11 @@ export default defineComponent({
 
     onMounted(() => {
       userStore.init()
+      notificationManager.init()
+    })
+
+    onUnmounted(() => {
+      notificationManager.off()
     })
 
     return {

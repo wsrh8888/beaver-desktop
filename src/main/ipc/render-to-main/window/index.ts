@@ -1,6 +1,6 @@
 import type { IWindowOpenOptions, IWinodwCloseOptions } from 'commonModule/type/preload/window'
 import { WinHook } from 'commonModule/type/ipc/command'
-import { NotificationModule } from 'commonModule/type/preload/notification'
+import { NotificationModule, NotificationMediaViewerCommand } from 'commonModule/type/preload/notification'
 import { BrowserWindow } from 'electron'
 import appApplication from 'mainModule/application/app'
 import audioApplication from 'mainModule/application/audio'
@@ -187,19 +187,19 @@ class WindowHandler {
   private updateWindowContent(name: string, params: Record<string, any>): void {
     switch (name) {
       case 'image':
-        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateImage', params)
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_IMAGE, params)
         break
       case 'video':
-        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateVideo', params)
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_VIDEO, params)
         break
       case 'audio':
-        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateAudio', params)
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_AUDIO, params)
+        break
+      case 'moment':
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_MOMENT, params)
         break
       case 'updater':
-        console.log('更新窗口内容', name, params)
-        console.log('更新窗口内容', name, params)
-        console.log('更新窗口内容', name, params)
-        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, 'updateInfo', params)
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_UPDATER, params)
         break
     }
   }
