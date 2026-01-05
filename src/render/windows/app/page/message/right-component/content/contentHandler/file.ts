@@ -7,24 +7,7 @@ import { BaseMessageHandler } from './base'
 class FileHandler extends BaseMessageHandler {
   // 文件消息的菜单项
   private fileMenuItems: ContextMenuItem[] = [
-    {
-      id: 'save',
-      label: '保存文件',
-    },
-    {
-      id: 'open',
-      label: '打开文件',
-      divided: true,
-    },
-    {
-      id: 'forward',
-      label: '转发',
-    },
-    {
-      id: 'delete',
-      label: '删除',
-      divided: true,
-    },
+   
   ]
 
   handleCommand(commandId: string, message: any): Promise<void> {

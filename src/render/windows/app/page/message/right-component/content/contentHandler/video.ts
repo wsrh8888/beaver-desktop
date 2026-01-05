@@ -7,24 +7,7 @@ import { BaseMessageHandler } from './base'
 class VideoHandler extends BaseMessageHandler {
   // 视频消息的菜单项
   private videoMenuItems: ContextMenuItem[] = [
-    {
-      id: 'save',
-      label: '保存视频',
-    },
-    {
-      id: 'play',
-      label: '播放',
-      divided: true,
-    },
-    {
-      id: 'forward',
-      label: '转发',
-    },
-    {
-      id: 'delete',
-      label: '删除',
-      divided: true,
-    },
+
   ]
 
   handleCommand(commandId: string, message: any): Promise<void> {

@@ -11,10 +11,6 @@ class EmojiHandler extends BaseMessageHandler {
       id: 'favorite',
       label: '添加到收藏',
     },
-    {
-      id: 'copy',
-      label: '复制',
-    },
   ]
 
   handleCommand(commandId: string, message: any): Promise<void> {

@@ -9,17 +9,10 @@ import { BaseMessageHandler } from './base'
 class ImageHandler extends BaseMessageHandler {
   // 图片消息的菜单项
   private imageMenuItems: ContextMenuItem[] = [
-    {
-      id: 'copy',
-      label: '复制',
-    },
+   
     {
       id: 'emoji',
       label: '添加到表情',
-    },
-    {
-      id: 'download',
-      label: '下载',
     },
   ]
 

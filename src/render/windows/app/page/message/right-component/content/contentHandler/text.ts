@@ -11,15 +11,6 @@ class TextHandler extends BaseMessageHandler {
       id: 'copy',
       label: '复制',
     },
-    {
-      id: 'forward',
-      label: '转发',
-      divided: true,
-    },
-    {
-      id: 'delete',
-      label: '删除',
-    },
   ]
 
   handleCommand(commandId: string, message: any): Promise<void> {

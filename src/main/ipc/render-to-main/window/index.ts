@@ -3,7 +3,6 @@ import { WinHook } from 'commonModule/type/ipc/command'
 import { NotificationModule } from 'commonModule/type/preload/notification'
 import { BrowserWindow } from 'electron'
 import appApplication from 'mainModule/application/app'
-import aiApplication from 'mainModule/application/ai'
 import audioApplication from 'mainModule/application/audio'
 import imageApplication from 'mainModule/application/image'
 import loginApplication from 'mainModule/application/login'
@@ -156,10 +155,6 @@ class WindowHandler {
         case 'updater':
           updateApplication.createBrowserWindow()
           newWindow = (updateApplication as any).win
-          break
-        case 'ai':
-          aiApplication.createBrowserWindow()
-          newWindow = (aiApplication as any).win
           break
       }
 
