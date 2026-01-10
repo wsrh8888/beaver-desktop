@@ -93,3 +93,12 @@ export const getEmojiPackageContentsByPackageIdsApi = (data: { packageIds: strin
     url: `${getBaseUrl()}/api/emoji/package-contents-by-package-ids`,
   })
 }
+
+// 获取表情包内容列表（通过关联ID列表）
+export const getEmojiPackageContentsByRelationIdsApi = (data: { relationIds: string[] }) => {
+  return ajax<EmojiPackageContentsResponse>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/emoji/package-contents-by-relation-ids`,
+  })
+}

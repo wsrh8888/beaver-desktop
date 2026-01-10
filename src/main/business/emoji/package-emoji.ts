@@ -1,6 +1,6 @@
 import type { QueueItem } from '../base/base'
 import { NotificationEmojiCommand, NotificationModule } from 'commonModule/type/preload/notification'
-import { getEmojiPackageContentsByPackageIdsApi } from 'mainModule/api/emoji'
+import { getEmojiPackageContentsByRelationIdsApi } from 'mainModule/api/emoji'
 import dBServiceEmojiPackageEmoji  from 'mainModule/database/services/emoji/package-emoji'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
@@ -46,55 +46,41 @@ class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem> {
   protected async processBatchRequests(items: PackageEmojiSyncItem[]): Promise<void> {
     // 聚合所有需要同步的relationIds
     const relationIds = [...new Set(items.flatMap(item => item.relationIds))]
+    console.log('package-emoji 开始数据同步', items)
 
     if (relationIds.length === 0) {
       return
     }
 
     try {
-      // 首先尝试从本地数据库获取这些relationId对应的packageId
-      const existingRelations = await dBServiceEmojiPackageEmoji.getEmojisByRelationIds({ relationIds })
+      // 直接用relationIds获取表情包内容详情
+      const response = await getEmojiPackageContentsByRelationIdsApi({
+        relationIds: relationIds,
+      })
 
-      // 提取packageIds
-      const packageIds = [...new Set(existingRelations.map(relation => relation.packageId))]
+      if (response.result?.contents && response.result.contents.length > 0) {
+        // 更新本地数据库
+        const contentRows = response.result.contents.map((contentData: any) => ({
+          relationId: contentData.relationId,
+          packageId: contentData.packageId,
+          emojiId: contentData.emojiId,
+          sortOrder: contentData.sortOrder,
+          version: contentData.version,
+          createdAt: contentData.createdAt,
+          updatedAt: contentData.updatedAt,
+        }))
 
-      if (packageIds.length > 0) {
-        // 根据packageIds获取表情包内容详情
-        const response = await getEmojiPackageContentsByPackageIdsApi({
-          packageIds: packageIds,
+        await dBServiceEmojiPackageEmoji.batchCreate({ relations: contentRows })
+
+        // 发送通知到render进程，告知表情包内容数据已同步
+        sendMainNotification('*', NotificationModule.EMOJI, NotificationEmojiCommand.EMOJI_PACKAGE_CONTENT_UPDATE, {
+          updatedPackageContents: contentRows.map((content: any) => ({
+            relationId: content.relationId,
+            packageId: content.packageId,
+            emojiId: content.emojiId,
+            version: content.version,
+          })),
         })
-
-        if (response.result?.contents && response.result.contents.length > 0) {
-          // 过滤出需要的表情关联数据
-          const contents = response.result.contents.filter(content =>
-            relationIds.includes(content.relationId)
-          )
-
-          if (contents.length > 0) {
-            // 更新本地数据库
-            const contentRows = contents.map((contentData: any) => ({
-              relationId: contentData.relationId,
-              packageId: contentData.packageId,
-              emojiId: contentData.emojiId,
-              sortOrder: contentData.sortOrder,
-              version: contentData.version,
-              createdAt: contentData.createdAt,
-              updatedAt: contentData.updatedAt,
-            }))
-
-            await dBServiceEmojiPackageEmoji.batchCreate({ relations: contentRows })
-
-            // 发送通知到render进程，告知表情包内容数据已同步
-            sendMainNotification('*', NotificationModule.EMOJI, NotificationEmojiCommand.EMOJI_PACKAGE_CONTENT_UPDATE, {
-              updatedPackageContents: contentRows.map((content: any) => ({
-                relationId: content.relationId,
-                packageId: content.packageId,
-                emojiId: content.emojiId,
-                version: content.version,
-              })),
-            })
-          }
-        }
       }
     } catch (error) {
       console.error('批量同步表情包表情关联失败:', error)

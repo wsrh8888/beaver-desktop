@@ -77,12 +77,6 @@ export default {
         friend.userId === selectedId,
       )
     })
-
-    // 获取头像文本
-    const getAvatarText = (name: string) => {
-      return name ? name.charAt(0).toUpperCase() : '?'
-    }
-
     // 处理发消息
     const handleSendMessage = () => {
       if (friendInfo.value?.userId) {
@@ -99,7 +93,6 @@ export default {
 
     return {
       friendInfo,
-      getAvatarText,
       handleSendMessage,
     }
   },

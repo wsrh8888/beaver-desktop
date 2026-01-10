@@ -65,6 +65,19 @@
             />
           </div>
 
+          <!-- 邮箱 -->
+          <div class="form-item">
+            <div class="form-label">
+              邮箱
+            </div>
+            <input
+              v-model="formData.email"
+              class="form-input"
+              type="email"
+              readonly
+            >
+          </div>
+
           <!-- 性别 -->
           <div class="form-item">
             <div class="form-label">
@@ -141,6 +154,7 @@ export default defineComponent({
       avatar: userStore.getUserInfo.avatar || '',
       nickName: userStore.getUserInfo.nickName || '',
       abstract: userStore.getUserInfo.abstract || '',
+      email: userStore.getUserInfo.email || '',
       gender: genderReverseMap[userStore.getUserInfo.gender] || 'unknown',
     })
 
@@ -150,6 +164,7 @@ export default defineComponent({
         avatar: newInfo.avatar || '',
         nickName: newInfo.nickName || '',
         abstract: newInfo.abstract || '',
+        email: newInfo.email || '',
         gender: genderReverseMap[newInfo.gender] || 'unknown',
       }
     }, { deep: true })
@@ -397,6 +412,12 @@ export default defineComponent({
       &:focus {
         outline: none;
         border-color: #FF7D45;
+      }
+
+      &:read-only {
+        background: #F8F9FA;
+        color: #636E72;
+        cursor: not-allowed;
       }
 
       &::placeholder {

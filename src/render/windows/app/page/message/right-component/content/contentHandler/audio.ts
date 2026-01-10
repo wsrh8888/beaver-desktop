@@ -7,24 +7,7 @@ import { BaseMessageHandler } from './base'
 class AudioHandler extends BaseMessageHandler {
   // 音频消息的菜单项
   private audioMenuItems: ContextMenuItem[] = [
-    {
-      id: 'save',
-      label: '保存音频',
-    },
-    {
-      id: 'play',
-      label: '播放',
-      divided: true,
-    },
-    {
-      id: 'forward',
-      label: '转发',
-    },
-    {
-      id: 'delete',
-      label: '删除',
-      divided: true,
-    },
+    
   ]
 
   handleCommand(commandId: string, message: any): Promise<void> {

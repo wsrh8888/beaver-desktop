@@ -18,7 +18,7 @@
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, onMounted, ref } from 'vue'
+import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue'
 import { useMomentStore } from '../../store/moment/moment'
 import MomentItem from './momentItem.vue'
 
@@ -39,10 +39,19 @@ export default defineComponent({
       const { scrollTop, scrollHeight, clientHeight } = listContent.value
       const isNearBottom = scrollTop + clientHeight >= scrollHeight - 100
 
-      if (isNearBottom && momentStore.hasMore && !momentStore.loading) {
+      if (isNearBottom) {
         await momentStore.loadMoreMoments()
       }
     }
+
+    // 监听页面变化，刷新时滚动到顶部
+    watch(() => momentStore.currentPage, async (newPage) => {
+      if (newPage === 1 && listContent.value) {
+        // 当页码重置为第1页时，说明是刷新操作，滚动到顶部
+        await nextTick()
+        listContent.value.scrollTo({ top: 0, behavior: 'smooth' })
+      }
+    })
 
     // 处理动态点击
     const handleMomentClick = (moment: any) => {

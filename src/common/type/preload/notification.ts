@@ -162,6 +162,15 @@ export enum NotificationMediaViewerCommand {
    * data: { url: string, title?: string }
    */
   UPDATE_AUDIO = 'updateAudio',
+  /**
+   * 更新朋友圈数据
+   * data: any
+   */
+  UPDATE_MOMENT = 'updateMoment',
+  /**
+   * 更新升级信息
+   */
+  UPDATE_UPDATER = 'updateUpdater',
 }
 
 /**

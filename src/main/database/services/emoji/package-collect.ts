@@ -12,6 +12,10 @@ import type {
   DBGetPackageCollectByIdRes,
   DBDeletePackageCollectReq,
 } from 'commonModule/type/database/server/emoji/package-collect'
+import type { IDBEmojiPackageCollect } from 'commonModule/type/database/db/emoji'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('database-emoji-package-collect')
 
 // 表情包收藏服务
 class EmojiPackageCollect extends BaseService {
@@ -24,25 +28,54 @@ class EmojiPackageCollect extends BaseService {
 
   /**
    * @description 批量创建表情包收藏（upsert操作）
+   * 注意：使用先查询再插入/更新的方式，避免 onConflictDoUpdate 消耗 AUTOINCREMENT 序列值
    */
   async batchCreate(req: DBBatchCreatePackageCollectsReq): Promise<void> {
     if (req.collects.length === 0) {
       return
     }
 
+    // 批量查询所有已存在的记录
+    const packageCollectIds = req.collects.map(c => c.packageCollectId)
+    const existingMap = await this.getPackageCollectsByIds({ ids: packageCollectIds })
+
+    // 分离需要插入和更新的记录
+    const toInsert: typeof req.collects = []
+    const toUpdate: typeof req.collects = []
+
     for (const collectData of req.collects) {
-      await this.db.insert(emojiPackageCollect)
-        .values(collectData)
-        .onConflictDoUpdate({
-          target: emojiPackageCollect.packageCollectId,
-          set: {
-            userId: collectData.userId,
-            packageId: collectData.packageId,
-            version: collectData.version,
-            updatedAt: collectData.updatedAt,
-          },
-        })
-        .run()
+      if (existingMap.has(collectData.packageCollectId)) {
+        toUpdate.push(collectData)
+      } else {
+        toInsert.push(collectData)
+      }
+    }
+
+    // 批量插入新记录
+    if (toInsert.length > 0) {
+      for (const collectData of toInsert) {
+        await this.db.insert(emojiPackageCollect).values(collectData).run()
+      }
+    }
+
+    // 批量更新已存在的记录
+    if (toUpdate.length > 0) {
+      for (const collectData of toUpdate) {
+        const updateData: any = {
+          userId: collectData.userId,
+          packageId: collectData.packageId,
+          version: collectData.version,
+        }
+        // updatedAt 是可选的，如果存在则更新
+        if ('updatedAt' in collectData && collectData.updatedAt !== undefined) {
+          updateData.updatedAt = collectData.updatedAt
+        }
+        await this.db
+          .update(emojiPackageCollect)
+          .set(updateData)
+          .where(eq(emojiPackageCollect.packageCollectId, collectData.packageCollectId))
+          .run()
+      }
     }
   }
 
@@ -61,7 +94,7 @@ class EmojiPackageCollect extends BaseService {
       .where(inArray(emojiPackageCollect.packageCollectId, req.ids as any))
 
     const collectMap = new Map<string, IDBEmojiPackageCollect>()
-    collectList.forEach((item) => {
+    collectList.forEach((item: IDBEmojiPackageCollect) => {
       collectMap.set(item.packageCollectId, item)
     })
 
@@ -69,6 +102,7 @@ class EmojiPackageCollect extends BaseService {
     }
     catch (error) {
       logger.error({ text: '表情包收藏数据获取失败2', data: { error: (error as any)?.message } })
+      return new Map()
     }
   }
 

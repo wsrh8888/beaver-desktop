@@ -192,8 +192,20 @@ export default defineComponent({
     background-color: #F5F7FA;
 
     &::-webkit-scrollbar {
-      height: 0;
-      display: none;
+      height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+      background-color: #e1e1e1;
+      border-radius: 2px;
+
+      &:hover {
+        background-color: #d1d1d1;
+      }
     }
 
     .emoji-category {
