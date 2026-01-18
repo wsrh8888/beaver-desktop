@@ -16,6 +16,12 @@ process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
 class Main {
   constructor() {
+    // 单例检查 - 如果已经有实例运行，直接返回
+    if (!this.checkSingleInstance()) {
+      return
+    }
+
+    // 只有当前实例是唯一的才继续初始化
     this.initUa()
     initCustom()
     loadConfigs()
@@ -62,6 +68,19 @@ class Main {
         }
       })
     })
+  }
+
+  checkSingleInstance() {
+    // 检查是否已经有实例在运行
+    const gotTheLock = app.requestSingleInstanceLock()
+
+    if (!gotTheLock) {
+      // 如果已经有实例在运行，直接退出
+      app.quit()
+      return false
+    }
+
+    return true
   }
 
   initUa() {

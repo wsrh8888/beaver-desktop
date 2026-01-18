@@ -7,7 +7,7 @@ import type { CacheType } from 'commonModule/type/cache/cache'
 import type { DownloadedFileInfo } from 'mainModule/utils/file/download'
 import * as path from 'node:path'
 import { previewOnlineFileApi } from 'mainModule/api/file'
-import { getRootPath } from 'mainModule/config'
+import { getCachePath, getRootPath } from 'mainModule/config'
 import { downloadFile } from 'mainModule/utils/file/download'
 import dBServicemediaCache  from '../database/services/media/media'
 import { calculateFileMD5, createDir, deleteFile, fileExists, getFileSize } from '../utils/file'
@@ -33,7 +33,7 @@ class MediaManager {
   private cacheFile: Record<string, string> = {}
 
   constructor() {
-    this.cacheRoot = path.join(getRootPath(), 'cache')
+    this.cacheRoot = getCachePath()
   }
 
   init(userId?: string) {

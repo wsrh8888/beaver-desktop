@@ -6,7 +6,7 @@ import { UpdateCommand } from 'commonModule/type/ipc/command'
 import { shell } from 'electron'
 import { previewOnlineFileApi } from 'mainModule/api/file'
 import { cacheTypeToFilePath } from 'mainModule/cache/config'
-import { getRootPath } from 'mainModule/config'
+import { getCachePath, getRootPath } from 'mainModule/config'
 import dBServicemediaCache from 'mainModule/database/services/media/media'
 import { downloadFile } from 'mainModule/utils/download/index'
 import logger from 'mainModule/utils/log'
@@ -42,7 +42,7 @@ class UpdaterHandler {
       logger.info({ text: '开始下载更新', data: { fileKey, md5, version } }, 'UpdaterHandler')
 
       // 获取升级缓存目录（绝对路径）
-      const cacheRoot = path.join(getRootPath(), 'cache')
+      const cacheRoot = getCachePath()
       const updateDir = path.join(cacheRoot, cacheTypeToFilePath[CacheType.PUBLIC_UPDATE])
 
       // 构建完整的文件路径（直接使用 fileKey 作为文件名）
@@ -93,7 +93,7 @@ class UpdaterHandler {
       logger.info({ text: '开始升级', data: { fileKey, md5, version } }, 'UpdaterHandler')
 
       // 根据data中的信息构建文件路径（绝对路径）
-      const cacheRoot = path.join(getRootPath(), 'cache')
+      const cacheRoot = getCachePath()
       const updateDir = path.join(cacheRoot, cacheTypeToFilePath[CacheType.PUBLIC_UPDATE])
       const filePath = path.join(updateDir, fileKey)
 
