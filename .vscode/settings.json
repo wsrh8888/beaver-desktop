@@ -1,0 +1,9 @@
+{
+  "files.associations": {
+    "build/shell/**/*.nsi": "nsis",
+    "build/shell/**/*.nsh": "nsis"
+  },
+  "[nsis]": {
+    "files.encoding": "gb2312"
+  }
+}

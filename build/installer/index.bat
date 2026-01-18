@@ -34,6 +34,8 @@ echo %BUILD% > %VERSION_FILE%
 
 powershell -Command "((Get-Content -Path '%WORKSPACE%\package.json' -Raw) | ConvertFrom-Json).version = '%VERSION%'; $_ | ConvertTo-Json -Depth 32 | Set-Content -Path '%WORKSPACE%\package.json' -Force"
 
+echo %VERSION% > %WORKSPACE%\release\win-unpacked\version
+
 %NSISPATH% /DVERSION=%VERSION% /DRESOURCEDIR=%WORKSPACE%\release\win-unpacked /DOUTPUTDIR=%WORKSPACE%\output\beaver_%VERSION%.exe %NSISCRIPT%
 
 endlocal

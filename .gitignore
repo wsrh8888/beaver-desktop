@@ -17,7 +17,6 @@ dist/*
 cache/*
 
 # Editor directories and files
-.vscode/*
 !.vscode/extensions.json
 .idea
 .DS_Store
@@ -34,3 +33,4 @@ output/*.exe
 config.json
 config.json
 package-lock.json
+BEAVER_CACHE/*

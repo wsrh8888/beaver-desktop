@@ -63,7 +63,7 @@ Section "MainSection" SEC01
 
   WriteUninstaller "$INSTDIR\uninstall.exe"
   
-  CreateShortcut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\beaver.exe" "$INSTDIR\app.ico"
+  CreateShortcut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\electron\beaver.exe" "$INSTDIR\electron\app.ico"
   
   WriteRegStr ${PRODUCT_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "DisplayName" "${PRODUCT_NAME} ${PRODUCT_VERSION}"
   WriteRegStr ${PRODUCT_ROOT_KEY} "${PRODUCT_UNINST_KEY}" "UninstallString" "$INSTDIR\uninstall.exe"
