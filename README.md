@@ -4,7 +4,7 @@
 [![Electron](https://img.shields.io/badge/Electron-31.x-green.svg)](https://electronjs.org/)
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![QQ群](https://img.shields.io/badge/QQ群-1013328597-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
+[![QQ群](https://img.shields.io/badge/QQ群-1013328597%2B-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
 
 > 🚀 **现代化桌面即时通讯应用** - 基于 Electron + Vue3 + TypeScript 构建，支持 Windows/macOS/Linux，提供完整的社交聊天体验
 
@@ -105,7 +105,10 @@ npm run package
 - 📖 **详细文档**: [Beaver IM 文档](https://wsrh8888.github.io/beaver-docs/)
 - 🎥 **视频教程**: [B站教程](https://www.bilibili.com/video/BV1HrrKYeEB4/)
 - 📱 **体验包下载**: [海狸IM Android体验包](https://github.com/wsrh8888/beaver-docs/releases/download/lastest/latest.apk)
-- 💬 **QQ群**: [1013328597](https://qm.qq.com/q/82rbf7QBzO)
+- 💬 **QQ群**:
+  - [1013328597](https://qm.qq.com/q/82rbf7QBzO) - 群一 (已满)
+  - [1044762885](https://qm.qq.com/q/82rbf7QBzO) - 群二
+  - [1003121259](https://qm.qq.com/q/82rbf7QBzO) - 群三
 
 ## 🤝 贡献指南
 
