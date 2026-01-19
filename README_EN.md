@@ -4,7 +4,7 @@
 [![Electron](https://img.shields.io/badge/Electron-31.x-green.svg)](https://electronjs.org/)
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
-[![QQ Group](https://img.shields.io/badge/QQ_Group-1013328597-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
+[![QQ Groups](https://img.shields.io/badge/QQ_Groups-1013328597%2B-blue.svg)](https://qm.qq.com/q/82rbf7QBzO)
 
 > 🚀 **Modern Desktop Instant Messaging Application** - Built with Electron + Vue3 + TypeScript, providing native desktop experience for Windows/macOS/Linux with complete social chat features.
 
@@ -105,7 +105,10 @@ npm run package
 - 📖 **Detailed Documentation**: [Beaver IM Docs](https://wsrh8888.github.io/beaver-docs/)
 - 🎥 **Video Tutorial**: [Bilibili Tutorial](https://www.bilibili.com/video/BV1HrrKYeEB4/)
 - 📱 **Experience Package Download**: [Beaver IM Android Experience Package](https://github.com/wsrh8888/beaver-docs/releases/download/lastest/latest.apk)
-- 💬 **QQ Group**: [1013328597](https://qm.qq.com/q/82rbf7QBzO)
+- 💬 **QQ Groups**:
+  - [1013328597](https://qm.qq.com/q/82rbf7QBzO) - Group 1 (Full)
+  - [1044762885](https://qm.qq.com/q/82rbf7QBzO) - Group 2
+  - [1003121259](https://qm.qq.com/q/82rbf7QBzO) - Group 3
 
 ## 🤝 Contributing
 
