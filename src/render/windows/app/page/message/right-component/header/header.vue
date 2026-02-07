@@ -39,10 +39,9 @@ export default defineComponent({
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
 
-    const friendInfo = computed(() => {
+    const friendInfo = computed<any>(() => {
       const currentId = messageViewStore.currentChatId
-      console.log('currentId', currentId)
-      return currentId ? conversationStore.getConversationInfo(currentId) : {}
+      return currentId ? conversationStore.getConversationInfo(currentId) || {} : {}
     })
     watch(() => messageViewStore.currentChatId, async (newConversationId) => {
       // 判断当前会话类型
@@ -66,11 +65,43 @@ export default defineComponent({
     })
 
     const handlePhone = () => {
-      // 语音通话功能
+      const currentId = messageViewStore.currentChatId
+      if (!currentId) return
+
+      const isGroup = chatType.value === 'group'
+      const callType = isGroup ? 3 : 1
+
+      electron?.window.openWindow('call', {
+        width: isGroup ? 1000 : 360,
+        height: isGroup ? 720 : 480,
+        params: {
+          callType,
+          targetId: currentId,
+          targetName: friendInfo.value.nickName || (isGroup ? '群通话' : '未知用户'),
+          targetAvatar: friendInfo.value.avatar,
+          role: 'caller'
+        }
+      })
     }
 
     const handleVideo = () => {
-      // 视频通话功能
+      const currentId = messageViewStore.currentChatId
+      if (!currentId) return
+
+      const isGroup = chatType.value === 'group'
+      const callType = isGroup ? 4 : 2
+
+      electron?.window.openWindow('call', {
+        width: 1000,
+        height: isGroup ? 750 : 640,
+        params: {
+          callType,
+          targetId: currentId,
+          targetName: friendInfo.value.nickName || (isGroup ? '群通话' : '未知用户'),
+          targetAvatar: friendInfo.value.avatar,
+          role: 'caller'
+        }
+      })
     }
 
     // 处理点击更多按钮

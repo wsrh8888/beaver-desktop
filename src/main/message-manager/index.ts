@@ -10,6 +10,7 @@ import groupMessageRouter from './receivers/group/index'
 import notificationMessageRouter from './receivers/notification/index'
 import userMessageRouter from './receivers/user/index'
 import mcpMessageRouter from './receivers/mcp/index'
+import callMessageRouter from './receivers/call/index'
 
 /**
  * @description: 消息管理器 - 主进程版本，负责消息的发送、接收和状态管理
@@ -188,6 +189,9 @@ class MessageManager {
         break
       case 'MCP_OPERATION':
         mcpMessageRouter.processMCPMessage(wsMessage.content)
+        break
+      case 'CALL':
+        callMessageRouter.processCallMessage(wsMessage.content)
         break
       case 'HEARTBEAT':
         break

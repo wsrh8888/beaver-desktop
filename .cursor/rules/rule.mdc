@@ -15,9 +15,29 @@ vite+ eluniappectron+vue3
 - 文件名字如果我文件夹已经携带了xx， 这个子文件就不要在携带xxx开头的了
 
 ### css的编写
-- 我使用scss， 你的css开发的时候采用嵌套结构
+- 我使用less， 你的css开发的时候采用嵌套结构
+
+### pinia规范
+- 如下参考模版, 请替换usexxStore中的xx为对应的模块名， 比如useuserStore
+```typescript
+import { defineStore } from 'pinia'
+
+export const usexxStore = defineStore('usexxStore', {
+  state: () => ({
+  }),
+
+  getters: {
+  },
+
+  actions: {
+  },
+})
+```
 
 ### 切记
 - 不要过度开发
 - 不要写md文件
 - 尽可能使用别名不要使用../之类的相对路径
+
+### .vue文件编写规范
+- 不要 script lang="ts" setup 这种组件， 采用export default defineComponent这样的代码

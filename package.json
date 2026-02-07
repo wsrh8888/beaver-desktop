@@ -85,6 +85,7 @@
     "electron-updater": "^6.3.9",
     "express": "^5.2.1",
     "extract-zip": "^2.0.1",
+    "livekit-client": "^2.17.1",
     "node-machine-id": "^1.1.12",
     "sql.js": "^1.13.0",
     "uuid": "^11.1.0",

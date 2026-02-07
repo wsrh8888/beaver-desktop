@@ -9,6 +9,7 @@ import type { IStorageModule } from './storage'
 import type { IUpdateModule } from './update'
 import type { IWebSocketModule } from './websocket'
 import type { IWindowModule } from './window'
+import type { ICallModule } from './call'
 
 /**
  * @description: Electron preload接口
@@ -68,4 +69,9 @@ export interface ElectronAPP {
    * @description: 认证模块
    */
   auth: IAuthModule
+
+  /**
+   * @description: 通话模块
+   */
+  call: ICallModule
 }

@@ -13,11 +13,13 @@ import { storageModule } from './core/storage'
 import { updateModule } from './core/update'
 import { websocketModule } from './core/websocket'
 import { windowModule } from './core/window'
+import { callModule } from './core/call'
 
 // Define the new electron API structure
 const electronAPI: ElectronAPP = {
   logger: loggerModule,
   window: windowModule,
+  call: callModule,
   app: appModule,
   storage: storageModule,
   update: updateModule,

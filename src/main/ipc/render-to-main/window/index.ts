@@ -11,6 +11,7 @@ import searchApplication from 'mainModule/application/search'
 import updateApplication from 'mainModule/application/updater'
 import verifyApplication from 'mainModule/application/verify'
 import videoApplication from 'mainModule/application/video'
+import callApplication from 'mainModule/application/call'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
@@ -19,10 +20,12 @@ class WindowHandler {
    * 统一的窗口处理入口（支持同步和异步）
    */
   handle(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: WinHook | string, data: any): any {
-    logger.info({ text: '收到render-to-main-msg窗口消息', data: {
-      command,
-      data,
-    } }, 'WindowHandler')
+    logger.info({
+      text: '收到render-to-main-msg窗口消息', data: {
+        command,
+        data,
+      }
+    }, 'WindowHandler')
 
     const name = data?.name || ''
     const options = data?.options || {}
@@ -155,6 +158,9 @@ class WindowHandler {
         case 'updater':
           updateApplication.createBrowserWindow()
           newWindow = (updateApplication as any).win
+          break
+        case 'call':
+          newWindow = callApplication.createBrowserWindow(options)
           break
       }
 
