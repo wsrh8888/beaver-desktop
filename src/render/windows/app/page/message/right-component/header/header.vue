@@ -11,10 +11,10 @@
       </div>
     </div>
     <div class="header-actions">
-      <div class="action-btn" @click="handlePhone">
+      <div class="action-btn" @click="handleCall('audio')">
         <img src="renderModule/assets/image/chat/phone.svg" alt="语音通话">
       </div>
-      <div class="action-btn" @click="handleVideo">
+      <div class="action-btn" @click="handleCall('video')">
         <img src="renderModule/assets/image/chat/video.svg" alt="视频通话">
       </div>
       <div class="action-btn" @click="handleMore">
@@ -28,6 +28,9 @@
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
+import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import { startCallApi } from 'renderModule/api/call'
 import { computed, defineComponent, watch } from 'vue'
 
 export default defineComponent({
@@ -38,6 +41,8 @@ export default defineComponent({
   setup(_props, { emit }) {
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
+    const friendStore = useFriendStore()
+    const userStore = useUserStore()
 
     const friendInfo = computed<any>(() => {
       const currentId = messageViewStore.currentChatId
@@ -64,44 +69,44 @@ export default defineComponent({
       return null
     })
 
-    const handlePhone = () => {
+    const handleCall = async (type: 'audio' | 'video') => {
       const currentId = messageViewStore.currentChatId
       if (!currentId) return
 
-      const isGroup = chatType.value === 'group'
-      const callType = isGroup ? 3 : 1
+      // 获取目标 ID：私聊解析出对方 UID，群聊使用会话 ID (即群 ID)
+      const targetUserId = chatType.value === 'private'
+        ? friendStore.getUserIdByConversationId(currentId)
+        : ''
 
-      electron?.window.openWindow('call', {
-        width: isGroup ? 1000 : 360,
-        height: isGroup ? 720 : 480,
-        params: {
-          callType,
-          targetId: currentId,
-          targetName: friendInfo.value.nickName || (isGroup ? '群通话' : '未知用户'),
-          targetAvatar: friendInfo.value.avatar,
-          role: 'caller'
-        }
+      // 获取当前用户 ID（发起者）
+      const callerId = userStore.getUserId
+
+      // 先调用 API 发起通话
+      const res = await startCallApi({
+        callType: chatType.value === 'private' ? 1 : 2,
+        targetId: targetUserId
       })
-    }
 
-    const handleVideo = () => {
-      const currentId = messageViewStore.currentChatId
-      if (!currentId) return
-
-      const isGroup = chatType.value === 'group'
-      const callType = isGroup ? 4 : 2
-
-      electron?.window.openWindow('call', {
-        width: 1000,
-        height: isGroup ? 750 : 640,
-        params: {
-          callType,
-          targetId: currentId,
-          targetName: friendInfo.value.nickName || (isGroup ? '群通话' : '未知用户'),
-          targetAvatar: friendInfo.value.avatar,
-          role: 'caller'
-        }
-      })
+      if (res.code === 0) {
+        const roomInfo = res.result
+        // 成功获取房间信息后，打开 Call 窗口
+        electron?.window.openWindow('call', {
+          width: 1000,
+          height: 640,
+          params: {
+            callMode: type,
+            targetId: targetUserId ? [targetUserId] : [],
+            callerId: callerId,           // 发起者 ID
+            conversationId: currentId,    // 会话 ID
+            callType: chatType.value,
+            role: 'caller',
+            roomInfo: roomInfo            // 将 API 返回的完整房间信息传递过去
+          }
+        })
+      } else {
+        console.error('发起通话失败:', res.msg)
+        // 这里可以添加一个 Toast 提示用户
+      }
     }
 
     // 处理点击更多按钮
@@ -114,8 +119,7 @@ export default defineComponent({
     return {
       friendInfo,
       chatType,
-      handlePhone,
-      handleVideo,
+      handleCall,
       handleMore,
       // 移除 previewOnlineFile
     }

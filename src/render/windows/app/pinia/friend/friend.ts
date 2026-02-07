@@ -3,6 +3,8 @@ import { defineStore } from 'pinia'
 import { getFriendInfoApi } from 'renderModule/api/friend'
 import { useContactStore } from '../contact/contact'
 
+import { useUserStore } from '../user/user'
+
 /**
  * @description: 好友信息管理
  */
@@ -85,6 +87,36 @@ export const useFriendStore = defineStore('friendStore', {
         }
 
         return friend
+      }
+    },
+
+    /**
+     * @description: 根据会话ID获取对方的用户ID (仅限私聊)
+     * @param {string} conversationId - 会话ID
+     * @returns {string} 返回对方的用户ID
+     */
+    getUserIdByConversationId: () => {
+      return (conversationId: string): string => {
+        if (!conversationId || !conversationId.startsWith('private_')) {
+          return ''
+        }
+
+        // 从 conversationId (private_uid1_uid2) 中解析出对方 ID
+        const parts = conversationId.split('_')
+        if (parts.length >= 3) {
+          const userId1 = parts[1]
+          const userId2 = parts[2]
+
+          const userStore = useUserStore()
+          const currentUserId = userStore.getUserId
+
+          if (currentUserId) {
+            return userId1 === currentUserId ? userId2 : userId1
+          }
+
+          return ''
+        }
+        return ''
       }
     },
   },

@@ -1,4 +1,12 @@
+import path from 'node:path'
 import { app } from 'electron'
+
+// 支持分配不同的本地缓存目录，用于多开测试
+if (process.env.APP_PROFILE) {
+  const userDataPath = path.join(app.getPath('appData'), app.getName(), `profile-${process.env.APP_PROFILE}`)
+  app.setPath('userData', userDataPath)
+  console.log('检测到 APP_PROFILE，设置用户目录为:', userDataPath)
+}
 
 import logger from 'mainModule/utils/log'
 import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
@@ -71,6 +79,11 @@ class Main {
   }
 
   checkSingleInstance() {
+    // 如果设置了 APP_PROFILE，认为是测试多开模式，跳过单例检查
+    if (process.env.APP_PROFILE) {
+      return true
+    }
+
     // 检查是否已经有实例在运行
     const gotTheLock = app.requestSingleInstanceLock()
 

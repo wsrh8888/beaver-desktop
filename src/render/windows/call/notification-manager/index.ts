@@ -1,5 +1,5 @@
-import { NotificationModule } from 'commonModule/type/preload/notification'
-import { usecallStore } from '../pinia/call'
+import type { INotificationPayload, NotificationModule as NM } from 'commonModule/type/preload/notification'
+import callManager from '../core'
 import Logger from 'renderModule/utils/logger'
 
 const logger = new Logger('通话窗口通知管理')
@@ -9,36 +9,45 @@ const logger = new Logger('通话窗口通知管理')
  */
 class NotificationManager {
   init() {
-    // 监听通话信令
-    electron.notification.on(NotificationModule.DATABASE_CHAT as any, this.handleNotification)
+    // 获取窗口初始化参数并执行核心初始化
+    const params = (electron as any).app.params
+    if (params && (params.targetId || params.roomId)) {
+      callManager.initialize(params)
+    }
+
+    // 监听来自主进程的通话信令
+    electron.notification.on(('DATABASE_CHAT' as any) as NM, this.handleNotification)
   }
 
   /**
    * 处理通知
    */
-  handleNotification = (params: any) => {
-    if (params.command === 'call_signal') {
-      this.handleCallSignal(params.data)
-    }
-  }
+  handleNotification = (params: INotificationPayload<any>) => {
+    const { command, data } = params
 
-  /**
-   * 处理通话信令
-   */
-  handleCallSignal(data: any) {
     logger.info({
-      text: '收到通话信令',
-      data,
+      text: '收到通话信令通知',
+      data: { command, data }
     })
-    const callStore = usecallStore()
 
-    if (data.type === 'RTC_HANGUP' && data.roomId === callStore.roomId) {
-      (window as any).electron?.window.closeWindow('call')
+    switch (command) {
+      case 'call_hangup':
+        // 对方挂断，自动清理并关闭窗口
+        logger.info({ text: '收到对方挂断信令，关闭窗口' })
+        callManager.hangup()
+        break
+      case 'call_accepted':
+        // 对方接听（主要用于 caller 侧更新 UI）
+        logger.info({ text: '收到对方接听信令' })
+        // 可以在这里更新状态，目前由 LiveKit 的事件自动处理
+        break
+      default:
+        break
     }
   }
 
   off() {
-    electron.notification.off(NotificationModule.DATABASE_CHAT as any, this.handleNotification)
+    electron.notification.off(('DATABASE_CHAT' as any) as NM, this.handleNotification)
   }
 }
 

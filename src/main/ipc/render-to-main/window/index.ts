@@ -12,6 +12,7 @@ import updateApplication from 'mainModule/application/updater'
 import verifyApplication from 'mainModule/application/verify'
 import videoApplication from 'mainModule/application/video'
 import callApplication from 'mainModule/application/call'
+import CallIncomingApplication from 'mainModule/application/call-incoming'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
@@ -160,7 +161,10 @@ class WindowHandler {
           newWindow = (updateApplication as any).win
           break
         case 'call':
-          newWindow = callApplication.createBrowserWindow(options)
+          newWindow = callApplication.createBrowserWindow()
+          break
+        case 'call-incoming':
+          newWindow = CallIncomingApplication.createBrowserWindow()
           break
       }
 
@@ -206,6 +210,12 @@ class WindowHandler {
         break
       case 'updater':
         sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_UPDATER, params)
+        break
+      case 'call':
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_CALL, params)
+        break
+      case 'call-incoming':
+        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_CALL_INCOMING, params)
         break
     }
   }

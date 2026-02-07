@@ -9,14 +9,14 @@
         <!-- <img class="search-icon" src="renderModule/assets/image/chat/search.svg" alt="search"> -->
       </div>
     </div>
+    <!-- 来电列表 -->
+    <IncomingCallList />
     <!-- 置顶会话 -->
     <TopConversationsComponent />
 
     <div class="chat-list">
-      <div
-        v-for="chat in chatList" :key="chat.conversationId" class="chat-item"
-        :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)"
-      >
+      <div v-for="chat in chatList" :key="chat.conversationId" class="chat-item"
+        :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)">
         <div class="chat-avatar">
           <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickName" />
         </div>
@@ -57,12 +57,14 @@ import { useConversationStore } from 'renderModule/windows/app/pinia/conversatio
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, ref } from 'vue'
 import TopConversationsComponent from './TopConversations.vue'
+import IncomingCallList from './IncomingCallList.vue'
 
 export default defineComponent({
   components: {
     AppStatusComponent,
     BeaverImage,
     TopConversationsComponent,
+    IncomingCallList
   },
   setup() {
     const conversationStore = useConversationStore()

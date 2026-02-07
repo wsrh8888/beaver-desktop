@@ -171,6 +171,16 @@ export enum NotificationMediaViewerCommand {
    * 更新升级信息
    */
   UPDATE_UPDATER = 'updateUpdater',
+
+  /**
+   * 更新通话信息
+   */
+  UPDATE_CALL = 'updateCall',
+
+  /**
+   * 更新来电信息
+   */
+  UPDATE_CALL_INCOMING = 'updateCallIncoming',
 }
 
 /**
@@ -179,10 +189,10 @@ export enum NotificationMediaViewerCommand {
  */
 export type AppLifecycleStatus
   = | 'connecting' // WebSocket连接中
-    | 'syncing' // 数据同步中
-    | 'ready' // 应用就绪（隐藏状态条）
-    | 'connect_error' // WebSocket连接错误/断开
-    | 'sync_error' // 数据同步错误
+  | 'syncing' // 数据同步中
+  | 'ready' // 应用就绪（隐藏状态条）
+  | 'connect_error' // WebSocket连接错误/断开
+  | 'sync_error' // 数据同步错误
 
 /**
  * 主进程更新通知渲染进程

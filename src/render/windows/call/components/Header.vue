@@ -16,6 +16,7 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import callManager from '../core'
 
 export default defineComponent({
   name: 'CallHeader',
@@ -25,7 +26,7 @@ export default defineComponent({
     }
 
     const handleHangup = () => {
-      (window as any).electron?.window.closeWindow('call')
+      callManager.hangup()
     }
 
     return {

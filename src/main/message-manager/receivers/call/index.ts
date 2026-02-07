@@ -1,10 +1,14 @@
 import { NotificationModule } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
-import callApp from 'mainModule/application/call'
 
 /**
  * @description: 通话消息处理器 - 处理来自WebSocket的通话信令
+ * 
+ * 流程说明:
+ * 1. 收到 RTC_INVITE -> 通知 app 窗口更新通话列表（不直接弹窗）
+ * 2. 用户在 app 窗口点击某个来电 -> 打开 call-incoming 窗口
+ * 3. 用户接听 -> 打开完整的 call 窗口
  */
 class CallMessageRouter {
   /**
@@ -20,18 +24,66 @@ class CallMessageRouter {
     const { data } = content
     if (!data) return
 
-    if (data.type === 'RTC_INVITE') {
-      // 如果收到邀请，打开通话窗口
-      callApp.createBrowserWindow({
-        roomId: data.roomId,
-        callType: data.callType,
-        targetId: data.callerId,
-        role: 'callee'
-      })
+    let payload = data
+    // 如果是 call_receive 类型，取 body 为实际负载
+    if (data.type === 'call_receive' && data.body) {
+      payload = { ...data.body, conversationId: data.conversationId }
     }
 
-    // 转发给渲染进程（用于已打开的通话窗口内接收挂断等信令）
-    sendMainNotification('*', NotificationModule.DATABASE_CHAT as any, 'call_signal' as any, data)
+    switch (payload.type) {
+      case 'RTC_INVITE':
+        this.handleInvite(payload)
+        break
+      case 'RTC_ACCEPTED':
+        this.handleAccepted(payload)
+        break
+      case 'RTC_HANGUP':
+      case 'RTC_CANCEL':
+        this.handleHangup(payload)
+        break
+      default:
+        logger.warn({ text: '未知的 RTC 信令类型', data: { type: payload.type, origin: data.type } }, 'CallMessageRouter')
+    }
+  }
+
+  /**
+   * 处理来电邀请 - 只通知 app 窗口更新列表，不直接弹窗
+   */
+  private handleInvite(data: any) {
+    // 通知 app 窗口更新通话列表
+    sendMainNotification('app', NotificationModule.DATABASE_CHAT as any, 'call_invite' as any, {
+      roomId: data.roomId,
+      callType: data.callType, // 1-私聊, 2-群聊
+      callerId: data.callerId,
+      conversationId: data.conversationId || '',
+      timestamp: data.timestamp
+    })
+
+    logger.info({ text: '已通知 app 窗口更新通话列表', data }, 'CallMessageRouter')
+  }
+
+  /**
+   * 处理对方接听
+   */
+  private handleAccepted(data: any) {
+    // 转发给 call 窗口
+    sendMainNotification('call', NotificationModule.DATABASE_CHAT as any, 'call_accepted' as any, data)
+    logger.info({ text: '对方已接听', data }, 'CallMessageRouter')
+  }
+
+  /**
+   * 处理挂断/取消
+   */
+  private handleHangup(data: any) {
+    // 转发给 call 窗口
+    sendMainNotification('call', NotificationModule.DATABASE_CHAT as any, 'call_hangup' as any, data)
+
+    // 通知 app 窗口更新通话列表（移除该通话）
+    sendMainNotification('app', NotificationModule.DATABASE_CHAT as any, 'call_ended' as any, {
+      roomId: data.roomId
+    })
+
+    logger.info({ text: '通话已挂断/取消', data }, 'CallMessageRouter')
   }
 }
 

@@ -228,29 +228,29 @@ export const useMessageStore = defineStore('useMessageStore', {
       }
 
       // 检测 RTC 呼叫信令
-      if (message.msg?.type === 7 && message.msg?.textMsg?.content?.includes('RTC_INVITE')) {
-        try {
-          const payload = JSON.parse(message.msg.textMsg.content)
-          if (payload.type === 'RTC_INVITE') {
-            // 是受邀者且不是自己发起的
-            if (payload.callerId !== electron.app.devicedId) { // 这里的判断逻辑需要根据实际情况，比如 userId
-              // 打开呼叫窗口
-              electron.window.openWindow('call', {
-                params: {
-                  roomId: payload.roomId,
-                  callType: payload.callType,
-                  targetId: payload.callerId,
-                  targetName: message.sender?.nickName || '未知用户',
-                  targetAvatar: message.sender?.avatar || '',
-                  role: 'callee'
-                }
-              })
-            }
-          }
-        } catch (e) {
-          console.error('Parse RTC_INVITE fail', e)
-        }
-      }
+      // if (message.msg?.type === 7 && message.msg?.textMsg?.content?.includes('RTC_INVITE')) {
+      //   try {
+      //     const payload = JSON.parse(message.msg.textMsg.content)
+      //     if (payload.type === 'RTC_INVITE') {
+      //       // 是受邀者且不是自己发起的
+      //       if (payload.callerId !== electron.app.devicedId) { // 这里的判断逻辑需要根据实际情况，比如 userId
+      //         // 打开呼叫窗口
+      //         electron.window.openWindow('call', {
+      //           params: {
+      //             roomId: payload.roomId,
+      //             callType: payload.callType,
+      //             targetId: payload.callerId,
+      //             targetName: message.sender?.nickName || '未知用户',
+      //             targetAvatar: message.sender?.avatar || '',
+      //             role: 'callee'
+      //           }
+      //         })
+      //       }
+      //     }
+      //   } catch (e) {
+      //     console.error('Parse RTC_INVITE fail', e)
+      //   }
+      // }
 
       // 更新会话列表的最新消息预览
       this.updateConversationPreview(conversationId, message)

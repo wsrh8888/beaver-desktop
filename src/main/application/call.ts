@@ -4,16 +4,15 @@ import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
 import ApplicationBase from './common/base'
 
-class Call extends ApplicationBase implements Application {
+class CallApplication extends ApplicationBase implements Application {
   constructor() {
     super('call')
   }
 
-  public createBrowserWindow(options: any = {}): BrowserWindow {
-    const { width = 850, height = 600, params = {} } = options
+  public createBrowserWindow(): BrowserWindow {
     this.win = new BrowserWindow({
-      width,
-      height,
+      width: 850,
+      height: 600,
       minWidth: 360,
       minHeight: 480,
       frame: false,
@@ -25,7 +24,7 @@ class Call extends ApplicationBase implements Application {
         contextIsolation: true,
         webSecurity: false,
         devTools: true,
-        additionalArguments: [`--custom=${JSON.stringify({ ...this.getPreloadParams(), ...params })}`],
+        additionalArguments: [`--custom=${JSON.stringify({ ...this.getPreloadParams() })}`],
       },
     })
 
@@ -40,4 +39,4 @@ class Call extends ApplicationBase implements Application {
   }
 }
 
-export default new Call()
+export default new CallApplication()

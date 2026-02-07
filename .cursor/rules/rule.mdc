@@ -34,6 +34,21 @@ export const usexxStore = defineStore('usexxStore', {
 })
 ```
 
+### 接口规范
+- 所有接口返回的数据结构都是
+```typescript
+{
+  code: number,
+  msg: string,
+  result: any
+}
+```
+- 接口的type是以I开头的， res和req结尾鞥多
+- 接口的方法名字需要加Api
+- 接口没用报错，不需要catch，code为0是正常，非0是异常的, 如果异常则使用msg属性
+- import * as 文件名Api from '@/api/文件名' 不允许这么写
+- 我的接口没有异常的情况，不要写catch
+
 ### 切记
 - 不要过度开发
 - 不要写md文件
