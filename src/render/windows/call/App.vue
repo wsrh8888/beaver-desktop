@@ -3,34 +3,33 @@
     <!-- 通用页头：包含最小化/标题等 -->
     <CallHeader />
 
-    <!-- 核心视图区域：直接挂载 ActiveView -->
-    <ActiveView />
+    <!-- 核心视图区域：直接挂载 CallView -->
+    <CallView />
+
+    <!-- 底部操作栏 -->
+    <CallFooter />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue'
-import CallHeader from './components/Header.vue'
-import ActiveView from './views/active/index.vue'
+import { defineComponent } from 'vue'
+import CallHeader from './components/CallHeader.vue'
+import CallView from './components/CallView.vue'
+import CallFooter from './components/CallFooter.vue'
 import { usecallStore } from './pinia/call'
-import callManager from './core'
+
 
 export default defineComponent({
   name: 'CallApp',
   components: {
     CallHeader,
-    ActiveView
+    CallView,
+    CallFooter
   },
   setup() {
     const callStore = usecallStore()
 
-    onMounted(async () => {
-      // 获取启动参数
-      const params = (window as any).electron?.app?.params
-      if (params) {
-        await callManager.initialize(params)
-      }
-    })
+
 
     return {
       callStore

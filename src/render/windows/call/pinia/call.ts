@@ -1,4 +1,7 @@
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('CallStore')
 
 /**
  * @description: 通话模块 Store - 仅存储基础元数据和状态
@@ -26,6 +29,14 @@ export const usecallStore = defineStore('usecallStore', {
       isMuted: false,
       isCameraOff: true,  // 默认不开启摄像头
     },
+    // 媒体轨道 (标记为 raw 以避免不必要的响应式开销)
+    localVideoTrack: null as any,
+    remoteVideoTracks: [] as Array<{
+      sid: string,
+      identity: string,
+      track: any,
+      isMuted: boolean
+    }>,
   }),
 
   getters: {
@@ -36,13 +47,7 @@ export const usecallStore = defineStore('usecallStore', {
      * 设置基础数据
      */
     setBaseInfo(info: any) {
-      console.error('setBaseInfo', info)
       this.baseInfo = info
-      // 如果进入的是视频通话模式，可以在这里决定是否默认开启
-      // 不过根据用户要求，默认进来可能都是语音/关闭摄像头状态
-      if (info.callMode === 'video') {
-        // this.callStatus.isCameraOff = false // 如果需要默认开启可以取消注释
-      }
     },
 
     /**
@@ -63,6 +68,7 @@ export const usecallStore = defineStore('usecallStore', {
      * 设置房间信息
      */
     setRoomInfo(info: { roomId?: string, roomToken?: string, liveKitUrl?: string }) {
+      logger.info({ text: '设置房间信息', data: info })
       if (info.roomId) this.roomInfo.roomId = info.roomId
       if (info.roomToken) this.roomInfo.roomToken = info.roomToken
       if (info.liveKitUrl) this.roomInfo.liveKitUrl = info.liveKitUrl
@@ -90,6 +96,8 @@ export const usecallStore = defineStore('usecallStore', {
         isMuted: false,
         isCameraOff: true
       }
+      this.localVideoTrack = null
+      this.remoteVideoTracks = []
     },
 
     /**
@@ -97,6 +105,31 @@ export const usecallStore = defineStore('usecallStore', {
      */
     setPhase(phase: 'calling' | 'incoming' | 'active') {
       this.callStatus.phase = phase
+    },
+
+    setLocalVideoTrack(track: any) {
+      this.localVideoTrack = track
+    },
+
+    addRemoteVideoTrack(payload: { sid: string, identity: string, track: any, isMuted?: boolean }) {
+      const exists = this.remoteVideoTracks.some(t => t.sid === payload.sid)
+      if (!exists) {
+        this.remoteVideoTracks.push({
+          ...payload,
+          isMuted: payload.isMuted ?? false
+        })
+      }
+    },
+
+    updateRemoteTrackMute(sid: string, isMuted: boolean) {
+      const track = this.remoteVideoTracks.find(t => t.sid === sid)
+      if (track) {
+        track.isMuted = isMuted
+      }
+    },
+
+    removeRemoteVideoTrack(sid: string) {
+      this.remoteVideoTracks = this.remoteVideoTracks.filter(t => t.sid !== sid)
     },
   },
 })

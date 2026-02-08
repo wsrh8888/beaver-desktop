@@ -42,7 +42,7 @@
 <script lang="ts">
 import { defineComponent, onMounted, computed, ref } from 'vue'
 import { useIncomingStore } from '../pinia/incoming'
-import { hangupCallApi } from 'renderModule/api/call'
+import { getCallTokenApi, hangupCallApi } from 'renderModule/api/call'
 
 export default defineComponent({
   name: 'IncomingNotify',
@@ -83,7 +83,7 @@ export default defineComponent({
     const handleReject = async () => {
       try {
         await hangupCallApi({
-          roomId: incomingStore.callInfo.roomId
+          roomId: incomingStore.callInfo.roomInfo.roomId
         })
       } catch (e) {
         console.error('拒绝来电失败:', e)
@@ -103,31 +103,54 @@ export default defineComponent({
 
     // 确认接听 - 打开完整的 call 窗口
     const confirmAccept = async () => {
-      const { roomId, callType, callerId, conversationId, callMode, hasActiveCall, activeCallRoomId } = incomingStore.callInfo
+      const { roomInfo, callType, callerId, conversationId, callMode, role, type, hasActiveCall, activeCallRoomId } = incomingStore.callInfo
+      const roomId = roomInfo.roomId
 
-      // 如果有活跃通话，先挂断
+      // 1. 如果有活跃通话，先挂断
       if (hasActiveCall && activeCallRoomId) {
         try {
           await hangupCallApi({ roomId: activeCallRoomId })
         } catch (e) {
-          console.error('挂断原通话失败', e)
+          console.warn('挂断旧通话失败', e)
         }
       }
 
-      electron?.window.openWindow('call', {
-        width: 1000,
-        height: 640,
-        params: {
-          roomId,
-          callType,
-          callerId,
-          conversationId,
-          callMode,
-          role: 'callee',
-          autoAccept: true
+      // 2. 获取通话令牌 (移动到此处处理)
+      try {
+        const res = await getCallTokenApi({ roomId })
+
+        if (res.code === 0) {
+          // 3. 组装完整的房间信息
+          const fullRoomInfo = {
+            ...roomInfo,
+            roomToken: res.result.roomToken,
+            liveKitUrl: res.result.liveKitUrl
+          }
+
+          // 4. 打开新窗口
+          electron?.window.openWindow('call', {
+            params: {
+              roomInfo: { ...fullRoomInfo }, // 确保转换为普通对象
+              baseInfo: {
+                callMode,
+                targetId: [],
+                callerId,
+                conversationId,
+                callType,
+                role
+              }
+            }
+          })
+
+          // 5. 延迟一会关闭自己，确保新窗口参数已传递（或者直接关闭）
+          electron?.window.closeWindow()
+        } else {
+          console.error('获取令牌失败:', res.msg)
+          // 可以加个 Toast 提示用户
         }
-      })
-      electron?.window.closeWindow()
+      } catch (error) {
+        console.error('接听流程异常:', error)
+      }
     }
 
     // 忽略/关闭

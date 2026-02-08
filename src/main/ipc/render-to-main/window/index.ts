@@ -1,6 +1,6 @@
 import type { IWindowOpenOptions, IWinodwCloseOptions } from 'commonModule/type/preload/window'
 import { WinHook } from 'commonModule/type/ipc/command'
-import { NotificationModule, NotificationMediaViewerCommand } from 'commonModule/type/preload/notification'
+import { NotificationModule, NotificationMediaViewerCommand, NotificationCallCommand } from 'commonModule/type/preload/notification'
 import { BrowserWindow } from 'electron'
 import appApplication from 'mainModule/application/app'
 import audioApplication from 'mainModule/application/audio'
@@ -212,10 +212,15 @@ class WindowHandler {
         sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_UPDATER, params)
         break
       case 'call':
-        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_CALL, params)
+        sendMainNotification(
+          name,
+          NotificationModule.CALL,
+          params.role === 'caller' ? NotificationCallCommand.CALL_START : NotificationCallCommand.CALL_JOIN,
+          params
+        )
         break
       case 'call-incoming':
-        sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_CALL_INCOMING, params)
+        sendMainNotification(name, NotificationModule.CALL, NotificationCallCommand.CALL_INVITE, params)
         break
     }
   }

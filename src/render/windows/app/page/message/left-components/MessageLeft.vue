@@ -2,6 +2,8 @@
   <div class="message-left">
     <!-- 应用状态显示 -->
     <AppStatusComponent />
+    <!-- 来电列表 -->
+    <IncomingCallList />
 
     <div class="search-container">
       <div class="search-wrapper">
@@ -9,8 +11,7 @@
         <!-- <img class="search-icon" src="renderModule/assets/image/chat/search.svg" alt="search"> -->
       </div>
     </div>
-    <!-- 来电列表 -->
-    <IncomingCallList />
+
     <!-- 置顶会话 -->
     <TopConversationsComponent />
 

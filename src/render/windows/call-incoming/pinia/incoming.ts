@@ -1,11 +1,16 @@
 import { defineStore } from 'pinia'
 
 export interface IIncomingInfo {
-  roomId: string
+  roomInfo: {
+    roomId: string
+  }
   callType: 'private' | 'group'
   callerId: string
   conversationId: string
   callMode: 'audio' | 'video'
+  role: 'caller' | 'callee'
+  autoAccept: boolean
+  type: string
 }
 
 /**
@@ -14,11 +19,15 @@ export interface IIncomingInfo {
 export const useIncomingStore = defineStore('useIncomingStore', {
   state: () => ({
     callInfo: {
-      roomId: '',
+      roomInfo: {
+        roomId: '',
+      },
       callType: 'private' as 'private' | 'group',
       callerId: '',
       conversationId: '',
       callMode: 'audio' as 'audio' | 'video',
+      role: 'callee' as 'caller' | 'callee',
+      autoAccept: false,
       hasActiveCall: false, // 是否有正在进行的通话
       activeCallRoomId: '' // 正在进行的通话ID
     },
@@ -40,11 +49,15 @@ export const useIncomingStore = defineStore('useIncomingStore', {
 
     reset() {
       this.callInfo = {
-        roomId: '',
+        roomInfo: {
+          roomId: '',
+        },
         callType: 'private',
         callerId: '',
         conversationId: '',
         callMode: 'audio',
+        role: 'callee',
+        autoAccept: false,
         hasActiveCall: false,
         activeCallRoomId: ''
       }

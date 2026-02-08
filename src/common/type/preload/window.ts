@@ -11,10 +11,6 @@ export interface IWindowOpenOptions {
    */
   unique?: boolean
   /**
-   * @description: 窗口参数（用于传递数据）
-   */
-  params?: Record<string, any>
-  /**
    * @description: 窗口宽度
    */
   width?: number
@@ -22,6 +18,10 @@ export interface IWindowOpenOptions {
    * @description: 窗口高度
    */
   height?: number
+  /**
+   * @description: 窗口参数（用于传递数据）
+   */
+  params?: Record<string, any>
 }
 
 /**

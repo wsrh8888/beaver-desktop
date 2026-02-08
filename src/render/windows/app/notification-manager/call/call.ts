@@ -11,12 +11,13 @@ class CallNotificationManager {
    * 处理来电邀请 - 添加到通话列表并弹窗
    */
   async processCallInvite(data: {
-    roomId: string
+    roomInfo: { roomId: string }
     callType: number // 1-私聊, 2-群聊
     callerId: string
     conversationId: string
     timestamp: number
   }) {
+    const roomId = data.roomInfo.roomId
     logger.info({
       text: '处理来电邀请',
       data
@@ -26,7 +27,7 @@ class CallNotificationManager {
 
     // 添加到来电列表
     callListStore.addIncomingCall({
-      roomId: data.roomId,
+      roomId: roomId,
       callType: data.callType === 1 ? 'private' : 'group',
       callerId: data.callerId,
       conversationId: data.conversationId,
@@ -34,7 +35,7 @@ class CallNotificationManager {
     })
 
     // 异步加载来电者信息
-    this.loadCallerInfo(data.roomId, data.callerId)
+    this.loadCallerInfo(roomId, data.callerId)
 
     // 自动弹出来电窗口
     this.openIncomingWindow(data)
@@ -44,7 +45,7 @@ class CallNotificationManager {
    * 打开来电窗口
    */
   private openIncomingWindow(data: {
-    roomId: string
+    roomInfo: { roomId: string }
     callType: number
     callerId: string
     conversationId: string
@@ -60,10 +61,13 @@ class CallNotificationManager {
       width: 360,
       height: 180,
       params: {
-        roomId: data.roomId,
+        roomInfo: data.roomInfo,
         callType: data.callType === 1 ? 'private' : 'group',
         callerId: data.callerId,
         conversationId: data.conversationId,
+        callMode: 'audio',
+        role: 'callee',
+        autoAccept: false,
         // 传递当前通话状态
         hasActiveCall,
         activeCallRoomId
@@ -74,14 +78,15 @@ class CallNotificationManager {
   /**
    * 处理通话结束
    */
-  processCallEnded(data: { roomId: string }) {
+  processCallEnded(data: { roomInfo: { roomId: string } }) {
+    const roomId = data.roomInfo.roomId
     logger.info({
       text: '处理通话结束',
       data
     })
 
     const callListStore = useCallListStore()
-    callListStore.removeCall(data.roomId)
+    callListStore.removeCall(roomId)
 
     // 如果该通话对应的来电窗口打开着，尝试关闭它
     // 注意：这里只能尝试通过 electron API 关闭，但渲染进程只有 openWindow

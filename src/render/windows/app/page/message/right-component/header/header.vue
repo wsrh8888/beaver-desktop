@@ -91,15 +91,15 @@ export default defineComponent({
         const roomInfo = res.result
         // 成功获取房间信息后，打开 Call 窗口
         electron?.window.openWindow('call', {
-          width: 1000,
-          height: 640,
           params: {
-            callMode: type,
-            targetId: targetUserId ? [targetUserId] : [],
-            callerId: callerId,           // 发起者 ID
-            conversationId: currentId,    // 会话 ID
-            callType: chatType.value,
-            role: 'caller',
+            baseInfo: {
+              callMode: type,
+              targetId: targetUserId ? [targetUserId] : [],
+              callerId: callerId,           // 发起者 ID
+              conversationId: currentId,    // 会话 ID
+              callType: chatType.value,
+              role: 'caller',
+            },
             roomInfo: roomInfo            // 将 API 返回的完整房间信息传递过去
           }
         })

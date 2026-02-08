@@ -1,4 +1,4 @@
-import { NotificationModule } from 'commonModule/type/preload/notification'
+import { NotificationModule, NotificationCallCommand } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
@@ -51,8 +51,10 @@ class CallMessageRouter {
    */
   private handleInvite(data: any) {
     // 通知 app 窗口更新通话列表
-    sendMainNotification('app', NotificationModule.DATABASE_CHAT as any, 'call_invite' as any, {
-      roomId: data.roomId,
+    sendMainNotification('app', NotificationModule.CALL, NotificationCallCommand.CALL_INVITE, {
+      roomInfo: {
+        roomId: data.roomId,
+      },
       callType: data.callType, // 1-私聊, 2-群聊
       callerId: data.callerId,
       conversationId: data.conversationId || '',
@@ -66,8 +68,15 @@ class CallMessageRouter {
    * 处理对方接听
    */
   private handleAccepted(data: any) {
-    // 转发给 call 窗口
-    sendMainNotification('call', NotificationModule.DATABASE_CHAT as any, 'call_accepted' as any, data)
+    const payload = {
+      ...data,
+      roomInfo: {
+        roomId: data.roomId,
+      }
+    }
+    // 转发给通话窗口
+    sendMainNotification('call', NotificationModule.CALL, NotificationCallCommand.CALL_ACCEPTED, payload)
+    sendMainNotification('call-incoming', NotificationModule.CALL, NotificationCallCommand.CALL_ACCEPTED, payload)
     logger.info({ text: '对方已接听', data }, 'CallMessageRouter')
   }
 
@@ -75,12 +84,21 @@ class CallMessageRouter {
    * 处理挂断/取消
    */
   private handleHangup(data: any) {
-    // 转发给 call 窗口
-    sendMainNotification('call', NotificationModule.DATABASE_CHAT as any, 'call_hangup' as any, data)
+    const payload = {
+      ...data,
+      roomInfo: {
+        roomId: data.roomId,
+      }
+    }
+    // 转发给通话窗口
+    sendMainNotification('call', NotificationModule.CALL, NotificationCallCommand.CALL_HANGUP, payload)
+    sendMainNotification('call-incoming', NotificationModule.CALL, NotificationCallCommand.CALL_HANGUP, payload)
 
     // 通知 app 窗口更新通话列表（移除该通话）
-    sendMainNotification('app', NotificationModule.DATABASE_CHAT as any, 'call_ended' as any, {
-      roomId: data.roomId
+    sendMainNotification('app', NotificationModule.CALL, NotificationCallCommand.CALL_ENDED, {
+      roomInfo: {
+        roomId: data.roomId,
+      }
     })
 
     logger.info({ text: '通话已挂断/取消', data }, 'CallMessageRouter')
