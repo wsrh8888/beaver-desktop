@@ -30,6 +30,7 @@ import { useConversationStore } from 'renderModule/windows/app/pinia/conversatio
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { startCallApi } from 'renderModule/api/call'
 import { computed, defineComponent, watch } from 'vue'
 
@@ -43,6 +44,7 @@ export default defineComponent({
     const messageViewStore = useMessageViewStore()
     const friendStore = useFriendStore()
     const userStore = useUserStore()
+    const groupStore = useGroupStore()
 
     const friendInfo = computed<any>(() => {
       const currentId = messageViewStore.currentChatId
@@ -76,7 +78,7 @@ export default defineComponent({
       // 获取目标 ID：私聊解析出对方 UID，群聊使用会话 ID (即群 ID)
       const targetUserId = chatType.value === 'private'
         ? friendStore.getUserIdByConversationId(currentId)
-        : ''
+        : groupStore.getGroupIdByConversationId(currentId)
 
       // 获取当前用户 ID（发起者）
       const callerId = userStore.getUserId
@@ -84,28 +86,35 @@ export default defineComponent({
       // 先调用 API 发起通话
       const res = await startCallApi({
         callType: chatType.value === 'private' ? 1 : 2,
-        targetId: targetUserId
+        targetId: targetUserId,
+        callMode: type === 'audio' ? 1 : 2,
       })
 
       if (res.code === 0) {
-        const roomInfo = res.result
-        // 成功获取房间信息后，打开 Call 窗口
+        const { participants, ...roomInfo } = res.result
+
+        console.error('targetUserId', targetUserId)
+        console.error('participants', participants)
+
+        // 成功获取房间信息后，打开 Call 窗口 (名单从接口拿)
         electron?.window.openWindow('call', {
           params: {
             baseInfo: {
               callMode: type,
-              targetId: targetUserId ? [targetUserId] : [],
-              callerId: callerId,           // 发起者 ID
-              conversationId: currentId,    // 会话 ID
+              // 这里修正：targetId 代表具体的呼叫对象。
+              // 对于群聊，我们设为空，完全依赖 participants 返回的成员快照来驱动 UI
+              targetId: chatType.value === 'private' ? [targetUserId] : [],
+              callerId: callerId,
+              conversationId: currentId,
               callType: chatType.value,
-              role: 'caller',
+              role: 'caller'
             },
-            roomInfo: roomInfo            // 将 API 返回的完整房间信息传递过去
+            roomInfo,
+            participants
           }
         })
       } else {
         console.error('发起通话失败:', res.msg)
-        // 这里可以添加一个 Toast 提示用户
       }
     }
 

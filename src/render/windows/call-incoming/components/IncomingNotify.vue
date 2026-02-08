@@ -120,17 +120,19 @@ export default defineComponent({
         const res = await getCallTokenApi({ roomId })
 
         if (res.code === 0) {
+          const { roomToken, liveKitUrl, participants } = res.result
+
           // 3. 组装完整的房间信息
           const fullRoomInfo = {
             ...roomInfo,
-            roomToken: res.result.roomToken,
-            liveKitUrl: res.result.liveKitUrl
+            roomToken,
+            liveKitUrl
           }
 
-          // 4. 打开新窗口
+          // 4. 打开新窗口 (附带名单快照)
           electron?.window.openWindow('call', {
             params: {
-              roomInfo: { ...fullRoomInfo }, // 确保转换为普通对象
+              roomInfo: { ...fullRoomInfo },
               baseInfo: {
                 callMode,
                 targetId: [],
@@ -138,11 +140,12 @@ export default defineComponent({
                 conversationId,
                 callType,
                 role
-              }
+              },
+              participants: participants || []
             }
           })
 
-          // 5. 延迟一会关闭自己，确保新窗口参数已传递（或者直接关闭）
+          // 5. 关闭自己
           electron?.window.closeWindow()
         } else {
           console.error('获取令牌失败:', res.msg)

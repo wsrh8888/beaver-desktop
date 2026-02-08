@@ -43,23 +43,46 @@ class NotificationManager {
     switch (command) {
       case NotificationCallCommand.CALL_START:
       case NotificationCallCommand.CALL_JOIN:
-        callStore.setBaseInfo(data.baseInfo)
-        callStore.setRoomInfo(data.roomInfo)
-        callStore.setPhase(data.baseInfo.role === 'caller' ? 'calling' : 'active')
-        // 初始化通话/更新基础数据
-        callManager.initialize()
+        // 后端下发的进入/加入指令
+        // 如果是初次进入 (Store 为空)，则执行全量初始化
+        if (!callStore.roomInfo.roomId && data.baseInfo) {
+          callStore.setBaseInfo(data.baseInfo)
+          callStore.initMembers(data.participants)
+          callStore.setRoomInfo(data.roomInfo)
+          callStore.setPhase(data.baseInfo.role === 'caller' ? 'calling' : 'active')
+          callManager.initialize()
+        } else if (data.userId) {
+          // 如果是运行中收到的 JOIN，视为增量更新
+          callStore.upsertMember(data.userId, { status: 'joined' })
+        }
         break
 
       case NotificationCallCommand.CALL_ACCEPTED:
-        // 对方已接听 (对于主叫方，UI 切换到通话中)
+        if (data.userId) {
+          callStore.upsertMember(data.userId, { status: 'joined' })
+        }
         callStore.setPhase('active')
         break
 
       case NotificationCallCommand.CALL_REJECTED:
+        if (data.userId) {
+          callStore.upsertMember(data.userId, { status: 'rejected' })
+          // 如果是私聊，对方拒接则全员挂断
+          if (callStore.baseInfo.callType === 'private') {
+            callManager.hangup()
+          }
+        }
+        break
+
       case NotificationCallCommand.CALL_HANGUP:
       case NotificationCallCommand.CALL_CANCELLED:
-        // 挂断并执行清理逻辑
-        callManager.hangup()
+        if (data.userId && callStore.baseInfo.callType === 'group') {
+          // 群聊：仅标记该用户离开
+          callStore.upsertMember(data.userId, { status: 'left' })
+        } else {
+          // 私聊或全员结束：执行清理
+          callManager.hangup()
+        }
         break
 
       default:

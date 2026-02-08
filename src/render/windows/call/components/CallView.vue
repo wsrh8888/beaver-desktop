@@ -1,120 +1,139 @@
 <template>
   <div class="active-view">
-    <!-- 视频通话区域 -->
-    <div v-if="hasVideo" class="video-container">
-      <!-- 远程视频网格 -->
-      <div class="remote-grid" :class="gridClass">
-        <div v-for="trackInfo in callStore.remoteVideoTracks" :key="trackInfo.sid" class="video-item">
-          <VideoRenderer :track="trackInfo.track" />
-          <div class="user-label">{{ trackInfo.identity }}</div>
+    <!-- 统一视频网格 (始终显示，包含本地和远程) -->
+    <div class="video-container">
+      <div class="video-grid" :class="gridClass" :style="gridStyle">
+        <div v-for="item in allTracks" :key="item.sid" class="grid-item">
+          <!-- 视频画面 -->
+          <div v-if="!item.isCameraOff && item.track" class="video-wrapper">
+            <VideoRenderer :track="item.track" :is-local="item.isLocal" />
+          </div>
+
+          <!-- 占位图 (摄像头关闭或呼叫等待中) -->
+          <div v-else class="camera-off-placeholder">
+            <div class="avatar-box" :class="{ 'pulse': item.status === 'calling' }">
+              <BeaverImage v-if="item.avatar" :file-name="item.avatar" image-class="placeholder-avatar"
+                :cache-type="CacheType.USER_AVATAR" />
+              <img v-else :src="defaultAvatar" class="placeholder-avatar">
+            </div>
+            <div v-if="item.statusHint" class="status-hint">{{ item.statusHint }}</div>
+          </div>
+
+          <!-- 用户标签 -->
+          <div class="user-info-tag">
+            <span class="name">{{ item.identity }}</span>
+            <span v-if="item.isMuted" class="status-icon">🔇</span>
+          </div>
         </div>
       </div>
-
-      <!-- 本地视频 (画中画) -->
-      <div v-if="callStore.localVideoTrack" class="local-pip">
-        <VideoRenderer :track="callStore.localVideoTrack" :is-local="true" />
-      </div>
-
-      <!-- 如果只有本地视频没有远程视频（等待中或对方没开视频），显示大图或者保持布局 -->
-      <div v-if="callStore.remoteVideoTracks.length === 0 && callStore.localVideoTrack" class="no-remote-placeholder">
-        <div class="waiting-text">等待对方开启视频...</div>
-      </div>
     </div>
-
-    <!-- 语音通话/无视频状态 -->
-    <div v-else class="call-info">
-      <div class="avatar-container" :class="{ 'pulse': isWaiting }">
-        <img :src="targetInfo.avatar || defaultAvatar" :alt="targetInfo.name">
-      </div>
-      <div class="target-name">{{ targetInfo.name }}</div>
-      <div class="status-label">{{ statusText }}</div>
-    </div>
-
-
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed, ref, onMounted } from 'vue'
+import { defineComponent, computed, onMounted } from 'vue'
+import { CacheType } from 'commonModule/type/cache/cache'
 import { usecallStore } from '../pinia/call'
-
 import VideoRenderer from './VideoRenderer.vue'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
 
 export default defineComponent({
   name: 'CallView',
   components: {
-    VideoRenderer
+    VideoRenderer,
+    BeaverImage
   },
   setup() {
     const callStore = usecallStore()
     const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
 
-    // 目标用户信息
-    const targetInfo = ref<{ name: string; avatar: string }>({
-      name: '加载中...',
-      avatar: ''
+
+    // 汇总所有展示项
+    const allTracks = computed(() => {
+      const list: any[] = []
+
+      // 基于 members (唯一事实来源) 驱动网格
+      callStore.members.forEach(member => {
+        const userId = member.userId
+
+        // 判定是否是本地用户画面
+        const isMe = userId === callStore.myUserId
+
+        const remoteTrack = !isMe ? callStore.remoteVideoTracks.find(t => t.identity === userId) : null
+
+        // 计算展示状态
+        let statusHint = ''
+        if (member.status === 'calling') statusHint = '等待接听...'
+        if (member.status === 'left') statusHint = '已离开'
+        if (member.status === 'rejected') statusHint = '已拒绝'
+        if (member.status === 'busy') statusHint = '忙碌中'
+
+        list.push({
+          sid: remoteTrack?.sid || `slot-${userId}`,
+          userId: userId,
+          identity: member.nickName || userId,
+          track: isMe ? callStore.localVideoTrack : remoteTrack?.track || null,
+          isLocal: isMe,
+          isMuted: isMe ? callStore.callStatus.isMuted : (remoteTrack?.isMuted || false),
+          // 摄像头关闭逻辑
+          isCameraOff: isMe ? callStore.callStatus.isCameraOff : (!remoteTrack?.track || member.status !== 'joined'),
+          avatar: member.avatar,
+          statusHint: statusHint,
+          status: member.status
+        })
+      })
+
+      return list
     })
 
-    // 是否处于等待状态（拨打中）
     const isWaiting = computed(() => callStore.callStatus.phase === 'calling')
 
-    // 是否有视频 (本地或远程有视频轨道即视为视频模式)
-    const hasVideo = computed(() => {
-      return (callStore.remoteVideoTracks && callStore.remoteVideoTracks.length > 0) ||
-        (callStore.localVideoTrack !== null)
+    // 动态计算网格行列
+    const gridStyle = computed(() => {
+      const count = allTracks.value.length
+      if (count === 0) return {}
+
+      let cols = 1
+      let rows = 1
+
+      if (count <= 1) {
+        cols = 1; rows = 1
+      } else if (count <= 2) {
+        cols = 2; rows = 1
+      } else if (count <= 4) {
+        cols = 2; rows = 2
+      } else {
+        cols = 3; rows = Math.ceil(count / 3)
+      }
+
+      return {
+        gridTemplateColumns: `repeat(${cols}, 1fr)`,
+        gridTemplateRows: `repeat(${rows}, 1fr)`
+      }
     })
 
-    // 网格样式类
     const gridClass = computed(() => {
-      const count = callStore.remoteVideoTracks.length
-      if (count <= 1) return 'grid-1'
-      if (count <= 2) return 'grid-2'
-      if (count <= 4) return 'grid-4'
-      return 'grid-9'
+      return `count-${allTracks.value.length}`
     })
 
-    // 状态文字
     const statusText = computed(() => {
-      if (callStore.callStatus.phase === 'calling') {
-        return '正在呼叫...'
-      }
-      return '通话中'
+      if (callStore.callStatus.phase === 'calling') return '正在呼叫...'
+      return '等待中'
     })
-
-    // ... (keep loadTargetInfo logic)
-    // 从数据库加载目标用户信息
-    const loadTargetInfo = async () => {
-      const targetId = callStore.baseInfo.targetId?.[0]
-      if (!targetId) return
-
-      try {
-        const result = await electron.database.user.getUsersBasicInfo({ userIds: [targetId] })
-        if (result?.users?.length) {
-          const user = result.users.find((u: any) => u.userId === targetId)
-          if (user) {
-            targetInfo.value = {
-              name: user.nickName || user.userId || '未知用户',
-              avatar: user.avatar || ''
-            }
-          }
-        }
-      } catch (error) {
-        console.error('获取目标用户信息失败:', error)
-      }
-    }
 
     onMounted(() => {
-      loadTargetInfo()
+      // 成员初始化完全交给 Store 的 initMembers 自动处理
     })
 
     return {
       callStore,
       isWaiting,
-      targetInfo,
       statusText,
       defaultAvatar,
-      hasVideo,
+      allTracks,
+      gridStyle,
       gridClass,
+      CacheType
     }
   }
 })
@@ -125,136 +144,124 @@ export default defineComponent({
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+  background: #121212;
   color: #fff;
   position: relative;
   overflow: hidden;
 
   .video-container {
     flex: 1;
-    position: relative;
-    background: #000;
     display: flex;
     flex-direction: column;
+    padding: 12px;
+    background: #000;
 
-    .remote-grid {
+    .video-grid {
       flex: 1;
       display: grid;
-      gap: 2px;
+      gap: 12px;
+      align-items: center;
+      justify-content: center;
 
-      &.grid-1 {
-        grid-template-columns: 1fr;
-      }
-
-      &.grid-2 {
-        grid-template-columns: 1fr 1fr;
-      }
-
-      &.grid-4 {
-        grid-template-columns: 1fr 1fr;
-        grid-template-rows: 1fr 1fr;
-      }
-
-      .video-item {
+      .grid-item {
         position: relative;
-        background: #222;
+        width: 100%;
+        height: 100%;
+        background: #1a1a1a;
+        border-radius: 12px;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        transition: all 0.3s ease;
 
-        .user-label {
+        .video-wrapper {
+          width: 100%;
+          height: 100%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: #000;
+        }
+
+        .camera-off-placeholder {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 16px;
+
+          .avatar-box {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            overflow: hidden;
+            background: #252525;
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.5s ease;
+
+            &.pulse {
+              animation: avatar-pulse 2s infinite ease-in-out;
+              border-color: #4a90e2;
+            }
+
+            .placeholder-avatar {
+              width: 100%;
+              height: 100%;
+              object-fit: cover;
+            }
+          }
+
+          .status-hint {
+            font-size: 14px;
+            color: #4a90e2;
+            font-weight: 500;
+          }
+        }
+
+        .user-info-tag {
           position: absolute;
-          bottom: 10px;
-          left: 10px;
+          bottom: 12px;
+          left: 12px;
           background: rgba(0, 0, 0, 0.5);
-          padding: 4px 8px;
-          border-radius: 4px;
+          backdrop-filter: blur(8px);
+          padding: 4px 12px;
+          border-radius: 6px;
           font-size: 12px;
-          z-index: 2;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          z-index: 5;
+          border: 1px solid rgba(255, 255, 255, 0.1);
+
+          .name {
+            max-width: 120px;
+            font-weight: 500;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+          }
         }
       }
     }
-
-    .local-pip {
-      position: absolute;
-      bottom: 100px;
-      right: 20px;
-      width: 120px;
-      height: 160px; // 3:4 aspect ratio
-      background: #333;
-      border: 2px solid rgba(255, 255, 255, 0.2);
-      border-radius: 8px;
-      overflow: hidden;
-      z-index: 10;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
-      transition: all 0.3s;
-
-      &:hover {
-        transform: scale(1.1);
-      }
-    }
-
-    .no-remote-placeholder {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 14px;
-    }
   }
-
-  .call-info {
-    // ... keep existing styles for call-info
-    padding: 40px 20px 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 16px;
-
-    .avatar-container {
-      width: 120px;
-      height: 120px;
-      border-radius: 50%;
-      overflow: hidden;
-      border: 3px solid rgba(255, 255, 255, 0.2);
-
-      &.pulse {
-        animation: pulse-ring 2s infinite;
-      }
-
-      img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-      }
-    }
-
-    .target-name {
-      font-size: 22px;
-      font-weight: 500;
-    }
-
-    .status-label {
-      font-size: 14px;
-      color: rgba(255, 255, 255, 0.7);
-    }
-  }
-
-
 }
 
-@keyframes pulse-ring {
+@keyframes avatar-pulse {
   0% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.4);
   }
 
   70% {
     transform: scale(1.05);
-    box-shadow: 0 0 0 20px rgba(255, 255, 255, 0);
+    box-shadow: 0 0 0 25px rgba(74, 144, 226, 0);
   }
 
   100% {
     transform: scale(1);
-    box-shadow: 0 0 0 0 rgba(255, 255, 255, 0);
+    box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
   }
 }
 </style>

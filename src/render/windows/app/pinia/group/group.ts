@@ -28,6 +28,13 @@ export const useGroupStore = defineStore('groupStore', {
     getGroupById: state => (conversationId: string): IGroupInfo | undefined => {
       return state._groupList.find(group => group.conversationId === conversationId)
     },
+    /**
+     * @description: 根据会话ID查询群组ID
+     */
+    getGroupIdByConversationId: state => (conversationId: string): string => {
+      const group = state._groupList.find(g => g.conversationId === conversationId)
+      return group ? group.groupId : ''
+    },
   },
 
   actions: {

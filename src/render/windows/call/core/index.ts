@@ -34,20 +34,37 @@ export class CallManager {
     try {
       logger.info({ text: '开始连接 LiveKit 房间', data: { liveKitUrl, roomToken } })
 
-      // 开始连接
+      // 1. 开始连接
       await this.room?.connect(liveKitUrl, roomToken)
 
-      // 同步存量参与者和轨道
+      // 2. 将本地用户加入在线列表
+      if (this.room?.localParticipant) {
+        callStore.myUserId = this.room.localParticipant.identity
+        callStore.upsertMember(this.room.localParticipant.identity, { status: 'joined' })
+      }
+
+
+
+      // 3. 同步存量参与者和轨道
       this.syncExistingParticipants()
 
-      // 等待核心通道就绪后再执行媒体推流，避免 PublishTrackError
+
+      // 等待核心通道就绪后再执行媒体推流
       setTimeout(async () => {
         if (this.room?.state !== 'connected') return
 
         try {
-          // 默认开启麦克风
-          await this.room.localParticipant.setMicrophoneEnabled(false)
-          await this.room.localParticipant.setCameraEnabled(false)
+          const isVideoCall = callStore.baseInfo.callMode === 'video'
+
+          // 1. 默认开启麦克风
+          await this.room.localParticipant.setMicrophoneEnabled(true)
+          callStore.toggleMute(false)
+
+          // 2. 如果是视频通话，自动开启摄像头
+          if (isVideoCall) {
+            await this.room.localParticipant.setCameraEnabled(true)
+            callStore.toggleCamera(false) // isCameraOff = false
+          }
         } catch (mediaError) {
           logger.warn({ text: '初始媒体发布失败', data: mediaError })
         }
@@ -91,13 +108,14 @@ export class CallManager {
    * 切换摄像头
    */
   async toggleCamera() {
-
     const callStore = usecallStore()
-    const targetState = !callStore.callStatus.isCameraOff
+    // 如果当前是关闭状态 (isCameraOff: true)，目标应该是开启 (enabled: true)
+    const shouldEnable = callStore.callStatus.isCameraOff
 
     logger.info({
       text: '切换摄像头', data: {
-        isCameraOff: callStore.callStatus.isCameraOff
+        currentlyOff: callStore.callStatus.isCameraOff,
+        targetEnabled: shouldEnable
       }
     })
 
@@ -107,16 +125,17 @@ export class CallManager {
     }
 
     try {
-      await this.room.localParticipant.setCameraEnabled(targetState)
-      callStore.toggleCamera(targetState)
+      // 1. 物理设备开关
+      await this.room.localParticipant.setCameraEnabled(shouldEnable)
+
+      // 2. 同步 UI 状态：如果开启成功，isCameraOff 应该为 !shouldEnable
+      callStore.toggleCamera(!shouldEnable)
     } catch (error: any) {
-      // 这里的错误通常是设备占用：Device in use
       logger.error({
-        text: error.name === 'NotReadableError' ? '无法访问摄像头，可能被其它程序占用' : '切换摄像头异常',
+        text: error.name === 'NotReadableError' ? '无法访问摄像头' : '切换摄像头异常',
         data: error
       })
-      // 发生错误时，同步状态回滚或关闭
-      callStore.toggleCamera(false)
+      callStore.toggleCamera(true) // 失败则重置为关闭状态
     }
   }
 
@@ -126,10 +145,15 @@ export class CallManager {
   private syncExistingParticipants() {
     if (!this.room) return
 
+    const callStore = usecallStore()
     this.room.remoteParticipants.forEach((participant) => {
+      // 1. 更新成员
+      callStore.upsertMember(participant.identity, { status: 'joined' })
+      // 2. 触发参与者信息加载
+
       participant.trackPublications.forEach((pub) => {
         if (pub.kind === Track.Kind.Video && pub.track) {
-          usecallStore().addRemoteVideoTrack({
+          callStore.addRemoteVideoTrack({
             sid: pub.trackSid,
             identity: participant.identity,
             track: markRaw(pub.track),
@@ -149,20 +173,34 @@ export class CallManager {
       })
       .on(RoomEvent.ParticipantConnected, (participant) => {
         logger.info({ text: '参与者加入', data: participant.identity })
-        // 对方加入，视为通话接通
-        usecallStore().setPhase('active')
+        const callStore = usecallStore()
+
+        // 1. 更新成员
+        callStore.upsertMember(participant.identity, { status: 'joined' })
+        // 2. 通话接通
+        callStore.setPhase('active')
       })
       .on(RoomEvent.ParticipantDisconnected, (participant) => {
         logger.info({ text: '参与者离开', data: participant.identity })
+        const callStore = usecallStore()
+
+        // 1. 更新成员状态
+        callStore.upsertMember(participant.identity, { status: 'left' })
 
         // 私聊中一方离开，自动挂断
-        const callStore = usecallStore()
         if (callStore.baseInfo.callType === 'private') {
           this.hangup()
         }
       })
       .on(RoomEvent.Disconnected, () => {
         logger.info({ text: '房间已断开' })
+        const callStore = usecallStore()
+        // 全员标记为离开 (或者根据业务需求处理)
+        callStore.members.forEach(m => {
+          if (m.userId !== 'me' && m.userId !== callStore.myUserId) {
+            callStore.upsertMember(m.userId, { status: 'left' })
+          }
+        })
       })
       // 订阅远程轨道
       .on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
@@ -187,25 +225,21 @@ export class CallManager {
         }
       })
       // 取消订阅远程轨道
-      .on(RoomEvent.TrackUnsubscribed, (track, publication, participant) => {
-        if (track.kind === Track.Kind.Video) {
-          usecallStore().removeRemoteVideoTrack(track.sid || publication.trackSid)
-        }
+      .on(RoomEvent.TrackUnsubscribed, (_track, publication) => {
+        usecallStore().removeRemoteVideoTrack(publication.trackSid)
       })
       // 轨道取消发布 (A 彻底关闭了摄像头)
-      .on(RoomEvent.TrackUnpublished, (publication, participant) => {
-        if (publication.kind === Track.Kind.Video) {
-          usecallStore().removeRemoteVideoTrack(publication.trackSid)
-        }
+      .on(RoomEvent.TrackUnpublished, (publication) => {
+        usecallStore().removeRemoteVideoTrack(publication.trackSid)
       })
       // 本地轨道发布
-      .on(RoomEvent.LocalTrackPublished, (publication, participant) => {
+      .on(RoomEvent.LocalTrackPublished, (publication) => {
         if (publication.kind === Track.Kind.Video && publication.track) {
           usecallStore().setLocalVideoTrack(markRaw(publication.track))
         }
       })
       // 本地轨道取消发布
-      .on(RoomEvent.LocalTrackUnpublished, (publication, participant) => {
+      .on(RoomEvent.LocalTrackUnpublished, (publication) => {
         if (publication.kind === Track.Kind.Video) {
           usecallStore().setLocalVideoTrack(null)
         }

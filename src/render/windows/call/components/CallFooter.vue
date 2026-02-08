@@ -25,18 +25,34 @@
       </div>
       <span>{{ isWaiting ? '取消' : '挂断' }}</span>
     </div>
+
+    <!-- 邀请成员 (仅群聊显示) -->
+    <div v-if="callStore.baseInfo.callType === 'group'" class="action-item" @click="showInviteModal = true">
+      <div class="icon-circle">
+        <img src="renderModule/assets/image/call/add_member.svg" alt="邀请成员">
+      </div>
+      <span>邀请成员</span>
+    </div>
+
+    <!-- 邀请弹窗 -->
+    <InviteModal v-if="showInviteModal" :visible="showInviteModal" @close="showInviteModal = false" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, computed } from 'vue'
+import { defineComponent, computed, ref } from 'vue'
 import { usecallStore } from '../pinia/call'
 import callManager from '../core'
+import InviteModal from './InviteModal.vue'
 
 export default defineComponent({
   name: 'CallFooter',
+  components: {
+    InviteModal
+  },
   setup() {
     const callStore = usecallStore()
+    const showInviteModal = ref(false)
 
     const isWaiting = computed(() => callStore.callStatus.phase === 'calling')
 
@@ -61,6 +77,7 @@ export default defineComponent({
 
     return {
       callStore,
+      showInviteModal,
       isWaiting,
       hasVideo,
       handleToggleMute,
