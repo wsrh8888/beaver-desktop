@@ -89,20 +89,27 @@ export default defineComponent({
         targetId: targetUserId,
         callMode: type === 'audio' ? 1 : 2,
       })
+      let participants = [{
+        userId: callerId,
+        status: "joined",
+      }]
+      if (chatType.value === 'private') {
+        participants.push({
+          userId: targetUserId,
+          status: "calling",
+        })
+      }
 
       if (res.code === 0) {
-        const { participants, ...roomInfo } = res.result
+        const { ...roomInfo } = res.result
 
         console.error('targetUserId', targetUserId)
-        console.error('participants', participants)
 
         // 成功获取房间信息后，打开 Call 窗口 (名单从接口拿)
         electron?.window.openWindow('call', {
           params: {
             baseInfo: {
               callMode: type,
-              // 这里修正：targetId 代表具体的呼叫对象。
-              // 对于群聊，我们设为空，完全依赖 participants 返回的成员快照来驱动 UI
               targetId: chatType.value === 'private' ? [targetUserId] : [],
               callerId: callerId,
               conversationId: currentId,
@@ -110,7 +117,7 @@ export default defineComponent({
               role: 'caller'
             },
             roomInfo,
-            participants
+            participants: participants
           }
         })
       } else {

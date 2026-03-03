@@ -33,7 +33,8 @@ export const usecallStore = defineStore('usecallStore', {
       callerId: '' as string,
       conversationId: '' as string,
       callType: '' as 'private' | 'group' | '',
-      role: '' as 'caller' | 'callee' | ''
+      role: '' as 'caller' | 'callee' | '',
+      roomName: '' as string
     },
     /** 房间信息：roomId、token、LiveKit 地址、创建者 ID */
     roomInfo: {

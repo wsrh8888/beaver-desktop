@@ -1,35 +1,33 @@
 <template>
   <div class="call-app">
-    <!-- 通用页头：包含最小化/标题等 -->
-    <CallHeader />
+    <CallLayout>
+      <template #content>
+        <CallViewStage />
+      </template>
 
-    <!-- 核心视图区域：直接挂载 CallView -->
-    <CallView />
-
-    <!-- 底部操作栏 -->
-    <CallFooter />
+      <template #footer>
+        <CallViewFooter />
+      </template>
+    </CallLayout>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import CallHeader from './components/CallHeader.vue'
-import CallView from './components/CallView.vue'
-import CallFooter from './components/CallFooter.vue'
+import CallLayout from './components/layout/index.vue'
+import CallViewStage from './view/stage/index.vue'
+import CallViewFooter from './view/footer/index.vue'
 import { usecallStore } from './pinia/call'
-
 
 export default defineComponent({
   name: 'CallApp',
   components: {
-    CallHeader,
-    CallView,
-    CallFooter
+    CallLayout,
+    CallViewStage,
+    CallViewFooter
   },
   setup() {
     const callStore = usecallStore()
-
-
 
     return {
       callStore
@@ -47,9 +45,9 @@ export default defineComponent({
 
 body {
   overflow: hidden;
-  background: #1e2022;
-  color: #fff;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: #f5f7fa;
+  color: #333;
+  font-family: "SF Pro", Roboto, "PingFang SC", "微软雅黑", sans-serif;
 }
 
 .call-app {
@@ -57,6 +55,5 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(circle at center, #2c3e50 0%, #000000 100%);
 }
 </style>

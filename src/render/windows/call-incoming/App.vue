@@ -1,17 +1,19 @@
 <template>
-  <div class="call-incoming-app">
-    <IncomingNotify />
-  </div>
+  <IncomingLayout>
+    <IncomingMain />
+  </IncomingLayout>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import IncomingNotify from './components/IncomingNotify.vue'
+import IncomingLayout from './components/layout/index.vue'
+import IncomingMain from './view/main/index.vue'
 
 export default defineComponent({
   name: 'CallIncomingApp',
   components: {
-    IncomingNotify
+    IncomingLayout,
+    IncomingMain
   },
   setup() {
     return {}

@@ -134,6 +134,10 @@ export class CallManager {
           callStore.updateMemberByUserId(participant.identity, {
             sid: pub.trackSid,
             track: markRaw(pub.track),
+            isCameraOff: pub.isMuted
+          })
+        } else if (pub.kind === Track.Kind.Audio) {
+          callStore.updateMemberByUserId(participant.identity, {
             isMuted: pub.isMuted
           })
         }
@@ -181,30 +185,55 @@ export class CallManager {
       })
       // 订阅远程轨道
       .on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
+        const callStore = usecallStore()
         if (track.kind === Track.Kind.Video) {
-          usecallStore().updateMemberByUserId(participant.identity, {
+          callStore.updateMemberByUserId(participant.identity, {
             sid: track.sid || publication.trackSid,
             track: markRaw(track),
-            isMuted: publication.isMuted
+            isCameraOff: false
+          })
+        } else if (track.kind === Track.Kind.Audio) {
+          callStore.updateMemberByUserId(participant.identity, {
+            isMuted: false
           })
         }
       })
-      // 轨道状态同步 (关键：支持 A 开启/关闭视频时 B 能实时切换 UI)
-      .on(RoomEvent.TrackMuted, (publication) => {
+      // 轨道状态同步
+      .on(RoomEvent.TrackMuted, (publication, participant) => {
+        const callStore = usecallStore()
+        const identity = participant?.identity
         if (publication.kind === Track.Kind.Video) {
-          usecallStore().updateMemberBySid(publication.trackSid, { isMuted: true })
+          if (identity) callStore.updateMemberByUserId(identity, { isCameraOff: true })
+          else callStore.updateMemberBySid(publication.trackSid, { isCameraOff: true })
+        } else if (publication.kind === Track.Kind.Audio) {
+          if (identity) callStore.updateMemberByUserId(identity, { isMuted: true })
+          else callStore.updateMemberBySid(publication.trackSid, { isMuted: true })
         }
       })
-      .on(RoomEvent.TrackUnmuted, (publication) => {
+      .on(RoomEvent.TrackUnmuted, (publication, participant) => {
+        const callStore = usecallStore()
+        const identity = participant?.identity
         if (publication.kind === Track.Kind.Video) {
-          usecallStore().updateMemberBySid(publication.trackSid, { isMuted: false })
+          if (identity) callStore.updateMemberByUserId(identity, { isCameraOff: false })
+          else callStore.updateMemberBySid(publication.trackSid, { isCameraOff: false })
+        } else if (publication.kind === Track.Kind.Audio) {
+          if (identity) callStore.updateMemberByUserId(identity, { isMuted: false })
+          else callStore.updateMemberBySid(publication.trackSid, { isMuted: false })
         }
       })
-      .on(RoomEvent.TrackUnsubscribed, (_track, publication) => {
-        usecallStore().updateMemberBySid(publication.trackSid, { sid: undefined, track: undefined, isMuted: undefined })
+      .on(RoomEvent.TrackUnsubscribed, (_track, publication, participant) => {
+        const identity = participant?.identity
+        if (publication.kind === Track.Kind.Video) {
+          if (identity) usecallStore().updateMemberByUserId(identity, { track: undefined, isCameraOff: true })
+          else usecallStore().updateMemberBySid(publication.trackSid, { track: undefined, isCameraOff: true })
+        }
       })
-      .on(RoomEvent.TrackUnpublished, (publication) => {
-        usecallStore().updateMemberBySid(publication.trackSid, { sid: undefined, track: undefined, isMuted: undefined })
+      .on(RoomEvent.TrackUnpublished, (publication, participant) => {
+        const identity = participant?.identity
+        if (publication.kind === Track.Kind.Video) {
+          if (identity) usecallStore().updateMemberByUserId(identity, { track: undefined, isCameraOff: true })
+          else usecallStore().updateMemberBySid(publication.trackSid, { track: undefined, isCameraOff: true })
+        }
       })
       // 本地轨道发布
       .on(RoomEvent.LocalTrackPublished, (publication) => {
