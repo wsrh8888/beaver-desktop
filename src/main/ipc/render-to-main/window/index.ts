@@ -14,6 +14,7 @@ import verifyApplication from 'mainModule/application/verify'
 import videoApplication from 'mainModule/application/video'
 import callApplication from 'mainModule/application/call'
 import CallIncomingApplication from 'mainModule/application/call-incoming'
+import aiApplication from 'mainModule/application/ai'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
@@ -168,6 +169,9 @@ class WindowHandler {
           break
         case 'call-incoming':
           newWindow = CallIncomingApplication.createBrowserWindow()
+          break
+        case 'ai':
+          newWindow = aiApplication.createBrowserWindow()
           break
       }
 

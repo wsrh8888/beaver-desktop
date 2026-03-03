@@ -75,6 +75,7 @@ export default defineConfig(({ command: _command }) => {
           audio: path.resolve(__dirname, 'audio.html'),
           call: path.resolve(__dirname, 'call.html'),
           'call-incoming': path.resolve(__dirname, 'call-incoming.html'),
+          ai: path.resolve(__dirname, 'ai.html'),
         },
         output: {
           format: 'es', // 确保输出 ES 模块格式
