@@ -2,6 +2,7 @@ import { Room, RoomEvent, VideoPresets, Track } from 'livekit-client'
 import { markRaw } from 'vue'
 import { hangupCallApi } from 'renderModule/api/call'
 import { usecallStore } from '../pinia/call'
+import { useUserStore } from '../pinia/user'
 import Logger from 'renderModule/utils/logger'
 
 const logger = new Logger('CallManager')
@@ -37,9 +38,8 @@ export class CallManager {
       // 1. 开始连接
       await this.room?.connect(liveKitUrl, roomToken)
 
-      // 2. 将本地用户加入在线列表
+      // 2. 将本地用户加入在线列表（identity 与 storage 的 userId 一致）
       if (this.room?.localParticipant) {
-        callStore.myUserId = this.room.localParticipant.identity
         callStore.upsertMember(this.room.localParticipant.identity, { status: 'joined' })
       }
 
@@ -47,28 +47,6 @@ export class CallManager {
 
       // 3. 同步存量参与者和轨道
       this.syncExistingParticipants()
-
-
-      // 等待核心通道就绪后再执行媒体推流
-      setTimeout(async () => {
-        if (this.room?.state !== 'connected') return
-
-        try {
-          const isVideoCall = callStore.baseInfo.callMode === 'video'
-
-          // 1. 默认开启麦克风
-          await this.room.localParticipant.setMicrophoneEnabled(true)
-          callStore.toggleMute(false)
-
-          // 2. 如果是视频通话，自动开启摄像头
-          if (isVideoCall) {
-            await this.room.localParticipant.setCameraEnabled(true)
-            callStore.toggleCamera(false) // isCameraOff = false
-          }
-        } catch (mediaError) {
-          logger.warn({ text: '初始媒体发布失败', data: mediaError })
-        }
-      }, 500)
 
       logger.info({ text: '成功连接到房间', data: this.room?.name })
     } catch (error) {
@@ -92,13 +70,15 @@ export class CallManager {
    */
   async toggleMute() {
     const callStore = usecallStore()
-    const targetState = !callStore.callStatus.isMuted
+    const userStore = useUserStore()
+    const me = callStore.members.find(m => m.userId === userStore.getUserId)
+    const targetState = !(me?.isMuted ?? false)
 
     if (this.room?.state !== 'connected') return
 
     try {
       await this.room.localParticipant.setMicrophoneEnabled(!targetState)
-      callStore.toggleMute(targetState)
+      callStore.updateMemberByUserId(userStore.getUserId, { isMuted: targetState })
     } catch (e) {
       logger.error({ text: '切换静音失败', data: e })
     }
@@ -109,12 +89,13 @@ export class CallManager {
    */
   async toggleCamera() {
     const callStore = usecallStore()
-    // 如果当前是关闭状态 (isCameraOff: true)，目标应该是开启 (enabled: true)
-    const shouldEnable = callStore.callStatus.isCameraOff
+    const userStore = useUserStore()
+    const me = callStore.members.find(m => m.userId === userStore.getUserId)
+    const shouldEnable = me?.isCameraOff ?? true
 
     logger.info({
       text: '切换摄像头', data: {
-        currentlyOff: callStore.callStatus.isCameraOff,
+        currentlyOff: me?.isCameraOff,
         targetEnabled: shouldEnable
       }
     })
@@ -125,17 +106,14 @@ export class CallManager {
     }
 
     try {
-      // 1. 物理设备开关
       await this.room.localParticipant.setCameraEnabled(shouldEnable)
-
-      // 2. 同步 UI 状态：如果开启成功，isCameraOff 应该为 !shouldEnable
-      callStore.toggleCamera(!shouldEnable)
+      callStore.updateMemberByUserId(userStore.getUserId, { isCameraOff: !shouldEnable })
     } catch (error: any) {
       logger.error({
         text: error.name === 'NotReadableError' ? '无法访问摄像头' : '切换摄像头异常',
         data: error
       })
-      callStore.toggleCamera(true) // 失败则重置为关闭状态
+      callStore.updateMemberByUserId(userStore.getUserId, { isCameraOff: true })
     }
   }
 
@@ -153,9 +131,8 @@ export class CallManager {
 
       participant.trackPublications.forEach((pub) => {
         if (pub.kind === Track.Kind.Video && pub.track) {
-          callStore.addRemoteVideoTrack({
+          callStore.updateMemberByUserId(participant.identity, {
             sid: pub.trackSid,
-            identity: participant.identity,
             track: markRaw(pub.track),
             isMuted: pub.isMuted
           })
@@ -178,7 +155,7 @@ export class CallManager {
         // 1. 更新成员
         callStore.upsertMember(participant.identity, { status: 'joined' })
         // 2. 通话接通
-        callStore.setPhase('active')
+        // phase 由 meMember.status 推导，已 joined 即为 active
       })
       .on(RoomEvent.ParticipantDisconnected, (participant) => {
         logger.info({ text: '参与者离开', data: participant.identity })
@@ -195,9 +172,9 @@ export class CallManager {
       .on(RoomEvent.Disconnected, () => {
         logger.info({ text: '房间已断开' })
         const callStore = usecallStore()
-        // 全员标记为离开 (或者根据业务需求处理)
+        const myUserId = useUserStore().getUserId
         callStore.members.forEach(m => {
-          if (m.userId !== 'me' && m.userId !== callStore.myUserId) {
+          if (m.userId !== myUserId) {
             callStore.upsertMember(m.userId, { status: 'left' })
           }
         })
@@ -205,9 +182,8 @@ export class CallManager {
       // 订阅远程轨道
       .on(RoomEvent.TrackSubscribed, (track, publication, participant) => {
         if (track.kind === Track.Kind.Video) {
-          usecallStore().addRemoteVideoTrack({
+          usecallStore().updateMemberByUserId(participant.identity, {
             sid: track.sid || publication.trackSid,
-            identity: participant.identity,
             track: markRaw(track),
             isMuted: publication.isMuted
           })
@@ -216,32 +192,35 @@ export class CallManager {
       // 轨道状态同步 (关键：支持 A 开启/关闭视频时 B 能实时切换 UI)
       .on(RoomEvent.TrackMuted, (publication) => {
         if (publication.kind === Track.Kind.Video) {
-          usecallStore().updateRemoteTrackMute(publication.trackSid, true)
+          usecallStore().updateMemberBySid(publication.trackSid, { isMuted: true })
         }
       })
       .on(RoomEvent.TrackUnmuted, (publication) => {
         if (publication.kind === Track.Kind.Video) {
-          usecallStore().updateRemoteTrackMute(publication.trackSid, false)
+          usecallStore().updateMemberBySid(publication.trackSid, { isMuted: false })
         }
       })
-      // 取消订阅远程轨道
       .on(RoomEvent.TrackUnsubscribed, (_track, publication) => {
-        usecallStore().removeRemoteVideoTrack(publication.trackSid)
+        usecallStore().updateMemberBySid(publication.trackSid, { sid: undefined, track: undefined, isMuted: undefined })
       })
-      // 轨道取消发布 (A 彻底关闭了摄像头)
       .on(RoomEvent.TrackUnpublished, (publication) => {
-        usecallStore().removeRemoteVideoTrack(publication.trackSid)
+        usecallStore().updateMemberBySid(publication.trackSid, { sid: undefined, track: undefined, isMuted: undefined })
       })
       // 本地轨道发布
       .on(RoomEvent.LocalTrackPublished, (publication) => {
         if (publication.kind === Track.Kind.Video && publication.track) {
-          usecallStore().setLocalVideoTrack(markRaw(publication.track))
+          const room = this.room
+          if (room?.localParticipant) {
+            usecallStore().updateMemberByUserId(room.localParticipant.identity, { track: markRaw(publication.track) })
+          }
         }
       })
-      // 本地轨道取消发布
       .on(RoomEvent.LocalTrackUnpublished, (publication) => {
         if (publication.kind === Track.Kind.Video) {
-          usecallStore().setLocalVideoTrack(null)
+          const room = this.room
+          if (room?.localParticipant) {
+            usecallStore().updateMemberByUserId(room.localParticipant.identity, { track: undefined })
+          }
         }
       })
   }

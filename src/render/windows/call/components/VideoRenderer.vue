@@ -6,7 +6,6 @@
 
 <script lang="ts">
 import { defineComponent, ref, onMounted, onBeforeUnmount, watch, PropType } from 'vue'
-import { Track } from 'livekit-client'
 
 export default defineComponent({
   name: 'VideoRenderer',

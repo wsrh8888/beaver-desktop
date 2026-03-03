@@ -18,6 +18,18 @@ export enum WinHook {
    * @description: 打开指定名称的窗口
    */
   OPEN_WINDOW = 'winHook:openWindow',
+  /**
+   * @description: 截取当前屏幕（整屏）
+   */
+  CAPTURE_SCREEN = 'winHook:captureScreen',
+}
+
+/**
+ * @description: 剪贴板相关 Command（主进程统一写剪贴板）
+ */
+export enum ClipboardCommand {
+  COPY_IMAGE = 'clipboard:copyImage',
+  COPY_TEXT = 'clipboard:copyText',
 }
 
 /**

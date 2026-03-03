@@ -1,37 +1,13 @@
 import type { Size } from 'electron'
 import { desktopCapturer } from 'electron'
+import Screenshots from 'electron-screenshots'
 
-export const captureScreen = (option: Size) => {
-  const thumbSize = {
-    width: option.width,
-    height: option.height,
+/** 选区截屏插件单例（复用窗口加快二次打开），首次调用 getScreenshots 时创建 */
+let screenshotsInstance: InstanceType<typeof Screenshots> | null = null
+
+export function getScreenshots(): InstanceType<typeof Screenshots> {
+  if (!screenshotsInstance) {
+    screenshotsInstance = new Screenshots({ singleWindow: true })
   }
-  let options: Electron.SourcesOptions = { types: ['screen'], thumbnailSize: thumbSize }
-  return new Promise((resolve, reject) => {
-    desktopCapturer
-      .getSources(options)
-      .then((sources) => {
-        const sourcesLen = sources.length
-        for (let i = 0; i < sourcesLen; i++) {
-          const source = sources[i]
-          if (
-            source.name.toLowerCase() === 'entire screen'
-            || source.name.toLowerCase() === 'screen 1'
-            || source.name === '屏幕 1'
-            || source.name === '整个屏幕' // 对应 "Entire Screen" 的中文
-          ) {
-            resolve(source.thumbnail.toJPEG(90))
-            return
-          }
-        }
-        if (sources[0]) {
-          resolve(sources[0].thumbnail.toJPEG(90))
-          return
-        }
-        resolve(`截屏异常 sources: ${JSON.stringify(sources)}`)
-      })
-      .catch((e) => {
-        reject(e)
-      })
-  })
+  return screenshotsInstance
 }

@@ -52,4 +52,9 @@ export interface IWindowModule {
    * 最大化当前窗口。
    */
   maximize(): void
+
+  /**
+   * 截取当前屏幕（整屏），返回 PNG 的 base64。
+   */
+  captureScreen(): Promise<{ base64: string }>
 }

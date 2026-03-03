@@ -2,6 +2,7 @@
  * 基础消息处理器类
  */
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+import { copyToClipboard as copyTextToClipboard } from '../utils/copy'
 
 export interface IMessageHandler {
   handleCommand(commandId: string, message: any): Promise<void>
@@ -14,22 +15,9 @@ export abstract class BaseMessageHandler implements IMessageHandler {
   abstract getSupportedCommands(): string[]
   abstract getMenuItems(hasTextSelected?: boolean): ContextMenuItem[]
 
-  // 公共方法：复制到剪贴板
+  /** 复制文本到剪贴板（走 utils/copy，Electron 下主进程） */
   protected async copyToClipboard(text: string): Promise<void> {
-    try {
-      await navigator.clipboard.writeText(text)
-      console.log('文本已复制到剪贴板')
-    }
-    catch (error) {
-      console.error('复制失败:', error)
-      // 降级处理
-      const textArea = document.createElement('textarea')
-      textArea.value = text
-      document.body.appendChild(textArea)
-      textArea.select()
-      document.execCommand('copy')
-      document.body.removeChild(textArea)
-    }
+    await copyTextToClipboard(text)
   }
 
   // 公共方法：下载文件

@@ -74,7 +74,6 @@ class Main {
     // ipcBase.init()
 
     mcpManager.init()
-
   }
 
   setupEventListeners() {

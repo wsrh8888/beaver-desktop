@@ -46,6 +46,9 @@ export default defineComponent({
   word-break: break-word;
   color: #2D3436;
   padding: 5px;
+  /* 覆盖全局 user-select: none，允许选中文字后复制 */
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 :deep(.message-emoji) {

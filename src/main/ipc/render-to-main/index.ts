@@ -1,6 +1,7 @@
 import {
   AuthCommand,
   CacheCommand,
+  ClipboardCommand,
   ConfigCommand,
   DatabaseCommand,
   DataSyncCommand,
@@ -21,6 +22,7 @@ const logger = new Logger('render-to-main')
 // 各业务 Handler
 import authHandler from './auth'
 import cacheHandler from './cache'
+import clipboardHandler from './clipboard'
 import configHandler from './config'
 import databaseHandler from './database'
 import dataSyncHandler from './datasync'
@@ -36,6 +38,7 @@ const loggerName = 'render-to-main-msg'
 
 const commandGroups = [
   { enum: WinHook, handler: windowHandler },
+  { enum: ClipboardCommand, handler: clipboardHandler },
   { enum: StorageCommand, handler: storageHandler },
   { enum: ConfigCommand, handler: configHandler },
   { enum: UpdateCommand, handler: updaterHandler },
@@ -87,8 +90,7 @@ class IpcManager {
         data: any = {},
       ): Promise<unknown> => {
         logger.info(
-          { text: '收到渲染进程到主进程的异步消息', data: { command, data } },
-          loggerName,
+          { text: '收到渲染进程到主进程的异步消息', data: { command, data } }
         )
         return this.routeCommand(event, command, data)
       },

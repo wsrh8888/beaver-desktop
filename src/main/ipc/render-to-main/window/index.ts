@@ -1,6 +1,7 @@
 import type { IWindowOpenOptions, IWinodwCloseOptions } from 'commonModule/type/preload/window'
 import { WinHook } from 'commonModule/type/ipc/command'
 import { NotificationModule, NotificationMediaViewerCommand, NotificationCallCommand } from 'commonModule/type/preload/notification'
+import { getScreenshots } from 'mainModule/utils/capture'
 import { BrowserWindow } from 'electron'
 import appApplication from 'mainModule/application/app'
 import audioApplication from 'mainModule/application/audio'
@@ -43,6 +44,8 @@ class WindowHandler {
         break
       case WinHook.OPEN_WINDOW:
         return this.handleOpen(event, name, options)
+      case WinHook.CAPTURE_SCREEN:
+        return this.handleCaptureScreen()
       default:
         console.error(`窗口处理未知命令: ${command}`)
     }
@@ -189,6 +192,22 @@ class WindowHandler {
 
       return Promise.resolve()
     }
+  }
+
+  /**
+   * 打开选区截屏（electron-screenshots），用户确认后返回 PNG base64，取消则 reject
+   */
+  private handleCaptureScreen(): Promise<{ base64: string }> {
+    const screenshots = getScreenshots()
+    return new Promise((resolve, reject) => {
+      screenshots.once('ok', (_e: any, buffer: Buffer) => {
+        resolve({ base64: buffer.toString('base64') })
+      })
+      screenshots.once('cancel', () => {
+        reject(new Error('用户取消截屏'))
+      })
+      screenshots.startCapture()
+    })
   }
 
   /**

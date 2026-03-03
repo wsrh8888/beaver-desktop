@@ -5,6 +5,7 @@ import { contextBridge } from 'electron'
 import { appModule } from './core/app'
 import { authModule } from './core/auth'
 import { cacheModule } from './core/cache'
+import { clipboardModule } from './core/clipboard'
 import { databaseModule } from './core/database'
 import { datasyncModule } from './core/datasync'
 import { loggerModule } from './core/logger'
@@ -21,6 +22,7 @@ const electronAPI: ElectronAPP = {
   window: windowModule,
   call: callModule,
   app: appModule,
+  clipboard: clipboardModule,
   storage: storageModule,
   update: updateModule,
   cache: cacheModule,

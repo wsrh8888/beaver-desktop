@@ -1,40 +1,18 @@
 <template>
   <div class="call-footer" :class="{ 'overlay': hasVideo }">
-    <!-- 静音 -->
-    <div class="action-item" :class="{ active: callStore.callStatus.isMuted }" @click="handleToggleMute">
+    <div
+      v-for="action in FOOTER_ACTION_LIST"
+      v-show="action.visibility === 'both' || (action.visibility === 'group' && callType === 'group')"
+      :key="action.id"
+      class="action-item"
+      :class="{ active: isActionActive(action), hangup: action.isHangup }"
+      @click="handleAction(action.id)"
+    >
       <div class="icon-circle">
-        <img v-if="callStore.callStatus.isMuted" src="renderModule/assets/image/call/mute_on.svg" alt="取消静音">
-        <img v-else src="renderModule/assets/image/call/mute.svg" alt="静音">
+        <img :src="getActionIcon(action)" :alt="getActionLabel(action)">
       </div>
-      <span>{{ callStore.callStatus.isMuted ? '取消静音' : '静音' }}</span>
+      <span>{{ getActionLabel(action) }}</span>
     </div>
-
-    <!-- 摄像头 -->
-    <div class="action-item" :class="{ active: !callStore.callStatus.isCameraOff }" @click="handleToggleCamera">
-      <div class="icon-circle">
-        <img v-if="callStore.callStatus.isCameraOff" src="renderModule/assets/image/call/video_off.svg" alt="开启视频">
-        <img v-else src="renderModule/assets/image/call/video.svg" alt="关闭视频">
-      </div>
-      <span>{{ callStore.callStatus.isCameraOff ? '开启视频' : '关闭视频' }}</span>
-    </div>
-
-    <!-- 挂断 -->
-    <div class="action-item hangup" @click="handleHangup">
-      <div class="icon-circle">
-        <img src="renderModule/assets/image/call/hangup.svg" alt="挂断">
-      </div>
-      <span>{{ isWaiting ? '取消' : '挂断' }}</span>
-    </div>
-
-    <!-- 邀请成员 (仅群聊显示) -->
-    <div v-if="callStore.baseInfo.callType === 'group'" class="action-item" @click="showInviteModal = true">
-      <div class="icon-circle">
-        <img src="renderModule/assets/image/call/add_member.svg" alt="邀请成员">
-      </div>
-      <span>邀请成员</span>
-    </div>
-
-    <!-- 邀请弹窗 -->
     <InviteModal v-if="showInviteModal" :visible="showInviteModal" @close="showInviteModal = false" />
   </div>
 </template>
@@ -42,7 +20,9 @@
 <script lang="ts">
 import { defineComponent, computed, ref } from 'vue'
 import { usecallStore } from '../pinia/call'
+import { useUserStore } from '../pinia/user'
 import callManager from '../core'
+import { FOOTER_ACTION_LIST, type FooterActionItem } from '../utils/footer-actions'
 import InviteModal from './InviteModal.vue'
 
 export default defineComponent({
@@ -52,37 +32,54 @@ export default defineComponent({
   },
   setup() {
     const callStore = usecallStore()
+    const userStore = useUserStore()
     const showInviteModal = ref(false)
 
-    const isWaiting = computed(() => callStore.callStatus.phase === 'calling')
+    const me = computed(() => callStore.members.find(m => m.userId === userStore.getUserId))
+    const isWaiting = computed(() => me.value?.status === 'calling')
+    const hasVideo = computed(() => callStore.members.some(m => m.track))
 
-    // 是否有视频 (本地或远程有视频轨道即视为视频模式)
-    const hasVideo = computed(() => {
-      // 检查 store 中的视频轨道
-      return (callStore.remoteVideoTracks && callStore.remoteVideoTracks.length > 0) ||
-        (callStore.localVideoTrack !== null)
-    })
+    const callType = computed(() => callStore.baseInfo.callType || 'private')
 
-    const handleToggleMute = () => {
-      callManager.toggleMute()
+    function isActionActive(action: FooterActionItem): boolean {
+      if (action.id === 'mute') return me.value?.isMuted ?? false
+      if (action.id === 'camera') return !(me.value?.isCameraOff ?? true)
+      return false
     }
 
-    const handleToggleCamera = () => {
-      callManager.toggleCamera()
+    function getActionIcon(action: FooterActionItem): string {
+      if (action.id === 'mute' && (me.value?.isMuted ?? false)) return action.iconActive ?? action.icon
+      if (action.id === 'camera' && !(me.value?.isCameraOff ?? true)) return action.iconActive ?? action.icon
+      return action.icon
     }
 
-    const handleHangup = () => {
-      callManager.hangup()
+    function getActionLabel(action: FooterActionItem): string {
+      if (action.id === 'hangup') return isWaiting.value ? '取消' : action.label
+      if (action.id === 'mute') return (me.value?.isMuted ?? false) ? (action.labelActive ?? action.label) : action.label
+      if (action.id === 'camera') return !(me.value?.isCameraOff ?? true) ? (action.labelActive ?? action.label) : action.label
+      return action.label
+    }
+
+    function handleAction(id: string) {
+      if (id === 'mute') callManager.toggleMute()
+      else if (id === 'camera') callManager.toggleCamera()
+      else if (id === 'hangup') callManager.hangup()
+      else if (id === 'invite') showInviteModal.value = true
+      else if (id === 'shareScreen' || id === 'manageMembers') {
+        // 预留，后续实现
+      }
     }
 
     return {
       callStore,
-      showInviteModal,
-      isWaiting,
+      FOOTER_ACTION_LIST,
+      callType,
       hasVideo,
-      handleToggleMute,
-      handleToggleCamera,
-      handleHangup
+      showInviteModal,
+      isActionActive,
+      getActionIcon,
+      getActionLabel,
+      handleAction,
     }
   }
 })

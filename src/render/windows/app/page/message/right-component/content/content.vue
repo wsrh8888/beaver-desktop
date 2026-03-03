@@ -91,7 +91,7 @@ import ImageMessage from './message/image.vue'
 import NotificationMessage from './message/notification.vue'
 import TextMessage from './message/text.vue'
 import VideoMessage from './message/video.vue'
-import { hasTextSelected } from './utils/copy'
+import { getSelectedText, hasTextSelected } from './utils/copy'
 import { MessageContentType } from './utils/data'
 
 export default defineComponent({
@@ -167,8 +167,10 @@ export default defineComponent({
       // 获取消息类型
       const messageType = message.msg.type as MessageContentType
 
-      // 检查是否有文本被选中（仅对文本消息有效）
+      // 检查是否有文本被选中（仅对文本消息有效），并在打开菜单时立刻保存选中内容（点击菜单项时选区可能已丢失）
       const hasSelected = messageType === MessageContentType.TEXT && hasTextSelected()
+      if (messageType === MessageContentType.TEXT)
+        (message as any)._selectedText = getSelectedText()
 
       // 根据消息类型获取菜单项
       contextMenuItems.value = getMenuItems(messageType, hasSelected)

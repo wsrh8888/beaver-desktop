@@ -18,4 +18,6 @@ export const windowModule: IWindowModule = {
   maximize: () => {
     ipcRenderManager.send(IEvent.RenderToMain, WinHook.MAXIMIZE)
   },
+  captureScreen: () =>
+    ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WinHook.CAPTURE_SCREEN, {}),
 }

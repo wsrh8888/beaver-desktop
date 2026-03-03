@@ -1,6 +1,5 @@
 import type { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios'
 import axios from 'axios'
-import axiosRetry from 'axios-retry'
 import Logger from 'mainModule/utils/logger/index'
 
 import { v4 as uuidV4 } from 'uuid'
@@ -11,19 +10,6 @@ const logger = new Logger('head')
 const baseRequest = axios.create({
   baseURL: '',
   timeout: 5000,
-})
-
-// 配置重试机制
-axiosRetry(baseRequest, {
-  retries: 1, // 重试1次，总共2次请求
-  retryDelay: () => {
-    return 1000 // 固定延迟：1秒
-  },
-  retryCondition: (error: AxiosError) => {
-    // HTTP状态码不为200且不是404时重试
-    const shouldRetry = !error.response || (error.response.status !== 200 && error.response.status !== 404)
-    return shouldRetry
-  },
 })
 
 baseRequest.interceptors.request.use(

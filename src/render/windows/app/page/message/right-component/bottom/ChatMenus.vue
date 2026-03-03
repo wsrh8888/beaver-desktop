@@ -47,7 +47,7 @@
 import type { UploadResult } from 'renderModule/utils/upload'
 import { MessageType } from 'commonModule/type/ajax/chat'
 import { getFilesFromClipboardEvent } from 'renderModule/utils/clipboard'
-import { selectAndUploadFile, uploadFile } from 'renderModule/utils/upload'
+import { selectAndUploadFile, uploadFile, uploadFileFromBase64 } from 'renderModule/utils/upload'
 import { useMessageSenderStore } from 'renderModule/windows/app/pinia/message/message-sender'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { defineComponent, onBeforeUnmount, ref } from 'vue'
@@ -216,9 +216,22 @@ export default defineComponent({
         case 'file':
           handleFileUpload(toolType)
           break
-        // 其他工具处理...
+        case 'screenshot':
+          handleScreenshot()
+          break
         default:
           break
+      }
+    }
+
+    const handleScreenshot = async () => {
+      try {
+        const { base64 } = await window.electron.window.captureScreen()
+        const uploadResult = await uploadFileFromBase64(base64)
+        await uploadAndSendMessage([uploadResult])
+      }
+      catch (error) {
+        console.error('截屏失败:', error)
       }
     }
 

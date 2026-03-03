@@ -1,239 +1,150 @@
 import { defineStore } from 'pinia'
 import Logger from 'renderModule/utils/logger'
+import { useContactStore } from './contact'
+import { useUserStore } from './user'
 
 const logger = new Logger('CallStore')
+
+/** 成员项：唯一事实来源，包含展示信息 + 轨道 + 本成员的静音/摄像头状态 */
+export type CallMember = {
+  userId: string
+  nickName: string
+  avatar: string
+  /** 成员状态：calling 呼叫中/等待接听，joined 已进房，left 已离开，rejected 已拒绝，busy 忙碌占线 */
+  status: 'calling' | 'joined' | 'left' | 'rejected' | 'busy'
+  /** 远程视频轨道 SID（LiveKit），仅远程有；本地轨道不用 sid */
+  sid?: string
+  /** 视频轨道（本地/远程共用，markRaw） */
+  track?: any
+  /** 该成员是否静音（本地/远程都用此字段） */
+  isMuted?: boolean
+  /** 该成员是否关闭摄像头（本地/远程都用此字段；远程无 track 时也可视为关） */
+  isCameraOff?: boolean
+}
 
 /**
  * @description: 通话模块 Store - 仅存储基础元数据和状态
  */
 export const usecallStore = defineStore('usecallStore', {
   state: () => ({
-    // 基础数据
+    /** 通话基础信息：模式、主叫、会话、类型、角色 */
     baseInfo: {
-      callMode: '' as 'audio' | 'video' | '',  // 通话模式
-      targetId: [] as string[],                // 目标ID列表
-      callerId: '' as string,                  // 发起者ID
-      conversationId: '' as string,            // 会话ID
-      callType: '' as 'private' | 'group' | '', // 通话类型
-      role: '' as 'caller' | 'callee' | ''     // 角色：呼叫者/被叫者
+      callMode: '' as 'audio' | 'video' | '',
+      callerId: '' as string,
+      conversationId: '' as string,
+      callType: '' as 'private' | 'group' | '',
+      role: '' as 'caller' | 'callee' | ''
     },
-    // 房间信息
+    /** 房间信息：roomId、token、LiveKit 地址、创建者 ID */
     roomInfo: {
       roomId: '',
       roomToken: '',
       liveKitUrl: '',
+      creatorId: '',
     },
-    // 实时状态控制
-    callStatus: {
-      phase: 'calling' as 'calling' | 'incoming' | 'active', // calling-呼叫中(拨打方), incoming-待接听(接收方), active-通话中
-      isMuted: false,
-      isCameraOff: true,  // 默认不开启摄像头
-    },
-    // 媒体轨道 (标记为 raw 以避免不必要的响应式开销)
-    remoteVideoTracks: [] as Array<{
-      sid: string,
-      identity: string,
-      track: any,
-      isMuted: boolean
-    }>,
-    // 逻辑成员列表 (驱动 UI 网格的单一事实来源)
-    members: [] as Array<{
-      userId: string,
-      nickName: string,
-      avatar: string,
-      status: 'calling' | 'joined' | 'left' | 'rejected' | 'busy'
-    }>,
-    localVideoTrack: null as any,
-    // 本地用户的真实 ID (从 DB 获取)
-    myUserId: '' as string,
+    /** 成员列表：驱动 UI 网格的单一事实来源，每项含 userId + 展示信息 + 轨道 + 静音/摄像头 */
+    members: [] as CallMember[],
   }),
 
   actions: {
-    /**
-     * 初始化自己的 ID (从数据库拿)
-     */
-    async initMyUserId() {
-      if (this.myUserId) return
-      try {
-        const res = await (window as any).electron.database.user.getUserInfo()
-        if (res?.userId) {
-          this.myUserId = res.userId
-        }
-      } catch (e) {
-        logger.error({ text: '获取当前用户信息失败', data: e })
-      }
-    },
-
-    /**
-     * 更新或新增成员 (中心化入口)
-     * @param userId 用户 ID
-     * @param patch 要更新的字段
-     */
-    async upsertMember(userId: string, patch: Partial<typeof usecallStore.prototype.members[number]> = {}) {
+    /** 更新或新增成员；新成员会异步拉取 nickName/avatar */
+    async upsertMember(userId: string, patch: Partial<CallMember> = {}) {
       if (!userId) return
 
-      // 处理 'me' 占位符
-      if (userId === 'me') {
-        await this.initMyUserId()
-        userId = this.myUserId
-      }
-
+      const userStore = useUserStore()
       let member = this.members.find(m => m.userId === userId)
 
       const isNew = !member
       if (isNew) {
+        await userStore.init()
         member = {
           userId,
           nickName: userId,
           avatar: '',
-          status: 'calling'
+          status: 'calling',
+          isMuted: true,
+          isCameraOff: true,
         }
         this.members.push(member)
       }
 
-      // 合并更新字段
       Object.assign(member!, patch)
-
-      // 如果是新成员，异步拉取元数据
       if (isNew) {
         this.fetchMemberMetadata(userId)
       }
     },
 
-    /**
-     * 初始化全员列表
-     * @param participants 初始成员列表 (兼容 ID 数组或对象数组)
-     */
+    /** 初始化成员列表并清空原列表；participants 可为 userId 字符串数组或带 userId/status 的对象数组 */
     async initMembers(participants: any[] = []) {
       this.members = []
-      await this.initMyUserId()
+      const userStore = useUserStore()
+      await userStore.init()
 
       participants.forEach(p => {
         const userId = typeof p === 'string' ? p : p.userId
         if (!userId) return
 
-        const isSelf = userId === this.myUserId
-        // 这里的关键：如果 p 是个对象，我们需要保留它真实的 status (calling/joined)
+        const isSelf = userId === userStore.getUserId
         const incomingStatus = (typeof p === 'object' && p.status) ? p.status : 'calling'
 
         this.upsertMember(userId, { status: isSelf ? 'joined' : incomingStatus })
       })
     },
 
-    /**
-     * 私有逻辑：从 DB 获取元数据
-     */
+    /** 从 contact 拉取该成员的 nickName、avatar 并写回 member（内部由 upsertMember 触发） */
     async fetchMemberMetadata(userId: string) {
-      await this.initMyUserId()
-      const isMe = userId === this.myUserId
+      const userStore = useUserStore()
+      const contactStore = useContactStore()
+      await userStore.init()
+      const isMe = userId === userStore.getUserId
       const member = this.members.find(m => m.userId === userId)
       if (!member) return
 
       try {
-        let res: any
         if (isMe) {
-          res = await (window as any).electron.database.user.getUserInfo()
+          await contactStore.updateContactsByIds([userId])
+          const me = userStore.getUserInfo
+          if (me?.userId) {
+            member.nickName = me.nickName || userId
+            member.avatar = me.avatar || ''
+          }
         } else {
-          const result = await (window as any).electron.database.user.getUsersBasicInfo({ userIds: [userId] })
-          res = result?.users?.[0]
-        }
-
-        if (res && member) {
-          member.nickName = res.nickName || userId
-          member.avatar = res.avatar || ''
+          await contactStore.updateContactsByIds([userId])
+          const contact = contactStore.getContact(userId)
+          if (contact?.userId) {
+            member.nickName = contact.nickName || userId
+            member.avatar = contact.avatar || ''
+          }
         }
       } catch (e) {
         logger.error({ text: '加载元数据失败', data: { userId, e } })
       }
     },
 
-    /**
-     * 设置基础数据
-     */
-    async setBaseInfo(info: any) {
-      this.baseInfo = info
+    /** 设置通话基础信息（整块覆盖） */
+    setBaseInfo(baseInfo: any) {
+      this.baseInfo = baseInfo
     },
 
-    /**
-     * 切换静音
-     */
-    toggleMute(val?: boolean) {
-      this.callStatus.isMuted = val !== undefined ? val : !this.callStatus.isMuted
+    /** 设置房间信息（整块覆盖） */
+    setRoomInfo(roomInfo: any) {
+      this.roomInfo = roomInfo
     },
 
-    /**
-     * 切换摄像头
-     */
-    toggleCamera(val?: boolean) {
-      this.callStatus.isCameraOff = val !== undefined ? val : !this.callStatus.isCameraOff
-    },
-
-    /**
-     * 设置房间信息
-     */
-    setRoomInfo(info: { roomId?: string, roomToken?: string, liveKitUrl?: string }) {
-      logger.info({ text: '设置房间信息', data: info })
-      if (info.roomId) this.roomInfo.roomId = info.roomId
-      if (info.roomToken) this.roomInfo.roomToken = info.roomToken
-      if (info.liveKitUrl) this.roomInfo.liveKitUrl = info.liveKitUrl
-    },
-
-    /**
-     * 重置状态
-     */
-    reset() {
-      this.baseInfo = {
-        callMode: '',
-        targetId: [],
-        callerId: '',
-        conversationId: '',
-        callType: '',
-        role: ''
+    /** 按 userId 更新成员，透传 patch；若成员不存在则先 upsert 再赋值 */
+    async updateMemberByUserId(userId: string, patch: Partial<CallMember>) {
+      let member = this.members.find(m => m.userId === userId)
+      if (!member) {
+        await this.upsertMember(userId, { status: 'joined' })
+        member = this.members.find(m => m.userId === userId)
       }
-      this.roomInfo = {
-        roomId: '',
-        roomToken: '',
-        liveKitUrl: ''
-      }
-      this.callStatus = {
-        phase: 'calling',
-        isMuted: false,
-        isCameraOff: true
-      }
-      this.localVideoTrack = null
-      this.remoteVideoTracks = []
+      if (member) Object.assign(member, patch)
     },
 
-    /**
-     * 设置通话阶段
-     */
-    setPhase(phase: 'calling' | 'incoming' | 'active') {
-      this.callStatus.phase = phase
-    },
-
-    setLocalVideoTrack(track: any) {
-      this.localVideoTrack = track
-    },
-
-    addRemoteVideoTrack(payload: { sid: string, identity: string, track: any, isMuted?: boolean }) {
-      const exists = this.remoteVideoTracks.some(t => t.sid === payload.sid)
-      if (!exists) {
-        this.remoteVideoTracks.push({
-          ...payload,
-          isMuted: payload.isMuted ?? false
-        })
-      }
-    },
-
-    updateRemoteTrackMute(sid: string, isMuted: boolean) {
-      const track = this.remoteVideoTracks.find(t => t.sid === sid)
-      if (track) {
-        track.isMuted = isMuted
-      }
-    },
-
-    removeRemoteVideoTrack(sid: string) {
-      this.remoteVideoTracks = this.remoteVideoTracks.filter(t => t.sid !== sid)
+    /** 按轨道 sid 更新对应成员，透传 patch（用于远程轨道 mute/unmute、移除等） */
+    updateMemberBySid(sid: string, patch: Partial<CallMember>) {
+      const member = this.members.find(m => m.sid === sid)
+      if (member) Object.assign(member, patch)
     },
   },
 })

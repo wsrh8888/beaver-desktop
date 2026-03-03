@@ -34,6 +34,7 @@
 <script lang="ts">
 import { defineComponent, ref, onMounted, computed } from 'vue'
 import { usecallStore } from '../pinia/call'
+import { useUserStore } from '../pinia/user'
 import { inviteCallMemberApi } from 'renderModule/api/call'
 import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -72,7 +73,7 @@ export default defineComponent({
         if (res?.list) {
           // 2. 过滤掉已经在通话中的人 + 自己
           const activeIds = callStore.members.map(m => m.userId)
-          const myId = callStore.myUserId
+          const myId = useUserStore().getUserId
           memberList.value = res.list.filter((m: any) => {
             return !activeIds.includes(m.userId) && m.userId !== myId
           })

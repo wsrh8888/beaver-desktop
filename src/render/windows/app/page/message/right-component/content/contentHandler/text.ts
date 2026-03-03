@@ -1,4 +1,5 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+import { getSelectedText } from '../utils/copy'
 import { BaseMessageHandler } from './base'
 
 /**
@@ -45,7 +46,8 @@ class TextHandler extends BaseMessageHandler {
   }
 
   private async handleCopy(message: any): Promise<void> {
-    const selectedText = window.getSelection()?.toString().trim()
+    // 优先用右键打开菜单时保存的选中文字（点击复制时选区可能已丢失）
+    const selectedText = (message as any)._selectedText ?? getSelectedText()
     const textToCopy = selectedText || message.msg.textMsg?.content || ''
     if (textToCopy) {
       await this.copyToClipboard(textToCopy)

@@ -2,7 +2,7 @@
   <div class="active-view">
     <!-- 统一视频网格 (始终显示，包含本地和远程) -->
     <div class="video-container">
-      <div class="video-grid" :class="gridClass" :style="gridStyle">
+      <div class="video-grid" :class="`count-${allTracks.length}`" :style="gridStyle">
         <div v-for="item in allTracks" :key="item.sid" class="grid-item">
           <!-- 视频画面 -->
           <div v-if="!item.isCameraOff && item.track" class="video-wrapper">
@@ -12,9 +12,8 @@
           <!-- 占位图 (摄像头关闭或呼叫等待中) -->
           <div v-else class="camera-off-placeholder">
             <div class="avatar-box" :class="{ 'pulse': item.status === 'calling' }">
-              <BeaverImage v-if="item.avatar" :file-name="item.avatar" image-class="placeholder-avatar"
+              <BeaverImage  :file-name="item.avatar" image-class="placeholder-avatar"
                 :cache-type="CacheType.USER_AVATAR" />
-              <img v-else :src="defaultAvatar" class="placeholder-avatar">
             </div>
             <div v-if="item.statusHint" class="status-hint">{{ item.statusHint }}</div>
           </div>
@@ -34,6 +33,8 @@
 import { defineComponent, computed, onMounted } from 'vue'
 import { CacheType } from 'commonModule/type/cache/cache'
 import { usecallStore } from '../pinia/call'
+import { useUserStore } from '../pinia/user'
+import { getMemberStatusHint } from '../type/notification'
 import VideoRenderer from './VideoRenderer.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 
@@ -45,48 +46,35 @@ export default defineComponent({
   },
   setup() {
     const callStore = usecallStore()
-    const defaultAvatar = 'https://api.dicebear.com/7.x/avataaars/svg?seed=default'
 
-
-    // 汇总所有展示项
+    // 仅展示「等待接听」或「已进房」的成员；已离开/已拒绝/忙碌的不再占格子
     const allTracks = computed(() => {
       const list: any[] = []
+      const userStore = useUserStore()
+      const visibleMembers = callStore.members.filter(
+        m => m.status === 'calling' || m.status === 'joined'
+      )
 
-      // 基于 members (唯一事实来源) 驱动网格
-      callStore.members.forEach(member => {
+      visibleMembers.forEach(member => {
         const userId = member.userId
-
-        // 判定是否是本地用户画面
-        const isMe = userId === callStore.myUserId
-
-        const remoteTrack = !isMe ? callStore.remoteVideoTracks.find(t => t.identity === userId) : null
-
-        // 计算展示状态
-        let statusHint = ''
-        if (member.status === 'calling') statusHint = '等待接听...'
-        if (member.status === 'left') statusHint = '已离开'
-        if (member.status === 'rejected') statusHint = '已拒绝'
-        if (member.status === 'busy') statusHint = '忙碌中'
+        const isMe = userId === userStore.getUserId
 
         list.push({
-          sid: remoteTrack?.sid || `slot-${userId}`,
-          userId: userId,
+          sid: member.sid || `slot-${userId}`,
+          userId,
           identity: member.nickName || userId,
-          track: isMe ? callStore.localVideoTrack : remoteTrack?.track || null,
+          track: member.track || null,
           isLocal: isMe,
-          isMuted: isMe ? callStore.callStatus.isMuted : (remoteTrack?.isMuted || false),
-          // 摄像头关闭逻辑
-          isCameraOff: isMe ? callStore.callStatus.isCameraOff : (!remoteTrack?.track || member.status !== 'joined'),
+          isMuted: member.isMuted ?? false,
+          isCameraOff: member.isCameraOff ?? (!member.track || member.status !== 'joined'),
           avatar: member.avatar,
-          statusHint: statusHint,
+          statusHint: getMemberStatusHint(member.status),
           status: member.status
         })
       })
 
       return list
     })
-
-    const isWaiting = computed(() => callStore.callStatus.phase === 'calling')
 
     // 动态计算网格行列
     const gridStyle = computed(() => {
@@ -112,27 +100,10 @@ export default defineComponent({
       }
     })
 
-    const gridClass = computed(() => {
-      return `count-${allTracks.value.length}`
-    })
-
-    const statusText = computed(() => {
-      if (callStore.callStatus.phase === 'calling') return '正在呼叫...'
-      return '等待中'
-    })
-
-    onMounted(() => {
-      // 成员初始化完全交给 Store 的 initMembers 自动处理
-    })
 
     return {
-      callStore,
-      isWaiting,
-      statusText,
-      defaultAvatar,
       allTracks,
       gridStyle,
-      gridClass,
       CacheType
     }
   }
