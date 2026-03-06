@@ -25,7 +25,6 @@ class Ai extends ApplicationBase implements Application {
         webSecurity: false, // false禁用同源策略
         devTools: true, // 是否开启 DevTools
         additionalArguments: [`--custom=${JSON.stringify({ ...this.getPreloadParams() })}`],
-
       },
     })
 
