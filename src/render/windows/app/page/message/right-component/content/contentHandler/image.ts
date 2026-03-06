@@ -29,6 +29,9 @@ class ImageHandler extends BaseMessageHandler {
         return this.handleAddToEmoji(message)
       case 'download':
         return this.handleDownload(message)
+      case 'multiSelect':
+        this.enterMultiSelect(message)
+        return Promise.resolve()
       default:
         console.log('未知的图片消息命令:', commandId)
         return Promise.resolve()
@@ -36,11 +39,11 @@ class ImageHandler extends BaseMessageHandler {
   }
 
   getSupportedCommands(): string[] {
-    return ['copy', 'emoji', 'download']
+    return ['copy', 'emoji', 'download', 'multiSelect']
   }
 
   getMenuItems(): ContextMenuItem[] {
-    return this.imageMenuItems
+    return [...this.imageMenuItems, { id: 'multiSelect', label: '多选' }]
   }
 
   private async handleCopy(message: any): Promise<void> {

@@ -298,6 +298,29 @@ export const useMessageStore = defineStore('useMessageStore', {
     },
 
     /**
+     * @description: 更新消息状态（如撤回）
+     */
+    updateMessageStatus(conversationId: string, messageId: string, status: number) {
+      const history = this.chatHistory.get(conversationId)
+      if (!history)
+        return
+      const message = history.find(m => m.messageId === messageId)
+      if (message) {
+        message.status = status
+      }
+    },
+
+    /**
+     * @description: 本地删除消息（仅本端移除，不通知服务器）
+     */
+    removeMessage(conversationId: string, messageId: string) {
+      const history = this.chatHistory.get(conversationId)
+      if (!history)
+        return
+      this.chatHistory.set(conversationId, history.filter(m => m.messageId !== messageId))
+    },
+
+    /**
      * @description: 更新会话的最新消息预览
      */
     updateConversationPreview(conversationId: string, message: IChatHistory) {

@@ -4,6 +4,8 @@ import type {
   IConversationInfoReq,
   IConversationInfoRes,
   ICreateConversationReq,
+  IDeleteMessageReq,
+  IDeleteMessageRes,
   IDeleteRecentReq,
   IDeleteRecentRes,
   IEditMessageReq,
@@ -24,6 +26,8 @@ import type {
   ISendMsgRes,
   IUpdateReadSeqReq,
   IUpdateReadSeqRes,
+  IMergedForwardMessageReq,
+  IMergedForwardMessageRes,
 } from 'commonModule/type/ajax/chat'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -132,6 +136,28 @@ export const forwardMessageApi = (data: IForwardMessageReq) => {
     method: 'POST',
     data,
     url: `${baseUrl}/api/chat/forward`,
+  })
+}
+
+/**
+ * @description: 删除消息（仅对自己生效，对方仍可见）
+ */
+export const deleteMessageApi = (data: IDeleteMessageReq) => {
+  return ajax<IDeleteMessageRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/delete`,
+  })
+}
+
+/**
+ * @description: 合并转发消息（多条消息合并为一条聊天记录）
+ */
+export const mergedForwardApi = (data: IMergedForwardMessageReq) => {
+  return ajax<IMergedForwardMessageRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/mergedForward`,
   })
 }
 

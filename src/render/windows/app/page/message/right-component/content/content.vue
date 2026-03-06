@@ -5,8 +5,17 @@
       :class="{
         send: message.sender.userId === userStore.getUserId,
         system: message.sender.userId === '',
+        'multi-selected': messageViewStore.isMultiSelectMode && messageViewStore.selectedMessageIds.includes(message.messageId),
       }"
     >
+      <!-- 多选复选框 -->
+      <div
+        v-if="messageViewStore.isMultiSelectMode && message.sender.userId !== ''"
+        class="message-checkbox"
+        @click.stop="messageViewStore.toggleMessageSelect(message.messageId)"
+      >
+        <span :class="messageViewStore.selectedMessageIds.includes(message.messageId) ? 'cb-checked' : 'cb-unchecked'" />
+      </div>
       <div v-if="message.sender.userId" class="message-avatar">
         <BeaverImage
           :cache-type="CacheType.USER_AVATAR"
@@ -14,10 +23,18 @@
           image-class="avatar-image" @click.stop="showUserInfo($event, message)"
         />
       </div>
-      <div class="message-content" @contextmenu.prevent="handleContextMenu($event, message)">
+      <div
+        class="message-content"
+        @contextmenu.prevent="handleContextMenu($event, message)"
+        @click="handleMessageClick($event, message)"
+      >
+        <!-- 已撤回消息 -->
+        <div v-if="message.status === 2" class="recalled-message">
+          {{ message.sender.userId === userStore.getUserId ? '你' : message.sender.nickName }} 撤回了一条消息
+        </div>
         <!-- 文本消息组件 -->
         <TextMessage
-          v-if="message.msg.type === 1"
+          v-else-if="message.msg.type === 1"
           :message="message"
         />
         <!-- 图片消息组件 -->
@@ -30,20 +47,26 @@
           v-else-if="message.msg.type === 3 && message.msg.videoMsg"
           :message="message"
         />
-        <!-- 音频文件消息组件（type=8 的音频文件消息，用户上传的音频文件） -->
+        <!-- 音频文件消息组件（type=8） -->
         <AudioFileMessage
           v-else-if="message.msg.type === 8"
           :message="message"
         />
-        <!-- 通知消息组件（type=7 的系统通知消息） -->
+        <!-- 通知消息组件（type=7） -->
         <NotificationMessage
           v-else-if="message.msg.type === 7 && message.msg.notificationMsg"
           :message="message"
         />
-        <!-- 表情消息组件（type=6 的表情消息） -->
+        <!-- 表情消息组件（type=6） -->
         <EmojiMessage
           v-else-if="message.msg.type === 6 && message.msg.emojiMsg"
           :message="message"
+        />
+        <!-- 合并转发消息组件（type=9） -->
+        <MergedForwardMessage
+          v-else-if="message.msg.type === 9 && message.msg.mergedForwardMsg"
+          :message="message"
+          @view="openMergedForwardViewer"
         />
         <!-- 发送状态指示器 -->
         <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
@@ -69,6 +92,16 @@
       @command="(item) => handleMenuCommand(item, currentMessage)"
     />
     <UserInfo v-if="userInfo.show" :user-info="userInfo" />
+    <!-- 转发对话框 -->
+    <ForwardDialog
+      v-model="forwardDialogVisible"
+      :message-id="forwardMessageId"
+    />
+    <!-- 合并转发查看对话框 -->
+    <MergedForwardViewer
+      v-model="mergedForwardViewerVisible"
+      :data="mergedForwardViewerData"
+    />
   </div>
 </template>
 
@@ -84,10 +117,13 @@ import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import userInfo from './components/userInfo.vue'
+import ForwardDialog from './components/ForwardDialog.vue'
+import MergedForwardViewer from './components/MergedForwardViewer.vue'
 import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
 import EmojiMessage from './message/emoji.vue'
 import ImageMessage from './message/image.vue'
+import MergedForwardMessage from './message/merged-forward.vue'
 import NotificationMessage from './message/notification.vue'
 import TextMessage from './message/text.vue'
 import VideoMessage from './message/video.vue'
@@ -98,12 +134,15 @@ export default defineComponent({
   name: 'ChatContent',
   components: {
     UserInfo: userInfo,
+    ForwardDialog,
+    MergedForwardViewer,
     BeaverImage,
     ContextMenu,
     AudioFileMessage,
     EmojiMessage,
     TextMessage,
     ImageMessage,
+    MergedForwardMessage,
     VideoMessage,
     NotificationMessage,
   },
@@ -126,6 +165,10 @@ export default defineComponent({
     const contextMenuPosition = ref<{ x: number, y: number } | null>(null)
     const contextMenuItems = ref<ContextMenuItem[]>([])
     const currentMessage = ref<any>(null) // 当前右键点击的消息
+    const forwardDialogVisible = ref(false)
+    const forwardMessageId = ref('')
+    const mergedForwardViewerVisible = ref(false)
+    const mergedForwardViewerData = ref<any>(null)
 
     const messages = computed(() => {
       const currentId = messageViewStore.currentChatId
@@ -156,8 +199,26 @@ export default defineComponent({
     })
 
 
+    // 多选模式下点击消息气泡区域切换选中状态
+    const handleMessageClick = (event: MouseEvent, message: any) => {
+      if (messageViewStore.isMultiSelectMode && message.sender.userId !== '') {
+        event.stopPropagation()
+        messageViewStore.toggleMessageSelect(message.messageId)
+      }
+    }
+
+    // 打开合并转发查看对话框
+    const openMergedForwardViewer = (data: any) => {
+      mergedForwardViewerData.value = data
+      mergedForwardViewerVisible.value = true
+    }
+
     // 处理右键菜单
     const handleContextMenu = (event: MouseEvent, message: any) => {
+      // 多选模式下禁用右键菜单
+      if (messageViewStore.isMultiSelectMode)
+        return
+
       event.preventDefault()
       event.stopPropagation()
 
@@ -172,8 +233,9 @@ export default defineComponent({
       if (messageType === MessageContentType.TEXT)
         (message as any)._selectedText = getSelectedText()
 
-      // 根据消息类型获取菜单项
-      contextMenuItems.value = getMenuItems(messageType, hasSelected)
+      // 根据消息类型获取菜单项（撤回只对自己发的消息显示）
+      const isSender = message.sender.userId === userStore.getUserId
+      contextMenuItems.value = getMenuItems(messageType, hasSelected, isSender)
 
       // 设置菜单位置
       contextMenuPosition.value = {
@@ -200,8 +262,12 @@ export default defineComponent({
       }
 
       try {
-        // 直接调用处理方法
-        await MessageHandlerFactory.handleCommand(messageType as MessageContentType, item.id, message)
+        const result = await MessageHandlerFactory.handleCommand(messageType as MessageContentType, item.id, message)
+        // 转发命令由上层弹窗处理
+        if (result === 'forward') {
+          forwardMessageId.value = message.messageId
+          forwardDialogVisible.value = true
+        }
       }
       catch (error) {
         console.error('处理菜单命令失败:', error, { commandId: item.id, messageType, message })
@@ -289,13 +355,20 @@ export default defineComponent({
       CacheType,
       messages,
       userStore,
+      messageViewStore,
       messageContainer,
       contextMenuVisible,
       contextMenuPosition,
       contextMenuItems,
       currentMessage,
+      forwardDialogVisible,
+      forwardMessageId,
+      mergedForwardViewerVisible,
+      mergedForwardViewerData,
       handleContextMenu,
       handleMenuCommand,
+      handleMessageClick,
+      openMergedForwardViewer,
       userInfo,
       showUserInfo,
     }
@@ -388,6 +461,59 @@ export default defineComponent({
       background-color: #fff;
       border-bottom-left-radius: 2px;
 
+      .recalled-message {
+        font-size: 12px;
+        color: #909399;
+        padding: 2px 4px;
+      }
+    }
+
+    // 多选模式复选框
+    .message-checkbox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      flex-shrink: 0;
+      cursor: pointer;
+      align-self: center;
+
+      .cb-unchecked {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #B2BEC3;
+        border-radius: 50%;
+        background: #fff;
+      }
+
+      .cb-checked {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #FF7D45;
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 4px;
+          top: 2px;
+          width: 5px;
+          height: 8px;
+          border: 2px solid #fff;
+          border-top: none;
+          border-left: none;
+          transform: rotate(45deg);
+        }
+      }
+    }
+
+    // 多选选中状态高亮
+    &.multi-selected > .message-content {
+      outline: 2px solid rgba(255, 125, 69, 0.4);
+      background-color: #FFF8F5;
     }
   }
 }

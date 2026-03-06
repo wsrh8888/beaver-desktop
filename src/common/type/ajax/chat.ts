@@ -8,6 +8,7 @@ export enum MessageType {
   EMOJI = 6, // 表情消息
   NOTIFICATION = 7, // 通知消息（会话内的通知，如：xxx加入了群聊、xxx创建了群等）
   AUDIO_FILE = 8, // 音频文件消息（用户上传的音频文件）
+  MERGED_FORWARD = 9, // 合并转发（聊天记录）
 }
 
 // 消息发送状态
@@ -50,6 +51,7 @@ export interface IMessage {
   notificationMsg?: INotificationMessage | null
   audioFileMsg?: IAudioFileMessage | null
   replyMsg?: IReplyMessage | null
+  mergedForwardMsg?: IMergedForwardMessage | null
 }
 
 // 视频消息
@@ -103,6 +105,33 @@ export interface IReplyMessage {
   replyToMessageId: string // 被回复的消息ID
   replyToContent: string // 被回复的消息内容预览
   replyToSender: string // 被回复消息的发送者昵称
+}
+
+// 合并转发消息（聊天记录）
+export interface IMergedForwardMessage {
+  title: string // 聊天记录标题，如 "A和B的聊天记录"
+  messages: IMergedForwardItem[] // 消息预览条目列表
+}
+
+// 合并转发中的单条消息预览
+export interface IMergedForwardItem {
+  senderName: string // 发送者昵称
+  content: string // 内容文字预览（如 [图片]、[视频]、或消息文字）
+  type: number // 消息类型
+}
+
+// 合并转发请求
+export interface IMergedForwardMessageReq {
+  messageIds: string[] // 被转发的消息ID列表
+  targetId: string // 目标会话ID
+  forwardType: number // 1=私聊 2=群聊
+  title?: string // 聊天记录标题（可选，由客户端构建）
+}
+
+// 合并转发响应
+export interface IMergedForwardMessageRes {
+  id: number
+  messageId: string
 }
 
 // 发送消息请求
@@ -306,6 +335,16 @@ export interface IForwardMessageRes {
   id: number // 数据库自增ID
   messageId: string // 客户端消息ID
   forwardTime: string
+}
+
+// 删除消息请求（仅对自己生效，对方仍可见）
+export interface IDeleteMessageReq {
+  messageId: string // 客户端消息ID
+}
+
+// 删除消息响应
+export interface IDeleteMessageRes {
+  message: string
 }
 
 // 聊天历史消息类型（数据库记录）

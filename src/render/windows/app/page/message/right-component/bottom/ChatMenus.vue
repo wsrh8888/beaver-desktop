@@ -1,7 +1,44 @@
 <template>
   <div class="chat-input-area-wrapper">
-    <div class="resize-handle" @mousedown="startResize" />
-    <div ref="chatInputAreaRef" class="chat-input-area" :style="{ height: `${height}px` }">
+    <!-- 多选操作栏 -->
+    <div v-if="messageViewStore.isMultiSelectMode" class="multi-select-bar">
+      <button class="ms-cancel-btn" @click="messageViewStore.exitMultiSelect()">取消</button>
+      <span class="ms-count">已选 {{ messageViewStore.selectedMessageIds.length }} 条</span>
+      <div class="ms-actions">
+        <button
+          class="ms-action-btn"
+          :disabled="messageViewStore.selectedMessageIds.length === 0"
+          @click="handleBatchForward('each')"
+        >
+          逐条转发
+        </button>
+        <button
+          class="ms-action-btn"
+          :disabled="messageViewStore.selectedMessageIds.length === 0"
+          @click="handleBatchForward('merged')"
+        >
+          合并转发
+        </button>
+        <button
+          class="ms-action-btn ms-delete-btn"
+          :disabled="messageViewStore.selectedMessageIds.length === 0"
+          @click="handleBatchDelete"
+        >
+          删除
+        </button>
+      </div>
+    </div>
+    <!-- 批量转发对话框 -->
+    <BatchForwardDialog
+      v-if="messageViewStore.isMultiSelectMode"
+      v-model="batchForwardVisible"
+      :message-ids="[...messageViewStore.selectedMessageIds]"
+      :mode="batchForwardMode"
+      :merged-title="mergedTitle"
+      @done="messageViewStore.exitMultiSelect()"
+    />
+    <div v-if="!messageViewStore.isMultiSelectMode" class="resize-handle" @mousedown="startResize" />
+    <div v-if="!messageViewStore.isMultiSelectMode" ref="chatInputAreaRef" class="chat-input-area" :style="{ height: `${height}px` }">
       <div class="toolbar">
         <div
           v-for="tool in toolList"
@@ -12,6 +49,12 @@
           <img :src="tool.icon" :alt="tool.name">
         </div>
       </div>
+      <!-- 引用回复预览条 -->
+      <ReplyBar
+        v-if="messageViewStore.replyingTo"
+        :reply-to="messageViewStore.replyingTo"
+        @close="messageViewStore.setReplyingTo(null)"
+      />
       <div class="input-row">
         <div
           ref="inputRef"
@@ -46,21 +89,78 @@
 <script lang="ts">
 import type { UploadResult } from 'renderModule/utils/upload'
 import { MessageType } from 'commonModule/type/ajax/chat'
+import { deleteMessageApi } from 'renderModule/api/chat'
+import Message from 'renderModule/components/ui/message'
 import { getFilesFromClipboardEvent } from 'renderModule/utils/clipboard'
 import { selectAndUploadFile, uploadFile, uploadFileFromBase64 } from 'renderModule/utils/upload'
+import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useMessageSenderStore } from 'renderModule/windows/app/pinia/message/message-sender'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import { defineComponent, onBeforeUnmount, ref } from 'vue'
+import { computed, defineComponent, onBeforeUnmount, ref } from 'vue'
 import { toolList } from './data'
+import BatchForwardDialog from './BatchForwardDialog.vue'
 import EmojiComponent from './emoji/emoji.vue'
+import ReplyBar from './ReplyBar.vue'
 
 export default defineComponent({
   components: {
     EmojiComponent,
+    ReplyBar,
+    BatchForwardDialog,
   },
   setup() {
     const messageViewStore = useMessageViewStore()
     const messageSenderStore = useMessageSenderStore()
+    const messageStore = useMessageStore()
+
+    // 多选批量操作
+    const batchForwardVisible = ref(false)
+    const batchForwardMode = ref<'each' | 'merged'>('each')
+    const mergedTitle = ref('聊天记录')
+
+    const handleBatchForward = (mode: 'each' | 'merged') => {
+      if (messageViewStore.selectedMessageIds.length === 0)
+        return
+      // 构建合并转发标题：取前2个发送者昵称
+      if (mode === 'merged') {
+        const conversationId = messageViewStore.currentChatId
+        if (conversationId) {
+          const history = messageStore.getChatHistory(conversationId)
+          const selectedIds = messageViewStore.selectedMessageIds
+          const names = [...new Set(
+            history
+              .filter(m => selectedIds.includes(m.messageId))
+              .map(m => m.sender.nickName),
+          )].slice(0, 2).join('、')
+          mergedTitle.value = names ? `${names}的聊天记录` : '聊天记录'
+        }
+      }
+      batchForwardMode.value = mode
+      batchForwardVisible.value = true
+    }
+
+    const handleBatchDelete = async () => {
+      const ids = [...messageViewStore.selectedMessageIds]
+      const conversationId = messageViewStore.currentChatId
+      if (!conversationId || ids.length === 0)
+        return
+      let successCount = 0
+      for (const id of ids) {
+        try {
+          const res = await deleteMessageApi({ messageId: id })
+          if (res.code === 0) {
+            messageStore.removeMessage(conversationId, id)
+            successCount++
+          }
+        }
+        catch {
+          // 单条失败继续删其余
+        }
+      }
+      messageViewStore.exitMultiSelect()
+      Message.success(`已删除 ${successCount} 条消息`)
+    }
+
     const inputValue = ref('')
     const inputRef = ref<HTMLDivElement | null>(null)
     const chatInputAreaRef = ref<HTMLDivElement | null>(null)
@@ -182,9 +282,23 @@ export default defineComponent({
       // 如果不是文件，允许默认的文本粘贴行为
     }
 
+    const getReplyPreview = (msg: any): string => {
+      const msgContent = msg.msg
+      switch (msgContent.type) {
+        case MessageType.TEXT: return msgContent.textMsg?.content?.slice(0, 50) || '[文本]'
+        case MessageType.IMAGE: return '[图片]'
+        case MessageType.VIDEO: return '[视频]'
+        case MessageType.FILE: return '[文件]'
+        case MessageType.VOICE: return '[语音]'
+        case MessageType.EMOJI: return '[表情]'
+        case MessageType.AUDIO_FILE: return '[音频]'
+        default: return '[消息]'
+      }
+    }
+
     const handleSend = async () => {
-      const content = inputValue.value.trim()
-      if (!content)
+      const text = inputValue.value.trim()
+      if (!text)
         return
 
       const conversationId = messageViewStore.currentChatId
@@ -197,13 +311,29 @@ export default defineComponent({
         inputRef.value.textContent = ''
       }
 
-      // 通过messageSenderStore发送消息
+      // 构建内容：若有引用消息则附带 replyMsg
+      const replyingTo = messageViewStore.replyingTo
+      const content = replyingTo
+        ? {
+            text,
+            replyMsg: {
+              replyToMessageId: replyingTo.messageId,
+              replyToContent: getReplyPreview(replyingTo),
+              replyToSender: replyingTo.sender.nickName,
+            },
+          }
+        : text
+
+      // 清除引用状态
+      if (replyingTo) {
+        messageViewStore.setReplyingTo(null)
+      }
+
       try {
         await messageSenderStore.sendMessage(conversationId, content, MessageType.TEXT, 'private')
       }
       catch (error) {
         console.error('发送消息失败:', error)
-        // 可以在这里添加错误提示
       }
     }
 
@@ -399,6 +529,12 @@ export default defineComponent({
     })
 
     return {
+      messageViewStore,
+      batchForwardVisible,
+      batchForwardMode,
+      mergedTitle,
+      handleBatchForward,
+      handleBatchDelete,
       inputValue,
       inputRef,
       chatInputAreaRef,
@@ -555,6 +691,80 @@ export default defineComponent({
       cursor: pointer;
       &:hover { background: #FF6B3D; }
       &.disabled { background: #B2BEC3; cursor: not-allowed; }
+    }
+  }
+}
+
+.multi-select-bar {
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  height: 52px;
+  background: #fff;
+  border-top: 1px solid #EBEEF5;
+  gap: 12px;
+
+  .ms-cancel-btn {
+    flex-shrink: 0;
+    padding: 6px 14px;
+    border: 1px solid #EBEEF5;
+    border-radius: 4px;
+    background: #fff;
+    font-size: 13px;
+    color: #606266;
+    cursor: pointer;
+
+    &:hover {
+      background: #F5F6FA;
+    }
+  }
+
+  .ms-count {
+    flex: 1;
+    font-size: 13px;
+    color: #909399;
+    text-align: center;
+  }
+
+  .ms-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+
+    .ms-action-btn {
+      padding: 6px 14px;
+      border: none;
+      border-radius: 4px;
+      background: #FF7D45;
+      color: #fff;
+      font-size: 13px;
+      cursor: pointer;
+
+      &:hover {
+        background: #FF6B3D;
+      }
+
+      &:disabled {
+        background: #B2BEC3;
+        cursor: not-allowed;
+      }
+
+      &.ms-delete-btn {
+        background: #fff;
+        border: 1px solid #EBEEF5;
+        color: #F56C6C;
+
+        &:hover:not(:disabled) {
+          background: #FEF0F0;
+          border-color: #F56C6C;
+        }
+
+        &:disabled {
+          background: #fff;
+          color: #C0C4CC;
+          border-color: #EBEEF5;
+        }
+      }
     }
   }
 }

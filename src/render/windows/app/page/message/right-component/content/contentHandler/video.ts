@@ -16,6 +16,9 @@ class VideoHandler extends BaseMessageHandler {
         return this.handleSave(message)
       case 'play':
         return this.handlePlay(message)
+      case 'multiSelect':
+        this.enterMultiSelect(message)
+        return Promise.resolve()
       default:
         console.log('未知的视频消息命令:', commandId)
         return Promise.resolve()
@@ -23,11 +26,11 @@ class VideoHandler extends BaseMessageHandler {
   }
 
   getSupportedCommands(): string[] {
-    return ['save', 'play', 'forward', 'delete']
+    return ['save', 'play', 'forward', 'delete', 'multiSelect']
   }
 
   getMenuItems(): ContextMenuItem[] {
-    return this.videoMenuItems
+    return [{ id: 'multiSelect', label: '多选' }]
   }
 
   private async handleSave(message: any): Promise<void> {

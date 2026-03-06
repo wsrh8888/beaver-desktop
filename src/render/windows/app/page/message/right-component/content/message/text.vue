@@ -1,5 +1,12 @@
 <template>
-  <div class="message-text selectable" v-html="formattedContent" />
+  <div class="text-message-wrapper">
+    <!-- 引用/回复预览 -->
+    <div v-if="message.msg.replyMsg" class="reply-preview">
+      <span class="reply-sender">{{ message.msg.replyMsg.replyToSender }}：</span>
+      <span class="reply-content">{{ message.msg.replyMsg.replyToContent }}</span>
+    </div>
+    <div class="message-text selectable" v-html="formattedContent" />
+  </div>
 </template>
 
 <script lang="ts">
@@ -40,6 +47,33 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
+.text-message-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+.reply-preview {
+  padding: 4px 8px;
+  background: rgba(0, 0, 0, 0.05);
+  border-left: 2px solid #B2BEC3;
+  border-radius: 2px 2px 0 0;
+  font-size: 12px;
+  color: #909399;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 240px;
+
+  .reply-sender {
+    color: #636E72;
+    font-weight: 500;
+  }
+
+  .reply-content {
+    color: #909399;
+  }
+}
+
 .message-text {
   font-size: 13px;
   line-height: 1.5;

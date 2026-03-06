@@ -55,6 +55,14 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
     buildMessageContentInternal(content: any, messageType: MessageType): IMessage {
       switch (messageType) {
         case MessageType.TEXT:
+          // content 可能是字符串（普通文本）或包含 replyMsg 的对象
+          if (typeof content === 'object' && content !== null && 'text' in content) {
+            return {
+              type: MessageType.TEXT,
+              textMsg: { content: content.text },
+              replyMsg: content.replyMsg || null,
+            }
+          }
           return {
             type: MessageType.TEXT,
             textMsg: { content },
@@ -111,7 +119,7 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
             fileMsg: null,
             voiceMsg: null,
             emojiMsg: null,
-            replyMsg: null,
+            replyMsg: message.replyMsg || null,
           }
         case MessageType.IMAGE:
           return {
