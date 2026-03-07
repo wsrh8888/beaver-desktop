@@ -47,7 +47,6 @@ export const useContactStore = defineStore('useContactStore', {
         this.user.set(userId, contactInfo as IUserInfo)
         updated = true
       }
-      console.error('更新全部用户模块', this.user)
 
       // 如果有更新，递增version触发响应式更新
       if (updated) {

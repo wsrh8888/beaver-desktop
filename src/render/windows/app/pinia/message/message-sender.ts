@@ -1,27 +1,28 @@
-import type { IChatHistory, IMessage, MessageStatus } from 'commonModule/type/ajax/chat'
-import type { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { MessageType } from 'commonModule/type/ajax/chat'
 import { defineStore } from 'pinia'
-
+import type { IChatHistory, MessageStatus } from 'commonModule/type/ajax/chat'
+import { MessageType } from 'commonModule/type/ajax/chat'
 import Logger from 'renderModule/utils/logger'
 import chatSender from '../../message-manager/senders/chat-sender'
+import { MessageFactory } from '../../message-manager/message-factory'
+import { MessageParser } from '../../message-manager/message-parser'
 import { useUserStore } from '../user/user'
 import { useMessageStore } from './message'
+import { useMessageViewStore } from '../view/message/index'
+import { useConversationStore } from '../conversation/conversation'
 
 const logger = new Logger('MessageSenderStore')
 
 /**
  * @description: 消息发送管理
- * 核心职责：
- * 1. 消息发送：统一的发送入口
- * 2. 发送状态管理：跟踪发送状态、超时、重发
- * 3. 发送确认：处理发送成功确认
+ * 遵循管道化架构: 
+ * 1. 采集 (UI/API) -> 
+ * 2. 转换 (Parser/Factory) -> 
+ * 3. 预处理 (Local Persistence) -> 
+ * 4. 传输 (WebSocket) -> 
+ * 5. 确认 (Ack/Status)
  */
 export const useMessageSenderStore = defineStore('useMessageSenderStore', {
   state: () => ({
-    /**
-     * @description: 消息发送状态管理，key为messageId
-     */
     messageSendStatus: new Map<string, {
       status: MessageStatus
       conversationId: string
@@ -33,309 +34,132 @@ export const useMessageSenderStore = defineStore('useMessageSenderStore', {
   }),
 
   getters: {
-    /**
-     * @description: 获取消息发送状态
-     */
     getMessageSendStatus: state => (messageId: string) => {
       return state.messageSendStatus.get(messageId)
     },
   },
 
   actions: {
-    /**
-     * @description: 构建消息内容对象
-     */
-    buildMessageContent(content: any, messageType: MessageType): IMessage {
-      return this.buildMessageContentInternal(content, messageType)
-    },
+
 
     /**
-     * @description: 构建消息内容对象（内部方法）
+     * @description: 发送混合内容 (从 DOM 提取)
      */
-    buildMessageContentInternal(content: any, messageType: MessageType): IMessage {
-      switch (messageType) {
-        case MessageType.TEXT:
-          // content 可能是字符串（普通文本）或包含 replyMsg 的对象
-          if (typeof content === 'object' && content !== null && 'text' in content) {
-            return {
-              type: MessageType.TEXT,
-              textMsg: { content: content.text },
-              replyMsg: content.replyMsg || null,
-            }
-          }
-          return {
-            type: MessageType.TEXT,
-            textMsg: { content },
-          }
-        case MessageType.IMAGE:
-          return {
-            type: MessageType.IMAGE,
-            imageMsg: content,
-          }
-        case MessageType.VIDEO:
-          return {
-            type: MessageType.VIDEO,
-            videoMsg: content,
-          }
-        case MessageType.FILE:
-          return {
-            type: MessageType.FILE,
-            fileMsg: content,
-          }
-        case MessageType.VOICE:
-          return {
-            type: MessageType.VOICE,
-            voiceMsg: content,
-          }
-        case MessageType.AUDIO_FILE:
-          return {
-            type: MessageType.AUDIO_FILE,
-            audioFileMsg: content,
-          }
-        case MessageType.EMOJI:
-          return {
-            type: MessageType.EMOJI,
-            emojiMsg: content,
-          }
-        default:
-          return {
-            type: MessageType.TEXT,
-            textMsg: { content: String(content) },
-          }
+    async sendMixedContent(editorElement: HTMLElement) {
+      const viewStore = useMessageViewStore()
+      const conversationId = viewStore.currentChatId
+      if (!conversationId) return
+
+      const parts = MessageParser.parseFromEditor(editorElement)
+
+      // 顺序发送各个分块
+      let isFirstPart = true
+      for (const part of parts) {
+        const msgType = MessageParser.mapPartToType(part.type)
+        const replyingTo = (isFirstPart && viewStore.replyingTo) ? viewStore.replyingTo : undefined
+
+        await this.sendMessage(part.content, msgType, replyingTo)
+
+        if (isFirstPart && viewStore.replyingTo) {
+          viewStore.setReplyingTo(null)
+        }
+        isFirstPart = false
       }
+
+      viewStore.clearDraft(conversationId)
     },
 
     /**
-     * @description: 将IMessage转换为IMessageMsg格式（用于WebSocket传输）
-     */
-    convertToWsMessageFormat(message: IMessage): IMessageMsg {
-      switch (message.type) {
-        case MessageType.TEXT:
-          return {
-            type: MessageType.TEXT,
-            textMsg: message.textMsg ? { content: message.textMsg.content } : undefined,
-            imageMsg: null,
-            videoMsg: null,
-            fileMsg: null,
-            voiceMsg: null,
-            emojiMsg: null,
-            replyMsg: message.replyMsg || null,
-          }
-        case MessageType.IMAGE:
-          return {
-            type: MessageType.IMAGE,
-            imageMsg: message.imageMsg,
-          }
-        case MessageType.VIDEO:
-          return {
-            type: MessageType.VIDEO,
-            videoMsg: message.videoMsg,
-          }
-        case MessageType.FILE:
-          return {
-            type: MessageType.FILE,
-            fileMsg: message.fileMsg,
-          }
-        case MessageType.VOICE:
-          return {
-            type: MessageType.VOICE,
-            voiceMsg: message.voiceMsg,
-          }
-        case MessageType.AUDIO_FILE:
-          return {
-            type: MessageType.AUDIO_FILE,
-            audioFileMsg: message.audioFileMsg,
-          }
-        case MessageType.EMOJI:
-          return {
-            type: MessageType.EMOJI,
-            emojiMsg: message.emojiMsg,
-          }
-        default:
-          return {
-            type: MessageType.TEXT,
-            textMsg: { content: String(message) },
-          }
-      }
-    },
-
-    /**
-     * @description: 发送消息（统一的发送入口）
+     * @description: 核心调度: 执行发送流水线
      */
     async sendMessage(
-      conversationId: string,
       content: any,
       messageType: MessageType,
-      chatType: string,
+      replyTo?: IChatHistory | null,
     ) {
+      const userStore = useUserStore()
+      const messageStore = useMessageStore()
+      const viewStore = useMessageViewStore()
+      const conversationStore = useConversationStore()
+
+      const conversationId = viewStore.currentChatId
+      if (!conversationId) return
+
+      // --- 1. 准备阶段 (Metadata) ---
+      const conversationInfo = conversationStore.getConversationInfo(conversationId)
+      const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
+      const userId = userStore.getUserId
+      const userInfo = {
+        avatar: userStore.getUserInfo.avatar,
+        nickName: userStore.getUserInfo.nickName
+      }
+      const messageId = MessageFactory.generateMessageId(userId)
+
       try {
-        // 1. 调用发送器发送消息，获取messageId
-        const messageId = await chatSender.sendMessage(conversationId, content, messageType, chatType)
+        // --- 2. 转换阶段 (Models) ---
+        const msgModel = MessageFactory.buildLocalMessage(content, messageType, replyTo)
+        const localMessage = MessageFactory.buildHistoryItem(userId, userInfo, conversationId, messageId, msgModel)
 
-        // 2. 获取用户信息和消息store
-        const userStore = useUserStore()
-        const messageStore = useMessageStore()
-
-        // 3. 创建本地消息对象
-        const localMessage: IChatHistory = {
-          id: 0, // 临时ID，发送成功后会更新
-          messageId,
-          conversationId,
-          seq: 0, // 临时seq，发送成功后会更新
-          msg: this.buildMessageContent(content, messageType),
-          sender: {
-            userId: userStore.getUserId,
-            avatar: userStore.getUserInfo.avatar,
-            nickName: userStore.getUserInfo.nickName,
-          },
-          created_at: new Date().toISOString(),
-          status: 1, // 正常状态
-          sendStatus: 0, // 发送中状态
-        }
-
-        // 4. 添加到消息列表显示
+        // --- 3. 预占位 (UI Feedback) ---
         messageStore.addMessage(conversationId, localMessage)
+        this.trackMessageState(messageId, conversationId)
 
-        // 5. 开始发送状态跟踪
-        this.startSendingMessage(messageId, conversationId)
+        // --- 4. 传输阶段 (IO) ---
+        const sendBody = MessageFactory.buildChatMessageBody(conversationId, messageId, msgModel, chatType)
+        await chatSender.sendToWs(sendBody)
 
-        // 6. 更新会话预览
-        messageStore.updateConversationPreview(conversationId, localMessage)
-
-        logger.info({ text: `消息发送成功: ${messageId}` })
+        logger.info({ text: `消息已投递: ${messageId}` })
       }
       catch (error) {
-        logger.error({ text: '发送消息失败', data: { error: (error as Error).message } })
+        logger.error({ text: '发送失败', data: { messageId, error: (error as Error).message } })
+        this.failMessage(messageId, (error as Error).message)
         throw error
       }
     },
 
     /**
-     * @description: 开始发送消息，设置发送状态
+     * @description: 追踪消息发送状态与超时
      */
-    startSendingMessage(messageId: string, conversationId: string, timeoutMs: number = 10000) {
-      // 设置发送状态为sending
+    trackMessageState(messageId: string, conversationId: string, timeoutMs: number = 10000) {
+      const timeoutId = setTimeout(() => {
+        this.handleMessageTimeout(messageId)
+      }, timeoutMs)
+
       this.messageSendStatus.set(messageId, {
         status: 0,
         conversationId,
         retryCount: 0,
         timestamp: Date.now(),
+        timeoutId
       })
-
-      // 设置超时定时器
-      const timeoutId = setTimeout(() => {
-        this.handleMessageTimeout(messageId)
-      }, timeoutMs)
-
-      // 保存timeoutId
-      const status = this.messageSendStatus.get(messageId)
-      if (status) {
-        status.timeoutId = timeoutId
-      }
-
-      logger.info({ text: `开始发送消息: ${messageId}` })
     },
 
-    /**
-     * @description: 消息发送失败
-     */
     failMessage(messageId: string, errorMessage?: string) {
       const status = this.messageSendStatus.get(messageId)
-      if (!status) {
-        logger.warn({ text: `未找到消息发送状态: ${messageId}` })
-        return
-      }
+      if (!status) return
 
-      // 清除超时定时器
-      if (status.timeoutId) {
-        clearTimeout(status.timeoutId)
-      }
-
-      // 更新状态为失败
+      if (status.timeoutId) clearTimeout(status.timeoutId)
       status.status = 2
       status.errorMessage = errorMessage
 
-      // 更新消息的发送状态
+      // 更新列表中的状态
       const messageStore = useMessageStore()
       const messages = messageStore.chatHistory.get(status.conversationId) || []
       const message = messages.find(m => m.messageId === messageId)
-      if (message) {
-        message.sendStatus = 2
-      }
-
-      logger.info({ text: `消息发送失败: ${messageId}, 错误: ${errorMessage}` })
+      if (message) message.sendStatus = 2
     },
 
-    /**
-     * @description: 处理消息发送超时
-     */
     handleMessageTimeout(messageId: string) {
       const status = this.messageSendStatus.get(messageId)
-      if (!status || status.status !== 0) {
-        return
-      }
-
-      logger.warn({ text: `消息发送超时: ${messageId}` })
+      if (!status || status.status !== 0) return
       this.failMessage(messageId, '发送超时')
     },
 
-    /**
-     * @description: 重发消息
-     */
-    async retrySendMessage(messageId: string) {
-      const status = this.messageSendStatus.get(messageId)
-      if (!status) {
-        logger.warn({ text: `未找到消息状态，无法重发: ${messageId}` })
-        return
-      }
-
-      // 检查重发次数
-      if (status.retryCount >= 3) {
-        logger.warn({ text: `消息重发次数过多，停止重发: ${messageId}` })
-        return
-      }
-
-      // 增加重发次数
-      status.retryCount++
-
-      // 重置状态为发送中
-      status.status = 0
-      status.timestamp = Date.now()
-      status.errorMessage = undefined
-
-      // 重新设置超时定时器
-      if (status.timeoutId) {
-        clearTimeout(status.timeoutId)
-      }
-      status.timeoutId = setTimeout(() => {
-        this.handleMessageTimeout(messageId)
-      }, 10000)
-
-      // 更新消息状态
-      const messageStore = useMessageStore()
-      const messages = messageStore.chatHistory.get(status.conversationId) || []
-      const message = messages.find(m => m.messageId === messageId)
-      if (message) {
-        message.sendStatus = 0
-      }
-
-      logger.info({ text: `重发消息: ${messageId}, 重发次数: ${status.retryCount}` })
-    },
-
-    /**
-     * @description: 清理指定消息的发送状态（状态确认后立即清理）
-     */
     cleanupMessageStatus(messageId: string) {
       const status = this.messageSendStatus.get(messageId)
       if (status) {
-        // 清除超时定时器
-        if (status.timeoutId) {
-          clearTimeout(status.timeoutId)
-        }
-
-        // 删除发送状态
+        if (status.timeoutId) clearTimeout(status.timeoutId)
         this.messageSendStatus.delete(messageId)
-        logger.info({ text: `清理消息发送状态: ${messageId}` })
       }
     },
   },

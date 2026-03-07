@@ -1,4 +1,4 @@
-import type { IPrivateMessageSendBody } from './message-types'
+import type { IChatMessageSendBody } from './message-types'
 
 /**
  * @description: WebSocket 命令类型枚举 - 与服务端保持一致
@@ -107,7 +107,8 @@ export interface IWsData<T extends WsType = WsType> {
 
 // 类型映射：WsType 到对应的消息体类型
 export interface WsTypeToBodyMap {
-  [WsType.PRIVATE_MESSAGE_SEND]: IPrivateMessageSendBody
+  [WsType.PRIVATE_MESSAGE_SEND]: IChatMessageSendBody
+  [WsType.GROUP_MESSAGE_SEND]: IChatMessageSendBody
 }
 
 // 辅助类型：获取指定 WsType 对应的消息体类型

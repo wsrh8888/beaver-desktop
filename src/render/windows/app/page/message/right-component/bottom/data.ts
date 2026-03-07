@@ -11,6 +11,12 @@ export const toolList = [
     icon: FileSvg,
   },
   {
+    id: 6,
+    name: '截屏',
+    value: 'screenshot',
+    icon: ScreenshotSvg,
+  },
+  {
     id: 1,
     name: '表情',
     value: 'emoji',
@@ -21,13 +27,7 @@ export const toolList = [
     name: '图片',
     value: 'image',
     icon: ImageSvg,
-  },
-  {
-    id: 6,
-    name: '截屏',
-    value: 'screenshot',
-    icon: ScreenshotSvg,
-  },
+  }
 
   // {
   //   id: 4,

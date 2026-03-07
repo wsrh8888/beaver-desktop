@@ -112,8 +112,9 @@ export interface INotificationMessage {
 export interface IReplyMessage {
   originMsgId: string // 被回复的消息ID
   originMsg?: IMessage | null // 被回复的消息内容快照
-  replyContent: string // 回复的文本内容
+  replyMsg: IMessage // 回复的消息主体 (可以是文本、图片、视频等递归对象)
 }
+
 
 // 转发消息（聊天记录）
 export interface IForwardMessage {
@@ -126,7 +127,7 @@ export interface IForwardMessage {
 // 撤回消息
 export interface IWithdrawMessage {
   originMsgId: string
-  content: string
+  originMsg?: IMessage | null // 被撤回的消息内容快照（用于重新编辑）
 }
 
 // 通话消息
@@ -376,7 +377,6 @@ export interface IChatHistory {
   msg: IMessage // 消息内容对象
   sender: ISender // 发送者信息
   created_at: string // 创建时间
-  status: number // 消息状态
   sendStatus?: MessageStatus // 发送状态（本地发送状态）
 }
 

@@ -1,13 +1,9 @@
 <template>
-  <div class="emoji-popup" :style="{ bottom: `${menuHeight + 4}px` }" @click.stop>
+  <div v-if="messageViewStore.showEmoji" class="emoji-popup"
+    :style="{ bottom: `${messageViewStore.inputHeight + 4}px` }" @click.stop>
     <div class="emoji-content custom-scrollbar">
-      <component
-        :is="activeComponent"
-        :on-select="handleEmojiSelect"
-        :on-send="handleEmojiSend"
-        :on-add="handleAddFavorite"
-        :package-id="activePackageId"
-      />
+      <component :is="activeComponent" :on-select="handleEmojiSelect" :on-send="handleEmojiSend"
+        :package-id="activePackageId" />
     </div>
 
     <div class="emoji-categories custom-scrollbar">
@@ -18,26 +14,17 @@
         <div class="emoji-category-name" />
       </div>
 
-      <div
-        v-for="tab in tabs"
-        :key="tab.id"
-        class="emoji-category"
-        :class="{ active: activeTab === tab.id }"
-        @click="handleTabClick(tab.id)"
-      >
+      <div v-for="tab in tabs" :key="tab.id" class="emoji-category" :class="{ active: activeTab === tab.id }"
+        @click="handleTabClick(tab.id)">
         <div class="emoji-category-icon">
           <img :src="tab.icon" :alt="tab.label">
         </div>
         <div class="emoji-category-name" />
       </div>
 
-      <div
-        v-for="tab in packageTabs"
-        :key="tab.id"
-        class="emoji-category"
+      <div v-for="tab in packageTabs" :key="tab.id" class="emoji-category"
         :class="{ active: activeTab === tab.id && activePackageId === tab.packageId }"
-        @click="handleTabClick(tab.id, tab.packageId)"
-      >
+        @click="handleTabClick(tab.id, tab.packageId)">
         <div class="emoji-category-icon">
           <BeaverImage :file-name="tab.icon" alt="表情" image-class="emoji-category-icon-image" />
         </div>
@@ -53,6 +40,7 @@ import defaultIcon from 'renderModule/assets/image/emoji/smile.svg'
 import storeIcon from 'renderModule/assets/image/emoji/store.svg'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global/index'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message/index'
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import EmojiDefaultList from './components/default/index.vue'
 import EmojiFavoriteList from './components/favorite/index.vue'
@@ -64,19 +52,13 @@ export default defineComponent({
   components: {
     BeaverImage,
   },
-  props: {
-    menuHeight: {
-      type: Number,
-      default: 0,
-    },
-    onSend: Function,
-  },
-  emits: ['select', 'send', 'close', 'openStore', 'addFavorite'],
-  setup(_props, { emit }) {
+  setup() {
     const activeTab = ref<string>('default')
     const activePackageId = ref<string>('')
 
     const emojiStore = useEmojiStore()
+    const globalStore = useGlobalStore()
+    const messageViewStore = useMessageViewStore()
 
     const tabs = [
       { id: 'default', label: '默认', icon: defaultIcon },
@@ -90,77 +72,61 @@ export default defineComponent({
     })))
 
     const activeComponent = computed(() => {
-      if (activeTab.value === 'default')
-        return EmojiDefaultList
-      if (activeTab.value === 'favorite')
-        return EmojiFavoriteList
-      if (activeTab.value === 'package')
-        return EmojiPackageList
+      if (activeTab.value === 'default') return EmojiDefaultList
+      if (activeTab.value === 'favorite') return EmojiFavoriteList
+      if (activeTab.value === 'package') return EmojiPackageList
       return EmojiDefaultList
     })
 
     const handleStoreClick = () => {
-      // 使用全局store显示表情商店
-      const globalStore = useGlobalStore()
       globalStore.setComponent('emoji-store')
     }
 
     const handleTabClick = (tabId: string, packageId?: string) => {
       activeTab.value = tabId
-      if (packageId) {
-        // 如果是表情包tab，设置activePackageId
-        activePackageId.value = packageId
-      } else {
-        // 重置activePackageId
-        activePackageId.value = ''
-      }
+      activePackageId.value = packageId || ''
     }
 
     const handleEmojiSelect = (emoji: { name: string }) => {
-      emit('select', emoji.name)
+      messageViewStore.appendTextToDraft(emoji.name)
     }
 
-    const handleEmojiSend = (emoji: { emojiId: string, fileKey: string, packageId?: string }) => {
-      emit('send', emoji)
+    const handleEmojiSend = async (emoji: { emojiId: string, fileKey: string, packageId?: string }) => {
+      messageViewStore.appendMediaToDraft({
+        type: 'emoji',
+        fileKey: emoji.fileKey,
+        info: {
+          emojiId: emoji.emojiId,
+          packageId: emoji.packageId
+        }
+      })
+      messageViewStore.setEmojiShow(false)
     }
 
-    const handleAddFavorite = () => {
-      emit('addFavorite')
-    }
-
-    // 点击外部区域关闭表情弹窗
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as HTMLElement
-      const isEmojiPopup = !!target.closest('.emoji-popup')
-      const isEmojiButton = !!target.closest('.toolbar-btn')
-        && target.closest('.toolbar-btn')?.querySelector('img')?.alt === '表情'
-      if (!isEmojiPopup && !isEmojiButton) {
-        emit('close')
+      if (!target.closest('.emoji-popup') && !target.closest('.toolbar-btn')) {
+        messageViewStore.setEmojiShow(false)
       }
     }
 
-    onMounted(() => {
-      document.addEventListener('click', handleClickOutside)
-    })
-
-    onBeforeUnmount(() => {
-      document.removeEventListener('click', handleClickOutside)
-    })
+    onMounted(() => document.addEventListener('click', handleClickOutside))
+    onBeforeUnmount(() => document.removeEventListener('click', handleClickOutside))
 
     return {
+      messageViewStore,
       tabs,
-      handleEmojiSend,
       packageTabs,
       activeTab,
       activePackageId,
       activeComponent,
       storeIcon,
+      handleEmojiSend,
       handleStoreClick,
       handleTabClick,
       handleEmojiSelect,
-      handleAddFavorite,
     }
-  },
+  }
 })
 </script>
 
@@ -170,7 +136,7 @@ export default defineComponent({
   left: 2px;
   width: 420px;
   background-color: #FFFFFF;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
   border-radius: 8px;
   overflow: hidden;
   z-index: 100;
@@ -178,6 +144,7 @@ export default defineComponent({
   height: 305px;
   display: flex;
   flex-direction: column;
+
   .emoji-content {
     flex: 1;
     padding: 12px 16px;
@@ -220,7 +187,7 @@ export default defineComponent({
       padding: 3px 10px;
 
       &:hover {
-        background-color: rgba(0,0,0,0.03);
+        background-color: rgba(0, 0, 0, 0.03);
       }
 
       &.active {

@@ -1,32 +1,29 @@
 <template>
-  <div class="reply-bar">
+  <div v-if="messageViewStore.replyingTo" class="reply-bar" :style="{ bottom: messageViewStore.inputHeight + 'px' }">
     <div class="reply-info">
-      <span class="reply-label">回复 {{ replyTo.sender.nickName }}：</span>
+      <span class="reply-label">回复 {{ messageViewStore.replyingTo.sender.nickName }}：</span>
       <span class="reply-preview">{{ previewText }}</span>
     </div>
-    <button class="reply-close" @click="$emit('close')">
+    <button class="reply-close" @click="messageViewStore.setReplyingTo(null)">
       ×
     </button>
   </div>
 </template>
 
 <script lang="ts">
-import type { IChatHistory } from 'commonModule/type/ajax/chat'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message/index'
 import { MessageType } from 'commonModule/type/ajax/chat'
 import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'ReplyBar',
-  props: {
-    replyTo: {
-      type: Object as () => IChatHistory,
-      required: true,
-    },
-  },
-  emits: ['close'],
-  setup(props) {
+  setup() {
+    const messageViewStore = useMessageViewStore()
+
     const previewText = computed(() => {
-      const msg = props.replyTo.msg
+      const msg = messageViewStore.replyingTo?.msg
+      if (!msg) return ''
+
       switch (msg.type) {
         case MessageType.TEXT:
           return msg.textMsg?.content?.slice(0, 50) || '[文本]'
@@ -47,13 +44,19 @@ export default defineComponent({
       }
     })
 
-    return { previewText }
+    return {
+      messageViewStore,
+      previewText
+    }
   },
 })
 </script>
 
 <style lang="less" scoped>
 .reply-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -62,6 +65,7 @@ export default defineComponent({
   border-left: 3px solid #FF7D45;
   border-top: 1px solid #EBEEF5;
   gap: 8px;
+  z-index: 10;
 
   .reply-info {
     flex: 1;

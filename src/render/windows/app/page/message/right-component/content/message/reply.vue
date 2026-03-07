@@ -7,13 +7,19 @@
       </div>
     </div>
     <div class="reply-main">
-      {{ message.msg?.replyMsg?.replyContent }}
+      <template v-if="message.msg?.replyMsg?.replyMsg?.type === 1">
+        {{ message.msg?.replyMsg?.replyMsg?.textMsg?.content }}
+      </template>
+      <template v-else>
+        [回复消息]
+      </template>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent } from 'vue'
+import { MessageType } from 'commonModule/type/ajax/chat'
 
 export default defineComponent({
   name: 'ReplyMessage',
@@ -25,10 +31,25 @@ export default defineComponent({
   },
   setup(props) {
     const originPreview = computed(() => {
-      // 简单处理引用预览，后续可根据 type 展示不同的摘要
       const msg = props.message.msg?.replyMsg?.originMsg
       if (!msg) return ''
-      return '消息记录' // 可以扩展为具体的文字预览
+
+      switch (msg.type) {
+        case MessageType.TEXT:
+          return msg.textMsg?.content || ''
+        case MessageType.IMAGE:
+          return '[图片]'
+        case MessageType.VIDEO:
+          return '[视频]'
+        case MessageType.FILE:
+          return '[文件]'
+        case MessageType.VOICE:
+          return '[语音]'
+        case MessageType.EMOJI:
+          return '[表情]'
+        default:
+          return '[消息]'
+      }
     })
 
     return {

@@ -1,14 +1,16 @@
-// 聊天消息内容类型
 export interface IMessageMsg {
   type: number
   textMsg?: { content: string }
   imageMsg?: { fileKey: string, width: number, height: number } | null
   videoMsg?: { fileKey: string, width: number, height: number, duration: number } | null
-  fileMsg?: { name: string, size: number, url: string, type: string } | null
-  voiceMsg?: { src: string, duration: number } | null
-  emojiMsg?: { emoji: string } | null
-  atMsg?: { content: string, atUsers: string[] } | null
-  replyMsg?: { replyToMessageId: string, replyContent: string } | null
+  fileMsg?: { fileKey: string, fileName: string, size: number, mimeType: string } | null
+  voiceMsg?: { fileKey: string, duration: number, size: number } | null
+  emojiMsg?: { fileKey: string, emojiId: string, packageId: string, width: number, height: number } | null
+  notificationMsg?: { type: number, actors: string[] } | null
+  audioFileMsg?: { fileKey: string, fileName: string, duration: number, size: number } | null
+  withdrawMsg?: { originMsgId: string, originMsg?: any } | null
+  replyMsg?: { originMsgId: string, originMsg?: any, replyMsg?: any } | null
+  callMsg?: { roomId: string, callType: number, status: number, duration: number } | null
 }
 
 // WebSocket 消息发送者信息
@@ -37,12 +39,16 @@ export interface IPrivateMessageSyncBody extends IPrivateMessageReceiveBody {
   // 同步消息与接收消息结构相同
 }
 
-// WebSocket 消息体 - 私聊消息发送
-export interface IPrivateMessageSendBody {
+// WebSocket 消息体 - 聊天消息发送 (统一私聊与群聊)
+export interface IChatMessageSendBody {
   conversationId: string
   messageId: string // 客户端消息ID
   msg: IMessageMsg
+  chatType: 'private' | 'group'
 }
+
+/** @deprecated Use IChatMessageSendBody instead */
+export type IPrivateMessageSendBody = IChatMessageSendBody
 
 // 表更新数据格式
 export interface ITableUpdate {

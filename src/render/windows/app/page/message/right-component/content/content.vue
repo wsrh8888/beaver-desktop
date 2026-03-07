@@ -1,5 +1,6 @@
 <template>
   <div ref="messageContainer" class="chat-messages">
+
     <div v-for="message in messages" :key="message.messageId" class="message" :class="{
       send: message.sender.userId === userStore.getUserId,
       system: message.sender.userId === '',
@@ -18,11 +19,8 @@
       <div class="message-content" @contextmenu.prevent="handleContextMenu($event, message)"
         @click="handleMessageClick($event, message)">
         <!-- 已撤回消息 -->
-        <div v-if="message.status === 2 || message.msg?.type === 10" class="recalled-message">
-          {{ message.msg?.type === 10 ? message.msg?.withdrawMsg?.content : (message.sender.userId ===
-            userStore.getUserId
-            ? '你' : message.sender.nickName) + ' 撤回了一条消息' }}
-        </div>
+        <RecalledMessage v-if="message.msg?.type === 10" :message="message"
+          @re-edit="(text) => $emit('re-edit', text)" />
         <!-- 文本消息组件 -->
         <TextMessage v-else-if="message.msg?.type === 1" :message="message" />
         <!-- 图片消息组件 -->
@@ -90,6 +88,7 @@ import ImageMessage from './message/image.vue'
 import MergedForwardMessage from './message/merged-forward.vue'
 import NotificationMessage from './message/notification.vue'
 import ReplyMessage from './message/reply.vue'
+import RecalledMessage from './message/recalled.vue'
 import TextMessage from './message/text.vue'
 import VideoMessage from './message/video.vue'
 import { getSelectedText, hasTextSelected } from './utils/copy'
@@ -97,6 +96,7 @@ import { MessageContentType } from './utils/data'
 
 export default defineComponent({
   name: 'ChatContent',
+  emits: ['re-edit'],
   components: {
     UserInfo: userInfo,
     ForwardDialog,
@@ -110,6 +110,7 @@ export default defineComponent({
     ImageMessage,
     MergedForwardMessage,
     NotificationMessage,
+    RecalledMessage,
     ReplyMessage,
     VideoMessage,
   },
@@ -144,7 +145,6 @@ export default defineComponent({
 
     // 判断messageViewStore.currentChatId的值是否发生变化
     watch(() => messageViewStore.currentChatId, async (newConversationId) => {
-      console.error('会话变了', newConversationId, messageViewStore.currentChatId)
       if (newConversationId) {
         console.log('会话切换:', newConversationId)
 

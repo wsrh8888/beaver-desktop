@@ -4,26 +4,18 @@
       <MessageLeftComponent />
     </div>
     <div v-show="currentChatId" class="message__right">
-      <ChatHeaderComponent
-        @show-details="handleShowDetails"
-      />
-      <ChatContentComponent />
-      <ChatMenusComponent />
+      <ChatHeaderComponent @show-details="handleShowDetails" />
+      <ChatContentComponent @re-edit="handleReEdit" />
+      <ChatMenusComponent ref="menusRef" />
     </div>
 
     <!-- 各种详情组件放在外层，因为使用了fixed定位 -->
     <!-- 群聊详情 -->
-    <GroupDetailsComponent
-      :visible="currentDetailType === 'group'"
-      @close="hideDetails"
-    />
+    <GroupDetailsComponent :visible="currentDetailType === 'group'" @close="hideDetails" />
 
     <!-- 私聊详情 -->
-    <PrivateDetailsComponent
-      v-if="currentDetailType === 'private'"
-      :visible="currentDetailType === 'private'"
-      @close="hideDetails"
-    />
+    <PrivateDetailsComponent v-if="currentDetailType === 'private'" :visible="currentDetailType === 'private'"
+      @close="hideDetails" />
   </div>
 </template>
 
@@ -53,6 +45,7 @@ export default defineComponent({
     type DetailType = 'private' | 'group' | 'ai'
     const currentDetailType = ref<DetailType | null>(null)
     const messageViewStore = useMessageViewStore()
+    const menusRef = ref<any>(null)
 
     // 统一处理显示详情
     const handleShowDetails = (type: DetailType) => {
@@ -68,11 +61,17 @@ export default defineComponent({
       currentDetailType.value = null
     }
 
+    const handleReEdit = (text: string) => {
+      menusRef.value?.setEditorContent(text)
+    }
+
     return {
       currentChatId,
       currentDetailType,
       handleShowDetails,
       hideDetails,
+      menusRef,
+      handleReEdit,
     }
   },
 })
