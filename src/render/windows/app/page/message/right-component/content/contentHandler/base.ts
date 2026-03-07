@@ -6,7 +6,7 @@ import { deleteMessageApi, recallMessageApi } from 'renderModule/api/chat'
 import Message from 'renderModule/components/ui/message'
 import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import { copyToClipboard as copyTextToClipboard } from '../utils/copy'
+import { copyToClipboard as copyTextToClipboard } from 'renderModule/windows/app/page/message/right-component/content/utils/copy'
 
 export interface IMessageHandler {
   handleCommand(commandId: string, message: any): Promise<void>
@@ -31,35 +31,25 @@ export abstract class BaseMessageHandler implements IMessageHandler {
       Message.error('超过2分钟，无法撤回')
       return
     }
-    try {
-      const res = await recallMessageApi({ messageId: message.messageId })
-      if (res.code === 0) {
-        const messageStore = useMessageStore()
-        messageStore.updateMessageStatus(message.conversationId, message.messageId, 2)
-      }
-      else {
-        Message.error('撤回失败')
-      }
+    const res = await recallMessageApi({ messageId: message.messageId })
+    if (res.code === 0) {
+      const messageStore = useMessageStore()
+      messageStore.updateMessageStatus(message.conversationId, message.messageId, 2)
     }
-    catch {
-      Message.error('撤回失败')
+    else {
+      Message.error(res.msg || '撤回失败')
     }
   }
 
   /** 删除消息（云端+本地，仅对自己生效，对方仍可见） */
   protected async deleteMessage(message: any): Promise<void> {
-    try {
-      const res = await deleteMessageApi({ messageId: message.messageId })
-      if (res.code === 0) {
-        const messageStore = useMessageStore()
-        messageStore.removeMessage(message.conversationId, message.messageId)
-      }
-      else {
-        Message.error('删除失败')
-      }
+    const res = await deleteMessageApi({ messageId: message.messageId })
+    if (res.code === 0) {
+      const messageStore = useMessageStore()
+      await messageStore.removeMessages(message.conversationId, [message.messageId])
     }
-    catch {
-      Message.error('删除失败')
+    else {
+      Message.error(res.msg || '删除失败')
     }
   }
 

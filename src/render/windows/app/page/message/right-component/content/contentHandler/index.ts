@@ -1,7 +1,7 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 
 import type { IMessageHandler } from './base'
-import { MessageContentType } from '../utils/data'
+import { MessageContentType } from 'renderModule/windows/app/page/message/right-component/content/utils/data'
 import { audioHandler } from './audio'
 import { emojiHandler } from './emoji'
 import { fileHandler } from './file'
@@ -35,6 +35,12 @@ export class MessageHandlerFactory {
         return fileHandler
       case MessageContentType.EMOJI:
         return emojiHandler
+      case MessageContentType.CALL:
+      case MessageContentType.WITHDRAW:
+      case MessageContentType.REPLY:
+      case MessageContentType.FORWARD:
+        // 这些类型暂时使用基础处理器或文本处理器的逻辑（如删除、撤回等基础功能）
+        return textHandler
       default:
         console.warn(`未知的消息类型 ${messageType}，使用文本处理器`)
         return textHandler

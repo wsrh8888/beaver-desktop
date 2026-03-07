@@ -105,6 +105,18 @@ class dBServiceMessage extends BaseService {
     ).orderBy(chats.seq, 'asc').all()
     return messages
   }
+
+  /**
+   * @description 批量删除消息（物理删除）
+   */
+  async batchDelete(messageIds: string[]): Promise<void> {
+    if (messageIds.length === 0)
+      return
+
+    await this.db.delete(chats)
+      .where(inArray(chats.messageId as any, messageIds as any))
+      .run()
+  }
 }
 
 // 导出消息服务实例

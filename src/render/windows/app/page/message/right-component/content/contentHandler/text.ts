@@ -1,5 +1,5 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
-import { getSelectedText } from '../utils/copy'
+import { getSelectedText } from 'renderModule/windows/app/page/message/right-component/content/utils/copy'
 import { BaseMessageHandler } from './base'
 
 /**

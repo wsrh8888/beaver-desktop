@@ -1,26 +1,12 @@
 <template>
   <BeaverDialog v-model="visible" title="选择转发对象" width="360px" @close="handleClose">
     <div class="forward-dialog">
-      <input
-        v-model="searchText"
-        class="search-input"
-        placeholder="搜索会话"
-        type="text"
-      >
+      <input v-model="searchText" class="search-input" placeholder="搜索会话" type="text">
       <div class="conversation-list">
-        <div
-          v-for="item in filteredList"
-          :key="item.conversationId"
-          class="conversation-item"
-          :class="{ selected: selectedId === item.conversationId }"
-          @click="selectedId = item.conversationId"
-        >
-          <BeaverImage
-            :file-name="item.avatar"
-            :cache-type="CacheType.USER_AVATAR"
-            :alt="item.nickName"
-            image-class="item-avatar"
-          />
+        <div v-for="item in filteredList" :key="item.conversationId" class="conversation-item"
+          :class="{ selected: selectedId === item.conversationId }" @click="selectedId = item.conversationId">
+          <BeaverImage :file-name="item.avatar" :cache-type="CacheType.USER_AVATAR" :alt="item.nickName"
+            image-class="item-avatar" />
           <span class="item-name">{{ item.nickName }}</span>
           <span v-if="selectedId === item.conversationId" class="check-icon">✓</span>
         </div>
@@ -95,9 +81,10 @@ export default defineComponent({
       const forwardType = target?.chatType === 2 ? 2 : 1
       try {
         const res = await forwardMessageApi({
-          messageId: props.messageId,
+          messageIds: [props.messageId],
           targetId: selectedId.value,
           forwardType,
+          forwardMode: 1, // 逐条转发
         })
         if (res.code === 0) {
           Message.success('已转发')
@@ -153,6 +140,7 @@ export default defineComponent({
     &::-webkit-scrollbar {
       width: 4px;
     }
+
     &::-webkit-scrollbar-thumb {
       background: rgba(0, 0, 0, 0.1);
       border-radius: 2px;

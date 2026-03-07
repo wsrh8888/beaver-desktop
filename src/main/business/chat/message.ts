@@ -7,8 +7,8 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { QueueItem } from '../base/base'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { chatSyncApi } from 'mainModule/api/chat'
-import dBServiceMessage  from 'mainModule/database/services/chat/message'
-import dBServiceUser  from 'mainModule/database/services/user/user'
+import dBServiceMessage from 'mainModule/database/services/chat/message'
+import dBServiceUser from 'mainModule/database/services/user/user'
 
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
@@ -42,72 +42,86 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
    */
   async getChatHistory(_header: ICommonHeader, params: IChatHistoryReq): Promise<IChatHistoryRes> {
     try {
-      
-  
-    const conversationId = params.conversationId
-    const seq = params.seq // 可选，用于加载历史消息（比这个seq更小的消息）
-    const limit = params.limit || 100
 
-    // 调用服务层获取消息数据（纯数据库查询）
-    const messages = await dBServiceMessage.getChatHistory({ conversationId, seq, limit })
 
-    // 判断是否还有更多数据（返回 limit+1 条，如果超过 limit 条说明有更多数据）
-    const hasMore = messages.length > limit
-    const actualMessages = hasMore ? messages.slice(0, limit) : messages
+      const conversationId = params.conversationId
+      const seq = params.seq // 可选，用于加载历史消息（比这个seq更小的消息）
+      const limit = params.limit || 100
 
-    // 业务逻辑：获取所有发送者ID（排除空值）
-    const senderIds = [...new Set(actualMessages.map((m: any) => m.sendUserId).filter((id: string) => id && id.trim()))]
+      // 调用服务层获取消息数据（纯数据库查询）
+      const messages = await dBServiceMessage.getChatHistory({ conversationId, seq, limit })
 
-    // 业务逻辑：获取发送者信息
-    const senderInfoMap = new Map()
-    if (senderIds.length > 0) {
-      try {
-        const senderDetails = await dBServiceUser.getUsersBasicInfo({ userIds: senderIds as string[] })
-        senderDetails.forEach((detail) => {
-          senderInfoMap.set(detail.userId, {
-            userId: detail.userId,
-            nickName: detail.nickName,
-            avatar: detail.avatar,
+      // 判断是否还有更多数据（返回 limit+1 条，如果超过 limit 条说明有更多数据）
+      const hasMore = messages.length > limit
+      const actualMessages = hasMore ? messages.slice(0, limit) : messages
+
+      // 业务逻辑：获取所有发送者ID（排除空值）
+      const senderIds = [...new Set(actualMessages.map((m: any) => m.sendUserId).filter((id: string) => id && id.trim()))]
+
+      // 业务逻辑：获取发送者信息
+      const senderInfoMap = new Map()
+      if (senderIds.length > 0) {
+        try {
+          const senderDetails = await dBServiceUser.getUsersBasicInfo({ userIds: senderIds as string[] })
+          senderDetails.forEach((detail) => {
+            senderInfoMap.set(detail.userId, {
+              userId: detail.userId,
+              nickName: detail.nickName,
+              avatar: detail.avatar,
+            })
           })
-        })
+        }
+        catch (error) {
+          console.error('Failed to get sender details in chat history:', error)
+        }
       }
-      catch (error) {
-        console.error('Failed to get sender details in chat history:', error)
-      }
-    }
 
-    // 业务逻辑：转换数据格式以匹配前端期望的API响应格式
-    const formattedMessages = actualMessages.map((message: any) => {
-      const senderDetail = senderInfoMap.get(message.sendUserId)
+      // 业务逻辑：转换数据格式以匹配前端期望的API响应格式
+      const formattedMessages = actualMessages.map((message: any) => {
+        const senderDetail = senderInfoMap.get(message.sendUserId)
+
+        return {
+          id: message.id,
+          messageId: message.messageId,
+          conversationId: message.conversationId,
+          seq: message.seq,
+          msg: typeof message.msg === 'string' ? JSON.parse(message.msg) : message.msg, // 解析JSON字符串
+          sender: {
+            userId: message.sendUserId || '',
+            avatar: senderDetail?.avatar || '',
+            nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
+          },
+          created_at: new Date(message.createdAt * 1000).toISOString(), // 转换为前端期望的格式
+          status: 0, // 消息状态：正常（只增不修改原则）
+          sendStatus: message.sendStatus || 0, // 发送状态（前端需要）
+        }
+      })
 
       return {
-        id: message.id,
-        messageId: message.messageId,
-        conversationId: message.conversationId,
-        seq: message.seq,
-        msg: typeof message.msg === 'string' ? JSON.parse(message.msg) : message.msg, // 解析JSON字符串
-        sender: {
-          userId: message.sendUserId || '',
-          avatar: senderDetail?.avatar || '',
-          nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
-        },
-        created_at: new Date(message.createdAt * 1000), // 转换为前端期望的格式
-        status: 0, // 消息状态：正常（只增不修改原则）
-        sendStatus: message.sendStatus || 0, // 发送状态（前端需要）
+        count: formattedMessages.length, // 当前页的数量
+        list: formattedMessages,
       }
-    })
-
-    return {
-      count: formattedMessages.length, // 当前页的数量
-      list: formattedMessages,
-    }
-  } catch (error) {
-    console.error('Failed to get chat history:', error)
-    return {
-      count: 0,
-      list: [],
+    } catch (error) {
+      console.error('Failed to get chat history:', error)
+      return {
+        count: 0,
+        list: [],
+      }
     }
   }
+
+  /**
+   * 批量删除消息
+   */
+  async batchDelete(_header: ICommonHeader, params: { messageIds: string[] }): Promise<{ success: boolean }> {
+    try {
+      const { messageIds } = params
+      await dBServiceMessage.batchDelete(messageIds)
+      return { success: true }
+    } catch (error) {
+      console.error('Failed to batch delete messages:', error)
+      return { success: false }
+    }
   }
 
   /**
@@ -152,7 +166,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
           avatar: senderDetail?.avatar || '',
           nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
         },
-        created_at: new Date(message.createdAt * 1000), // 转换为前端期望的格式
+        created_at: new Date(message.createdAt * 1000).toISOString(), // 转换为前端期望的格式
         status: 0, // 消息状态：正常（只增不修改原则）
         sendStatus: message.sendStatus || 1, // 发送状态（客户端使用）
       }

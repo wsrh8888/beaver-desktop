@@ -7,7 +7,7 @@ export interface IParticipant {
 export interface IStartCallReq {
   callType: number // 通话类型：1-私聊, 2-群聊
   callMode: number // 1-语音, 2-视频
-  targetId: string // 目标ID：单聊为对方ID，群聊为群ID
+  conversationId: string // 会话ID：带前缀的完整格式
 }
 
 // 发起音视频通话响应

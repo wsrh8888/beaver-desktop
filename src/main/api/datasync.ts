@@ -27,6 +27,8 @@ import type {
   IGetSyncNotificationInboxesRes,
   IGetSyncNotificationReadCursorsReq,
   IGetSyncNotificationReadCursorsRes,
+  IGetSyncDeletedMessagesReq,
+  IGetSyncDeletedMessagesRes,
 } from 'commonModule/type/ajax/datasync'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
@@ -182,5 +184,16 @@ export const datasyncGetSyncNotificationReadCursorsApi = (data: IGetSyncNotifica
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/datasync/getSyncNotificationReadCursors`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的已删除消息ID列表
+ */
+export const datasyncGetSyncDeletedMessagesApi = (data: IGetSyncDeletedMessagesReq) => {
+  return ajax<IGetSyncDeletedMessagesRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/getSyncDeletedMessages`,
   })
 }

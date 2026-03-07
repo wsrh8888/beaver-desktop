@@ -1,13 +1,21 @@
 <template>
-  <BeaverDialog v-model="visible" title="聊天记录" width="400px" @close="handleClose">
+  <BeaverDialog v-model="visible" :title="details?.title || '聊天记录'" width="450px" @close="handleClose">
     <div class="mfv-container">
-      <div class="mfv-header">{{ data?.title }}</div>
-      <div class="mfv-list">
-        <div v-for="(item, i) in data?.messages" :key="i" class="mfv-item">
-          <span class="mfv-sender">{{ item.senderName }}：</span>
-          <span class="mfv-content">{{ item.content }}</span>
+      <div v-if="loading" class="mfv-loading">
+        加载中...
+      </div>
+      <div v-else-if="details" class="mfv-list">
+        <div v-for="(item, i) in details.list" :key="i" class="mfv-item-wrapper">
+          <div class="mfv-item-header">
+            <span class="mfv-sender">{{ item.sender.nickName }}</span>
+            <span class="mfv-time">{{ item.created_at }}</span>
+          </div>
+          <!-- 递归渲染消息组件，或者简单显示预览 -->
+          <div class="mfv-content-body">
+            {{ item.msg.textMsg?.content || '[其他消息类型]' }}
+          </div>
         </div>
-        <div v-if="!data?.messages?.length" class="mfv-empty">
+        <div v-if="!details.list?.length" class="mfv-empty">
           暂无消息记录
         </div>
       </div>
@@ -16,9 +24,10 @@
 </template>
 
 <script lang="ts">
-import type { IMergedForwardMessage } from 'commonModule/type/ajax/chat'
+import type { IForwardMessage, IGetForwardDetailsRes } from 'commonModule/type/ajax/chat'
 import BeaverDialog from 'renderModule/components/ui/dialog/dialog.vue'
-import { computed, defineComponent } from 'vue'
+import { getForwardDetailsApi } from 'renderModule/api/chat'
+import { computed, defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'MergedForwardViewer',
@@ -29,7 +38,7 @@ export default defineComponent({
       default: false,
     },
     data: {
-      type: Object as () => IMergedForwardMessage | null,
+      type: Object as () => IForwardMessage | null,
       default: null,
     },
   },
@@ -40,11 +49,42 @@ export default defineComponent({
       set: val => emit('update:modelValue', val),
     })
 
-    const handleClose = () => {
-      emit('update:modelValue', false)
+    const loading = ref(false)
+    const details = ref<IGetForwardDetailsRes | null>(null)
+
+    const fetchDetails = async (recordId: string) => {
+      loading.value = true
+      try {
+        const res = await getForwardDetailsApi({ recordId })
+        details.value = res.result
+      } catch (error) {
+        console.error('获取合并转发详情失败:', error)
+      } finally {
+        loading.value = false
+      }
     }
 
-    return { visible, handleClose }
+    watch(() => props.data?.recordId, (newId) => {
+      if (newId && props.modelValue) {
+        fetchDetails(newId)
+      } else if (!newId) {
+        details.value = null
+      }
+    })
+
+    // 当弹窗打开时，如果已经有 recordId，也触发一次
+    watch(() => props.modelValue, (val) => {
+      if (val && props.data?.recordId && !details.value) {
+        fetchDetails(props.data.recordId)
+      }
+    })
+
+    const handleClose = () => {
+      emit('update:modelValue', false)
+      details.value = null
+    }
+
+    return { visible, handleClose, loading, details }
   },
 })
 </script>
@@ -71,6 +111,7 @@ export default defineComponent({
   &::-webkit-scrollbar {
     width: 4px;
   }
+
   &::-webkit-scrollbar-thumb {
     background: rgba(0, 0, 0, 0.1);
     border-radius: 2px;

@@ -41,6 +41,9 @@ class CallMessageRouter {
       case 'RTC_CANCEL':
         this.handleHangup(payload)
         break
+      case 'RTC_REJECT':
+        this.handleRejected(payload)
+        break
       default:
         logger.warn({ text: '未知的 RTC 信令类型', data: { type: payload.type, origin: data.type } }, 'CallMessageRouter')
     }
@@ -57,8 +60,16 @@ class CallMessageRouter {
       },
       callType: data.callType, // 1-私聊, 2-群聊
       callerId: data.callerId,
+      userId: data.userId, // [新增] 告知是谁被邀请了
       conversationId: data.conversationId || '',
       timestamp: data.timestamp
+    })
+
+    // [核心修复] 同时发给 call 窗口
+    sendMainNotification('call', NotificationModule.CALL, NotificationCallCommand.CALL_INVITE, {
+      roomInfo: { roomId: data.roomId },
+      userId: data.userId,
+      status: data.status || 1
     })
 
     logger.info({ text: '已通知 app 窗口更新通话列表', data }, 'CallMessageRouter')
@@ -102,6 +113,22 @@ class CallMessageRouter {
     })
 
     logger.info({ text: '通话已挂断/取消', data }, 'CallMessageRouter')
+  }
+
+  /**
+   * 处理对方拒绝
+   */
+  private handleRejected(data: any) {
+    const payload = {
+      ...data,
+      roomInfo: {
+        roomId: data.roomId,
+      }
+    }
+    // 转发给通话窗口
+    sendMainNotification('call', NotificationModule.CALL, NotificationCallCommand.CALL_REJECTED, payload)
+    sendMainNotification('call-incoming', NotificationModule.CALL, NotificationCallCommand.CALL_REJECTED, payload)
+    logger.info({ text: '对方已拒绝', data }, 'CallMessageRouter')
   }
 }
 

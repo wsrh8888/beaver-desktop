@@ -99,6 +99,12 @@ export const databaseModule: IDatabaseModule = {
         data: params,
       })
     },
+    deleteMessages: async (params: { messageIds: string[] }): Promise<{ success: boolean }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.CHAT, {
+        command: DataChatCommand.DELETE_MESSAGES,
+        data: params,
+      })
+    },
   },
   group: {
     getGroupList: async (params: IGetGroupListReq): Promise<IGroupListRes> => {

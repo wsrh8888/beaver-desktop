@@ -86,7 +86,7 @@ export default defineComponent({
       // 先调用 API 发起通话
       const res = await startCallApi({
         callType: chatType.value === 'private' ? 1 : 2,
-        targetId: targetUserId,
+        conversationId: currentId,
         callMode: type === 'audio' ? 1 : 2,
       })
       let participants = [{

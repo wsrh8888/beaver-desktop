@@ -5,67 +5,38 @@
       <button class="ms-cancel-btn" @click="messageViewStore.exitMultiSelect()">取消</button>
       <span class="ms-count">已选 {{ messageViewStore.selectedMessageIds.length }} 条</span>
       <div class="ms-actions">
-        <button
-          class="ms-action-btn"
-          :disabled="messageViewStore.selectedMessageIds.length === 0"
-          @click="handleBatchForward('each')"
-        >
+        <button class="ms-action-btn" :disabled="messageViewStore.selectedMessageIds.length === 0"
+          @click="handleBatchForward('each')">
           逐条转发
         </button>
-        <button
-          class="ms-action-btn"
-          :disabled="messageViewStore.selectedMessageIds.length === 0"
-          @click="handleBatchForward('merged')"
-        >
+        <button class="ms-action-btn" :disabled="messageViewStore.selectedMessageIds.length === 0"
+          @click="handleBatchForward('merged')">
           合并转发
         </button>
-        <button
-          class="ms-action-btn ms-delete-btn"
-          :disabled="messageViewStore.selectedMessageIds.length === 0"
-          @click="handleBatchDelete"
-        >
+        <button class="ms-action-btn ms-delete-btn" :disabled="messageViewStore.selectedMessageIds.length === 0"
+          @click="handleBatchDelete">
           删除
         </button>
       </div>
     </div>
     <!-- 批量转发对话框 -->
-    <BatchForwardDialog
-      v-if="messageViewStore.isMultiSelectMode"
-      v-model="batchForwardVisible"
-      :message-ids="[...messageViewStore.selectedMessageIds]"
-      :mode="batchForwardMode"
-      :merged-title="mergedTitle"
-      @done="messageViewStore.exitMultiSelect()"
-    />
+    <BatchForwardDialog v-if="messageViewStore.isMultiSelectMode" v-model="batchForwardVisible"
+      :message-ids="[...messageViewStore.selectedMessageIds]" :mode="batchForwardMode" :merged-title="mergedTitle"
+      @done="messageViewStore.exitMultiSelect()" />
     <div v-if="!messageViewStore.isMultiSelectMode" class="resize-handle" @mousedown="startResize" />
-    <div v-if="!messageViewStore.isMultiSelectMode" ref="chatInputAreaRef" class="chat-input-area" :style="{ height: `${height}px` }">
+    <div v-if="!messageViewStore.isMultiSelectMode" ref="chatInputAreaRef" class="chat-input-area"
+      :style="{ height: `${height}px` }">
       <div class="toolbar">
-        <div
-          v-for="tool in toolList"
-          :key="tool.id"
-          class="toolbar-btn"
-          @click="handleToolClick(tool.value)"
-        >
+        <div v-for="tool in toolList" :key="tool.id" class="toolbar-btn" @click="handleToolClick(tool.value)">
           <img :src="tool.icon" :alt="tool.name">
         </div>
       </div>
       <!-- 引用回复预览条 -->
-      <ReplyBar
-        v-if="messageViewStore.replyingTo"
-        :reply-to="messageViewStore.replyingTo"
-        @close="messageViewStore.setReplyingTo(null)"
-      />
+      <ReplyBar v-if="messageViewStore.replyingTo" :reply-to="messageViewStore.replyingTo"
+        @close="messageViewStore.setReplyingTo(null)" />
       <div class="input-row">
-        <div
-          ref="inputRef"
-          class="message-input"
-          contenteditable="true"
-          @input="handleInput"
-          @keydown.enter.prevent="handleSend"
-          @focus="handleFocus"
-          @blur="handleBlur"
-          @paste="handlePaste"
-        />
+        <div ref="inputRef" class="message-input" contenteditable="true" @input="handleInput"
+          @keydown.enter.prevent="handleSend" @focus="handleFocus" @blur="handleBlur" @paste="handlePaste" />
         <div v-show="!inputValue.trim()" class="placeholder">
           输入消息...
         </div>
@@ -75,13 +46,8 @@
           发送
         </button>
       </div>
-      <EmojiComponent
-        v-if="showEmoji"
-        :menu-height="height"
-        @select="handleEmojiSelect"
-        @send="handleEmojiSend"
-        @close="hideEmojiPopup"
-      />
+      <EmojiComponent v-if="showEmoji" :menu-height="height" @select="handleEmojiSelect" @send="handleEmojiSend"
+        @close="hideEmojiPopup" />
     </div>
   </div>
 </template>
@@ -89,14 +55,14 @@
 <script lang="ts">
 import type { UploadResult } from 'renderModule/utils/upload'
 import { MessageType } from 'commonModule/type/ajax/chat'
-import { deleteMessageApi } from 'renderModule/api/chat'
+import { deleteMessagesApi } from 'renderModule/api/chat'
 import Message from 'renderModule/components/ui/message'
 import { getFilesFromClipboardEvent } from 'renderModule/utils/clipboard'
 import { selectAndUploadFile, uploadFile, uploadFileFromBase64 } from 'renderModule/utils/upload'
 import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useMessageSenderStore } from 'renderModule/windows/app/pinia/message/message-sender'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import { computed, defineComponent, onBeforeUnmount, ref } from 'vue'
+import { defineComponent, onBeforeUnmount, ref } from 'vue'
 import { toolList } from './data'
 import BatchForwardDialog from './BatchForwardDialog.vue'
 import EmojiComponent from './emoji/emoji.vue'
@@ -144,21 +110,22 @@ export default defineComponent({
       const conversationId = messageViewStore.currentChatId
       if (!conversationId || ids.length === 0)
         return
-      let successCount = 0
-      for (const id of ids) {
-        try {
-          const res = await deleteMessageApi({ messageId: id })
-          if (res.code === 0) {
-            messageStore.removeMessage(conversationId, id)
-            successCount++
-          }
+
+      try {
+        const res = await deleteMessagesApi({ messageIds: ids })
+        if (res.code === 0) {
+          await messageStore.removeMessages(conversationId, ids)
+          messageViewStore.exitMultiSelect()
+          Message.success(`已删除 ${ids.length} 条消息`)
         }
-        catch {
-          // 单条失败继续删其余
+        else {
+          Message.error(res.msg || '删除失败')
         }
       }
-      messageViewStore.exitMultiSelect()
-      Message.success(`已删除 ${successCount} 条消息`)
+      catch (error) {
+        console.error('批量删除失败:', error)
+        Message.error('删除操作异常')
+      }
     }
 
     const inputValue = ref('')
@@ -315,13 +282,13 @@ export default defineComponent({
       const replyingTo = messageViewStore.replyingTo
       const content = replyingTo
         ? {
-            text,
-            replyMsg: {
-              replyToMessageId: replyingTo.messageId,
-              replyToContent: getReplyPreview(replyingTo),
-              replyToSender: replyingTo.sender.nickName,
-            },
-          }
+          text,
+          replyMsg: {
+            replyToMessageId: replyingTo.messageId,
+            replyToContent: getReplyPreview(replyingTo),
+            replyToSender: replyingTo.sender.nickName,
+          },
+        }
         : text
 
       // 清除引用状态
@@ -590,6 +557,7 @@ export default defineComponent({
   .toolbar {
     display: flex;
     align-items: center;
+
     .toolbar-btn {
       width: 32px;
       height: 32px;
@@ -624,6 +592,7 @@ export default defineComponent({
       }
     }
   }
+
   .input-row {
     display: flex;
     align-items: center;
@@ -678,9 +647,11 @@ export default defineComponent({
       font-size: 14px;
     }
   }
+
   .send-row {
     text-align: right;
     margin-top: 4px;
+
     .send-btn {
       padding: 8px 24px;
       background: #FF7D45;
@@ -689,8 +660,15 @@ export default defineComponent({
       border-radius: 4px;
       font-size: 14px;
       cursor: pointer;
-      &:hover { background: #FF6B3D; }
-      &.disabled { background: #B2BEC3; cursor: not-allowed; }
+
+      &:hover {
+        background: #FF6B3D;
+      }
+
+      &.disabled {
+        background: #B2BEC3;
+        cursor: not-allowed;
+      }
     }
   }
 }

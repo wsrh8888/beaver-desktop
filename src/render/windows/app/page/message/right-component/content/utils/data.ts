@@ -10,5 +10,10 @@ export enum MessageContentType {
   FILE = 4, // 文件消息
   VOICE = 5, // 语音消息
   EMOJI = 6, // 表情消息
-  MERGED_FORWARD = 9, // 合并转发（聊天记录）
+  NOTIFICATION = 7, // 通知消息
+  AUDIO_FILE = 8, // 音频文件消息
+  CALL = 9, // 音视频通话
+  WITHDRAW = 10, // 撤回消息
+  REPLY = 11, // 回复消息
+  FORWARD = 12, // 转发消息（聊天记录）
 }

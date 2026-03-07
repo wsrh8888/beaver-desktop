@@ -1,26 +1,12 @@
 <template>
   <BeaverDialog v-model="visible" title="选择转发对象" width="360px" @close="handleClose">
     <div class="forward-dialog">
-      <input
-        v-model="searchText"
-        class="search-input"
-        placeholder="搜索会话"
-        type="text"
-      >
+      <input v-model="searchText" class="search-input" placeholder="搜索会话" type="text">
       <div class="conversation-list">
-        <div
-          v-for="item in filteredList"
-          :key="item.conversationId"
-          class="conversation-item"
-          :class="{ selected: selectedId === item.conversationId }"
-          @click="selectedId = item.conversationId"
-        >
-          <BeaverImage
-            :file-name="item.avatar"
-            :cache-type="CacheType.USER_AVATAR"
-            :alt="item.nickName"
-            image-class="item-avatar"
-          />
+        <div v-for="item in filteredList" :key="item.conversationId" class="conversation-item"
+          :class="{ selected: selectedId === item.conversationId }" @click="selectedId = item.conversationId">
+          <BeaverImage :file-name="item.avatar" :cache-type="CacheType.USER_AVATAR" :alt="item.nickName"
+            image-class="item-avatar" />
           <span class="item-name">{{ item.nickName }}</span>
           <span v-if="selectedId === item.conversationId" class="check-icon">✓</span>
         </div>
@@ -33,7 +19,8 @@
       <BeaverButton type="default" @click="handleClose">
         取消
       </BeaverButton>
-      <BeaverButton type="primary" :disabled="!selectedId || isForwarding" style="margin-left:8px" @click="handleConfirm">
+      <BeaverButton type="primary" :disabled="!selectedId || isForwarding" style="margin-left:8px"
+        @click="handleConfirm">
         {{ isForwarding ? '转发中...' : '转发' }}
       </BeaverButton>
     </template>
@@ -42,7 +29,7 @@
 
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
-import { forwardMessageApi, mergedForwardApi } from 'renderModule/api/chat'
+import { forwardMessageApi } from 'renderModule/api/chat'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverDialog from 'renderModule/components/ui/dialog/dialog.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -106,34 +93,24 @@ export default defineComponent({
       isForwarding.value = true
 
       try {
-        if (props.mode === 'each') {
-          for (const messageId of props.messageIds) {
-            const res = await forwardMessageApi({ messageId, targetId: selectedId.value, forwardType })
-            if (res.code !== 0) {
-              Message.error('部分消息转发失败')
-              return
-            }
-          }
-          Message.success(`已转发 ${props.messageIds.length} 条消息`)
+        const res = await forwardMessageApi({
+          messageIds: props.messageIds,
+          targetId: selectedId.value,
+          forwardType,
+          forwardMode: props.mode === 'each' ? 1 : 2,
+        })
+
+        if (res.code === 0) {
+          Message.success(props.mode === 'each' ? `已逐条转发 ${props.messageIds.length} 条消息` : '已合并转发')
+          emit('done')
+          handleClose()
         }
         else {
-          const res = await mergedForwardApi({
-            messageIds: props.messageIds,
-            targetId: selectedId.value,
-            forwardType,
-            title: props.mergedTitle,
-          })
-          if (res.code !== 0) {
-            Message.error('合并转发失败')
-            return
-          }
-          Message.success('已合并转发')
+          Message.error(res.msg || '转发失败')
         }
-        emit('done')
-        handleClose()
       }
       catch {
-        Message.error('转发失败')
+        Message.error('转发操作异常')
       }
       finally {
         isForwarding.value = false
@@ -182,6 +159,7 @@ export default defineComponent({
     &::-webkit-scrollbar {
       width: 4px;
     }
+
     &::-webkit-scrollbar-thumb {
       background: rgba(0, 0, 0, 0.1);
       border-radius: 2px;

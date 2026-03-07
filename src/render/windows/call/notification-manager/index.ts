@@ -46,6 +46,13 @@ class NotificationManager {
         }
         break
 
+      case NotificationCallCommand.CALL_INVITE:
+        // 当自己邀请了别人，或者别人邀请了新人到本群聊房间时
+        if (data.userId) {
+          callStore.upsertMember(data.userId, { status: 'calling' })
+        }
+        break
+
       case NotificationCallCommand.CALL_ACCEPTED:
         if (data.userId) callStore.upsertMember(data.userId, { status: 'joined' })
         break

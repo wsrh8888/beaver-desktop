@@ -1,73 +1,47 @@
 <template>
   <div ref="messageContainer" class="chat-messages">
-    <div
-      v-for="message in messages" :key="message.messageId" class="message"
-      :class="{
-        send: message.sender.userId === userStore.getUserId,
-        system: message.sender.userId === '',
-        'multi-selected': messageViewStore.isMultiSelectMode && messageViewStore.selectedMessageIds.includes(message.messageId),
-      }"
-    >
+    <div v-for="message in messages" :key="message.messageId" class="message" :class="{
+      send: message.sender.userId === userStore.getUserId,
+      system: message.sender.userId === '',
+      'multi-selected': messageViewStore.isMultiSelectMode && messageViewStore.selectedMessageIds.includes(message.messageId),
+    }">
       <!-- 多选复选框 -->
-      <div
-        v-if="messageViewStore.isMultiSelectMode && message.sender.userId !== ''"
-        class="message-checkbox"
-        @click.stop="messageViewStore.toggleMessageSelect(message.messageId)"
-      >
-        <span :class="messageViewStore.selectedMessageIds.includes(message.messageId) ? 'cb-checked' : 'cb-unchecked'" />
+      <div v-if="messageViewStore.isMultiSelectMode && message.sender.userId !== ''" class="message-checkbox"
+        @click.stop="messageViewStore.toggleMessageSelect(message.messageId)">
+        <span
+          :class="messageViewStore.selectedMessageIds.includes(message.messageId) ? 'cb-checked' : 'cb-unchecked'" />
       </div>
       <div v-if="message.sender.userId" class="message-avatar">
-        <BeaverImage
-          :cache-type="CacheType.USER_AVATAR"
-          :file-name="message.sender.avatar" :alt="message.sender.nickName"
-          image-class="avatar-image" @click.stop="showUserInfo($event, message)"
-        />
+        <BeaverImage :cache-type="CacheType.USER_AVATAR" :file-name="message.sender.avatar"
+          :alt="message.sender.nickName" image-class="avatar-image" @click.stop="showUserInfo($event, message)" />
       </div>
-      <div
-        class="message-content"
-        @contextmenu.prevent="handleContextMenu($event, message)"
-        @click="handleMessageClick($event, message)"
-      >
+      <div class="message-content" @contextmenu.prevent="handleContextMenu($event, message)"
+        @click="handleMessageClick($event, message)">
         <!-- 已撤回消息 -->
-        <div v-if="message.status === 2" class="recalled-message">
-          {{ message.sender.userId === userStore.getUserId ? '你' : message.sender.nickName }} 撤回了一条消息
+        <div v-if="message.status === 2 || message.msg?.type === 10" class="recalled-message">
+          {{ message.msg?.type === 10 ? message.msg?.withdrawMsg?.content : (message.sender.userId ===
+            userStore.getUserId
+            ? '你' : message.sender.nickName) + ' 撤回了一条消息' }}
         </div>
         <!-- 文本消息组件 -->
-        <TextMessage
-          v-else-if="message.msg.type === 1"
-          :message="message"
-        />
+        <TextMessage v-else-if="message.msg?.type === 1" :message="message" />
         <!-- 图片消息组件 -->
-        <ImageMessage
-          v-else-if="message.msg.type === 2 && message.msg.imageMsg"
-          :message="message"
-        />
+        <ImageMessage v-else-if="message.msg?.type === 2 && message.msg?.imageMsg" :message="message" />
         <!-- 视频消息组件 -->
-        <VideoMessage
-          v-else-if="message.msg.type === 3 && message.msg.videoMsg"
-          :message="message"
-        />
+        <VideoMessage v-else-if="message.msg?.type === 3 && message.msg?.videoMsg" :message="message" />
         <!-- 音频文件消息组件（type=8） -->
-        <AudioFileMessage
-          v-else-if="message.msg.type === 8"
-          :message="message"
-        />
+        <AudioFileMessage v-else-if="message.msg?.type === 8" :message="message" />
         <!-- 通知消息组件（type=7） -->
-        <NotificationMessage
-          v-else-if="message.msg.type === 7 && message.msg.notificationMsg"
-          :message="message"
-        />
+        <NotificationMessage v-else-if="message.msg?.type === 7 && message.msg?.notificationMsg" :message="message" />
         <!-- 表情消息组件（type=6） -->
-        <EmojiMessage
-          v-else-if="message.msg.type === 6 && message.msg.emojiMsg"
-          :message="message"
-        />
-        <!-- 合并转发消息组件（type=9） -->
-        <MergedForwardMessage
-          v-else-if="message.msg.type === 9 && message.msg.mergedForwardMsg"
-          :message="message"
-          @view="openMergedForwardViewer"
-        />
+        <EmojiMessage v-else-if="message.msg?.type === 6 && message.msg?.emojiMsg" :message="message" />
+        <!-- 音视频通话组件（type=9） -->
+        <CallMessage v-else-if="message.msg?.type === 9" :message="message" />
+        <!-- 回复消息组件（type=11） -->
+        <ReplyMessage v-else-if="message.msg?.type === 11" :message="message" />
+        <!-- 合并转发消息组件（type=12） -->
+        <MergedForwardMessage v-else-if="message.msg?.type === 12 && message.msg?.forwardMsg" :message="message"
+          @view="openMergedForwardViewer" />
         <!-- 发送状态指示器 -->
         <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
@@ -75,7 +49,7 @@
             发送中...
           </div>
           <div v-else-if="message.sendStatus === 2" class="status-failed" @click="retrySend(message)">
-            <img class="retry-icon" src="@/render/assets/image/chat/retry.svg" alt="重试" />
+            <img class="retry-icon" src="renderModule/assets/image/chat/retry.svg" alt="重试" />
             发送失败，点击重试
           </div>
         </div> -->
@@ -83,25 +57,14 @@
     </div>
 
     <!-- 右键菜单组件 -->
-    <ContextMenu
-      trigger="manual"
-      :visible="contextMenuVisible"
-      :menu-items="contextMenuItems"
-      :position="contextMenuPosition"
-      @update:visible="contextMenuVisible = $event"
-      @command="(item) => handleMenuCommand(item, currentMessage)"
-    />
+    <ContextMenu trigger="manual" :visible="contextMenuVisible" :menu-items="contextMenuItems"
+      :position="contextMenuPosition" @update:visible="contextMenuVisible = $event"
+      @command="(item) => handleMenuCommand(item, currentMessage)" />
     <UserInfo v-if="userInfo.show" :user-info="userInfo" />
     <!-- 转发对话框 -->
-    <ForwardDialog
-      v-model="forwardDialogVisible"
-      :message-id="forwardMessageId"
-    />
+    <ForwardDialog v-model="forwardDialogVisible" :message-id="forwardMessageId" />
     <!-- 合并转发查看对话框 -->
-    <MergedForwardViewer
-      v-model="mergedForwardViewerVisible"
-      :data="mergedForwardViewerData"
-    />
+    <MergedForwardViewer v-model="mergedForwardViewerVisible" :data="mergedForwardViewerData" />
   </div>
 </template>
 
@@ -121,10 +84,12 @@ import ForwardDialog from './components/ForwardDialog.vue'
 import MergedForwardViewer from './components/MergedForwardViewer.vue'
 import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
+import CallMessage from './message/call.vue'
 import EmojiMessage from './message/emoji.vue'
 import ImageMessage from './message/image.vue'
 import MergedForwardMessage from './message/merged-forward.vue'
 import NotificationMessage from './message/notification.vue'
+import ReplyMessage from './message/reply.vue'
 import TextMessage from './message/text.vue'
 import VideoMessage from './message/video.vue'
 import { getSelectedText, hasTextSelected } from './utils/copy'
@@ -139,12 +104,14 @@ export default defineComponent({
     BeaverImage,
     ContextMenu,
     AudioFileMessage,
+    CallMessage,
     EmojiMessage,
     TextMessage,
     ImageMessage,
     MergedForwardMessage,
-    VideoMessage,
     NotificationMessage,
+    ReplyMessage,
+    VideoMessage,
   },
   setup() {
     const userInfo = ref({
@@ -261,16 +228,11 @@ export default defineComponent({
         return
       }
 
-      try {
-        const result = await MessageHandlerFactory.handleCommand(messageType as MessageContentType, item.id, message)
-        // 转发命令由上层弹窗处理
-        if (result === 'forward') {
-          forwardMessageId.value = message.messageId
-          forwardDialogVisible.value = true
-        }
-      }
-      catch (error) {
-        console.error('处理菜单命令失败:', error, { commandId: item.id, messageType, message })
+      const result = await MessageHandlerFactory.handleCommand(messageType as MessageContentType, String(item.id), message)
+      // 转发命令由上层弹窗处理
+      if (result === 'forward') {
+        forwardMessageId.value = message.messageId
+        forwardDialogVisible.value = true
       }
     }
 
@@ -429,8 +391,10 @@ export default defineComponent({
         }
       }
     }
+
     &.system {
       align-self: center;
+
       .message-content {
         padding: 0;
         background: none;
@@ -511,7 +475,7 @@ export default defineComponent({
     }
 
     // 多选选中状态高亮
-    &.multi-selected > .message-content {
+    &.multi-selected>.message-content {
       outline: 2px solid rgba(255, 125, 69, 0.4);
       background-color: #FFF8F5;
     }

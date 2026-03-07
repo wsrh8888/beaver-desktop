@@ -119,6 +119,7 @@ export default defineComponent({
         })
 
         selectedIds.value.forEach(uid => {
+          console.error('1111111111111111111111111111111', JSON.stringify(selectedIds.value))
           callStore.upsertMember(uid, { status: 'calling' })
         })
 

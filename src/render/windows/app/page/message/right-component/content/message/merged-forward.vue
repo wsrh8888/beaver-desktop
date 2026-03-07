@@ -1,17 +1,16 @@
 <template>
-  <div class="merged-forward-bubble" @click="$emit('view', message.msg.mergedForwardMsg)">
-    <div class="mf-title">{{ message.msg.mergedForwardMsg.title }}</div>
-    <div v-for="(item, i) in previewItems" :key="i" class="mf-item">
-      <span class="mf-sender">{{ item.senderName }}：</span>
-      <span class="mf-content">{{ item.content }}</span>
+  <div class="merged-forward-bubble" @click="$emit('view', message.msg.forwardMsg)">
+    <div class="mf-title">{{ message.msg.forwardMsg.title }}</div>
+    <div class="mf-summary">
+      <span class="mf-count">共 {{ message.msg.forwardMsg.count || 0 }} 条聊天记录</span>
     </div>
     <div class="mf-divider" />
-    <div class="mf-link">查看聊天记录</div>
+    <div class="mf-link">查看聊天记录详情</div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'MergedForwardMessage',
@@ -22,11 +21,8 @@ export default defineComponent({
     },
   },
   emits: ['view'],
-  setup(props) {
-    const previewItems = computed(() => {
-      return (props.message.msg.mergedForwardMsg?.messages ?? []).slice(0, 4)
-    })
-    return { previewItems }
+  setup() {
+    return {}
   },
 })
 </script>
@@ -39,45 +35,54 @@ export default defineComponent({
   user-select: none;
 
   .mf-title {
-    font-size: 13px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 600;
     color: #2D3436;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
-  .mf-item {
-    font-size: 12px;
-    color: #636E72;
-    line-height: 1.6;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .mf-summary {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
 
-    .mf-sender {
-      color: #2D3436;
-    }
-
-    .mf-content {
-      color: #909399;
+    .mf-count {
+      font-size: 12px;
+      color: #636E72;
+      opacity: 0.8;
     }
   }
 
   .mf-divider {
     height: 1px;
-    background: rgba(0, 0, 0, 0.08);
-    margin: 6px 0;
+    background: rgba(0, 0, 0, 0.05);
+    margin: 10px 0;
   }
 
   .mf-link {
     font-size: 12px;
-    color: #909399;
+    color: #636E72;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    &::after {
+      content: '>';
+      font-family: monospace;
+      margin-left: 4px;
+      opacity: 0.5;
+    }
   }
 
-  &:hover .mf-link {
-    color: #636E72;
+  &:hover {
+    background-color: #F8F9FA;
+
+    .mf-link {
+      color: #2D3436;
+    }
   }
 }
 </style>

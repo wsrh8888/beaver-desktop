@@ -49,14 +49,16 @@ export const usecallStore = defineStore('usecallStore', {
 
   actions: {
     /** 更新或新增成员；新成员会异步拉取 nickName/avatar */
-    async upsertMember(userId: string, patch: Partial<CallMember> = {}) {
+    async upsertMember(id: string | number, patch: Partial<CallMember> = {}) {
+      const userId = String(id)
       if (!userId) return
 
       const userStore = useUserStore()
-      let member = this.members.find(m => m.userId === userId)
+      let member = this.members.find(m => String(m.userId) === userId)
 
       const isNew = !member
       if (isNew) {
+        console.error('2222222222222', userId, this.members)
         await userStore.init()
         member = {
           userId,
@@ -81,24 +83,37 @@ export const usecallStore = defineStore('usecallStore', {
       const userStore = useUserStore()
       await userStore.init()
 
-      participants.forEach(p => {
-        const userId = typeof p === 'string' ? p : p.userId
-        if (!userId) return
+      const statusMap: Record<number, CallMember['status']> = {
+        1: 'calling',
+        2: 'joined',
+        3: 'rejected',
+        4: 'busy',
+        5: 'left'
+      }
 
-        const isSelf = userId === userStore.getUserId
-        const incomingStatus = (typeof p === 'object' && p.status) ? p.status : 'calling'
+      participants.forEach(p => {
+        const id = typeof p === 'string' ? p : p.userId
+        if (!id) return
+        const userId = String(id)
+
+        const isSelf = userId === String(userStore.getUserId)
+        let incomingStatus: CallMember['status'] = 'calling'
+        if (typeof p === 'object' && p.status !== undefined) {
+          incomingStatus = statusMap[p.status as number] || 'calling'
+        }
 
         this.upsertMember(userId, { status: isSelf ? 'joined' : incomingStatus })
       })
     },
 
     /** 从 contact 拉取该成员的 nickName、avatar 并写回 member（内部由 upsertMember 触发） */
-    async fetchMemberMetadata(userId: string) {
+    async fetchMemberMetadata(id: string | number) {
+      const userId = String(id)
       const userStore = useUserStore()
       const contactStore = useContactStore()
       await userStore.init()
-      const isMe = userId === userStore.getUserId
-      const member = this.members.find(m => m.userId === userId)
+      const isMe = userId === String(userStore.getUserId)
+      const member = this.members.find(m => String(m.userId) === userId)
       if (!member) return
 
       try {
@@ -133,11 +148,12 @@ export const usecallStore = defineStore('usecallStore', {
     },
 
     /** 按 userId 更新成员，透传 patch；若成员不存在则先 upsert 再赋值 */
-    async updateMemberByUserId(userId: string, patch: Partial<CallMember>) {
-      let member = this.members.find(m => m.userId === userId)
+    async updateMemberByUserId(id: string | number, patch: Partial<CallMember>) {
+      const userId = String(id)
+      let member = this.members.find(m => String(m.userId) === userId)
       if (!member) {
         await this.upsertMember(userId, { status: 'joined' })
-        member = this.members.find(m => m.userId === userId)
+        member = this.members.find(m => String(m.userId) === userId)
       }
       if (member) Object.assign(member, patch)
     },
