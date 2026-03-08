@@ -48,6 +48,12 @@
   <img src="./static/desktop/group-detail.png" width="300" alt="Group Chat Details"/>
   <img src="./static/desktop/image.png" width="300" alt="Image Preview"/>
   <img src="./static/desktop/video.png" width="300" alt="Video Preview"/>
+  <img src="./static/desktop/emoji-store.png" width="300" alt="Emoji Store"/>
+  <img src="./static/desktop/emoji-favorites.png" width="300" alt="Favorite Emojis"/>
+  <img src="./static/desktop/forward.png" width="300" alt="Forward Message"/>
+  <img src="./static/desktop/reply.png" width="300" alt="Reply Message"/>
+  <img src="./static/desktop/multi-select.png" width="300" alt="Multi-select Messages"/>
+  <img src="./static/desktop/call.png" width="300" alt="Audio/Video Call"/>
 </div>
 
 ### 👥 Social Features

@@ -48,6 +48,12 @@
   <img src="./static/desktop/group-detail.png" width="300" alt="群聊详情"/>
   <img src="./static/desktop/image.png" width="300" alt="图片预览"/>
   <img src="./static/desktop/video.png" width="300" alt="视频预览"/>
+  <img src="./static/desktop/emoji-store.png" width="300" alt="表情商店"/>
+  <img src="./static/desktop/emoji-favorites.png" width="300" alt="表情收藏"/>
+  <img src="./static/desktop/forward.png" width="300" alt="消息转发"/>
+  <img src="./static/desktop/reply.png" width="300" alt="消息回复"/>
+  <img src="./static/desktop/multi-select.png" width="300" alt="多选消息"/>
+  <img src="./static/desktop/call.png" width="300" alt="音视频通话"/>
 </div>
 
 ### 👥 社交功能
