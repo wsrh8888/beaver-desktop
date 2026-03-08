@@ -1,7 +1,7 @@
 <template>
   <div class="video-renderer">
-    <video ref="videoEl" autoplay playsinline :class="{ mirrored: isLocal }"></video>
-    <audio ref="audioEl" autoplay playsinline style="display: none;"></audio>
+    <video ref="videoEl" autoplay playsinline :class="{ mirrored: isLocal }" :muted="isLocal"></video>
+    <audio ref="audioEl" autoplay playsinline :muted="isLocal" style="display: none;"></audio>
   </div>
 </template>
 
@@ -31,8 +31,12 @@ export default defineComponent({
     const attachTrack = () => {
       if (props.track && videoEl.value) {
         props.track.attach(videoEl.value)
+        if (props.isLocal) {
+          videoEl.value.muted = true
+        }
       }
-      if (props.audioTrack && audioEl.value) {
+      // 本地音频绝对不能通过喇叭播放自己，否则会产生严重的回音（啸叫/杂音）
+      if (props.audioTrack && audioEl.value && !props.isLocal) {
         props.audioTrack.attach(audioEl.value)
       }
     }
@@ -41,7 +45,7 @@ export default defineComponent({
       if (props.track && videoEl.value) {
         props.track.detach(videoEl.value)
       }
-      if (props.audioTrack && audioEl.value) {
+      if (props.audioTrack && audioEl.value && !props.isLocal) {
         props.audioTrack.detach(audioEl.value)
       }
     }
@@ -60,10 +64,15 @@ export default defineComponent({
       }
       if (newVal && videoEl.value) {
         newVal.attach(videoEl.value)
+        if (props.isLocal) {
+          videoEl.value.muted = true
+        }
       }
     })
 
     watch(() => props.audioTrack, (newVal, oldVal) => {
+      if (props.isLocal) return // 绝对不处理本地音频的播放
+
       if (oldVal && audioEl.value) {
         oldVal.detach(audioEl.value)
       }
