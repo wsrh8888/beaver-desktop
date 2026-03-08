@@ -16,6 +16,8 @@ export type CallMember = {
   sid?: string
   /** 视频轨道（本地/远程共用，markRaw） */
   track?: any
+  /** 音频轨道 */
+  audioTrack?: any
   /** 该成员是否静音（本地/远程都用此字段） */
   isMuted?: boolean
   /** 该成员是否关闭摄像头（本地/远程都用此字段；远程无 track 时也可视为关） */

@@ -18,7 +18,7 @@ export class CallManager {
       adaptiveStream: true,
       dynacast: true,
       videoCaptureDefaults: {
-        resolution: VideoPresets.h1080.resolution,
+        resolution: VideoPresets.h720.resolution,
       },
     })
 
@@ -74,7 +74,10 @@ export class CallManager {
     const me = callStore.members.find(m => m.userId === userStore.getUserId)
     const targetState = !(me?.isMuted ?? false)
 
-    if (this.room?.state !== 'connected') return
+    if (this.room?.state !== 'connected') {
+      console.error('切换静音失败：房间未连接')
+      return
+    }
 
     try {
       await this.room.localParticipant.setMicrophoneEnabled(!targetState)
@@ -138,7 +141,8 @@ export class CallManager {
           })
         } else if (pub.kind === Track.Kind.Audio) {
           callStore.updateMemberByUserId(participant.identity, {
-            isMuted: pub.isMuted
+            isMuted: pub.isMuted,
+            audioTrack: pub.track ? markRaw(pub.track) : undefined
           })
         }
       })
@@ -194,7 +198,8 @@ export class CallManager {
           })
         } else if (track.kind === Track.Kind.Audio) {
           callStore.updateMemberByUserId(participant.identity, {
-            isMuted: false
+            isMuted: false,
+            audioTrack: markRaw(track)
           })
         }
       })
@@ -226,6 +231,9 @@ export class CallManager {
         if (publication.kind === Track.Kind.Video) {
           if (identity) usecallStore().updateMemberByUserId(identity, { track: undefined, isCameraOff: true })
           else usecallStore().updateMemberBySid(publication.trackSid, { track: undefined, isCameraOff: true })
+        } else if (publication.kind === Track.Kind.Audio) {
+          if (identity) usecallStore().updateMemberByUserId(identity, { audioTrack: undefined, isMuted: true })
+          else usecallStore().updateMemberBySid(publication.trackSid, { audioTrack: undefined, isMuted: true })
         }
       })
       .on(RoomEvent.TrackUnpublished, (publication, participant) => {
@@ -233,22 +241,28 @@ export class CallManager {
         if (publication.kind === Track.Kind.Video) {
           if (identity) usecallStore().updateMemberByUserId(identity, { track: undefined, isCameraOff: true })
           else usecallStore().updateMemberBySid(publication.trackSid, { track: undefined, isCameraOff: true })
+        } else if (publication.kind === Track.Kind.Audio) {
+          if (identity) usecallStore().updateMemberByUserId(identity, { audioTrack: undefined, isMuted: true })
+          else usecallStore().updateMemberBySid(publication.trackSid, { audioTrack: undefined, isMuted: true })
         }
       })
-      // 本地轨道发布
       .on(RoomEvent.LocalTrackPublished, (publication) => {
-        if (publication.kind === Track.Kind.Video && publication.track) {
-          const room = this.room
-          if (room?.localParticipant) {
+        const room = this.room
+        if (room?.localParticipant && publication.track) {
+          if (publication.kind === Track.Kind.Video) {
             usecallStore().updateMemberByUserId(room.localParticipant.identity, { track: markRaw(publication.track) })
+          } else if (publication.kind === Track.Kind.Audio) {
+            usecallStore().updateMemberByUserId(room.localParticipant.identity, { audioTrack: markRaw(publication.track) })
           }
         }
       })
       .on(RoomEvent.LocalTrackUnpublished, (publication) => {
-        if (publication.kind === Track.Kind.Video) {
-          const room = this.room
-          if (room?.localParticipant) {
+        const room = this.room
+        if (room?.localParticipant) {
+          if (publication.kind === Track.Kind.Video) {
             usecallStore().updateMemberByUserId(room.localParticipant.identity, { track: undefined })
+          } else if (publication.kind === Track.Kind.Audio) {
+            usecallStore().updateMemberByUserId(room.localParticipant.identity, { audioTrack: undefined })
           }
         }
       })

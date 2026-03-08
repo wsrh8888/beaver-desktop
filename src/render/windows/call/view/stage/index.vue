@@ -4,13 +4,15 @@
     <div class="video-container">
       <div v-if="allTracks.length > 0" class="video-grid" :class="`count-${allTracks.length}`" :style="gridStyle">
         <div v-for="item in allTracks" :key="item.sid" class="grid-item">
-          <!-- 视频画面 -->
-          <div v-if="!item.isCameraOff && item.track" class="video-wrapper">
-            <VideoRenderer :track="item.track" :is-local="item.isLocal" />
+          <!-- 视频画面 (始终用 v-show，确保组件实例存在以承载可能存在的音视频) -->
+          <div v-show="!item.isCameraOff && item.track" class="video-wrapper">
+            <VideoRenderer :track="item.track" :audio-track="item.audioTrack" :is-local="item.isLocal" />
           </div>
 
-          <!-- 占位图 (摄像头关闭或呼叫等待中) -->
-          <div v-else class="camera-off-placeholder">
+          <!-- 仅有音频或摄像头关闭时，仍需挂载含有 audio 标签的组件来发声，如果是显示占位图则显示，如果是显示视频则隐藏 -->
+          <div v-show="item.isCameraOff || !item.track" class="camera-off-placeholder">
+            <VideoRenderer v-if="!item.track && item.audioTrack" :track="null" :audio-track="item.audioTrack"
+              :is-local="item.isLocal" style="display: none;" />
             <div class="avatar-box" :class="{ 'pulse': item.status === 'calling' }">
               <BeaverImage :file-name="item.avatar" image-class="placeholder-avatar"
                 :cache-type="CacheType.USER_AVATAR" />
@@ -65,6 +67,7 @@ export default defineComponent({
           userId,
           identity: member.nickName || userId,
           track: member.track || null,
+          audioTrack: member.audioTrack || null,
           isLocal: isMe,
           isMuted: member.isMuted ?? false,
           isCameraOff: member.isCameraOff ?? (!member.track || member.status !== 'joined'),
