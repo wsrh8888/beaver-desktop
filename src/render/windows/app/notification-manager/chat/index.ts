@@ -20,6 +20,8 @@ class ChatNotificationRouter {
       text: '收到聊天模块通知',
       data: params,
     })
+
+    // 处理标准通知命令
     switch (params.command) {
       case NotificationChatCommand.CONVERSATION_UPDATE:
         await conversationNotificationManager.processConversationUpdate(params.data)

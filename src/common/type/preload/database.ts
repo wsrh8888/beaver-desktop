@@ -72,6 +72,10 @@ export interface IDatabaseModule {
      * 按版本范围获取会话设置
      */
     getChatConversationsByVerRange(params: IChatConversationVerRangeReq): Promise<IChatConversationVerRangeRes>
+    /**
+     * 批量删除消息
+     */
+    deleteMessages(params: { messageIds: string[] }): Promise<{ success: boolean }>
   }
   group: {
     getGroupList(params: IGetGroupListReq): Promise<IGroupListRes>

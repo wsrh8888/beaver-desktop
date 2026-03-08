@@ -5,6 +5,7 @@ import { contextBridge } from 'electron'
 import { appModule } from './core/app'
 import { authModule } from './core/auth'
 import { cacheModule } from './core/cache'
+import { clipboardModule } from './core/clipboard'
 import { databaseModule } from './core/database'
 import { datasyncModule } from './core/datasync'
 import { loggerModule } from './core/logger'
@@ -13,12 +14,15 @@ import { storageModule } from './core/storage'
 import { updateModule } from './core/update'
 import { websocketModule } from './core/websocket'
 import { windowModule } from './core/window'
+import { callModule } from './core/call'
 
 // Define the new electron API structure
 const electronAPI: ElectronAPP = {
   logger: loggerModule,
   window: windowModule,
+  call: callModule,
   app: appModule,
+  clipboard: clipboardModule,
   storage: storageModule,
   update: updateModule,
   cache: cacheModule,

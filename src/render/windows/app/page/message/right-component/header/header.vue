@@ -11,10 +11,10 @@
       </div>
     </div>
     <div class="header-actions">
-      <div class="action-btn" @click="handlePhone">
+      <div class="action-btn" @click="handleCall('audio')">
         <img src="renderModule/assets/image/chat/phone.svg" alt="语音通话">
       </div>
-      <div class="action-btn" @click="handleVideo">
+      <div class="action-btn" @click="handleCall('video')">
         <img src="renderModule/assets/image/chat/video.svg" alt="视频通话">
       </div>
       <div class="action-btn" @click="handleMore">
@@ -28,6 +28,10 @@
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
+import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
+import { startCallApi } from 'renderModule/api/call'
 import { computed, defineComponent, watch } from 'vue'
 
 export default defineComponent({
@@ -38,11 +42,13 @@ export default defineComponent({
   setup(_props, { emit }) {
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
+    const friendStore = useFriendStore()
+    const userStore = useUserStore()
+    const groupStore = useGroupStore()
 
-    const friendInfo = computed(() => {
+    const friendInfo = computed<any>(() => {
       const currentId = messageViewStore.currentChatId
-      console.log('currentId', currentId)
-      return currentId ? conversationStore.getConversationInfo(currentId) : {}
+      return currentId ? conversationStore.getConversationInfo(currentId) || {} : {}
     })
     watch(() => messageViewStore.currentChatId, async (newConversationId) => {
       // 判断当前会话类型
@@ -65,12 +71,58 @@ export default defineComponent({
       return null
     })
 
-    const handlePhone = () => {
-      // 语音通话功能
-    }
+    const handleCall = async (type: 'audio' | 'video') => {
+      const currentId = messageViewStore.currentChatId
+      if (!currentId) return
 
-    const handleVideo = () => {
-      // 视频通话功能
+      // 获取目标 ID：私聊解析出对方 UID，群聊使用会话 ID (即群 ID)
+      const targetUserId = chatType.value === 'private'
+        ? friendStore.getUserIdByConversationId(currentId)
+        : groupStore.getGroupIdByConversationId(currentId)
+
+      // 获取当前用户 ID（发起者）
+      const callerId = userStore.getUserId
+
+      // 先调用 API 发起通话
+      const res = await startCallApi({
+        callType: chatType.value === 'private' ? 1 : 2,
+        conversationId: currentId,
+        callMode: type === 'audio' ? 1 : 2,
+      })
+      let participants = [{
+        userId: callerId,
+        status: "joined",
+      }]
+      if (chatType.value === 'private') {
+        participants.push({
+          userId: targetUserId,
+          status: "calling",
+        })
+      }
+
+      if (res.code === 0) {
+        const { ...roomInfo } = res.result
+
+        console.error('targetUserId', targetUserId)
+
+        // 成功获取房间信息后，打开 Call 窗口 (名单从接口拿)
+        electron?.window.openWindow('call', {
+          params: {
+            baseInfo: {
+              callMode: type,
+              targetId: chatType.value === 'private' ? [targetUserId] : [],
+              callerId: callerId,
+              conversationId: currentId,
+              callType: chatType.value,
+              role: 'caller'
+            },
+            roomInfo,
+            participants: participants
+          }
+        })
+      } else {
+        console.error('发起通话失败:', res.msg)
+      }
     }
 
     // 处理点击更多按钮
@@ -83,8 +135,7 @@ export default defineComponent({
     return {
       friendInfo,
       chatType,
-      handlePhone,
-      handleVideo,
+      handleCall,
       handleMore,
       // 移除 previewOnlineFile
     }

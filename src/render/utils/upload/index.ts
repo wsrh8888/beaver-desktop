@@ -165,3 +165,17 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
     thumbnailKey,
   }
 }
+
+/**
+ * @description: 将裸 base64（无 data URL 前缀）转为 File 并上传，用于截屏等
+ * @param base64 PNG 的 base64 字符串
+ * @param filename 可选文件名，默认 screenshot-{timestamp}.png
+ */
+export const uploadFileFromBase64 = async (
+  base64: string,
+  filename?: string,
+): Promise<UploadResult> => {
+  const name = filename || `screenshot-${Date.now()}.png`
+  const file = base64ToFile(`data:image/png;base64,${base64}`, name)
+  return uploadFile(file)
+}

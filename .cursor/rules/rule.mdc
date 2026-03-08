@@ -6,18 +6,68 @@ alwaysApply: true
 这是一个开源的IM（即时通讯）项目，对标大厂和开源IM产品。
 
 ### 技术架构
-vite+ eluniappectron+vue3
+vite + electron + vue3
 
-### ts别名
+### 文件命名规范
+- 所有文件（包括组件）不能以大写字母开头，如果是多个单词采用驼峰命名（kebab-case 或 lowCamelCase，根据项目习惯，此处恢复为您要求的规范）。
+- 如果文件夹名已包含了某个功能前缀（如 `user`），则子文件不再重复该前缀。
 
-### 文件命名
-- 所有的文件不能以大写字母开头， 如果是多个单词采用驼峰命名
-- 文件名字如果我文件夹已经携带了xx， 这个子文件就不要在携带xxx开头的了
+### CSS 编写
+- 使用 Less，采用嵌套结构开发。
 
-### css的编写
-- 我使用scss， 你的css开发的时候采用嵌套结构
+### Pinia 规范
+- 参考模版（替换 `xx` 为模块名）：
+```typescript
+import { defineStore } from 'pinia'
 
+export const usexxStore = defineStore('usexxStore', {
+  state: () => ({
+  }),
+  getters: {
+  },
+  actions: {
+  },
+})
+```
+
+### 文件与路径
+- 不要编写 .md 文档。
+- 尽可能使用别名（如 `@/`），严禁使用 `../` 之类的相对路径。
+
+### .vue 文件编写规范
+- 严禁使用 `<script lang="ts" setup>`，必须采用 `export default defineComponent` 结构。
+- 标签顺序：`<template>` -> `<script>` -> `<style>`。
+- 严禁直接使用 `<svg>` 标签，必须使用 `<img>` 标签引入 SVG 文件路径。
+
+### 资源管理
+- 严禁使用文本表情包（如 📞、✓），统一使用 SVG 文件。
+- SVG 存放路径：`src/render/assets/images/[module]/[name].svg`。
+- SVG 素材由 AI（我）负责生成/编写。
+
+### 接口规范
+- 数据结构统一为：
+```typescript
+{
+  code: number,
+  msg: string,
+  result: any
+}
+```
+- 接口类型以 `I` 开头，以 `Req` 或 `Res` 结尾。
+- 接口方法名必须包含 `Api` 后缀。
+- 严禁使用 `import * as xxxApi` 语法。
+- 由于底层已统一处理异常，业务代码中严禁写 `try...catch`，直接根据 `code === 0` 判断成功，非 0 则使用 `msg`。
+
+### 文件引入
+- 拒绝使用@/相关的
+- 必须使用相对路径或者下面的路径
+```typescript
+commonModule: path.resolve(__dirname, 'src/common'),
+mainModule: path.resolve(__dirname, 'src/main'),
+renderModule: path.resolve(__dirname, 'src/render'),
+preloadModule: path.resolve(__dirname, 'src/preload'),
+```
 ### 切记
-- 不要过度开发
-- 不要写md文件
-- 尽可能使用别名不要使用../之类的相对路径
+- 拒绝过度开发，保持代码精简。
+- 严格遵循路径别名和文件命名。
+

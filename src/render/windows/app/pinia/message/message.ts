@@ -4,7 +4,6 @@ import { defineStore } from 'pinia'
 import Logger from 'renderModule/utils/logger'
 
 import { useConversationStore } from '../conversation/conversation'
-import { useMessageSenderStore } from './message-sender'
 
 const logger = new Logger('MessageStore')
 /**
@@ -192,16 +191,6 @@ export const useMessageStore = defineStore('useMessageStore', {
         const oldMessage = history[existingIndex]
         history[existingIndex] = { ...oldMessage, ...message }
         console.log(`[MessageStore] 通过messageId更新消息: ${message.messageId}`)
-
-        // 如果消息是从服务器拉取到的（有sendStatus字段），说明状态已确认，清理发送状态
-        if (message.sendStatus) {
-          // 延迟清理，避免立即清理导致的问题
-          setTimeout(() => {
-            const messageSenderStore = useMessageSenderStore()
-            messageSenderStore.cleanupMessageStatus(message.messageId)
-          }, 100)
-        }
-
         return
       }
 
@@ -270,6 +259,45 @@ export const useMessageStore = defineStore('useMessageStore', {
         console.error('拉取消息数据失败:', error)
         throw error
       }
+    },
+
+    /**
+     * @description: 更新消息状态（仅内存，用于实时展示撤回等状态变更）
+     * 不修改本地数据库，撤回状态由同步流中的 WithdrawMsg 指令消息持久化
+     */
+    updateMessageStatus(conversationId: string, messageId: string, status: number) {
+      const history = this.chatHistory.get(conversationId)
+      if (!history)
+        return
+      const message = history.find(m => m.messageId === messageId)
+      if (message) {
+        message.status = status
+      }
+    },
+
+    /**
+     * @description: 批量删除消息（同步删除本地状态和本地数据库）
+     */
+    async removeMessages(conversationId: string, messageIds: string[]) {
+      const history = this.chatHistory.get(conversationId)
+      if (history) {
+        this.chatHistory.set(conversationId, history.filter(m => !messageIds.includes(m.messageId)))
+      }
+
+      // 物理删除本地数据库记录，确保重新进入会话或同步时不会加载已删除的消息
+      try {
+        await (window as any).electron.database.chat.deleteMessages({ messageIds })
+      }
+      catch (error) {
+        console.error('Failed to delete messages from local database:', error)
+      }
+    },
+
+    /**
+     * @deprecated: 请使用 removeMessages
+     */
+    removeMessage(conversationId: string, messageId: string) {
+      this.removeMessages(conversationId, [messageId])
     },
 
     /**

@@ -1,4 +1,4 @@
-import type { GetWsMessageBody, WsType } from '../ws/command'
+import type { IChatMessageSendBody } from '../ws/message-types'
 
 /**
  * @description: WebSocket模块接口
@@ -21,16 +21,8 @@ export interface IWebSocketModule {
 
   chat: {
     /**
-     * @description: 发送私聊消息
+     * @description: 发送聊天消息 (统一通道)
      */
-    privateMessageSend(wsMessage: any): Promise<boolean>
-
-    /**
-     * @description: 发送群聊消息
-     */
-    groupMessageSend<T extends WsType>(
-      conversationId: string,
-      content: GetWsMessageBody<T>
-    ): Promise<boolean>
+    sendMessage(data: IChatMessageSendBody): Promise<boolean>
   }
 }

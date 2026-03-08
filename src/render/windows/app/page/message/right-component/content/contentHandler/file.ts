@@ -16,6 +16,9 @@ class FileHandler extends BaseMessageHandler {
         return this.handleSave(message)
       case 'open':
         return this.handleOpen(message)
+      case 'multiSelect':
+        this.enterMultiSelect(message)
+        return Promise.resolve()
       default:
         console.log('未知的文件消息命令:', commandId)
         return Promise.resolve()
@@ -23,11 +26,11 @@ class FileHandler extends BaseMessageHandler {
   }
 
   getSupportedCommands(): string[] {
-    return ['save', 'open', 'forward', 'delete']
+    return ['save', 'open', 'forward', 'delete', 'multiSelect']
   }
 
   getMenuItems(): ContextMenuItem[] {
-    return this.fileMenuItems
+    return [{ id: 'multiSelect', label: '多选' }]
   }
 
   private async handleSave(message: any): Promise<void> {

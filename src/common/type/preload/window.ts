@@ -11,6 +11,14 @@ export interface IWindowOpenOptions {
    */
   unique?: boolean
   /**
+   * @description: 窗口宽度
+   */
+  width?: number
+  /**
+   * @description: 窗口高度
+   */
+  height?: number
+  /**
    * @description: 窗口参数（用于传递数据）
    */
   params?: Record<string, any>
@@ -44,4 +52,9 @@ export interface IWindowModule {
    * 最大化当前窗口。
    */
   maximize(): void
+
+  /**
+   * 截取当前屏幕（整屏），返回 PNG 的 base64。
+   */
+  captureScreen(): Promise<{ base64: string }>
 }

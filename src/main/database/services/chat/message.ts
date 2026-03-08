@@ -105,6 +105,38 @@ class dBServiceMessage extends BaseService {
     ).orderBy(chats.seq, 'asc').all()
     return messages
   }
+
+  /**
+   * @description 批量删除消息（物理删除）
+   */
+  async batchDelete(messageIds: string[]): Promise<void> {
+    if (messageIds.length === 0)
+      return
+
+    await this.db.delete(chats)
+      .where(inArray(chats.messageId as any, messageIds as any))
+      .run()
+  }
+
+  /**
+   * @description 获取单条消息
+   */
+  async getById(messageId: string): Promise<any> {
+    const result = await this.db.select().from(chats).where(eq(chats.messageId as any, messageId as any)).limit(1).all()
+    return result.length > 0 ? result[0] : null
+  }
+
+  /**
+   * @description 获取某个会话中所有"发送中"的消息（用于 ACK 确认）
+   */
+  async getSendingMessages(conversationId: string): Promise<any[]> {
+    return await this.db.select().from(chats).where(
+      and(
+        eq(chats.conversationId as any, conversationId as any),
+        eq(chats.sendStatus as any, 0), // 0 = SENDING
+      ),
+    ).all()
+  }
 }
 
 // 导出消息服务实例

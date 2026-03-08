@@ -42,6 +42,45 @@ export enum NotificationModule {
    * 通知中心相关数据
    */
   DATABASE_NOTIFICATION = 'database:notification',
+  /**
+   * 通话通知
+   */
+  CALL = 'ws:call',
+}
+
+export enum NotificationCallCommand {
+  /**
+   * 发起来电 (主叫方发起)
+   */
+  CALL_START = 'callStart',
+  /**
+   * 收到来电 (被叫方收到邀请)
+   */
+  CALL_INVITE = 'callInvite',
+  /**
+   * 加入通话 (被叫方点击接听进入)
+   */
+  CALL_JOIN = 'callJoin',
+  /**
+   * 对方同意 (已接听)
+   */
+  CALL_ACCEPTED = 'callAccepted',
+  /**
+   * 对方拒绝
+   */
+  CALL_REJECTED = 'callRejected',
+  /**
+   * 通话挂断
+   */
+  CALL_HANGUP = 'callHangup',
+  /**
+   * 通话取消 (未接前取消)
+   */
+  CALL_CANCELLED = 'callCancelled',
+  /**
+   * 流程结束 (App 列表移除)
+   */
+  CALL_ENDED = 'callEnded',
 }
 
 export enum NotificationFriendCommand {
@@ -179,10 +218,10 @@ export enum NotificationMediaViewerCommand {
  */
 export type AppLifecycleStatus
   = | 'connecting' // WebSocket连接中
-    | 'syncing' // 数据同步中
-    | 'ready' // 应用就绪（隐藏状态条）
-    | 'connect_error' // WebSocket连接错误/断开
-    | 'sync_error' // 数据同步错误
+  | 'syncing' // 数据同步中
+  | 'ready' // 应用就绪（隐藏状态条）
+  | 'connect_error' // WebSocket连接错误/断开
+  | 'sync_error' // 数据同步错误
 
 /**
  * 主进程更新通知渲染进程
@@ -197,6 +236,7 @@ export interface NotificationCommandMap {
   [NotificationModule.SEARCH_TO_VERIFY]: NotificationSearchToVerifyCommand
   [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand
   [NotificationModule.DATABASE_NOTIFICATION]: NotificationNotificationCommand
+  [NotificationModule.CALL]: NotificationCallCommand
 }
 
 export interface INotificationPayload<M extends NotificationModule> {

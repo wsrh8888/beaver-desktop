@@ -27,32 +27,38 @@ class DatabaseChatMessageEventManager {
    * 处理消息表更新通知
    */
   async processMessageUpdate(data: any) {
-    const { conversationId, seq } = data
+    const { conversationId, seq, message, messageId, sendStatus } = data
 
     logger.info({
       text: '收到消息表更新通知',
-      data: { conversationId, seq },
+      data: { conversationId, seq, messageId, sendStatus },
     })
 
     try {
-      // 消息表更新表示有新消息，可以拉取最新消息
       const messageStore = useMessageStore()
 
-      // 根据消息序列号拉取最新消息
-      await messageStore.fetchMessagesBySeqRange(conversationId, seq, seq)
-      setTimeout(async () => {
-        // 处理未读数更新和自动标记已读
-        await this.handleUnreadAndReadStatus(conversationId)
+      // 情况1：主进程直接推过来完整的消息对象 (新消息发送或实时接收)
+      if (message) {
+        messageStore.addMessage(conversationId, message)
+      }
+      // 情况2：仅状态变更 (如超时失败、ACK 成功)
+      else if (messageId && sendStatus !== undefined) {
+        messageStore.addMessage(conversationId, { messageId, sendStatus } as any)
+      }
+      // 情况3：仅有 seq，说明需要从本地库同步 (通常是后台拉取后的增量同步)
+      else if (seq !== undefined) {
+        await messageStore.fetchMessagesBySeqRange(conversationId, seq, seq)
+      }
 
-        logger.info({
-          text: `成功处理消息更新: conversation=${conversationId}, seq=${seq}`,
-        })
-      }, 100)
+      // 后续处理 (未读数等)
+      setTimeout(async () => {
+        await this.handleUnreadAndReadStatus(conversationId)
+      }, 50)
     }
     catch (error) {
       logger.error({
         text: '处理消息表更新失败',
-        data: { conversationId, seq, error: (error as Error).message },
+        data: { conversationId, error: (error as Error).message },
       })
     }
   }

@@ -1,50 +1,43 @@
 <template>
   <div ref="messageContainer" class="chat-messages">
-    <div
-      v-for="message in messages" :key="message.messageId" class="message"
-      :class="{
-        send: message.sender.userId === userStore.getUserId,
-        system: message.sender.userId === '',
-      }"
-    >
-      <div v-if="message.sender.userId" class="message-avatar">
-        <BeaverImage
-          :cache-type="CacheType.USER_AVATAR"
-          :file-name="message.sender.avatar" :alt="message.sender.nickName"
-          image-class="avatar-image" @click.stop="showUserInfo($event, message)"
-        />
+    <div v-for="message in messages" :key="message.messageId" class="message" :class="{
+      send: message.sender.userId === userStore.getUserId,
+      system: message.sender.userId === '',
+      'multi-selected': messageViewStore.isMultiSelectMode && messageViewStore.selectedMessageIds.includes(message.messageId),
+    }">
+      <!-- 多选复选框 -->
+      <div v-if="messageViewStore.isMultiSelectMode && message.sender.userId !== ''" class="message-checkbox"
+        @click.stop="messageViewStore.toggleMessageSelect(message.messageId)">
+        <span
+          :class="messageViewStore.selectedMessageIds.includes(message.messageId) ? 'cb-checked' : 'cb-unchecked'" />
       </div>
-      <div class="message-content" @contextmenu.prevent="handleContextMenu($event, message)">
+      <div v-if="message.sender.userId" class="message-avatar">
+        <BeaverImage :cache-type="CacheType.USER_AVATAR" :file-name="message.sender.avatar"
+          :alt="message.sender.nickName" image-class="avatar-image" @click.stop="showUserInfo($event, message)" />
+      </div>
+      <div class="message-content" @contextmenu.prevent="handleContextMenu($event, message)"
+        @click="handleMessageClick($event, message)">
+        <!-- 已撤回消息 -->
+        <RecalledMessage v-if="message.msg?.type === 10" :msg="message.msg" :sender="(message.sender as any)"
+          @re-edit="(text) => $emit('re-edit', text)" />
         <!-- 文本消息组件 -->
-        <TextMessage
-          v-if="message.msg.type === 1"
-          :message="message"
-        />
+        <TextMessage v-else-if="message.msg?.type === 1" :msg="message.msg" />
         <!-- 图片消息组件 -->
-        <ImageMessage
-          v-else-if="message.msg.type === 2 && message.msg.imageMsg"
-          :message="message"
-        />
+        <ImageMessage v-else-if="message.msg?.type === 2 && message.msg?.imageMsg" :msg="message.msg" />
         <!-- 视频消息组件 -->
-        <VideoMessage
-          v-else-if="message.msg.type === 3 && message.msg.videoMsg"
-          :message="message"
-        />
-        <!-- 音频文件消息组件（type=8 的音频文件消息，用户上传的音频文件） -->
-        <AudioFileMessage
-          v-else-if="message.msg.type === 8"
-          :message="message"
-        />
-        <!-- 通知消息组件（type=7 的系统通知消息） -->
-        <NotificationMessage
-          v-else-if="message.msg.type === 7 && message.msg.notificationMsg"
-          :message="message"
-        />
-        <!-- 表情消息组件（type=6 的表情消息） -->
-        <EmojiMessage
-          v-else-if="message.msg.type === 6 && message.msg.emojiMsg"
-          :message="message"
-        />
+        <VideoMessage v-else-if="message.msg?.type === 3 && message.msg?.videoMsg" :msg="message.msg" />
+        <!-- 音频文件消息组件（type=8） -->
+        <AudioFileMessage v-else-if="message.msg?.type === 8" :msg="message.msg" />
+        <!-- 通知消息组件（type=7） -->
+        <NotificationMessage v-else-if="message.msg?.type === 7 && message.msg?.notificationMsg" :msg="message.msg" />
+        <!-- 表情消息组件（type=6） -->
+        <EmojiMessage v-else-if="message.msg?.type === 6 && message.msg?.emojiMsg" :msg="message.msg" />
+        <!-- 音视频通话组件（type=9） -->
+        <CallMessage v-else-if="message.msg?.type === 9" :msg="message.msg" />
+        <!-- 回复消息组件（type=11） -->
+        <ReplyMessage v-else-if="message.msg?.type === 11" :msg="message.msg" :sender="(message.sender as any)" />
+        <!-- 合并转发消息组件（type=12） -->
+        <MergedForwardMessage v-else-if="message.msg?.type === 12 && message.msg?.forwardMsg" :msg="message.msg" />
         <!-- 发送状态指示器 -->
         <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
@@ -52,7 +45,7 @@
             发送中...
           </div>
           <div v-else-if="message.sendStatus === 2" class="status-failed" @click="retrySend(message)">
-            <img class="retry-icon" src="@/render/assets/image/chat/retry.svg" alt="重试" />
+            <img class="retry-icon" src="renderModule/assets/image/chat/retry.svg" alt="重试" />
             发送失败，点击重试
           </div>
         </div> -->
@@ -60,15 +53,12 @@
     </div>
 
     <!-- 右键菜单组件 -->
-    <ContextMenu
-      trigger="manual"
-      :visible="contextMenuVisible"
-      :menu-items="contextMenuItems"
-      :position="contextMenuPosition"
-      @update:visible="contextMenuVisible = $event"
-      @command="(item) => handleMenuCommand(item, currentMessage)"
-    />
+    <ContextMenu trigger="manual" :visible="contextMenuVisible" :menu-items="contextMenuItems"
+      :position="contextMenuPosition" @update:visible="contextMenuVisible = $event"
+      @command="(item) => handleMenuCommand(item, currentMessage)" />
     <UserInfo v-if="userInfo.show" :user-info="userInfo" />
+    <!-- 转发对话框 -->
+    <ForwardDialog v-model="forwardDialogVisible" :message-id="forwardMessageId" />
   </div>
 </template>
 
@@ -84,28 +74,39 @@ import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import userInfo from './components/userInfo.vue'
+import ForwardDialog from './components/ForwardDialog.vue'
 import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
+import CallMessage from './message/call.vue'
 import EmojiMessage from './message/emoji.vue'
 import ImageMessage from './message/image.vue'
+import MergedForwardMessage from './message/merged-forward.vue'
 import NotificationMessage from './message/notification.vue'
+import ReplyMessage from './message/reply.vue'
+import RecalledMessage from './message/recalled.vue'
 import TextMessage from './message/text.vue'
 import VideoMessage from './message/video.vue'
-import { hasTextSelected } from './utils/copy'
+import { getSelectedText, hasTextSelected } from './utils/copy'
 import { MessageContentType } from './utils/data'
 
 export default defineComponent({
   name: 'ChatContent',
+  emits: ['re-edit'],
   components: {
     UserInfo: userInfo,
+    ForwardDialog,
     BeaverImage,
     ContextMenu,
     AudioFileMessage,
+    CallMessage,
     EmojiMessage,
     TextMessage,
     ImageMessage,
-    VideoMessage,
+    MergedForwardMessage,
     NotificationMessage,
+    RecalledMessage,
+    ReplyMessage,
+    VideoMessage,
   },
   setup() {
     const userInfo = ref({
@@ -126,6 +127,8 @@ export default defineComponent({
     const contextMenuPosition = ref<{ x: number, y: number } | null>(null)
     const contextMenuItems = ref<ContextMenuItem[]>([])
     const currentMessage = ref<any>(null) // 当前右键点击的消息
+    const forwardDialogVisible = ref(false)
+    const forwardMessageId = ref('')
 
     const messages = computed(() => {
       const currentId = messageViewStore.currentChatId
@@ -134,7 +137,6 @@ export default defineComponent({
 
     // 判断messageViewStore.currentChatId的值是否发生变化
     watch(() => messageViewStore.currentChatId, async (newConversationId) => {
-      console.error('会话变了', newConversationId, messageViewStore.currentChatId)
       if (newConversationId) {
         console.log('会话切换:', newConversationId)
 
@@ -156,8 +158,21 @@ export default defineComponent({
     })
 
 
+    // 多选模式下点击消息气泡区域切换选中状态
+    const handleMessageClick = (event: MouseEvent, message: any) => {
+      if (messageViewStore.isMultiSelectMode && message.sender.userId !== '') {
+        event.stopPropagation()
+        messageViewStore.toggleMessageSelect(message.messageId)
+      }
+    }
+
+
     // 处理右键菜单
     const handleContextMenu = (event: MouseEvent, message: any) => {
+      // 多选模式下禁用右键菜单
+      if (messageViewStore.isMultiSelectMode)
+        return
+
       event.preventDefault()
       event.stopPropagation()
 
@@ -167,11 +182,14 @@ export default defineComponent({
       // 获取消息类型
       const messageType = message.msg.type as MessageContentType
 
-      // 检查是否有文本被选中（仅对文本消息有效）
+      // 检查是否有文本被选中（仅对文本消息有效），并在打开菜单时立刻保存选中内容（点击菜单项时选区可能已丢失）
       const hasSelected = messageType === MessageContentType.TEXT && hasTextSelected()
+      if (messageType === MessageContentType.TEXT)
+        (message as any)._selectedText = getSelectedText()
 
-      // 根据消息类型获取菜单项
-      contextMenuItems.value = getMenuItems(messageType, hasSelected)
+      // 根据消息类型获取菜单项（撤回只对自己发的消息显示）
+      const isSender = message.sender.userId === userStore.getUserId
+      contextMenuItems.value = getMenuItems(messageType, hasSelected, isSender)
 
       // 设置菜单位置
       contextMenuPosition.value = {
@@ -197,12 +215,11 @@ export default defineComponent({
         return
       }
 
-      try {
-        // 直接调用处理方法
-        await MessageHandlerFactory.handleCommand(messageType as MessageContentType, item.id, message)
-      }
-      catch (error) {
-        console.error('处理菜单命令失败:', error, { commandId: item.id, messageType, message })
+      const result = await MessageHandlerFactory.handleCommand(messageType as MessageContentType, String(item.id), message)
+      // 转发命令由上层弹窗处理
+      if (result === 'forward') {
+        forwardMessageId.value = message.messageId
+        forwardDialogVisible.value = true
       }
     }
 
@@ -287,13 +304,17 @@ export default defineComponent({
       CacheType,
       messages,
       userStore,
+      messageViewStore,
       messageContainer,
       contextMenuVisible,
       contextMenuPosition,
       contextMenuItems,
       currentMessage,
+      forwardDialogVisible,
+      forwardMessageId,
       handleContextMenu,
       handleMenuCommand,
+      handleMessageClick,
       userInfo,
       showUserInfo,
     }
@@ -348,14 +369,13 @@ export default defineComponent({
         border-bottom-right-radius: 2px;
         margin-right: 8px;
         margin-left: 0;
-
-        :deep(.message-text) {
-          color: white;
-        }
+        color: white;
       }
     }
+
     &.system {
       align-self: center;
+
       .message-content {
         padding: 0;
         background: none;
@@ -383,9 +403,50 @@ export default defineComponent({
       padding: 8px;
       border-radius: 12px;
       position: relative;
-      background-color: #fff;
+      background-color: #FF7D45;
       border-bottom-left-radius: 2px;
+    }
 
+    // 多选模式复选框
+    .message-checkbox {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 20px;
+      flex-shrink: 0;
+      cursor: pointer;
+      align-self: center;
+
+      .cb-unchecked {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border: 2px solid #B2BEC3;
+        border-radius: 50%;
+        background: #fff;
+      }
+
+      .cb-checked {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        background: #FF7D45;
+        position: relative;
+
+        &::after {
+          content: '';
+          position: absolute;
+          left: 4px;
+          top: 2px;
+          width: 5px;
+          height: 8px;
+          border: 2px solid #fff;
+          border-top: none;
+          border-left: none;
+          transform: rotate(45deg);
+        }
+      }
     }
   }
 }

@@ -1,7 +1,7 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 
 import type { IMessageHandler } from './base'
-import { MessageContentType } from '../utils/data'
+import { MessageContentType } from 'renderModule/windows/app/page/message/right-component/content/utils/data'
 import { audioHandler } from './audio'
 import { emojiHandler } from './emoji'
 import { fileHandler } from './file'
@@ -10,8 +10,8 @@ import { textHandler } from './text'
 import { videoHandler } from './video'
 
 // 导出工厂方法
-export function getMenuItems(messageType: MessageContentType, hasTextSelected: boolean = false) {
-  return MessageHandlerFactory.getMenuItems(messageType, hasTextSelected)
+export function getMenuItems(messageType: MessageContentType, hasTextSelected: boolean = false, isSender: boolean = false) {
+  return MessageHandlerFactory.getMenuItems(messageType, hasTextSelected, isSender)
 }
 
 /**
@@ -35,8 +35,13 @@ export class MessageHandlerFactory {
         return fileHandler
       case MessageContentType.EMOJI:
         return emojiHandler
+      case MessageContentType.CALL:
+      case MessageContentType.WITHDRAW:
+      case MessageContentType.REPLY:
+      case MessageContentType.FORWARD:
+        // 这些类型暂时使用基础处理器或文本处理器的逻辑（如删除、撤回等基础功能）
+        return textHandler
       default:
-        // 默认使用文本处理器
         console.warn(`未知的消息类型 ${messageType}，使用文本处理器`)
         return textHandler
     }
@@ -45,15 +50,16 @@ export class MessageHandlerFactory {
   /**
    * 根据消息类型获取对应的菜单项
    */
-  static getMenuItems(messageType: MessageContentType, hasTextSelected: boolean = false): ContextMenuItem[] {
+  static getMenuItems(messageType: MessageContentType, hasTextSelected: boolean = false, isSender: boolean = false): ContextMenuItem[] {
     const handler = this.getHandler(messageType)
-    return handler.getMenuItems(hasTextSelected)
+    return handler.getMenuItems(hasTextSelected, isSender)
   }
 
   /**
    * 直接处理菜单命令
+   * 返回值为 'forward' 字符串时，表示上层需要弹出转发对话框
    */
-  static async handleCommand(messageType: MessageContentType, commandId: string, message: any): Promise<void> {
+  static async handleCommand(messageType: MessageContentType, commandId: string, message: any): Promise<any> {
     const handler = this.getHandler(messageType)
     return handler.handleCommand(commandId, message)
   }

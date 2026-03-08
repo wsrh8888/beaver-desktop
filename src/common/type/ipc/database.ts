@@ -31,6 +31,7 @@ export enum DataChatCommand {
   GET_CHAT_HISTORY = 'chat:getChatHistory',
   GET_CHAT_MESSAGES_BY_SEQ_RANGE = 'chat:getChatMessagesBySeqRange',
   GET_CHAT_CONVERSATIONS_BY_VER_RANGE = 'chat:getChatConversationsByVerRange',
+  DELETE_MESSAGES = 'chat:deleteMessages',
 }
 
 export enum DataEmojiCommand {

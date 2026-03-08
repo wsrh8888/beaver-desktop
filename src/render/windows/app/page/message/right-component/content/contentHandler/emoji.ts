@@ -19,6 +19,9 @@ class EmojiHandler extends BaseMessageHandler {
         return this.handleAddToFavorite(message)
       case 'copy':
         return this.handleCopy(message)
+      case 'multiSelect':
+        this.enterMultiSelect(message)
+        return Promise.resolve()
       default:
         console.log('未知的表情消息命令:', commandId)
         return Promise.resolve()
@@ -26,11 +29,11 @@ class EmojiHandler extends BaseMessageHandler {
   }
 
   getSupportedCommands(): string[] {
-    return ['favorite', 'copy']
+    return ['favorite', 'copy', 'multiSelect']
   }
 
   getMenuItems(): ContextMenuItem[] {
-    return this.emojiMenuItems
+    return [...this.emojiMenuItems, { id: 'multiSelect', label: '多选' }]
   }
 
   private async handleAddToFavorite(message: any): Promise<void> {

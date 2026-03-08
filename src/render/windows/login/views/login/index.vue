@@ -17,10 +17,8 @@
       <div class="form-group">
         <label for="email" class="form-label">{{ LOGIN_CONFIG.email.label }}</label>
         <div class="input-container">
-          <input
-            id="email" v-model.trim="form.email" :type="LOGIN_CONFIG.email.type" class="form-input" :placeholder="LOGIN_CONFIG.email.placeholder"
-            @blur="validateFormField('email')"
-          >
+          <input id="email" v-model.trim="form.email" :type="LOGIN_CONFIG.email.type" class="form-input"
+            :placeholder="LOGIN_CONFIG.email.placeholder" @blur="validateFormField('email')">
         </div>
         <div v-show="errors.email" class="error-message">
           {{ errors.email }}
@@ -30,10 +28,8 @@
       <div class="form-group">
         <label for="password" class="form-label">{{ LOGIN_CONFIG.password.label }}</label>
         <div class="input-container">
-          <input
-            id="password" v-model.trim="form.password" :type="showPassword ? 'text' : 'password'"
-            class="form-input" :placeholder="LOGIN_CONFIG.password.placeholder" @blur="validateFormField('password')"
-          >
+          <input id="password" v-model.trim="form.password" :type="showPassword ? 'text' : 'password'"
+            class="form-input" :placeholder="LOGIN_CONFIG.password.placeholder" @blur="validateFormField('password')">
           <div class="input-icon" @click="toggle('password')">
             <img :src="showPassword ? eyeOffIcon : eyeIcon" alt="toggle password">
           </div>
@@ -91,8 +87,8 @@ export default defineComponent({
     const routerHelper = useRouterHelper()
 
     const form = ref({
-      email: '',
-      password: '',
+      email: '751135385@qq.com',
+      password: '15383645663.rH',
     })
 
     const errors = ref({

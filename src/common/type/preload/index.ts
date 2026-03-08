@@ -1,6 +1,7 @@
 import type { IAppModule } from './app'
 import type { IAuthModule } from './auth'
 import type { ICacheModule } from './cache'
+import type { IClipboardModule } from './clipboard'
 import type { IDatabaseModule } from './database'
 import type { IDatasyncModule } from './datasync'
 import type { ILoggerModule } from './logger'
@@ -9,6 +10,7 @@ import type { IStorageModule } from './storage'
 import type { IUpdateModule } from './update'
 import type { IWebSocketModule } from './websocket'
 import type { IWindowModule } from './window'
+import type { ICallModule } from './call'
 
 /**
  * @description: Electron preload接口
@@ -28,6 +30,11 @@ export interface ElectronAPP {
    * @description: 应用信息模块
    */
   app: IAppModule
+
+  /**
+   * @description: 剪贴板模块（主进程写剪贴板，避免渲染进程权限问题）
+   */
+  clipboard: IClipboardModule
 
   /**
    * @description: 数据存储模块
@@ -68,4 +75,9 @@ export interface ElectronAPP {
    * @description: 认证模块
    */
   auth: IAuthModule
+
+  /**
+   * @description: 通话模块
+   */
+  call: ICallModule
 }

@@ -1,6 +1,7 @@
 import type { IWindowOpenOptions, IWinodwCloseOptions } from 'commonModule/type/preload/window'
 import { WinHook } from 'commonModule/type/ipc/command'
-import { NotificationModule, NotificationMediaViewerCommand } from 'commonModule/type/preload/notification'
+import { NotificationModule, NotificationMediaViewerCommand, NotificationCallCommand } from 'commonModule/type/preload/notification'
+import { getScreenshots } from 'mainModule/utils/capture'
 import { BrowserWindow } from 'electron'
 import appApplication from 'mainModule/application/app'
 import audioApplication from 'mainModule/application/audio'
@@ -11,6 +12,9 @@ import searchApplication from 'mainModule/application/search'
 import updateApplication from 'mainModule/application/updater'
 import verifyApplication from 'mainModule/application/verify'
 import videoApplication from 'mainModule/application/video'
+import callApplication from 'mainModule/application/call'
+import CallIncomingApplication from 'mainModule/application/call-incoming'
+import aiApplication from 'mainModule/application/ai'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
@@ -19,10 +23,12 @@ class WindowHandler {
    * 统一的窗口处理入口（支持同步和异步）
    */
   handle(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, command: WinHook | string, data: any): any {
-    logger.info({ text: '收到render-to-main-msg窗口消息', data: {
-      command,
-      data,
-    } }, 'WindowHandler')
+    logger.info({
+      text: '收到render-to-main-msg窗口消息', data: {
+        command,
+        data,
+      }
+    }, 'WindowHandler')
 
     const name = data?.name || ''
     const options = data?.options || {}
@@ -39,6 +45,8 @@ class WindowHandler {
         break
       case WinHook.OPEN_WINDOW:
         return this.handleOpen(event, name, options)
+      case WinHook.CAPTURE_SCREEN:
+        return this.handleCaptureScreen()
       default:
         console.error(`窗口处理未知命令: ${command}`)
     }
@@ -156,6 +164,15 @@ class WindowHandler {
           updateApplication.createBrowserWindow()
           newWindow = (updateApplication as any).win
           break
+        case 'call':
+          newWindow = callApplication.createBrowserWindow()
+          break
+        case 'call-incoming':
+          newWindow = CallIncomingApplication.createBrowserWindow()
+          break
+        case 'ai':
+          newWindow = aiApplication.createBrowserWindow()
+          break
       }
 
       // 如果创建了新窗口，等待它准备好，然后发送参数
@@ -182,6 +199,22 @@ class WindowHandler {
   }
 
   /**
+   * 打开选区截屏（electron-screenshots），用户确认后返回 PNG base64，取消则 reject
+   */
+  private handleCaptureScreen(): Promise<{ base64: string }> {
+    const screenshots = getScreenshots()
+    return new Promise((resolve, reject) => {
+      screenshots.once('ok', (_e: any, buffer: Buffer) => {
+        resolve({ base64: buffer.toString('base64') })
+      })
+      screenshots.once('cancel', () => {
+        reject(new Error('用户取消截屏'))
+      })
+      screenshots.startCapture()
+    })
+  }
+
+  /**
    * 更新窗口内容（通过notification）
    */
   private updateWindowContent(name: string, params: Record<string, any>): void {
@@ -200,6 +233,17 @@ class WindowHandler {
         break
       case 'updater':
         sendMainNotification(name, NotificationModule.MEDIA_VIEWER, NotificationMediaViewerCommand.UPDATE_UPDATER, params)
+        break
+      case 'call':
+        sendMainNotification(
+          name,
+          NotificationModule.CALL,
+          params.role === 'caller' ? NotificationCallCommand.CALL_START : NotificationCallCommand.CALL_JOIN,
+          params
+        )
+        break
+      case 'call-incoming':
+        sendMainNotification(name, NotificationModule.CALL, NotificationCallCommand.CALL_INVITE, params)
         break
     }
   }

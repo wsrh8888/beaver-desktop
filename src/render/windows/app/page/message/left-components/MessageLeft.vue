@@ -2,21 +2,27 @@
   <div class="message-left">
     <!-- 应用状态显示 -->
     <AppStatusComponent />
+    <!-- 来电列表 -->
+    <IncomingCallList />
 
     <div class="search-container">
       <div class="search-wrapper">
         <input v-model="searchText" type="text" class="search-input" placeholder="搜索">
         <!-- <img class="search-icon" src="renderModule/assets/image/chat/search.svg" alt="search"> -->
       </div>
+      <!-- <div class="ai-entry" @click="openAiWindow">
+        <div class="ai-icon">
+          <span>AI</span>
+        </div>
+      </div> -->
     </div>
+
     <!-- 置顶会话 -->
     <TopConversationsComponent />
 
     <div class="chat-list">
-      <div
-        v-for="chat in chatList" :key="chat.conversationId" class="chat-item"
-        :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)"
-      >
+      <div v-for="chat in chatList" :key="chat.conversationId" class="chat-item"
+        :class="{ active: currentConversationId === chat.conversationId }" @click="handleChatClick(chat)">
         <div class="chat-avatar">
           <BeaverImage :file-name="chat.avatar" :cache-type="CacheType.USER_AVATAR" :alt="chat.nickName" />
         </div>
@@ -57,12 +63,14 @@ import { useConversationStore } from 'renderModule/windows/app/pinia/conversatio
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, ref } from 'vue'
 import TopConversationsComponent from './TopConversations.vue'
+import IncomingCallList from './IncomingCallList.vue'
 
 export default defineComponent({
   components: {
     AppStatusComponent,
     BeaverImage,
     TopConversationsComponent,
+    IncomingCallList
   },
   setup() {
     const conversationStore = useConversationStore()
@@ -77,6 +85,14 @@ export default defineComponent({
       messageViewStore.setCurrentChat(chat.conversationId)
     }
 
+    // 打开AI窗口
+    const openAiWindow = async () => {
+      await electron.window.openWindow('ai', {
+        unique: true,
+        params: {}
+      })
+    }
+
     const currentConversationId = computed(() => messageViewStore.currentChatId)
 
     return {
@@ -84,6 +100,7 @@ export default defineComponent({
       chatList,
       currentConversationId,
       handleChatClick,
+      openAiWindow,
       CacheType,
     }
   },
@@ -102,8 +119,12 @@ export default defineComponent({
   .search-container {
     padding: 16px 16px 12px;
     border-bottom: 1px solid #EBEEF5;
+    display: flex;
+    align-items: center;
+    gap: 8px;
 
     .search-wrapper {
+      flex: 1;
       position: relative;
 
       .search-input {
@@ -136,6 +157,32 @@ export default defineComponent({
         height: 16px;
         color: #B2BEC3;
         pointer-events: none;
+      }
+    }
+
+    .ai-entry {
+      cursor: pointer;
+      transition: all 0.2s;
+
+      &:hover {
+        transform: scale(1.05);
+      }
+
+      .ai-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+
+        span {
+          color: white;
+          font-size: 12px;
+          font-weight: 600;
+        }
       }
     }
   }

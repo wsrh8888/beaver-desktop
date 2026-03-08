@@ -1,6 +1,7 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { addEmojiApi, updateFavoriteEmojiApi } from 'renderModule/api/emoji'
 import { previewOnlineFileApi } from 'renderModule/api/file'
+import Message from 'renderModule/components/ui/message'
 import { BaseMessageHandler } from './base'
 
 /**
@@ -9,7 +10,10 @@ import { BaseMessageHandler } from './base'
 class ImageHandler extends BaseMessageHandler {
   // 图片消息的菜单项
   private imageMenuItems: ContextMenuItem[] = [
-   
+    {
+      id: 'copy',
+      label: '复制',
+    },
     {
       id: 'emoji',
       label: '添加到表情',
@@ -25,6 +29,9 @@ class ImageHandler extends BaseMessageHandler {
         return this.handleAddToEmoji(message)
       case 'download':
         return this.handleDownload(message)
+      case 'multiSelect':
+        this.enterMultiSelect(message)
+        return Promise.resolve()
       default:
         console.log('未知的图片消息命令:', commandId)
         return Promise.resolve()
@@ -32,16 +39,26 @@ class ImageHandler extends BaseMessageHandler {
   }
 
   getSupportedCommands(): string[] {
-    return ['copy', 'emoji', 'download']
+    return ['copy', 'emoji', 'download', 'multiSelect']
   }
 
   getMenuItems(): ContextMenuItem[] {
-    return this.imageMenuItems
+    return [...this.imageMenuItems, { id: 'multiSelect', label: '多选' }]
   }
 
   private async handleCopy(message: any): Promise<void> {
-    // TODO: 复制图片到剪贴板
-    console.log('复制图片功能开发中', message)
+    const fileKey = message?.msg?.imageMsg?.fileKey
+    if (!fileKey) {
+      Message.error('无法获取图片')
+      return
+    }
+    const ok = await window.electron.clipboard.copyImage(fileKey)
+    if (ok) {
+      Message.success('图片已复制到剪贴板')
+    }
+    else {
+      Message.error('复制失败，请重试')
+    }
   }
 
   private async handleAddToEmoji(message: any): Promise<void> {

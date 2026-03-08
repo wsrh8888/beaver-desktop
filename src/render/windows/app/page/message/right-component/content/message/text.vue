@@ -1,23 +1,26 @@
 <template>
-  <div class="message-text selectable" v-html="formattedContent" />
+  <div class="text-message-wrapper">
+    <div class="message-text selectable" v-html="formattedContent" />
+  </div>
 </template>
 
 <script lang="ts">
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { emojiMap } from 'renderModule/windows/app/utils/emoji'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'TextMessage',
   props: {
-    message: {
-      type: Object,
+    msg: {
+      type: Object as PropType<IMessageMsg>,
       required: true,
     },
   },
   setup(props) {
     // 格式化文本消息，将表情符号替换为图片
     const formattedContent = computed(() => {
-      const text = props.message.msg.textMsg?.content
+      const text = props.msg?.textMsg?.content
       if (!text) {
         return ''
       }
@@ -40,12 +43,21 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
+.text-message-wrapper {
+  display: flex;
+  flex-direction: column;
+}
+
+
 .message-text {
   font-size: 13px;
   line-height: 1.5;
   word-break: break-word;
-  color: #2D3436;
+  color: #ffffff;
   padding: 5px;
+  /* 覆盖全局 user-select: none，允许选中文字后复制 */
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 :deep(.message-emoji) {

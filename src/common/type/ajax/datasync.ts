@@ -15,7 +15,7 @@ export enum EDataType {
 }
 
 // 数据同步状态请求
-export interface IDataSyncStatusReq {}
+export interface IDataSyncStatusReq { }
 
 // 数据同步状态响应
 export interface IDataSyncStatusRes {
@@ -159,6 +159,17 @@ export interface IGetSyncChatUserConversationsRes {
 export interface IChatUserConversationVersionItem {
   conversationId: string // 会话ID
   version: number // 用户会话设置版本号
+}
+
+// 获取已删除消息同步请求
+export interface IGetSyncDeletedMessagesReq {
+  since?: number // 从这个时间戳之后开始同步，由于删除不是全局的，这里通常同步“自己发起的删除动作”
+}
+
+// 获取已删除消息同步响应
+export interface IGetSyncDeletedMessagesRes {
+  messageIds: string[] // 被删除的消息ID列表
+  serverTimestamp: number // 服务端处理时间戳
 }
 
 // 获取好友同步请求
