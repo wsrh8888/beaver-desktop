@@ -1,6 +1,5 @@
 <template>
   <div ref="messageContainer" class="chat-messages">
-
     <div v-for="message in messages" :key="message.messageId" class="message" :class="{
       send: message.sender.userId === userStore.getUserId,
       system: message.sender.userId === '',
@@ -448,12 +447,6 @@ export default defineComponent({
           transform: rotate(45deg);
         }
       }
-    }
-
-    // 多选选中状态高亮
-    &.multi-selected>.message-content {
-      outline: 2px solid rgba(255, 125, 69, 0.4);
-      background-color: #FFF8F5;
     }
   }
 }

@@ -257,7 +257,7 @@ export default defineComponent({
 
     .message-content {
       padding: 8px 12px;
-      background: #fff;
+      background-color: #FF7D45;
       border-radius: 12px;
       border-bottom-left-radius: 2px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);

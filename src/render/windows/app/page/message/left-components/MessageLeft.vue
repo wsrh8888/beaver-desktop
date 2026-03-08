@@ -10,11 +10,11 @@
         <input v-model="searchText" type="text" class="search-input" placeholder="搜索">
         <!-- <img class="search-icon" src="renderModule/assets/image/chat/search.svg" alt="search"> -->
       </div>
-      <div class="ai-entry" @click="openAiWindow">
+      <!-- <div class="ai-entry" @click="openAiWindow">
         <div class="ai-icon">
           <span>AI</span>
         </div>
-      </div>
+      </div> -->
     </div>
 
     <!-- 置顶会话 -->
