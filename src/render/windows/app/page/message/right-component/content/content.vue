@@ -19,27 +19,26 @@
       <div class="message-content" @contextmenu.prevent="handleContextMenu($event, message)"
         @click="handleMessageClick($event, message)">
         <!-- 已撤回消息 -->
-        <RecalledMessage v-if="message.msg?.type === 10" :message="message"
+        <RecalledMessage v-if="message.msg?.type === 10" :msg="message.msg" :sender="(message.sender as any)"
           @re-edit="(text) => $emit('re-edit', text)" />
         <!-- 文本消息组件 -->
-        <TextMessage v-else-if="message.msg?.type === 1" :message="message" />
+        <TextMessage v-else-if="message.msg?.type === 1" :msg="message.msg" />
         <!-- 图片消息组件 -->
-        <ImageMessage v-else-if="message.msg?.type === 2 && message.msg?.imageMsg" :message="message" />
+        <ImageMessage v-else-if="message.msg?.type === 2 && message.msg?.imageMsg" :msg="message.msg" />
         <!-- 视频消息组件 -->
-        <VideoMessage v-else-if="message.msg?.type === 3 && message.msg?.videoMsg" :message="message" />
+        <VideoMessage v-else-if="message.msg?.type === 3 && message.msg?.videoMsg" :msg="message.msg" />
         <!-- 音频文件消息组件（type=8） -->
-        <AudioFileMessage v-else-if="message.msg?.type === 8" :message="message" />
+        <AudioFileMessage v-else-if="message.msg?.type === 8" :msg="message.msg" />
         <!-- 通知消息组件（type=7） -->
-        <NotificationMessage v-else-if="message.msg?.type === 7 && message.msg?.notificationMsg" :message="message" />
+        <NotificationMessage v-else-if="message.msg?.type === 7 && message.msg?.notificationMsg" :msg="message.msg" />
         <!-- 表情消息组件（type=6） -->
-        <EmojiMessage v-else-if="message.msg?.type === 6 && message.msg?.emojiMsg" :message="message" />
+        <EmojiMessage v-else-if="message.msg?.type === 6 && message.msg?.emojiMsg" :msg="message.msg" />
         <!-- 音视频通话组件（type=9） -->
-        <CallMessage v-else-if="message.msg?.type === 9" :message="message" />
+        <CallMessage v-else-if="message.msg?.type === 9" :msg="message.msg" />
         <!-- 回复消息组件（type=11） -->
-        <ReplyMessage v-else-if="message.msg?.type === 11" :message="message" />
+        <ReplyMessage v-else-if="message.msg?.type === 11" :msg="message.msg" :sender="(message.sender as any)" />
         <!-- 合并转发消息组件（type=12） -->
-        <MergedForwardMessage v-else-if="message.msg?.type === 12 && message.msg?.forwardMsg" :message="message"
-          @view="openMergedForwardViewer" />
+        <MergedForwardMessage v-else-if="message.msg?.type === 12 && message.msg?.forwardMsg" :msg="message.msg" />
         <!-- 发送状态指示器 -->
         <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
@@ -61,8 +60,6 @@
     <UserInfo v-if="userInfo.show" :user-info="userInfo" />
     <!-- 转发对话框 -->
     <ForwardDialog v-model="forwardDialogVisible" :message-id="forwardMessageId" />
-    <!-- 合并转发查看对话框 -->
-    <MergedForwardViewer v-model="mergedForwardViewerVisible" :data="mergedForwardViewerData" />
   </div>
 </template>
 
@@ -79,7 +76,6 @@ import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import userInfo from './components/userInfo.vue'
 import ForwardDialog from './components/ForwardDialog.vue'
-import MergedForwardViewer from './components/MergedForwardViewer.vue'
 import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
 import CallMessage from './message/call.vue'
@@ -100,7 +96,6 @@ export default defineComponent({
   components: {
     UserInfo: userInfo,
     ForwardDialog,
-    MergedForwardViewer,
     BeaverImage,
     ContextMenu,
     AudioFileMessage,
@@ -135,8 +130,6 @@ export default defineComponent({
     const currentMessage = ref<any>(null) // 当前右键点击的消息
     const forwardDialogVisible = ref(false)
     const forwardMessageId = ref('')
-    const mergedForwardViewerVisible = ref(false)
-    const mergedForwardViewerData = ref<any>(null)
 
     const messages = computed(() => {
       const currentId = messageViewStore.currentChatId
@@ -174,11 +167,6 @@ export default defineComponent({
       }
     }
 
-    // 打开合并转发查看对话框
-    const openMergedForwardViewer = (data: any) => {
-      mergedForwardViewerData.value = data
-      mergedForwardViewerVisible.value = true
-    }
 
     // 处理右键菜单
     const handleContextMenu = (event: MouseEvent, message: any) => {
@@ -325,12 +313,9 @@ export default defineComponent({
       currentMessage,
       forwardDialogVisible,
       forwardMessageId,
-      mergedForwardViewerVisible,
-      mergedForwardViewerData,
       handleContextMenu,
       handleMenuCommand,
       handleMessageClick,
-      openMergedForwardViewer,
       userInfo,
       showUserInfo,
     }
@@ -385,10 +370,7 @@ export default defineComponent({
         border-bottom-right-radius: 2px;
         margin-right: 8px;
         margin-left: 0;
-
-        :deep(.message-text) {
-          color: white;
-        }
+        color: white;
       }
     }
 
@@ -422,14 +404,8 @@ export default defineComponent({
       padding: 8px;
       border-radius: 12px;
       position: relative;
-      background-color: #fff;
+      background-color: #FF7D45;
       border-bottom-left-radius: 2px;
-
-      .recalled-message {
-        font-size: 12px;
-        color: #909399;
-        padding: 2px 4px;
-      }
     }
 
     // 多选模式复选框

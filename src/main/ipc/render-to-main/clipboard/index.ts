@@ -41,8 +41,10 @@ class ClipboardHandler {
     try {
       const urlOrPath = await cacheManager.get(CacheType.USER_IMAGE, fileKey)
       let img: Electron.NativeImage | null = null
+      console.error('11111111111111111111')
+      console.error(urlOrPath)
 
-      if (!urlOrPath.startsWith('file://')) {
+      if (urlOrPath.startsWith('file://')) {
         // 本地：缓存文件路径
         const localPath = fileURLToPath(urlOrPath)
         img = nativeImage.createFromPath(localPath)

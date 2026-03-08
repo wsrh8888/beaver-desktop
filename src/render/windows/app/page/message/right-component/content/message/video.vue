@@ -2,19 +2,15 @@
   <div class="message-video">
     <div :style="{ width: `${videoSize.width}px`, height: `${videoSize.height}px` }" class="video-container">
       <!-- 视频封面 -->
-      <BeaverImage
-        v-if="message.msg.videoMsg.thumbnailKey"
-        :file-name="message.msg.videoMsg.thumbnailKey"
-        alt="视频封面"
-        image-class="video-thumbnail"
-      />
+      <BeaverImage v-if="msg.videoMsg?.thumbnailKey" :file-name="msg.videoMsg?.thumbnailKey" alt="视频封面"
+        image-class="video-thumbnail" />
       <!-- 播放按钮遮罩层 -->
       <div class="video-overlay" @click="handleVideoPlay">
         <div class="play-button">
           <img :src="playerSvg" alt="播放">
         </div>
         <!-- 视频时长 -->
-        <div v-if="message.msg.videoMsg.duration" class="video-duration">
+        <div v-if="msg.videoMsg?.duration" class="video-duration">
           {{ formattedDuration }}
         </div>
       </div>
@@ -23,12 +19,13 @@
 </template>
 
 <script lang="ts">
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { CacheType } from 'commonModule/type/cache/cache'
 import { previewOnlineFileApi } from 'renderModule/api/file'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'VideoMessage',
@@ -36,16 +33,16 @@ export default defineComponent({
     BeaverImage,
   },
   props: {
-    message: {
-      type: Object,
+    msg: {
+      type: Object as PropType<IMessageMsg>,
       required: true,
     },
   },
   setup(props) {
     // 计算视频尺寸
     const videoSize = computed(() => {
-      if (props.message.msg.type === 3 && props.message.msg.videoMsg) {
-        const videoMsg = props.message.msg.videoMsg
+      if (props.msg.type === 3 && props.msg.videoMsg) {
+        const videoMsg = props.msg.videoMsg
         if (videoMsg.width && videoMsg.height) {
           return calculateImageSize(videoMsg.width, videoMsg.height)
         }
@@ -56,7 +53,7 @@ export default defineComponent({
 
     // 格式化视频时长（秒 -> mm:ss）
     const formattedDuration = computed(() => {
-      const duration = props.message.msg.videoMsg?.duration
+      const duration = props.msg.videoMsg?.duration
       if (!duration)
         return ''
       const mins = Math.floor(duration / 60)
@@ -66,9 +63,9 @@ export default defineComponent({
 
     // 处理视频播放
     const handleVideoPlay = async () => {
-      const fileKey = props.message.msg.videoMsg?.fileKey
+      const fileKey = props.msg.videoMsg?.fileKey
       if (!fileKey) {
-        console.error('视频文件ID不能为空', props.message)
+        console.error('视频文件ID不能为空', props.msg)
         return
       }
 

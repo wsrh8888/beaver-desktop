@@ -1,14 +1,15 @@
 <template>
   <div class="message-emoji">
     <div class="emoji-content" :style="{ width: emojiSize.width + 'px', height: emojiSize.height + 'px' }">
-      <BeaverImage :file-name="message.msg.emojiMsg.fileKey" alt="表情" image-class="emoji-image" />
+      <BeaverImage :file-name="msg.emojiMsg?.fileKey || ''" alt="表情" image-class="emoji-image" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import { defineComponent, computed, ref } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'EmojiMessage',
@@ -16,16 +17,16 @@ export default defineComponent({
     BeaverImage,
   },
   props: {
-    message: {
-      type: Object,
+    msg: {
+      type: Object as PropType<IMessageMsg>,
       required: true,
     },
   },
   setup(props) {
     // 计算表情显示尺寸
     const emojiSize = computed(() => {
-      if (props.message.msg.type === 6 && props.message.msg.emojiMsg) {
-        const emojiMsg = props.message.msg.emojiMsg
+      if (props.msg.type === 6 && props.msg.emojiMsg) {
+        const emojiMsg = props.msg.emojiMsg
         const width = emojiMsg.width || 64
         const height = emojiMsg.height || 64
 

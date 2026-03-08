@@ -1,20 +1,18 @@
 <template>
   <div class="call-message">
-    <div class="call-content">
-      <img class="call-icon" src="renderModule/assets/images/chat/call.svg" alt="通话" />
-      <span>音视频通话</span>
-    </div>
+    <span class="call-icon">音视频通话</span>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
+import { defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'CallMessage',
   props: {
-    message: {
-      type: Object,
+    msg: {
+      type: Object as PropType<IMessageMsg>,
       required: true,
     },
   },
@@ -23,20 +21,14 @@ export default defineComponent({
 
 <style lang="less" scoped>
 .call-message {
-  padding: 4px 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: #fff;
 
-  .call-content {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 14px;
-    color: #2D3436;
-
-    .call-icon {
-      width: 16px;
-      height: 16px;
-      object-fit: contain;
-    }
+  .call-icon {
+    padding: 4px;
   }
 }
 </style>

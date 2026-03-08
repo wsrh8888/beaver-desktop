@@ -1,16 +1,76 @@
+export interface ITextMsg {
+  content: string
+}
+
+export interface IImageMsg {
+  fileKey: string
+  width?: number
+  height?: number
+  size?: number
+}
+
+export interface IVideoMsg {
+  fileKey: string
+  width?: number
+  height?: number
+  duration?: number
+  thumbnailKey?: string
+  size?: number
+}
+
+export interface IFileMsg {
+  fileKey: string
+  fileName?: string
+  size?: number
+  mimeType?: string
+}
+
+export interface IEmojiMsg {
+  fileKey: string
+  emojiId: string
+  packageId: string
+  width?: number
+  height?: number
+}
+
+export interface IAudioFileMsg {
+  fileKey: string
+  fileName?: string
+  duration?: number
+  size?: number
+}
+
+export interface IReplyMsg {
+  originMsgId: string
+  originMsg?: IMessageMsg | null
+  replyMsg: IMessageMsg // 回复的消息主体对象 (对应 Go 的 ReplyMsg *Msg)
+}
+
+export interface IVoiceMsg {
+  fileKey: string
+  duration?: number
+  size?: number
+}
+
 export interface IMessageMsg {
   type: number
-  textMsg?: { content: string }
-  imageMsg?: { fileKey: string, width: number, height: number } | null
-  videoMsg?: { fileKey: string, width: number, height: number, duration: number } | null
-  fileMsg?: { fileKey: string, fileName: string, size: number, mimeType: string } | null
-  voiceMsg?: { fileKey: string, duration: number, size: number } | null
-  emojiMsg?: { fileKey: string, emojiId: string, packageId: string, width: number, height: number } | null
+  targetMsgId?: string
+  textMsg?: ITextMsg | null
+  imageMsg?: IImageMsg | null
+  videoMsg?: IVideoMsg | null
+  fileMsg?: IFileMsg | null
+  voiceMsg?: IVoiceMsg | null
+  emojiMsg?: IEmojiMsg | null
+  audioFileMsg?: IAudioFileMsg | null
+  replyMsg?: IReplyMsg | null
   notificationMsg?: { type: number, actors: string[] } | null
-  audioFileMsg?: { fileKey: string, fileName: string, duration: number, size: number } | null
   withdrawMsg?: { originMsgId: string, originMsg?: any } | null
-  replyMsg?: { originMsgId: string, originMsg?: any, replyMsg?: any } | null
-  callMsg?: { roomId: string, callType: number, status: number, duration: number } | null
+  forwardMsg?: {
+    title: string
+    recordId: string
+    count: number
+    msgList?: IMessageMsg[]
+  } | null
 }
 
 // WebSocket 消息发送者信息

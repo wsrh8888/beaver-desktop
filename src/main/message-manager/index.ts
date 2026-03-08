@@ -121,11 +121,6 @@ class MessageManager {
    * @param wsMessage WebSocket 消息
    */
   private handleWsMessage(wsMessage: any) {
-    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    console.log('xxxxxxxxxxxxxxxxxxxxxxxxxxxx')
-    console.log(JSON.parse(JSON.stringify(wsMessage)))
-
     // 如果正在数据同步，加入消息队列
     if (this.isDataSyncing) {
       this.messageQueue.push(wsMessage)
@@ -167,7 +162,6 @@ class MessageManager {
    * @param wsMessage WebSocket 消息
    */
   private processMessage(wsMessage: any, source: 'ws' | 'queue') {
-    console.log('处理消息', JSON.stringify(wsMessage), source)
     switch (wsMessage.command) {
       case 'CHAT_MESSAGE':
         chatMessageRouter.processChatMessage(wsMessage.content)

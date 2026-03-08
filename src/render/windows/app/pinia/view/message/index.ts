@@ -1,5 +1,7 @@
 import type { IChatHistory } from 'commonModule/type/ajax/chat'
+import { CacheType } from 'commonModule/type/cache/cache'
 import { defineStore } from 'pinia'
+import { calculateImageSize } from 'renderModule/utils/image/index'
 import { useConversationStore } from '../../conversation/conversation'
 
 /**
@@ -69,10 +71,18 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
     /**
      * @description: 向当前草稿追加媒体内容 (供外部组件直接调用)
      */
-    appendMediaToDraft(data: { type: string, fileKey: string, info: any, localUrl?: string }) {
+    async appendMediaToDraft(data: { type: string, fileKey: string, info: any }) {
       if (!this.currentChatId) return
 
-      const imgHtml = `<img src="${data.localUrl || ''}" data-file-key="${data.fileKey}" data-type="${data.type}" data-info='${JSON.stringify(data.info)}' class="editor-media-node" contenteditable="false">`
+      // 上传完成后缓存一定存在，直接读取本地路径作为预览 src，无需 hydrateImages 二次补全
+      const src = await window.electron.cache.get(CacheType.USER_IMAGE, data.fileKey) || ''
+
+      // 根据原始尺寸计算编辑器内的展示尺寸（与消息气泡保持一致）
+      const { width, height } = (data.info?.width && data.info?.height)
+        ? calculateImageSize(data.info.width, data.info.height)
+        : { width: 200, height: 200 }
+
+      const imgHtml = `<img src="${src}" data-file-key="${data.fileKey}" data-type="${data.type}" data-info='${JSON.stringify(data.info)}' class="editor-media-node" style="width:${Math.round(width)}px;height:${Math.round(height)}px;" contenteditable="false">`
 
       this.updateDraft(this.currentChatId, {
         html: this.getDraft(this.currentChatId).html + imgHtml

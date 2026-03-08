@@ -58,11 +58,15 @@ export default defineComponent({
     const editorRef = ref<any>(null)
     const chatInputAreaRef = ref<HTMLDivElement | null>(null)
 
-    // 简单的本地状态同步用于发送按钮置灰逻辑
-    const hasTextContent = computed(() => editorRef.value?.hasText || false)
+    // 草稿有内容则发送按钮激活（直接从 Store 读，是唯一数据源）
+    const hasTextContent = computed(() => {
+      const html = messageViewStore.getDraft(messageViewStore.currentChatId || '').html
+      return html.trim().length > 0
+    })
 
     const triggerEditorSend = () => {
-      editorRef.value?.onEnter()
+      // 模拟 Enter 键触发编辑器的 onKeydown
+      editorRef.value?.onKeydown(new KeyboardEvent('keydown', { key: 'Enter' }))
     }
 
     // 高度调整逻辑

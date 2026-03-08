@@ -1,3 +1,5 @@
+import { IMessageMsg } from "../ws/message-types"
+
 export enum MessageType {
   TEXT = 1,
   IMAGE = 2,
@@ -48,18 +50,18 @@ export interface IImageMessage {
 
 export interface IMessage {
   type: MessageType
-  textMsg?: ITextMessage
-  imageMsg?: IImageMessage | null
-  videoMsg?: IVideoMessage | null
-  fileMsg?: IFileMessage | null
-  voiceMsg?: IVoiceMessage | null
-  emojiMsg?: IEmojiMessage | null
-  notificationMsg?: INotificationMessage | null
-  audioFileMsg?: IAudioFileMessage | null
-  replyMsg?: IReplyMessage | null
-  forwardMsg?: IForwardMessage | null
-  withdrawMsg?: IWithdrawMessage | null
-  callMsg?: ICallMessage | null
+  textMsg?: ITextMessage | null | undefined
+  imageMsg?: IImageMessage | null | undefined
+  videoMsg?: IVideoMessage | null | undefined
+  fileMsg?: IFileMessage | null | undefined
+  voiceMsg?: IVoiceMessage | null | undefined
+  emojiMsg?: IEmojiMessage | null | undefined
+  notificationMsg?: INotificationMessage | null | undefined
+  audioFileMsg?: IAudioFileMessage | null | undefined
+  replyMsg?: IReplyMessage | null | undefined
+  forwardMsg?: IForwardMessage | null | undefined
+  withdrawMsg?: IWithdrawMessage | null | undefined
+  callMsg?: ICallMessage | null | undefined
 }
 
 // 视频消息
@@ -112,7 +114,6 @@ export interface INotificationMessage {
 export interface IReplyMessage {
   originMsgId: string // 被回复的消息ID
   originMsg?: IMessage | null // 被回复的消息内容快照
-  replyMsg: IMessage // 回复的消息主体 (可以是文本、图片、视频等递归对象)
 }
 
 
@@ -374,7 +375,7 @@ export interface IChatHistory {
   messageId: string // 客户端消息ID
   conversationId: string // 会话ID
   seq: number // 消息序列号
-  msg: IMessage // 消息内容对象
+  msg: IMessageMsg // 消息内容对象
   sender: ISender // 发送者信息
   created_at: string // 创建时间
   sendStatus?: MessageStatus // 发送状态（本地发送状态）

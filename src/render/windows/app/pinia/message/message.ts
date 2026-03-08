@@ -4,7 +4,6 @@ import { defineStore } from 'pinia'
 import Logger from 'renderModule/utils/logger'
 
 import { useConversationStore } from '../conversation/conversation'
-import { useMessageSenderStore } from './message-sender'
 
 const logger = new Logger('MessageStore')
 /**
@@ -192,16 +191,6 @@ export const useMessageStore = defineStore('useMessageStore', {
         const oldMessage = history[existingIndex]
         history[existingIndex] = { ...oldMessage, ...message }
         console.log(`[MessageStore] 通过messageId更新消息: ${message.messageId}`)
-
-        // 如果消息是从服务器拉取到的（有sendStatus字段），说明状态已确认，清理发送状态
-        if (message.sendStatus) {
-          // 延迟清理，避免立即清理导致的问题
-          setTimeout(() => {
-            const messageSenderStore = useMessageSenderStore()
-            messageSenderStore.cleanupMessageStatus(message.messageId)
-          }, 100)
-        }
-
         return
       }
 
@@ -226,31 +215,6 @@ export const useMessageStore = defineStore('useMessageStore', {
           pagination.currentMinSeq = message.seq
         }
       }
-
-      // 检测 RTC 呼叫信令
-      // if (message.msg?.type === 7 && message.msg?.textMsg?.content?.includes('RTC_INVITE')) {
-      //   try {
-      //     const payload = JSON.parse(message.msg.textMsg.content)
-      //     if (payload.type === 'RTC_INVITE') {
-      //       // 是受邀者且不是自己发起的
-      //       if (payload.callerId !== electron.app.devicedId) { // 这里的判断逻辑需要根据实际情况，比如 userId
-      //         // 打开呼叫窗口
-      //         electron.window.openWindow('call', {
-      //           params: {
-      //             roomId: payload.roomId,
-      //             callType: payload.callType,
-      //             targetId: payload.callerId,
-      //             targetName: message.sender?.nickName || '未知用户',
-      //             targetAvatar: message.sender?.avatar || '',
-      //             role: 'callee'
-      //           }
-      //         })
-      //       }
-      //     }
-      //   } catch (e) {
-      //     console.error('Parse RTC_INVITE fail', e)
-      //   }
-      // }
 
       // 更新会话列表的最新消息预览
       this.updateConversationPreview(conversationId, message)

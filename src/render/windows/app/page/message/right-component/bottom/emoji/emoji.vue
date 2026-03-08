@@ -41,6 +41,10 @@ import storeIcon from 'renderModule/assets/image/emoji/store.svg'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global/index'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message/index'
+import { ChatCore } from 'renderModule/core/message/index'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { MessageType } from 'commonModule/type/ajax/chat'
+import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import EmojiDefaultList from './components/default/index.vue'
 import EmojiFavoriteList from './components/favorite/index.vue'
@@ -59,6 +63,7 @@ export default defineComponent({
     const emojiStore = useEmojiStore()
     const globalStore = useGlobalStore()
     const messageViewStore = useMessageViewStore()
+    const conversationStore = useConversationStore()
 
     const tabs = [
       { id: 'default', label: '默认', icon: defaultIcon },
@@ -92,14 +97,24 @@ export default defineComponent({
     }
 
     const handleEmojiSend = async (emoji: { emojiId: string, fileKey: string, packageId?: string }) => {
-      messageViewStore.appendMediaToDraft({
-        type: 'emoji',
-        fileKey: emoji.fileKey,
-        info: {
+      const conversationId = messageViewStore.currentChatId
+      if (!conversationId) return
+
+      const conversationInfo = conversationStore.getConversationInfo(conversationId)
+      const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
+
+      const msg: IMessageMsg = {
+        type: MessageType.EMOJI,
+        emojiMsg: {
+          fileKey: emoji.fileKey,
           emojiId: emoji.emojiId,
-          packageId: emoji.packageId
+          packageId: emoji.packageId || '',
+          width: 120, // 默认表情包大小，可根据后续需求调整
+          height: 120
         }
-      })
+      }
+
+      await ChatCore.sendMessage(conversationId, msg, chatType)
       messageViewStore.setEmojiShow(false)
     }
 

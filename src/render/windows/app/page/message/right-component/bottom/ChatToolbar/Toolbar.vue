@@ -11,12 +11,17 @@
 import { defineComponent } from 'vue'
 import { toolList } from '../data'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message/index'
+import { ChatCore } from 'renderModule/core/message/index'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { selectAndUploadFile, uploadFileFromBase64 } from 'renderModule/utils/upload'
+import { MessageType } from 'commonModule/type/ajax/chat'
+import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 
 export default defineComponent({
   name: 'Toolbar',
   setup() {
     const messageViewStore = useMessageViewStore()
+    const conversationStore = useConversationStore()
 
     const handleToolClick = async (toolType: string) => {
       switch (toolType) {
@@ -36,6 +41,9 @@ export default defineComponent({
 
     const handleFileUpload = async (toolType: string) => {
       try {
+        const conversationId = messageViewStore.currentChatId
+        if (!conversationId) return
+
         const acceptMap: Record<string, string | undefined> = {
           image: 'image/*',
           video: 'video/*',
@@ -43,19 +51,38 @@ export default defineComponent({
           file: undefined,
         }
         const uploadResults = await selectAndUploadFile(acceptMap[toolType], true)
+
+        const conversationInfo = conversationStore.getConversationInfo(conversationId)
+        const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
+
         for (const res of uploadResults) {
-          messageViewStore.appendMediaToDraft({
-            type: res.type,
-            fileKey: res.fileKey,
-            info: {
-              size: res.size,
-              width: res.style?.width,
-              height: res.style?.height,
-              duration: res.style?.duration,
-              thumbnailKey: res.thumbnailKey
-            },
-            localUrl: '' // 不再依赖 File 对象预览，由各消息组件渲染逻辑处理或后续优化
-          })
+          const msg: IMessageMsg = {
+            type: res.type === 'image' ? MessageType.IMAGE : (res.type === 'video' ? MessageType.VIDEO : (res.type === 'audio' ? MessageType.AUDIO_FILE : MessageType.FILE)),
+            imageMsg: res.type === 'image' ? {
+              fileKey: res.fileKey,
+              width: res.style?.width || 0,
+              height: res.style?.height || 0
+            } : null,
+            videoMsg: res.type === 'video' ? {
+              fileKey: res.fileKey,
+              width: res.style?.width || 0,
+              height: res.style?.height || 0,
+              duration: res.style?.duration || 0
+            } : null,
+            fileMsg: res.type === 'file' ? {
+              fileKey: res.fileKey,
+              fileName: res.originalName || 'file',
+              size: res.size || 0,
+              mimeType: ''
+            } : null,
+            audioFileMsg: res.type === 'audio' ? {
+              fileKey: res.fileKey,
+              fileName: res.originalName || 'audio',
+              duration: res.style?.duration || 0,
+              size: res.size || 0
+            } : null
+          }
+          await ChatCore.sendMessage(conversationId, msg, chatType)
         }
       } catch (error) {
         console.error('文件上传失败:', error)
@@ -64,18 +91,24 @@ export default defineComponent({
 
     const handleScreenshot = async () => {
       try {
+        const conversationId = messageViewStore.currentChatId
+        if (!conversationId) return
+
         const { base64 } = await window.electron.window.captureScreen()
         const uploadResult = await uploadFileFromBase64(base64)
-        messageViewStore.appendMediaToDraft({
-          type: 'image',
-          fileKey: uploadResult.fileKey,
-          info: {
-            size: uploadResult.size,
-            width: uploadResult.style?.width,
-            height: uploadResult.style?.height
-          },
-          localUrl: `data:image/png;base64,${base64}`
-        })
+
+        const conversationInfo = conversationStore.getConversationInfo(conversationId)
+        const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
+
+        const msg: IMessageMsg = {
+          type: MessageType.IMAGE,
+          imageMsg: {
+            fileKey: uploadResult.fileKey,
+            width: uploadResult.style?.width || 0,
+            height: uploadResult.style?.height || 0
+          }
+        }
+        await ChatCore.sendMessage(conversationId, msg, chatType)
       } catch (error) {
         console.error('截屏失败:', error)
       }

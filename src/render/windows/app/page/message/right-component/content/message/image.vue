@@ -1,22 +1,19 @@
 <template>
   <div class="message-image">
     <div :style="{ width: `${imageSize.width}px`, height: `${imageSize.height}px` }">
-      <BeaverImage
-        :file-name="message.msg.imageMsg.fileKey"
-        alt="图片"
-        image-class="message-image-content"
-        @click="handleImageClick"
-      />
+      <BeaverImage :file-name="msg.imageMsg?.fileKey" alt="图片" image-class="message-image-content"
+        @click="handleImageClick" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { CacheType } from 'commonModule/type/cache/cache'
 import { previewOnlineFileApi } from 'renderModule/api/file'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'ImageMessage',
@@ -24,16 +21,16 @@ export default defineComponent({
     BeaverImage,
   },
   props: {
-    message: {
-      type: Object,
+    msg: {
+      type: Object as PropType<IMessageMsg>,
       required: true,
     },
   },
   setup(props) {
     // 计算图片尺寸
     const imageSize = computed(() => {
-      if (props.message.msg.type === 2 && props.message.msg.imageMsg) {
-        const imageMsg = props.message.msg.imageMsg
+      if (props.msg.type === 2 && props.msg.imageMsg) {
+        const imageMsg = props.msg.imageMsg
         const { width, height } = imageMsg || {}
         if (width && height) {
           return calculateImageSize(width, height)
@@ -45,7 +42,7 @@ export default defineComponent({
 
     // 处理图片点击
     const handleImageClick = async () => {
-      const fileKey = props.message.msg.imageMsg?.fileKey
+      const fileKey = props.msg.imageMsg?.fileKey
       if (!fileKey)
         return
 

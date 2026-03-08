@@ -32,31 +32,33 @@
 </template>
 
 <script lang="ts">
+import { CacheType } from 'commonModule/type/cache/cache'
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { previewOnlineFileApi } from 'renderModule/api/file'
 import AudioIconSvg from 'renderModule/assets/image/chat/audio-icon.svg'
 import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'AudioFileMessage',
   components: {
   },
   props: {
-    message: {
-      type: Object,
+    msg: {
+      type: Object as PropType<IMessageMsg>,
       required: true,
     },
   },
   setup(props) {
     // 获取文件名
     const fileName = computed(() => {
-      return props.message.msg.audioFileMsg?.fileName || '未知文件'
+      return props.msg.audioFileMsg?.fileName || '未知文件'
     })
 
     // 获取文件大小
     const fileSize = computed(() => {
-      return props.message.msg.audioFileMsg?.size || null
+      return props.msg.audioFileMsg?.size || null
     })
 
     // 格式化文件大小
@@ -71,7 +73,7 @@ export default defineComponent({
 
     // 处理播放
     const handlePlay = async () => {
-      const fileKey = props.message.msg.audioFileMsg?.fileName
+      const fileKey = props.msg.audioFileMsg?.fileName
       if (!fileKey)
         return
 
@@ -79,7 +81,7 @@ export default defineComponent({
         // 获取音频URL（优先使用缓存，否则使用在线URL）
         let audioUrl = previewOnlineFileApi(fileKey)
         try {
-          const cachedUrl = await electron.cache.get('user_avatar', fileKey)
+          const cachedUrl = await electron.cache.get(CacheType.USER_IMAGE, fileKey)
           if (cachedUrl) {
             audioUrl = cachedUrl
           }
@@ -104,7 +106,7 @@ export default defineComponent({
 
     // 处理下载
     const handleDownload = () => {
-      const fileKey = props.message.msg.audioFileMsg?.fileName
+      const fileKey = props.msg.audioFileMsg?.fileName
       console.log('下载文件:', fileKey)
       // TODO: 实现文件下载功能
     }
@@ -160,13 +162,11 @@ export default defineComponent({
       background-image:
         radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
         radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-        repeating-linear-gradient(
-          45deg,
+        repeating-linear-gradient(45deg,
           transparent,
           transparent 8px,
           rgba(255, 255, 255, 0.03) 8px,
-          rgba(255, 255, 255, 0.03) 16px
-        );
+          rgba(255, 255, 255, 0.03) 16px);
       opacity: 0.5;
     }
 

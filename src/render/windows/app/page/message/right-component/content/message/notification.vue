@@ -5,15 +5,16 @@
 </template>
 
 <script lang="ts">
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { useContactStore } from 'renderModule/windows/app/pinia/contact/contact'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
   name: 'NotificationMessage',
   props: {
-    message: {
-      type: Object,
+    msg: {
+      type: Object as PropType<IMessageMsg>,
       required: true,
     },
   },
@@ -23,7 +24,7 @@ export default defineComponent({
 
     // 根据通知类型和actors生成通知文本
     const notificationText = computed(() => {
-      const notificationMsg = props.message.msg.notificationMsg
+      const notificationMsg = props.msg.notificationMsg
       if (!notificationMsg) {
         return '[通知消息]'
       }
@@ -87,7 +88,7 @@ export default defineComponent({
 
 .notification-text {
   font-size: 12px;
-  color: #909399;
+  color: #ffffff;
   text-align: center;
   line-height: 1.5;
 }

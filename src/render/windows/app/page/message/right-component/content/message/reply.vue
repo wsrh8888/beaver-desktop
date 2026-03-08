@@ -1,59 +1,64 @@
 <template>
   <div class="reply-message">
-    <div v-if="message.msg?.replyMsg?.originMsg" class="reply-origin">
+    <div v-if="msg.replyMsg?.originMsg" class="reply-origin">
       <div class="origin-content">
-        <span class="origin-tag">引用：</span>
-        <span class="origin-text">{{ originPreview }}</span>
+        <TextMessage v-if="msg.replyMsg.originMsg.type === MessageType.TEXT" :msg="msg.replyMsg.originMsg" />
+        <ImageMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.IMAGE" :msg="msg.replyMsg.originMsg" />
+        <VideoMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.VIDEO" :msg="msg.replyMsg.originMsg" />
+        <EmojiMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.EMOJI" :msg="msg.replyMsg.originMsg" />
+        <AudioFileMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.AUDIO_FILE"
+          :msg="msg.replyMsg.originMsg" />
+        <!-- 如果被回复的消息也是一条回复，则展示那条回复的内容主体 -->
+        <ReplyMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.REPLY" :msg="msg.replyMsg.originMsg"
+          :sender="sender" />
       </div>
     </div>
     <div class="reply-main">
-      <template v-if="message.msg?.replyMsg?.replyMsg?.type === 1">
-        {{ message.msg?.replyMsg?.replyMsg?.textMsg?.content }}
-      </template>
-      <template v-else>
-        [回复消息]
-      </template>
+      <TextMessage v-if="msg.replyMsg?.replyMsg?.type === MessageType.TEXT" :msg="msg.replyMsg.replyMsg" />
+      <ImageMessage v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.IMAGE" :msg="msg.replyMsg.replyMsg" />
+      <VideoMessage v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.VIDEO" :msg="msg.replyMsg.replyMsg" />
+      <EmojiMessage v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.EMOJI" :msg="msg.replyMsg.replyMsg" />
+      <AudioFileMessage v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.AUDIO_FILE"
+        :msg="msg.replyMsg.replyMsg" />
     </div>
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { IMessageMsg, IMessageSender } from 'commonModule/type/ws/message-types'
 import { MessageType } from 'commonModule/type/ajax/chat'
+import { defineComponent, PropType } from 'vue'
+
+// 使用异步组件或直接导入，取决于是否担心循环依赖。这里先直接导入。
+import TextMessage from './text.vue'
+import ImageMessage from './image.vue'
+import VideoMessage from './video.vue'
+import EmojiMessage from './emoji.vue'
+import AudioFileMessage from './audio.vue'
 
 export default defineComponent({
   name: 'ReplyMessage',
   props: {
-    message: {
-      type: Object,
+    msg: {
+      type: Object as PropType<IMessageMsg>,
+      required: true,
+    },
+    sender: {
+      type: Object as PropType<IMessageSender>,
       required: true,
     },
   },
+  components: {
+    TextMessage,
+    ImageMessage,
+    VideoMessage,
+    EmojiMessage,
+    AudioFileMessage,
+  },
   setup(props) {
-    const originPreview = computed(() => {
-      const msg = props.message.msg?.replyMsg?.originMsg
-      if (!msg) return ''
-
-      switch (msg.type) {
-        case MessageType.TEXT:
-          return msg.textMsg?.content || ''
-        case MessageType.IMAGE:
-          return '[图片]'
-        case MessageType.VIDEO:
-          return '[视频]'
-        case MessageType.FILE:
-          return '[文件]'
-        case MessageType.VOICE:
-          return '[语音]'
-        case MessageType.EMOJI:
-          return '[表情]'
-        default:
-          return '[消息]'
-      }
-    })
 
     return {
-      originPreview,
+      MessageType,
     }
   },
 })
@@ -63,27 +68,24 @@ export default defineComponent({
 .reply-message {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 
   .reply-origin {
-    padding: 4px 8px;
+    padding: 6px 10px;
     background: rgba(0, 0, 0, 0.05);
-    border-radius: 4px;
-    border-left: 3px solid #FF7D45;
-    font-size: 12px;
+    border-radius: 6px;
+    font-size: 11px;
     color: #636E72;
+    transition: all 0.2s;
 
     .origin-content {
       overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
     }
   }
 
   .reply-main {
-    font-size: 14px;
-    color: #2D3436;
     word-break: break-all;
+    line-height: 1.4;
   }
 }
 </style>

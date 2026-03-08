@@ -16,6 +16,9 @@
     <!-- 私聊详情 -->
     <PrivateDetailsComponent v-if="currentDetailType === 'private'" :visible="currentDetailType === 'private'"
       @close="hideDetails" />
+
+    <!-- 合并转发详情 (由 store 控制显示) -->
+    <MergedForwardViewer />
   </div>
 </template>
 
@@ -24,6 +27,7 @@ import { computed, defineComponent, ref } from 'vue'
 import { useMessageViewStore } from '../../pinia/view/message'
 import GroupDetailsComponent from './detail-components/GroupDetails.vue'
 import PrivateDetailsComponent from './detail-components/PrivateDetails.vue'
+import MergedForwardViewer from './detail-components/MergedForwardViewer.vue'
 import MessageLeftComponent from './left-components/MessageLeft.vue'
 import ChatMenusComponent from './right-component/bottom/ChatMenus.vue'
 import ChatContentComponent from './right-component/content/content.vue'
@@ -39,6 +43,7 @@ export default defineComponent({
     ChatMenusComponent,
     GroupDetailsComponent,
     PrivateDetailsComponent,
+    MergedForwardViewer,
   },
   setup() {
     // 当前显示的详情类型

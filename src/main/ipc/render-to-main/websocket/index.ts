@@ -10,8 +10,6 @@ class WebSocketHandler {
    * 处理WebSocket相关的IPC命令
    */
   async handle(_event: Electron.IpcMainInvokeEvent, command: WebSocketCommand, data: any = {}): Promise<unknown> {
-    logger.info({ text: '处理WebSocket命令', data: { command, data } }, loggerName)
-
     try {
       switch (command) {
         case WebSocketCommand.DISCONNECT:
