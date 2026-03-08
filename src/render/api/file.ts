@@ -16,9 +16,9 @@ export const previewOnlineFileApi = (fileKey: string) => {
  */
 export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFileUploadResult> => {
   //  if(source === 'local') {
-  return await uploadToLocalApi(file, fileKey)
+  // return await uploadToLocalApi(file, fileKey)
   // } else if(source === 'qiniu') {
-  // return await uploadQiniuApi(file, fileKey);
+  return await uploadQiniuApi(file, fileKey);
   // }
   //  return Promise.reject(new Error('Invalid source'));
 }
