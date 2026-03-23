@@ -97,8 +97,9 @@ npm run package
 | 项目 | 仓库地址 | 说明 |
 |------|----------|------|
 | **beaver-server** | [GitHub](https://github.com/wsrh8888/beaver-server) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-server) | 后端服务 |
-| **beaver-mobile** | [GitHub](https://github.com/wsrh8888/beaver-mobile) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-mobile) | 移动端应用 |
+| **beaver-flutter** | [GitHub](https://github.com/wsrh8888/beaver-flutter) | 移动端应用 (Flutter - 推荐) |
 | **beaver-desktop** | [GitHub](https://github.com/wsrh8888/beaver-desktop) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-desktop) | 桌面端应用 |
+| **beaver-uniapp** | [GitHub](https://github.com/wsrh8888/beaver-uniapp) | 移动端应用 (Uniapp - 已废弃) |
 
 ## 📚 文档与帮助
 
