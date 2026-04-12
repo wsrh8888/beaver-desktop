@@ -37,8 +37,8 @@ class Main {
     }
 
     // 只有当前实例是唯一的才继续初始化
-    this.initUa()
     initCustom()
+    this.initUa()
     loadConfigs()
     this.initMainProcess()
   }

@@ -20,14 +20,8 @@
             <div class="form-group">
               <!-- <label for="email" class="form-label">邮箱</label> -->
               <div class="input-container">
-                <input
-                  id="email"
-                  v-model.trim="form.email"
-                  :type="LOGIN_CONFIG.email.type"
-                  class="form-input"
-                  :placeholder="LOGIN_CONFIG.email.placeholder"
-                  @blur="validateFormField('email')"
-                >
+                <input id="email" v-model.trim="form.email" :type="LOGIN_CONFIG.email.type" class="form-input"
+                  :placeholder="LOGIN_CONFIG.email.placeholder" @blur="validateFormField('email')">
               </div>
               <div v-show="errors.email" class="error-message">
                 {{ errors.email }}
@@ -38,21 +32,11 @@
               <!-- <label for="verifyCode" class="form-label">验证码</label> -->
               <div class="verify-code-container">
                 <div class="input-container verify-code-input">
-                  <input
-                    id="verifyCode"
-                    v-model.trim="form.code"
-                    :type="LOGIN_CONFIG.code.type"
-                    class="form-input"
-                    :placeholder="LOGIN_CONFIG.code.placeholder"
-                    :maxlength="LOGIN_CONFIG.code.maxLength"
-                    @blur="validateFormField('code')"
-                  >
+                  <input id="verifyCode" v-model.trim="form.code" :type="LOGIN_CONFIG.code.type" class="form-input"
+                    :placeholder="LOGIN_CONFIG.code.placeholder" :maxlength="LOGIN_CONFIG.code.maxLength"
+                    @blur="validateFormField('code')">
                 </div>
-                <button
-                  class="get-code-btn"
-                  :disabled="countdown > 0"
-                  @click="handleGetCode"
-                >
+                <button class="get-code-btn" :disabled="countdown > 0" @click="handleGetCode">
                   {{ countdown > 0 ? `${countdown}秒后重新获取` : '获取验证码' }}
                 </button>
               </div>
@@ -92,14 +76,9 @@
             <div class="form-group">
               <label for="password" class="form-label">设置密码</label>
               <div class="input-container">
-                <input
-                  id="password"
-                  v-model.trim="form.password"
-                  :type="showPassword ? 'text' : 'password'"
-                  class="form-input"
-                  :placeholder="LOGIN_CONFIG.password.placeholder"
-                  @blur="validateFormField('password')"
-                >
+                <input id="password" v-model.trim="form.password" :type="showPassword ? 'text' : 'password'"
+                  class="form-input" :placeholder="LOGIN_CONFIG.password.placeholder"
+                  @blur="validateFormField('password')">
                 <div class="input-icon" @click="toggle('password')">
                   <img :src="showPassword ? eyeOffIcon : eyeIcon" alt="toggle password">
                 </div>
@@ -113,14 +92,9 @@
             <div class="form-group">
               <label for="confirmPassword" class="form-label">确认密码</label>
               <div class="input-container">
-                <input
-                  id="confirmPassword"
-                  v-model.trim="form.confirmPassword"
-                  :type="showConfirmPassword ? 'text' : 'password'"
-                  class="form-input"
-                  placeholder="请再次输入密码"
-                  @blur="validateConfirmPassword"
-                >
+                <input id="confirmPassword" v-model.trim="form.confirmPassword"
+                  :type="showConfirmPassword ? 'text' : 'password'" class="form-input" placeholder="请再次输入密码"
+                  @blur="validateConfirmPassword">
                 <div class="input-icon" @click="toggle('confirmPassword')">
                   <img :src="showConfirmPassword ? eyeOffIcon : eyeIcon" alt="toggle password">
                 </div>
@@ -131,11 +105,7 @@
             </div>
 
             <div class="agreement-checkbox">
-              <div
-                class="custom-checkbox"
-                :class="{ checked: isAgreed }"
-                @click="toggle('agreement')"
-              />
+              <div class="custom-checkbox" :class="{ checked: isAgreed }" @click="toggle('agreement')" />
               <div class="agreement-text">
                 我已阅读并同意 <a href="#">《Beaver 用户协议》</a>和<a href="#">《隐私政策》</a>
               </div>
@@ -145,7 +115,8 @@
           <div>
             <div class="form-actions">
               <button class="back-button" @click="goToStep1">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                   <path d="M19 12H5M12 19l-7-7 7-7" />
                 </svg>
               </button>
@@ -160,9 +131,12 @@
       <!-- 注册成功状态 -->
       <div v-show="showSuccess" class="register-success">
         <div class="success-icon">
-          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#E86835" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-            <path id="successCheck" d="M22 11.08V12a10 10 0 1 1-5.93-9.14" style="stroke-dasharray: 100; stroke-dashoffset: 100;" />
-            <polyline id="successCheckmark" points="22 4 12 14.01 9 11.01" style="stroke-dasharray: 100; stroke-dashoffset: 100;" />
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#E86835" stroke-width="3"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path id="successCheck" d="M22 11.08V12a10 10 0 1 1-5.93-9.14"
+              style="stroke-dasharray: 100; stroke-dashoffset: 100;" />
+            <polyline id="successCheckmark" points="22 4 12 14.01 9 11.01"
+              style="stroke-dasharray: 100; stroke-dashoffset: 100;" />
           </svg>
         </div>
         <h3 class="success-title">
@@ -229,9 +203,6 @@ export default defineComponent({
     const validatePassword = () => {
       if (!form.value.password) {
         errors.value.password = '请设置密码'
-      }
-      else if (!/^\S{13,}$/.test(form.value.password)) {
-        errors.value.password = '密码长度不少于13位，且不能包含空格'
       }
       else {
         errors.value.password = ''
@@ -371,7 +342,7 @@ export default defineComponent({
   height: 500px;
   background-color: #FFFFFF;
   border-radius: 12px;
-  box-shadow: 0 8px 30px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.06);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.06);
   display: flex;
   overflow: hidden;
   position: relative;
@@ -457,7 +428,7 @@ export default defineComponent({
     font-size: 15px;
     color: #2D3436;
     transition: all 0.3s cubic-bezier(0.33, 1, 0.68, 1);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.03);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
 
     &::placeholder {
       color: #B2BEC3;
@@ -467,7 +438,7 @@ export default defineComponent({
       outline: none;
       border-color: #FF7D45;
       background-color: #FFFFFF;
-      box-shadow: 0 0 0 3px rgba(255,125,69,0.15);
+      box-shadow: 0 0 0 3px rgba(255, 125, 69, 0.15);
     }
   }
 
@@ -772,6 +743,7 @@ export default defineComponent({
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -781,6 +753,7 @@ export default defineComponent({
   0% {
     stroke-dashoffset: 100;
   }
+
   100% {
     stroke-dashoffset: 0;
   }

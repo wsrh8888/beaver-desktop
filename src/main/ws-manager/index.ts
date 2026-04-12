@@ -3,9 +3,8 @@ import type { Buffer } from 'node:buffer'
 import { getCurrentConfig } from 'commonModule/config'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
-import { v4 as uuidv4 } from 'uuid'
-
 import WebSocket from 'ws'
+import { generateUserAgentIdentifier } from 'mainModule/utils/ua/index'
 
 const logger = new Logger('WebSocket')
 
@@ -66,7 +65,7 @@ class WsManager {
 
   constructor(config: WsConfig = {}) {
     this.reconnectInterval = config.reconnectInterval || 5000
-    this.maxReconnectAttempts = config.maxReconnectAttempts || 5
+    this.maxReconnectAttempts = config.maxReconnectAttempts || 10
     this.heartbeatInterval = config.heartbeatInterval || 30000
   }
 
@@ -78,31 +77,42 @@ class WsManager {
   }
 
   async connect(): Promise<void> {
-    const token = store.get('userInfo')?.token
+    const userInfo = store.get('userInfo')
+    const token = userInfo?.token
+    const userId = userInfo?.userId
     const wsUrl = getCurrentConfig().wsUrl
+
     // 防止重复连接
     if (this.isConnected || this.status === 'connecting') {
-      logger.info({ text: 'WebSocket已经连接或正在连接中' })
       return
     }
+    logger.info({ text: '开始连接WebSocket', data: { userId } })
+
+    this.status = 'connecting'
 
     if (!token) {
+      this.status = 'closed'
       logger.warn({ text: '没有token，无法连接WebSocket' })
       return
     }
 
-    logger.info({ text: '开始连接WebSocket' })
-    this.status = 'connecting'
+    logger.info({ text: '开始连接WebSocket', data: { userId } })
     this.isClose = false
     this.isManualClose = false
 
-    // 触发开始连接回调
     if (this.eventCallbacks.onConnecting) {
       this.eventCallbacks.onConnecting()
     }
 
     try {
-      this.socket = new WebSocket(`${wsUrl}?token=${token}`)
+      // 深度对齐既有配置：使用 initCustom 中已加载的硬件指纹
+      const deviceId = process.custom?.DEVICE_ID || ''
+      const platform = 'windows'
+      this.socket = new WebSocket(`${wsUrl}?token=${token}&userId=${userId}&platform=${platform}&deviceId=${deviceId}`, {
+        headers: {
+          'User-Agent': generateUserAgentIdentifier(),
+        },
+      })
 
       this.socket.on('open', () => {
         logger.info({ text: 'WebSocket连接成功' })
@@ -112,36 +122,45 @@ class WsManager {
         this.clearTimers()
         this.startHeartbeat()
 
-        // 触发连接成功回调
         if (this.eventCallbacks.onConnect) {
           this.eventCallbacks.onConnect()
         }
       })
 
       this.socket.on('close', (code, reason) => {
-        logger.info({ text: 'WebSocket连接关闭', data: { code, reason: reason.toString() } })
+        const reasonStr = reason.toString()
+        logger.info({ text: 'WebSocket连接关闭', data: { code, reason: reasonStr } })
         this.isConnected = false
         this.status = 'closed'
         this.clearTimers()
 
-        // 触发断开连接回调
         if (this.eventCallbacks.onDisconnect) {
-          this.eventCallbacks.onDisconnect()
+          this.eventCallbacks.onDisconnect(code, reason)
         }
 
         if (!this.isManualClose) {
-          setTimeout(() => {
-            this.reconnect()
-          }, this.reconnectInterval) // 最大延迟 30 秒
+          this.reconnect()
         }
       })
 
       this.socket.on('error', (error) => {
-        logger.error({ text: 'WebSocket错误', data: { error } })
+        logger.error({ text: 'WebSocket错误', data: { error: error.message } })
         this.isConnected = false
         this.status = 'error'
 
-        // 触发错误回调
+        // 核心逻辑：如果服务端返回 401 (Unauthorized)，说明 Token 彻底失效或 GUID 对不上
+        // 此时必须立即停止重连，并清除本地状态，引导用户重新登录
+        if (error.message.includes('401')) {
+          logger.warn({ text: '检测到登录鉴权失效(401)，正在执行自动登出' })
+          this.isManualClose = true // 标记为手动关闭，停止后续的自动重连
+          // 使用动态 import 兼容 ESM，并解决循环依赖问题
+          import('mainModule/ipc/render-to-main/auth').then((module) => {
+            const authHandler = module.default
+            authHandler.handleLogout()
+          })
+          return
+        }
+
         if (this.eventCallbacks.onError) {
           this.eventCallbacks.onError(error)
         }
@@ -150,9 +169,14 @@ class WsManager {
       this.socket.on('message', (data) => {
         this.handleMessage(data.toString())
       })
+
+      // 响应底层的 ping 帧 (ws 模块会自动处理，但我们可以增加业务层的双向心跳)
+      this.socket.on('ping', () => {
+        this.socket?.pong()
+      })
     }
     catch (error) {
-      logger.error({ text: 'WebSocket连接失败', data: { error: (error as any)?.message } })
+      logger.error({ text: 'WebSocket连接创建失败', data: { error: (error as any)?.message } })
       this.status = 'error'
       this.reconnect()
     }
@@ -161,24 +185,40 @@ class WsManager {
   private handleMessage(data: string) {
     try {
       const message = JSON.parse(data)
+      const command = message.command
 
-      // 处理心跳响应，清除心跳超时定时器
-      if (message.command === 'HEARTBEAT') {
+      // 1. 处理控制帧 (服务端发来的控制帧是扁平结构)
+      if (command === 'PONG') {
         this.clearHeartbeatTimeout()
         return
       }
 
-      // 通过事件回调传递给业务层处理
+      if (command === 'PING') {
+        this.sendPong(message.timestamp || Date.now())
+        return
+      }
+
+      if (command === 'ACK') {
+        logger.info({ text: '收到服务端回复(ACK)', data: { messageId: message.messageId } })
+        return
+      }
+
+      // 2. 业务消息转发
       if (this.eventCallbacks.onMessage) {
-        logger.info(({
-          text: '收到WebSocket消息',
-          data: message,
-        }))
         this.eventCallbacks.onMessage(message)
       }
     }
     catch (error) {
-      logger.error({ text: '消息解析失败', data: { error: (error as any)?.message } })
+      logger.error({ text: '消息解析失败', data: { error: (error as any)?.message, raw: data } })
+    }
+  }
+
+  private sendPong(timestamp: number) {
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify({
+        command: 'PONG',
+        timestamp,
+      }))
     }
   }
 
@@ -186,51 +226,40 @@ class WsManager {
    * @description: 内部发送消息方法
    */
   public sendMessage(message: WsMessage): void {
-    try {
-      const messageStr = JSON.stringify(message)
-      if (this.socket && this.socket.readyState === WebSocket.OPEN) {
-        logger.info({ text: '发送ws消息', data: messageStr })
-
-        this.socket.send(messageStr)
-      }
-      else {
-        throw new Error('WebSocket not ready')
-      }
+    if (this.socket && this.socket.readyState === WebSocket.OPEN) {
+      this.socket.send(JSON.stringify(message))
     }
-    catch (error) {
-      logger.error({ text: '发送消息异常', data: { error: (error as any)?.message } })
-      throw error
+    else {
+      logger.warn({ text: '发送消息失败：WebSocket未连接' })
+      throw new Error('WebSocket not ready')
     }
   }
 
   private startHeartbeat() {
     this.heartbeatTimer = setInterval(() => {
-      this.sendHeartbeat()
+      this.sendPing()
     }, this.heartbeatInterval)
   }
 
-  private sendHeartbeat() {
+  private sendPing() {
     if (this.isConnected && this.socket && this.socket.readyState === WebSocket.OPEN) {
-      const heartbeat = {
-        command: 'HEARTBEAT',
+      // 客户端发出的 PING 需要符合 WsMessage 结构（带 content 层），因为服务端在 HandleWebSocketMessages 中解析
+      const ping = {
+        command: 'PING',
         content: {
           timestamp: Date.now(),
-          messageId: uuidv4(),
-          data: null,
         },
       }
 
       try {
-        this.socket.send(JSON.stringify(heartbeat))
+        this.socket.send(JSON.stringify(ping))
 
         // 设置心跳超时检查
         this.clearHeartbeatTimeout()
         this.heartbeatTimeoutTimer = setTimeout(() => {
-          logger.warn({ text: '心跳超时，可能连接已断开' })
-          if (this.socket) {
-            this.socket.close()
-          }
-        }, 10000) // 10秒超时
+          logger.warn({ text: '心跳超时(PONG未收到)，主动断开连接' })
+          this.socket?.close()
+        }, 15000) // 15秒超时
       }
       catch (error) {
         logger.error({ text: '发送心跳失败', data: { error: (error as any)?.message } })
@@ -238,9 +267,6 @@ class WsManager {
     }
   }
 
-  /**
-   * @description: 清除心跳超时定时器
-   */
   private clearHeartbeatTimeout(): void {
     if (this.heartbeatTimeoutTimer) {
       clearTimeout(this.heartbeatTimeoutTimer)
@@ -249,10 +275,10 @@ class WsManager {
   }
 
   private reconnect() {
-    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
-      logger.info({ text: '达到最大重连次数，停止重连' })
+    if (this.reconnectTimer) return
 
-      // 通知前端：重连失败
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      logger.error({ text: '达到最大重连次数，停止重连' })
       if (this.eventCallbacks.onReconnectFailed) {
         this.eventCallbacks.onReconnectFailed()
       }
@@ -260,11 +286,12 @@ class WsManager {
     }
 
     this.reconnectAttempts++
-    const delay = this.reconnectInterval * this.reconnectAttempts
+    const delay = Math.min(this.reconnectInterval * Math.pow(1.5, this.reconnectAttempts - 1), 30000)
 
-    logger.info({ text: `第${this.reconnectAttempts}次重连，延迟${delay}ms` })
+    logger.info({ text: `第${this.reconnectAttempts}次重连，将在${Math.round(delay)}ms后尝试` })
 
     this.reconnectTimer = setTimeout(() => {
+      this.reconnectTimer = null
       this.connect()
     }, delay)
   }
@@ -290,9 +317,7 @@ class WsManager {
     this.clearTimers()
 
     if (this.socket) {
-      if (this.isConnected) {
-        this.socket.close()
-      }
+      this.socket.close()
       this.socket = null
     }
 
@@ -310,3 +335,4 @@ class WsManager {
 }
 
 export default new WsManager()
+

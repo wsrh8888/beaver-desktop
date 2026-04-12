@@ -87,8 +87,8 @@ export default defineComponent({
     const routerHelper = useRouterHelper()
 
     const form = ref({
-      email: '751135385@qq.com',
-      password: '15383645663.rH',
+      email: '',
+      password: '',
     })
 
     const errors = ref({

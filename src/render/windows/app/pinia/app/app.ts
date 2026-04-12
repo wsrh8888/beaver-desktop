@@ -6,7 +6,6 @@ import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useContactStore } from '../contact/contact'
 import { useEmojiStore } from '../emoji/emoji'
-import { useFriendVerifyStore } from '../friend/friend_verify'
 import { useNotificationStore } from '../notification/notification'
 import { useUpdateStore } from '../update/index'
 
@@ -48,9 +47,25 @@ export const useAppStore = defineStore('useAppStore', {
      * @description: 启动应用初始化（应用启动时调用）
      */
     async initApp() {
+      try {
+        // 首先获取应用生命周期的初始状态
+        await this.getInitialLifecycleStatus()
+        // 然后加载各模块数据
+        await this.loadAllStoreData()
+        console.log('应用初始化完成')
+      }
+      catch (error) {
+        console.error('应用初始化失败:', error)
+      }
+    },
+
+    /**
+     * @description: 全量加载/刷新所有 Store 数据
+     * 当同步完成后（ready状态）或应用启动时调用
+     */
+    async loadAllStoreData() {
       const userStore = useUserStore()
       const friendStore = useFriendStore()
-      const _friendVerifyStore = useFriendVerifyStore()
       const conversationStore = useConversationStore()
       const groupStore = useGroupStore()
       const updateStore = useUpdateStore()
@@ -59,10 +74,7 @@ export const useAppStore = defineStore('useAppStore', {
       const notificationStore = useNotificationStore()
 
       try {
-        // 首先获取应用生命周期的初始状态
-        await this.getInitialLifecycleStatus()
-
-        // 并行初始化各项数据
+        console.log('[AppStore] 开始加载/刷新各模块数据...')
         const promises = [
           userStore.init(),
           contactStore.init(),
@@ -73,12 +85,12 @@ export const useAppStore = defineStore('useAppStore', {
           emojiStore.init(),
           notificationStore.init(),
         ]
-
         await Promise.all(promises)
-        console.log('应用数据初始化完成')
+        console.log('[AppStore] 各模块数据同步加载完成')
       }
       catch (error) {
-        console.error('应用初始化失败:', error)
+        console.error('[AppStore] 加载各模块数据失败:', error)
+        throw error
       }
     },
 

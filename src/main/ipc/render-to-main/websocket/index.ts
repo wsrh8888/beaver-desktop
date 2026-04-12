@@ -17,6 +17,7 @@ class WebSocketHandler {
           return true
 
         case WebSocketCommand.RECONNECT:
+          logger.info({ text: 'IPC收到重连请求' }, loggerName)
           // 重新连接WebSocket
           wsManager.disconnect()
           await wsManager.connect()
