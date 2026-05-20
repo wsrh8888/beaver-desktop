@@ -16,7 +16,13 @@ const alias = {
 export default defineConfig(({ command: _command }) => {
   return {
     plugins: [
-      vue(),
+      vue({
+        template: {
+          compilerOptions: {
+            isCustomElement: tag => tag === 'beaver-login',
+          },
+        },
+      }),
       svgLoader({
         defaultImport: 'url', // or 'raw'
       }),

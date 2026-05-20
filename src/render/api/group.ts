@@ -24,6 +24,16 @@ import type {
   ITransferOwnerReq,
   IUpdateGroupInfoReq,
   IUpdateMemberRoleReq,
+  ICreateNotificationBotReq,
+  ICreateNotificationBotRes,
+  IListNotificationBotsReq,
+  IListNotificationBotsRes,
+  IUpdateNotificationBotReq,
+  IUpdateNotificationBotRes,
+  IDeleteNotificationBotReq,
+  IDeleteNotificationBotRes,
+  IResetNotificationBotSecretReq,
+  IResetNotificationBotSecretRes,
 } from 'commonModule/type/ajax/group'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -212,5 +222,55 @@ export const handleGroupJoinRequestApi = (data: IGroupJoinRequestHandleReq) => {
     method: 'POST',
     data,
     url: `${baseUrl}/api/group/joinRequest-handle`,
+  })
+}
+
+/** 创建群通知机器人 */
+export const createNotificationBotApi = (userId: string, data: ICreateNotificationBotReq) => {
+  return ajax<ICreateNotificationBotRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/v1/notification_bot/create`,
+    headers: { 'Beaver-User-Id': userId },
+  })
+}
+
+/** 群通知机器人列表 */
+export const listNotificationBotsApi = (userId: string, data: IListNotificationBotsReq) => {
+  return ajax<IListNotificationBotsRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/v1/notification_bot/list`,
+    headers: { 'Beaver-User-Id': userId },
+  })
+}
+
+/** 更新群通知机器人 */
+export const updateNotificationBotApi = (userId: string, data: IUpdateNotificationBotReq) => {
+  return ajax<IUpdateNotificationBotRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/v1/notification_bot/update`,
+    headers: { 'Beaver-User-Id': userId },
+  })
+}
+
+/** 删除群通知机器人 */
+export const deleteNotificationBotApi = (userId: string, data: IDeleteNotificationBotReq) => {
+  return ajax<IDeleteNotificationBotRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/v1/notification_bot/delete`,
+    headers: { 'Beaver-User-Id': userId },
+  })
+}
+
+/** 重置群通知机器人密钥 */
+export const resetNotificationBotSecretApi = (userId: string, data: IResetNotificationBotSecretReq) => {
+  return ajax<IResetNotificationBotSecretRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/v1/notification_bot/reset_secret`,
+    headers: { 'Beaver-User-Id': userId },
   })
 }

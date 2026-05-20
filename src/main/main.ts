@@ -15,6 +15,15 @@ if (process.env.USE_FAKE_MEDIA === 'true') {
   console.log('检测到 USE_FAKE_MEDIA，已启用模拟媒体设备')
 }
 
+// 注册自定义协议（用于 OAuth 回调）
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('beaver', process.execPath, [path.resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient('beaver')
+}
+
 import logger from 'mainModule/utils/log'
 import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
 import trayHandler from './application/tray'
@@ -77,6 +86,22 @@ class Main {
   }
 
   setupEventListeners() {
+    // 处理 Windows/Linux 的第二个实例（通过 Scheme 启动）
+    app.on('second-instance', (_event, commandLine) => {
+      // 查找 beaver:// 协议的 URL
+      const url = commandLine.find(arg => arg.startsWith('beaver://'))
+      if (url) {
+        this.handleOAuthCallback(url)
+      }
+    })
+
+    // 处理 macOS 的 open-url 事件
+    app.on('open-url', (_event, url) => {
+      if (url.startsWith('beaver://')) {
+        this.handleOAuthCallback(url)
+      }
+    })
+
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') {
         app.quit()
@@ -113,6 +138,25 @@ class Main {
   initUa() {
     const customIdentifier = generateUserAgentIdentifier()
     app.userAgentFallback = `${app.userAgentFallback || ''} ${customIdentifier}`.trim()
+  }
+
+  // 处理 OAuth 回调
+  handleOAuthCallback(url: string) {
+    logger.info({ text: `收到 OAuth 回调: ${url}` })
+    
+    // 解析 URL，提取 code 参数
+    try {
+      const urlObj = new URL(url)
+      const code = urlObj.searchParams.get('code')
+      
+      if (code) {
+        logger.info({ text: `OAuth 授权码: ${code}` })
+        // TODO: 将 code 发送给渲染进程处理
+        // 可以通过 IPC 发送到登录窗口或主窗口
+      }
+    } catch (error) {
+      logger.error({ text: `解析 OAuth 回调失败: ${error}` })
+    }
   }
 
   beforeAppReady() {

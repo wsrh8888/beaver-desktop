@@ -44,7 +44,11 @@
           ]
         }
       ],
-      "icon": "resource/app.ico"
+      "icon": "resource/app.ico",
+      "protocols": {
+        "name": "Beaver OAuth Protocol",
+        "schemes": ["beaver"]
+      }
     },
     "nsis": {
       "oneClick": true,
@@ -68,6 +72,7 @@
     ]
   },
   "dependencies": {
+    "@beaver/js-sdk": "file:../beaver-sdk/packages/beaver-js-sdk",
     "@modelcontextprotocol/sdk": "1.24.3",
     "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-node-resolve": "^15.3.0",

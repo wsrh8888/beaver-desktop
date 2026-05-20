@@ -719,3 +719,65 @@ export interface IGroupSearchRes {
   list: IGroupSearchItem[]
   count: number
 }
+
+// ---------- 群通知机器人（Webhook）----------
+
+export interface INotificationBotItem {
+  id: number
+  name: string
+  description: string
+  avatar: string
+  webhookUrl: string
+  status: number
+  creatorUserId: string
+  createdAt: number
+}
+
+export interface ICreateNotificationBotReq {
+  groupId: string
+  name: string
+  description?: string
+  avatar?: string
+}
+
+export interface ICreateNotificationBotRes {
+  id: number
+  webhookUrl: string
+  secret: string
+}
+
+export interface IListNotificationBotsReq {
+  groupId: string
+}
+
+export interface IListNotificationBotsRes {
+  list: INotificationBotItem[]
+}
+
+export interface IUpdateNotificationBotReq {
+  id: number
+  name?: string
+  description?: string
+  avatar?: string
+  status?: number
+}
+
+export interface IUpdateNotificationBotRes {
+  success: boolean
+}
+
+export interface IDeleteNotificationBotReq {
+  id: number
+}
+
+export interface IDeleteNotificationBotRes {
+  success: boolean
+}
+
+export interface IResetNotificationBotSecretReq {
+  id: number
+}
+
+export interface IResetNotificationBotSecretRes {
+  secret: string
+}
