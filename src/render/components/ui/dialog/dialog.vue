@@ -75,7 +75,7 @@ export default defineComponent({
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 99999;
+  z-index: 999;
   opacity: 0;
   visibility: hidden;
   transition: opacity 0.3s cubic-bezier(0.33, 1, 0.68, 1);

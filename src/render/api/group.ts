@@ -24,16 +24,18 @@ import type {
   ITransferOwnerReq,
   IUpdateGroupInfoReq,
   IUpdateMemberRoleReq,
-  ICreateNotificationBotReq,
-  ICreateNotificationBotRes,
-  IListNotificationBotsReq,
-  IListNotificationBotsRes,
-  IUpdateNotificationBotReq,
-  IUpdateNotificationBotRes,
-  IDeleteNotificationBotReq,
-  IDeleteNotificationBotRes,
-  IResetNotificationBotSecretReq,
-  IResetNotificationBotSecretRes,
+  ICreateBotReq,
+  ICreateBotRes,
+  IListBotsReq,
+  IListBotsRes,
+  IGetBotDetailReq,
+  IGetBotDetailRes,
+  IUpdateBotReq,
+  IUpdateBotRes,
+  IDeleteBotReq,
+  IDeleteBotRes,
+  IResetBotSecretReq,
+  IResetBotSecretRes,
 } from 'commonModule/type/ajax/group'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -45,7 +47,7 @@ export const createGroupApi = (data: IGroupCreateReq) => {
   return ajax<IGroupCreateRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/create`,
+    url: `${baseUrl}/api/group/v1/create`,
   })
 }
 
@@ -54,9 +56,9 @@ export const createGroupApi = (data: IGroupCreateReq) => {
  */
 export const deleteGroupApi = (data: IGroupDeleteReq) => {
   return ajax<Record<string, never>>({
-    method: 'DELETE',
+    method: 'POST',
     data,
-    url: `${baseUrl}/api/group/delete/${data.groupId}`,
+    url: `${baseUrl}/api/group/v1/delete`,
   })
 }
 
@@ -67,7 +69,7 @@ export const removeGroupMemberApi = (data: IGroupMemberRemoveReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/memberRemove`,
+    url: `${baseUrl}/api/group/v1/member_remove`,
   })
 }
 
@@ -78,18 +80,18 @@ export const addGroupMemberApi = (data: IGroupMemberAddReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/memberAdd`,
+    url: `${baseUrl}/api/group/v1/member_add`,
   })
 }
 
 /**
- * @description: 获取群组列表
+ * @description: 获取我加入的群组列表
  */
 export const getGroupListApi = (data: IGetGroupListReq) => {
   return ajax<IGroupListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/group_mine`,
+    url: `${baseUrl}/api/group/v1/mine`,
   })
 }
 
@@ -100,7 +102,7 @@ export const updateGroupInfoApi = (data: IUpdateGroupInfoReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/update`,
+    url: `${baseUrl}/api/group/v1/update`,
   })
 }
 
@@ -111,7 +113,7 @@ export const getGroupMembersApi = (data: IGetGroupMembersReq) => {
   return ajax<IGroupMemberListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/members`,
+    url: `${baseUrl}/api/group/v1/members`,
   })
 }
 
@@ -122,18 +124,7 @@ export const updateMemberRoleApi = (data: IUpdateMemberRoleReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/member/role`,
-  })
-}
-
-/**
- * @description: 更新群公告
- */
-export const updateGroupAnnouncementApi = (data: IGroupAnnouncementReq) => {
-  return ajax<IGroupAnnouncementRes>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/group/announcement`,
+    url: `${baseUrl}/api/group/v1/member_role`,
   })
 }
 
@@ -144,7 +135,7 @@ export const joinGroupApi = (data: IGroupJoinReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/join`,
+    url: `${baseUrl}/api/group/v1/join`,
   })
 }
 
@@ -155,7 +146,7 @@ export const inviteGroupMemberApi = (data: IGroupInviteReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/invite`,
+    url: `${baseUrl}/api/group/v1/invite`,
   })
 }
 
@@ -166,7 +157,7 @@ export const quitGroupApi = (data: IGroupQuitReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/quit`,
+    url: `${baseUrl}/api/group/v1/quit`,
   })
 }
 
@@ -177,7 +168,7 @@ export const transferGroupOwnerApi = (data: ITransferOwnerReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/transfer`,
+    url: `${baseUrl}/api/group/v1/transfer`,
   })
 }
 
@@ -188,7 +179,7 @@ export const getGroupInfoApi = (data: IGroupInfoReq) => {
   return ajax<IGroupInfoRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/groupInfo`,
+    url: `${baseUrl}/api/group/v1/info`,
   })
 }
 
@@ -199,7 +190,7 @@ export const searchGroupApi = (data: ISearchGroupReq) => {
   return ajax<IGroupSearchRes>({
     method: 'GET',
     params: data,
-    url: `${baseUrl}/api/group/search`,
+    url: `${baseUrl}/api/group/v1/search`,
   })
 }
 
@@ -210,7 +201,7 @@ export const getGroupJoinRequestListApi = (data: IGroupJoinRequestListReq) => {
   return ajax<IGroupJoinRequestListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/joinRequest-list`,
+    url: `${baseUrl}/api/group/v1/join_request_list`,
   })
 }
 
@@ -221,56 +212,60 @@ export const handleGroupJoinRequestApi = (data: IGroupJoinRequestHandleReq) => {
   return ajax<IGroupJoinRequestHandleRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/joinRequest-handle`,
+    url: `${baseUrl}/api/group/v1/join_request_handle`,
   })
 }
 
-/** 创建群通知机器人 */
-export const createNotificationBotApi = (userId: string, data: ICreateNotificationBotReq) => {
-  return ajax<ICreateNotificationBotRes>({
+/** 创建群机器人 */
+export const createBotApi = (data: ICreateBotReq) => {
+  return ajax<ICreateBotRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/notification_bot/create`,
-    headers: { 'Beaver-User-Id': userId },
+    url: `${baseUrl}/api/group/v1/create_bot`,
   })
 }
 
-/** 群通知机器人列表 */
-export const listNotificationBotsApi = (userId: string, data: IListNotificationBotsReq) => {
-  return ajax<IListNotificationBotsRes>({
+/** 群机器人列表 */
+export const listBotsApi = (data: IListBotsReq) => {
+  return ajax<IListBotsRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/notification_bot/list`,
-    headers: { 'Beaver-User-Id': userId },
+    url: `${baseUrl}/api/group/v1/list_bots`,
   })
 }
 
-/** 更新群通知机器人 */
-export const updateNotificationBotApi = (userId: string, data: IUpdateNotificationBotReq) => {
-  return ajax<IUpdateNotificationBotRes>({
+/** 获取群机器人详情 */
+export const getBotDetailApi = (data: IGetBotDetailReq) => {
+  return ajax<IGetBotDetailRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/notification_bot/update`,
-    headers: { 'Beaver-User-Id': userId },
+    url: `${baseUrl}/api/group/v1/bot_detail`,
   })
 }
 
-/** 删除群通知机器人 */
-export const deleteNotificationBotApi = (userId: string, data: IDeleteNotificationBotReq) => {
-  return ajax<IDeleteNotificationBotRes>({
+/** 更新群机器人 */
+export const updateBotApi = (data: IUpdateBotReq) => {
+  return ajax<IUpdateBotRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/notification_bot/delete`,
-    headers: { 'Beaver-User-Id': userId },
+    url: `${baseUrl}/api/group/v1/update_bot`,
   })
 }
 
-/** 重置群通知机器人密钥 */
-export const resetNotificationBotSecretApi = (userId: string, data: IResetNotificationBotSecretReq) => {
-  return ajax<IResetNotificationBotSecretRes>({
+/** 删除群机器人 */
+export const deleteBotApi = (data: IDeleteBotReq) => {
+  return ajax<IDeleteBotRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/notification_bot/reset_secret`,
-    headers: { 'Beaver-User-Id': userId },
+    url: `${baseUrl}/api/group/v1/delete_bot`,
+  })
+}
+
+/** 重置群机器人密钥 */
+export const resetBotSecretApi = (data: IResetBotSecretReq) => {
+  return ajax<IResetBotSecretRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/group/v1/reset_bot_secret`,
   })
 }

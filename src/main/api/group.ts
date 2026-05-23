@@ -18,7 +18,7 @@ import ajax from 'mainModule/utils/request/request'
 export const getUserGroupVersionsApi = () => {
   return ajax<IGetUserGroupVersionsRes>({
     method: 'GET',
-    url: `${getBaseUrl()}/api/group/versions`,
+    url: `${getBaseUrl()}/api/group/v1/versions`,
   })
 }
 
@@ -29,7 +29,7 @@ export const groupSyncApi = (data: IGroupSyncReq) => {
   return ajax<IGroupSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/group/sync`,
+    url: `${getBaseUrl()}/api/group/v1/sync`,
   })
 }
 
@@ -40,7 +40,7 @@ export const groupMemberSyncApi = (data: IGroupMemberSyncReq) => {
   return ajax<IGroupMemberSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/group/member-sync`,
+    url: `${getBaseUrl()}/api/group/v1/member_sync`,
   })
 }
 
@@ -51,7 +51,7 @@ export const groupJoinRequestSyncApi = (data: IGroupJoinRequestSyncReq) => {
   return ajax<IGroupJoinRequestSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/group/join-request-sync`,
+    url: `${getBaseUrl()}/api/group/v1/join_request_sync`,
   })
 }
 
@@ -60,8 +60,8 @@ export const groupJoinRequestSyncApi = (data: IGroupJoinRequestSyncReq) => {
  */
 export const searchGroupsApi = (data: IGroupSearchReq) => {
   return ajax<IGroupSearchRes>({
-    method: 'POST',
-    data,
-    url: `${getBaseUrl()}/api/group/search`,
+    method: 'GET',
+    params: data,
+    url: `${getBaseUrl()}/api/group/v1/search`,
   })
 }

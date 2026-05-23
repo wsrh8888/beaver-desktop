@@ -3,6 +3,7 @@ import type { Buffer } from 'node:buffer'
 import { getCurrentConfig } from 'commonModule/config'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger/index'
+import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
 import { v4 as uuidv4 } from 'uuid'
 
 import WebSocket from 'ws'
@@ -78,16 +79,19 @@ class WsManager {
   }
 
   async connect(): Promise<void> {
-    const token = store.get('userInfo')?.token
+    const userInfo = store.get('userInfo')
+    const token = userInfo?.token
+    const userId = userInfo?.userId
     const wsUrl = getCurrentConfig().wsUrl
+
     // 防止重复连接
     if (this.isConnected || this.status === 'connecting') {
       logger.info({ text: 'WebSocket已经连接或正在连接中' })
       return
     }
 
-    if (!token) {
-      logger.warn({ text: '没有token，无法连接WebSocket' })
+    if (!token || !userId) {
+      logger.warn({ text: '没有token或userId，无法连接WebSocket' })
       return
     }
 
@@ -102,7 +106,25 @@ class WsManager {
     }
 
     try {
-      this.socket = new WebSocket(`${wsUrl}?token=${token}`)
+      // 获取设备ID（从全局变量中获取）
+      const deviceId = process.custom.DEVICE_ID
+
+      // 构建完整的 WebSocket URL，包含所有必需参数
+      const params = new URLSearchParams({
+        token,
+        userId,
+        platform: process.custom.PLATFORM,
+        deviceId,
+      })
+
+      // 生成符合后端识别规则的 User-Agent
+      const userAgent = generateUserAgentIdentifier()
+
+      this.socket = new WebSocket(`${wsUrl}?${params.toString()}`, {
+        headers: {
+          'User-Agent': userAgent,
+        },
+      })
 
       this.socket.on('open', () => {
         logger.info({ text: 'WebSocket连接成功' })

@@ -35,6 +35,7 @@ export interface IFileReq {
 // 文件上传响应（对应后端 FileRes）
 export interface IFileRes {
   fileKey: string
+  fileUrl?: string // 完整的文件访问URL（后端直接返回）
   originalName: string
   fileInfo?: IFileInfo
 }
@@ -42,6 +43,7 @@ export interface IFileRes {
 // 文件上传结果类型（用于内部Promise返回）
 export interface IFileUploadResult {
   fileKey: string
+  fileUrl?: string // 完整的文件访问URL（后端直接返回）
   originalName: string
   fileInfo?: IFileInfo
 }

@@ -16,9 +16,9 @@ export const previewOnlineFileApi = (fileKey: string) => {
  */
 export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFileUploadResult> => {
   //  if(source === 'local') {
-  // return await uploadToLocalApi(file, fileKey)
+  return await uploadToLocalApi(file, fileKey)
   // } else if(source === 'qiniu') {
-  return await uploadQiniuApi(file, fileKey);
+  // return await uploadQiniuApi(file, fileKey);
   // }
   //  return Promise.reject(new Error('Invalid source'));
 }
@@ -58,6 +58,7 @@ const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'lo
 
   return {
     fileKey: result.result.fileKey,
+    fileUrl: result.result.fileUrl, // 使用后端返回的完整URL
     originalName: result.result.originalName,
     fileInfo,
   }

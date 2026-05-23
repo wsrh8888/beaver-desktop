@@ -8,18 +8,18 @@
       <div v-if="loading" class="group-details-assistant__empty">
         加载中…
       </div>
-      <div v-else-if="notificationBots.length === 0" class="group-details-assistant__empty">
-        暂无通知机器人
+      <div v-else-if="bots.length === 0" class="group-details-assistant__empty">
+        暂无机器人
       </div>
       <div v-else class="group-details-assistant__list">
         <div
-          v-for="bot in notificationBots"
-          :key="bot.id"
+          v-for="bot in bots"
+          :key="bot.botId"
           class="group-details-assistant__item"
           @click="openBotDetail(bot)"
         >
           <div class="group-details-assistant__item-avatar">
-            <BeaverImage v-if="bot.avatar" :file-name="bot.avatar" image-class="group-details-assistant__item-avatar-image" />
+            <img v-if="bot.avatar" :src="bot.avatar" class="group-details-assistant__item-avatar-image" alt="">
             <span v-else class="group-details-assistant__item-avatar-text">{{ bot.name.slice(0, 1) }}</span>
           </div>
           <div class="group-details-assistant__item-meta">
@@ -50,10 +50,9 @@
 </template>
 
 <script lang="ts">
-import type { INotificationBotItem } from 'commonModule/type/ajax/group'
-import { listNotificationBotsApi } from 'renderModule/api/group'
+import type { IBotItem } from 'commonModule/type/ajax/group'
+import { listBotsApi } from 'renderModule/api/group'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useGroupAssistantViewStore } from 'renderModule/windows/app/pinia/view/message/groupAssistant'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
@@ -62,7 +61,7 @@ import { computed, defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'groupDetailsAssistant',
-  components: { BeaverButton, BeaverImage },
+  components: { BeaverButton },
   emits: ['open', 'close'],
   setup() {
     const groupStore = useGroupStore()
@@ -86,7 +85,7 @@ export default defineComponent({
     })
 
     const creatorUserId = computed(() => userStore.getUserId)
-    const notificationBots = ref<INotificationBotItem[]>([])
+    const bots = ref<IBotItem[]>([])
     const loading = ref(false)
     const groupAssistantStore = useGroupAssistantViewStore()
 
@@ -94,36 +93,43 @@ export default defineComponent({
       if (!groupId.value || !creatorUserId.value)
         return
       loading.value = true
-      const res = await listNotificationBotsApi(creatorUserId.value, { groupId: groupId.value })
+      const res = await listBotsApi({ groupId: groupId.value })
       loading.value = false
       if (res.code === 0)
-        notificationBots.value = res.result.list || []
+        bots.value = res.result.list || []
     }
 
     watch(groupId, () => {
       loadList()
     }, { immediate: true })
 
-    watch(() => groupAssistantStore.listRefreshKey, () => {
-      loadList()
+    watch(() => groupAssistantStore.visible, (visible, prevVisible) => {
+      if (prevVisible && !visible)
+        loadList()
     })
 
     const openAdd = () => {
-      if (!groupId.value || !creatorUserId.value)
+      if (!groupId.value)
         return
-      groupAssistantStore.openPicker(groupId.value, creatorUserId.value)
+      groupAssistantStore.groupId = groupId.value
+      groupAssistantStore.groupBotId = null
+      groupAssistantStore.groupBotType = ''
+      groupAssistantStore.visible = true
     }
 
-    const openBotDetail = (bot: INotificationBotItem) => {
-      if (!groupId.value || !creatorUserId.value)
+    const openBotDetail = (bot: IBotItem) => {
+      if (!groupId.value)
         return
-      groupAssistantStore.openDetail(bot, groupId.value, creatorUserId.value)
+      groupAssistantStore.groupId = groupId.value
+      groupAssistantStore.groupBotId = bot.botId
+      groupAssistantStore.groupBotType = bot.botType || 'custom'
+      groupAssistantStore.visible = true
     }
 
     return {
       groupId,
       creatorUserId,
-      notificationBots,
+      bots,
       loading,
       loadList,
       openAdd,

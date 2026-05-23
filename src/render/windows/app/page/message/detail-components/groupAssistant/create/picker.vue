@@ -20,7 +20,7 @@
         @click="selectTemplate(tpl.key)"
       >
         <div class="group-assistant-picker__card-avatar">
-          <span>{{ tpl.avatarText }}</span>
+          <img :src="tpl.avatar" alt="">
         </div>
         <div class="group-assistant-picker__card-meta">
           <div class="group-assistant-picker__card-name">
@@ -36,26 +36,22 @@
 </template>
 
 <script lang="ts">
-import type { BotTemplateKey } from './config'
-import { botTemplateOptions, botTypeOptions } from './config'
-import { useGroupAssistantViewStore } from 'renderModule/windows/app/pinia/view/message/groupAssistant'
-import { computed, defineComponent } from 'vue'
+import type { GroupBotType } from '../config'
+import { botTemplateOptions, botTypeOptions } from '../config'
+import { defineComponent, ref } from 'vue'
 
 export default defineComponent({
   name: 'groupAssistantPicker',
-  setup() {
-    const store = useGroupAssistantViewStore()
-    const selectedBotType = computed(() => store.selectedBotType)
+  emits: ['select'],
+  setup(_, { emit }) {
+    const selectedBotType = ref(botTypeOptions[0]?.key || 'notification')
 
     const selectBotType = (key: string) => {
-      store.selectedBotType = key
+      selectedBotType.value = key
     }
 
-    const selectTemplate = (key: BotTemplateKey) => {
-      if (key === 'custom')
-        store.openCustom('custom')
-      else if (key === 'gitlab')
-        store.openCustom('gitlab')
+    const selectTemplate = (type: GroupBotType) => {
+      emit('select', type)
     }
 
     return {

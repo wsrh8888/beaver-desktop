@@ -230,8 +230,8 @@ export default defineComponent({
       if (!form.value.password) {
         errors.value.password = '请设置密码'
       }
-      else if (!/^\S{13,}$/.test(form.value.password)) {
-        errors.value.password = '密码长度不少于13位，且不能包含空格'
+      else if (!/^\S{6,}$/.test(form.value.password)) {
+        errors.value.password = '密码长度不少于6位，且不能包含空格'
       }
       else {
         errors.value.password = ''
