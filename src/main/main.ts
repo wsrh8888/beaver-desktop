@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { app, session } from 'electron'
+import { app } from 'electron'
 
 // 支持分配不同的本地缓存目录，用于多开测试
 if (process.env.APP_PROFILE) {
@@ -34,6 +34,7 @@ import authHandler from './ipc/render-to-main/auth'
 import messageManager from './message-manager'
 import { store } from './store'
 import { mcpManager } from './mcp-manager/index.js'
+import localServer from './server'
 
 // 屏蔽安全警告
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
@@ -65,14 +66,8 @@ class Main {
   async onAppReady() {
     await app.whenReady()
 
-    // 默认允许媒体权限（摄像头、麦克风），避免环境差异导致的权限弹窗或拦截
-    session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
-      if (permission === 'media') {
-        return callback(true)
-      }
-      callback(false)
-    })
-
+    // 启动本地 HTTP 服务（用于第三方网页检测登录状态）
+   
     if (store.get('userInfo')?.token) {
       // 初始化登录状态
       authHandler.handleLogin()
@@ -83,25 +78,17 @@ class Main {
     // IPC已在beforeAppReady中初始化，这里不需要重复初始化
     // ipcBase.init()
 
+     try {
+      await localServer.start()
+    } catch (error: any) {
+      logger.error({ text: `本地服务启动失败: ${error.message}` })
+    }
+
+    
     mcpManager.init()
   }
 
   setupEventListeners() {
-    // 处理 Windows/Linux 的第二个实例（通过 Scheme 启动）
-    app.on('second-instance', (_event, commandLine) => {
-      // 查找 beaver:// 协议的 URL
-      const url = commandLine.find(arg => arg.startsWith('beaver://'))
-      if (url) {
-        this.handleOAuthCallback(url)
-      }
-    })
-
-    // 处理 macOS 的 open-url 事件
-    app.on('open-url', (_event, url) => {
-      if (url.startsWith('beaver://')) {
-        this.handleOAuthCallback(url)
-      }
-    })
 
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') {
@@ -141,24 +128,6 @@ class Main {
     app.userAgentFallback = `${app.userAgentFallback || ''} ${customIdentifier}`.trim()
   }
 
-  // 处理 OAuth 回调
-  handleOAuthCallback(url: string) {
-    logger.info({ text: `收到 OAuth 回调: ${url}` })
-    
-    // 解析 URL，提取 code 参数
-    try {
-      const urlObj = new URL(url)
-      const code = urlObj.searchParams.get('code')
-      
-      if (code) {
-        logger.info({ text: `OAuth 授权码: ${code}` })
-        // TODO: 将 code 发送给渲染进程处理
-        // 可以通过 IPC 发送到登录窗口或主窗口
-      }
-    } catch (error) {
-      logger.error({ text: `解析 OAuth 回调失败: ${error}` })
-    }
-  }
 
   beforeAppReady() {
     messageManager.init()

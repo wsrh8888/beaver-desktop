@@ -38,6 +38,8 @@
         <ReplyMessage v-else-if="message.msg?.type === 11" :msg="message.msg" :sender="(message.sender as any)" />
         <!-- 合并转发消息组件（type=12） -->
         <MergedForwardMessage v-else-if="message.msg?.type === 12 && message.msg?.forwardMsg" :msg="message.msg" />
+        <!-- Markdown 消息组件（type=13） -->
+        <MarkdownMessage v-else-if="message.msg?.type === 13 && message.msg?.markdownMsg" :msg="message.msg" />
         <!-- 发送状态指示器 -->
         <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
@@ -80,6 +82,7 @@ import AudioFileMessage from './message/audio.vue'
 import CallMessage from './message/call.vue'
 import EmojiMessage from './message/emoji.vue'
 import ImageMessage from './message/image.vue'
+import MarkdownMessage from './message/markdown.vue'
 import MergedForwardMessage from './message/merged-forward.vue'
 import NotificationMessage from './message/notification.vue'
 import ReplyMessage from './message/reply.vue'
@@ -102,6 +105,7 @@ export default defineComponent({
     EmojiMessage,
     TextMessage,
     ImageMessage,
+    MarkdownMessage,
     MergedForwardMessage,
     NotificationMessage,
     RecalledMessage,

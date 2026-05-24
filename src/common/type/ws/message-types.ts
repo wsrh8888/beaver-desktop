@@ -52,6 +52,10 @@ export interface IVoiceMsg {
   size?: number
 }
 
+export interface IMarkdownMsg {
+  content: string
+}
+
 export interface IMessageMsg {
   type: number
   targetMsgId?: string
@@ -71,6 +75,7 @@ export interface IMessageMsg {
     count: number
     msgList?: IMessageMsg[]
   } | null
+  markdownMsg?: IMarkdownMsg | null
 }
 
 // WebSocket 消息发送者信息
