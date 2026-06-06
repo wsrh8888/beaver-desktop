@@ -48,8 +48,21 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
       return { list: [], count: 0 }
     }
 
+    const memberUserIds = userMemberships.map((m: any) => m.userId).filter((id: string) => id)
+    const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds: memberUserIds })
+    const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
+
+    // 不返回机器人/智能体的成员记录，仅保留普通用户
+    const humanMemberships = userMemberships.filter(
+      (membership: any) => userInfoMap.get(membership.userId)?.userType === 1,
+    )
+
+    if (humanMemberships.length === 0) {
+      return { list: [], count: 0 }
+    }
+
     // 业务逻辑：提取群组ID列表
-    const groupIds = userMemberships.map((membership) => membership.groupId)
+    const groupIds = humanMemberships.map((membership) => membership.groupId)
 
     // 业务逻辑：获取这些群组的详细信息
     const groupDetails = await dbServiceGroup.getGroupsByIds(groupIds)
@@ -117,20 +130,22 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     const userIds = members.map((m: any) => m.userId).filter((id: string) => id)
     const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds })
     const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
-
-    // 业务逻辑：格式化数据
-    const list = members.map((member: any) => {
-      const userInfo = userInfoMap.get(member.userId)
-      return {
-        userId: member.userId,
-        nickName: userInfo?.nickName || '',
-        avatar: userInfo?.avatar || '',
-        role: member.role || 0,
-        status: member.status || 1,
-        joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
-        version: member.version || 0,
-      }
-    })
+    
+    // 业务逻辑：格式化数据（不返回 bot/robot，仅普通用户）
+    const list = members
+      .filter((member: any) => userInfoMap.get(member.userId)?.userType === 1)
+      .map((member: any) => {
+        const userInfo = userInfoMap.get(member.userId)
+        return {
+          userId: member.userId,
+          nickName: userInfo?.nickName || '',
+          avatar: userInfo?.avatar || '',
+          role: member.role || 0,
+          status: member.status || 1,
+          joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
+          version: member.version || 0,
+        }
+      })
 
     return {
       list,
@@ -156,20 +171,22 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds })
     const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
 
-    // 业务逻辑：格式化数据
-    const list = allMembers.map((member: any) => {
-      const userInfo = userInfoMap.get(member.userId)
-      return {
-        userId: member.userId,
-        groupId: member.groupId,
-        nickName: userInfo?.nickName || '',
-        avatar: userInfo?.avatar || '',
-        role: member.role || 0,
-        status: member.status || 1,
-        joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
-        version: member.version || 0,
-      }
-    })
+    // 业务逻辑：格式化数据（不返回 bot/robot，仅普通用户）
+    const list = allMembers
+      .filter((member: any) => userInfoMap.get(member.userId)?.userType === 1)
+      .map((member: any) => {
+        const userInfo = userInfoMap.get(member.userId)
+        return {
+          userId: member.userId,
+          groupId: member.groupId,
+          nickName: userInfo?.nickName || '',
+          avatar: userInfo?.avatar || '',
+          role: member.role || 0,
+          status: member.status || 1,
+          joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
+          version: member.version || 0,
+        }
+      })
 
     return {
       list,

@@ -12,6 +12,7 @@ export const users = sqliteTable('users', {
   avatar: text('avatar'),
   abstract: text('abstract'), // 个性签名
   gender: integer('gender').default(3), // 性别：1男 2女 3未知
+  userType: integer('user_type').default(1), // 1普通用户 2bot 3robot
   status: integer('status').default(1),
   version: integer('version').default(0), // 版本号
   createdAt: integer('created_at').default(sql`(strftime('%s', 'now'))`),

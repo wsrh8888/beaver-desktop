@@ -113,6 +113,7 @@ export interface IUserSyncItem {
   email: string
   gender: number
   status: number
+  userType: number
   version: number
   createdAt: number
   updatedAt: number

@@ -3,6 +3,7 @@ import { dataSyncManager } from 'mainModule/datasync/manager.ts'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 import WsManager from 'mainModule/ws-manager/index'
+import messageBusiness from 'mainModule/business/chat/message'
 import chatMessageRouter from './receivers/chat/inedx'
 import emojiMessageRouter from './receivers/emoji/index'
 import friendMessageRouter from './receivers/friend/index'
@@ -113,7 +114,12 @@ class MessageManager {
       timestamp: Date.now(),
     })
 
-    logger.error({ text: 'WebSocket 错误', data: { error } }, 'MessageManager')
+    logger.error({
+      text: 'WebSocket 错误',
+      data: error instanceof Error
+        ? { message: error.message, name: error.name, code: (error as NodeJS.ErrnoException).code }
+        : { message: String(error) },
+    }, 'MessageManager')
   }
 
   /**
@@ -187,7 +193,10 @@ class MessageManager {
       case 'CALL':
         callMessageRouter.processCallMessage(wsMessage.content)
         break
-      case 'HEARTBEAT':
+      case 'ACK':
+        if (wsMessage.messageId) {
+          messageBusiness.handleAck(wsMessage.messageId)
+        }
         break
       default:
         logger.warn({ text: '未处理的消息类型', data: { command: wsMessage.command } }, 'MessageManager')

@@ -21,7 +21,7 @@
 <script lang="ts">
 import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { CacheType } from 'commonModule/type/cache/cache'
-import { previewOnlineFileApi } from 'renderModule/api/file'
+import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
@@ -71,7 +71,7 @@ export default defineComponent({
 
       try {
         // 获取视频URL（优先使用缓存，否则使用在线URL）
-        let videoUrl = previewOnlineFileApi(fileKey)
+        let videoUrl = fileKey
         try {
           const cachedUrl = await electron.cache.get(CacheType.USER_VIDEO, fileKey)
           if (cachedUrl) {
@@ -88,7 +88,7 @@ export default defineComponent({
           unique: true,
           params: {
             url: videoUrl,
-            title: fileKey,
+            title: getFileNameFromUrl(fileKey),
           },
         })
       }

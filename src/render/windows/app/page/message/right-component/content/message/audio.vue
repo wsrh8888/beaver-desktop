@@ -34,7 +34,6 @@
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
 import { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { previewOnlineFileApi } from 'renderModule/api/file'
 import AudioIconSvg from 'renderModule/assets/image/chat/audio-icon.svg'
 import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
@@ -79,7 +78,7 @@ export default defineComponent({
 
       try {
         // 获取音频URL（优先使用缓存，否则使用在线URL）
-        let audioUrl = previewOnlineFileApi(fileKey)
+        let audioUrl = fileKey
         try {
           const cachedUrl = await electron.cache.get(CacheType.USER_IMAGE, fileKey)
           if (cachedUrl) {

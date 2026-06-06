@@ -1,6 +1,5 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { addEmojiApi, updateFavoriteEmojiApi } from 'renderModule/api/emoji'
-import { previewOnlineFileApi } from 'renderModule/api/file'
 import Message from 'renderModule/components/ui/message'
 import { BaseMessageHandler } from './base'
 
@@ -138,7 +137,7 @@ class ImageHandler extends BaseMessageHandler {
 
   private async handleDownload(message: any): Promise<void> {
     console.error('121111111111111111', message)
-    const imageUrl = previewOnlineFileApi(message.msg.imageMsg?.fileKey)
+    const imageUrl = message.msg.imageMsg?.fileKey || ''
     const filename = message.msg.imageMsg?.fileKey
     if (imageUrl) {
       await this.downloadFile(imageUrl, filename)

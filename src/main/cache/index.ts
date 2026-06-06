@@ -4,14 +4,13 @@
  */
 
 import type { CacheType } from 'commonModule/type/cache/cache'
-import type { DownloadedFileInfo } from 'mainModule/utils/file/download'
+import { getCacheLocalFileName, moveDownloadToCache } from 'mainModule/utils/file'
 import * as path from 'node:path'
-import { previewOnlineFileApi } from 'mainModule/api/file'
-import { getCachePath, getRootPath } from 'mainModule/config'
+import { getCachePath } from 'mainModule/config'
 import { downloadFile } from 'mainModule/utils/file/download'
-import dBServicemediaCache  from '../database/services/media/media'
-import { calculateFileMD5, createDir, deleteFile, fileExists, getFileSize } from '../utils/file'
-import { cacheConfig, cacheTypeToFilePath } from './config'
+import dBServicemediaCache from '../database/services/media/media'
+import { createDir, deleteFile, fileExists, getFileSize } from '../utils/file'
+import { cacheConfig, cacheTypeToFilePath, getDateFolder } from './config'
 
 export interface CacheEntry {
   hash: string
@@ -29,7 +28,7 @@ export interface CacheEntry {
 class MediaManager {
   private cacheRoot: string
   private userId?: string
-  private downloadingFiles: Set<string> = new Set() // 记录正在下载的文件，避免并发下载同一个文件
+  private downloadingFiles: Set<string> = new Set()
   private cacheFile: Record<string, string> = {}
 
   constructor() {
@@ -38,28 +37,19 @@ class MediaManager {
 
   init(userId?: string) {
     this.userId = userId
-    // 从配置根目录开始递归处理
     this.processConfigAndCreateDirs(cacheConfig, this.cacheRoot, userId)
   }
 
-  /**
-   * 递归处理配置对象并直接创建目录
-   * @param config 配置对象
-   * @param currentPath 当前路径
-   * @param userId 用户ID，用于处理占位符
-   */
   private async processConfigAndCreateDirs(config: any, currentPath: string, userId?: string): Promise<void> {
     for (const [key, value] of Object.entries(config)) {
       if (key === '[userId]') {
         if (!userId)
-          continue // 没有userId，跳过用户目录
-        // 直接用userId创建目录，然后递归处理子配置
+          continue
         const userPath = path.join(currentPath, userId)
         await createDir(userPath)
         await this.processConfigAndCreateDirs(value, userPath, userId)
       }
       else if (typeof value === 'object' && value !== null) {
-        // 普通目录，直接创建并递归
         const newPath = path.join(currentPath, key)
         await createDir(newPath)
         await this.processConfigAndCreateDirs(value, newPath, userId)
@@ -67,155 +57,108 @@ class MediaManager {
     }
   }
 
-  // ============ 核心CRUD方法 ============
+  private resolveCacheDir(type: CacheType): string {
+    let filePath = cacheTypeToFilePath[type]
+    if (filePath.includes('[userId]')) {
+      if (!this.userId) {
+        throw new Error('userId is not set')
+      }
+      filePath = filePath.replace('[userId]', this.userId)
+    }
+
+    return path.join(this.cacheRoot, filePath, getDateFolder())
+  }
+
+  private resolveOutputPath(type: CacheType, md5: string, fileUrl: string): string {
+    return path.join(this.resolveCacheDir(type), getCacheLocalFileName(md5, fileUrl))
+  }
+
+  private createTempPath(type: CacheType): string {
+    return path.join(this.resolveCacheDir(type), '.tmp', `${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  }
 
   /**
-   * 添加缓存记录到数据库
-   * 根据文件类型自动决定缓存目录路径
-   *
-   * 对应config.ts中的目录：
-   * - images: 图片文件
-   * - videos: 视频文件
-   * - voices: 语音文件
-   * - avatars: 用户头像
+   * @param fileUrl 完整远程 URL（与 media.url 一致）
    */
-  async add(type: CacheType, fileKey: string): Promise<string | null> {
-    const fileUrl = previewOnlineFileApi(fileKey)
-
-    // 检查是否已经在下载中
-    if (this.downloadingFiles.has(fileKey)) {
+  async add(type: CacheType, fileUrl: string): Promise<string | null> {
+    if (this.downloadingFiles.has(fileUrl)) {
       return fileUrl
     }
 
-    // 标记开始下载
-    this.downloadingFiles.add(fileKey)
+    this.downloadingFiles.add(fileUrl)
 
     try {
-      if (!fileKey) {
-        throw new Error('fileKey is not set')
-      }
-      // 从 fileKey 中提取 MD5（去掉文件后缀）
-      const lastDotIndex = fileKey.lastIndexOf('.')
-      const expectedMd5 = lastDotIndex > 0 ? fileKey.substring(0, lastDotIndex) : fileKey
-
-      // 根据类型获取文件路径
-      let filePath = cacheTypeToFilePath[type]
-      // 判断路径是否存在[userId]占位符，如果存在则替换为userId
-      if (filePath.includes('[userId]')) {
-        if (!this.userId) {
-          throw new Error('userId is not set')
-        }
-        filePath = filePath.replace('[userId]', this.userId)
+      if (!fileUrl) {
+        throw new Error('fileUrl is not set')
       }
 
-      // 构建完整的输出路径（包含文件名）
-      const outputPath = path.join(this.cacheRoot, filePath, fileKey)
-
-      // 检查文件是否已存在且MD5正确
-      if (await fileExists(outputPath)) {
-        console.log('缓存文件已存在，验证MD5: ', outputPath)
-        try {
-          const existingFileMd5 = await calculateFileMD5(outputPath)
-          if (existingFileMd5 === expectedMd5) {
-            console.log('MD5验证通过，直接保存到数据库: ', fileKey)
-            // 获取文件大小
-            const fileSize = await getFileSize(outputPath)
-            // 保存到数据库（直接使用 fileKey 作为主键）
-            await dBServicemediaCache.upsert({ fileKey, path: outputPath, type, size: fileSize })
-            return outputPath
-          }
-          else {
-            console.warn(`缓存文件MD5不匹配，删除旧文件重新下载: ${fileKey}. Expected: ${expectedMd5}, Got: ${existingFileMd5}`)
-            await deleteFile(outputPath)
-          }
-        }
-        catch (error) {
-          console.warn(`验证缓存文件MD5失败，删除文件重新下载: ${fileKey}`, (error as Error).message)
-          await deleteFile(outputPath)
-        }
+      const cacheInfo = await dBServicemediaCache.getMediaInfo({ url: fileUrl })
+      if (cacheInfo && await fileExists(cacheInfo.path)) {
+        return cacheInfo.path
       }
 
-      console.log('开始下载文件: ', fileUrl)
-      // 确保目录存在
-      await createDir(path.dirname(outputPath))
+      const tempPath = this.createTempPath(type)
+      await createDir(path.dirname(tempPath))
 
-      // 下载文件到本地并获取文件信息
-      const downloadedFile: DownloadedFileInfo = await downloadFile(fileUrl, outputPath)
+      const downloadedFile = await downloadFile(fileUrl, tempPath)
+      const finalPath = this.resolveOutputPath(type, downloadedFile.md5, fileUrl)
+      const savedPath = await moveDownloadToCache(tempPath, finalPath)
 
-      console.log('下载文件完成: ', outputPath)
-      if (downloadedFile.md5 !== expectedMd5) {
-        // MD5 不匹配，删除下载的文件
-        await deleteFile(outputPath)
-        console.warn(`MD5 verification failed for ${fileKey}. Expected: ${expectedMd5}, Got: ${downloadedFile.md5}`)
-        return fileUrl
-      }
+      await dBServicemediaCache.upsert({
+        url: fileUrl,
+        md5: downloadedFile.md5,
+        path: savedPath,
+        type,
+        size: downloadedFile.size,
+      })
 
-      // 保存到数据库（直接使用 fileKey 作为主键）
-      await dBServicemediaCache.upsert({ fileKey: fileKey, path: outputPath, type, size: downloadedFile.size })
-
-      return outputPath
+      return savedPath
     }
     catch (error) {
-      // 下载失败，静默处理，返回在线URL
-      console.warn(`Cache download failed for ${fileKey}`)
+      console.warn(`Cache download failed for ${fileUrl}`)
       console.error((error as Error)?.message)
-      console.error('fileUrl: ', fileUrl)
       return fileUrl
+    }
+    finally {
+      this.downloadingFiles.delete(fileUrl)
     }
   }
 
   /**
-   * 查询缓存文件路径
+   * @param fileUrl 完整远程 URL，先查 media 表再决定返回本地路径或远程 URL
    */
-  async get(type: CacheType, fileKey: string): Promise<string> {
-    console.log('开始查询缓存文件: ', fileKey)
-    const fileUrl = previewOnlineFileApi(fileKey)
-    if (this.cacheFile[fileKey]) {
-      return this.cacheFile[fileKey]
-    }
-    else {
-      this.cacheFile[fileKey] = fileUrl
+  async get(type: CacheType, fileUrl: string): Promise<string> {
+    if (this.cacheFile[fileUrl]) {
+      return this.cacheFile[fileUrl]
     }
 
-    if (!fileKey) {
-      console.warn('fileKey is not set')
+    if (!fileUrl) {
       return fileUrl
     }
 
-    const cacheInfo = await dBServicemediaCache.getMediaInfo({ fileKey: fileKey })
-    if (cacheInfo) {
-      console.log('缓存文件存在: ', cacheInfo.path)
-      this.cacheFile[fileKey] = `file://${cacheInfo.path}`
-      return `file://${cacheInfo.path}`
+    const cacheInfo = await dBServicemediaCache.getMediaInfo({ url: fileUrl })
+    if (cacheInfo && await fileExists(cacheInfo.path)) {
+      const localPath = `file://${cacheInfo.path}`
+      this.cacheFile[fileUrl] = localPath
+      return localPath
     }
-    console.log('缓存文件不存在: ', fileKey)
-    // 检查是否正在下载这个文件，如果是则直接返回在线URL
 
-    // 没有缓存，异步下载到本地（不阻塞返回）
-    this.add(type, fileKey).catch(() => {
-      // 下载失败静默处理
-    })
+    this.cacheFile[fileUrl] = fileUrl
+    this.add(type, fileUrl).catch(() => {})
 
-    // 返回在线URL
     return fileUrl
   }
 
-  /**
-   * 删除缓存（软删除 + 物理删除文件）
-   */
-  async remove(fileKey: string): Promise<void> {
-    const cacheInfo = await dBServicemediaCache.getMediaInfo({ fileKey: fileKey })
-    if (this.cacheFile[fileKey]) {
-      delete this.cacheFile[fileKey]
+  async remove(fileUrl: string): Promise<void> {
+    const cacheInfo = await dBServicemediaCache.getMediaInfo({ url: fileUrl })
+    if (this.cacheFile[fileUrl]) {
+      delete this.cacheFile[fileUrl]
     }
     if (cacheInfo) {
-      // 物理删除文件
       await deleteFile(cacheInfo.path)
-      // 数据库软删除
-      await dBServicemediaCache.deleteMedia({ fileKey: fileKey })
+      await dBServicemediaCache.deleteMedia({ url: fileUrl })
     }
   }
 }
 
-// 导出单例实例
 export default new MediaManager()

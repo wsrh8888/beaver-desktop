@@ -21,6 +21,9 @@ import type {
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
 
+const AUTH_PUBLIC = `${baseUrl}/api/auth/auth_public/v1`
+const AUTH = `${baseUrl}/api/auth/auth/v1`
+
 /**
  * @description: 手机号登录
  */
@@ -28,7 +31,7 @@ export const phoneLoginApi = (data: IPhoneLoginReq) => {
   return ajax<IPhoneLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/phone_login`,
+    url: `${AUTH_PUBLIC}/phone_login`,
   })
 }
 
@@ -39,7 +42,7 @@ export const emailPasswordLoginApi = (data: IEmailPasswordLoginReq) => {
   return ajax<IEmailPasswordLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/email_password_login`,
+    url: `${AUTH_PUBLIC}/email_password_login`,
   })
 }
 
@@ -49,7 +52,7 @@ export const emailPasswordLoginApi = (data: IEmailPasswordLoginReq) => {
 export const authenticationApi = () => {
   return ajax({
     method: 'GET',
-    url: `${baseUrl}/api/auth/authentication`,
+    url: `${AUTH_PUBLIC}/authentication`,
   })
 }
 
@@ -60,7 +63,7 @@ export const phoneRegisterApi = (data: IPhoneRegisterReq) => {
   return ajax<IPhoneRegisterRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/phone_register`,
+    url: `${AUTH_PUBLIC}/phone_register`,
   })
 }
 
@@ -71,7 +74,7 @@ export const emailRegisterApi = (data: IEmailRegisterReq) => {
   return ajax<IEmailRegisterRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/email_register`,
+    url: `${AUTH_PUBLIC}/email_register`,
   })
 }
 
@@ -82,7 +85,7 @@ export const logoutApi = (data: ILogoutReq) => {
   return ajax<ILogoutRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/logout`,
+    url: `${AUTH}/logout`,
   })
 }
 
@@ -93,7 +96,7 @@ export const getPhoneCodeApi = (data: IGetPhoneCodeReq) => {
   return ajax<IGetPhoneCodeRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/phonecode`,
+    url: `${AUTH_PUBLIC}/phonecode`,
   })
 }
 
@@ -104,7 +107,7 @@ export const getEmailCodeApi = (data: IGetEmailCodeReq) => {
   return ajax<IGetEmailCodeRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/emailcode`,
+    url: `${AUTH_PUBLIC}/emailcode`,
   })
 }
 
@@ -115,7 +118,7 @@ export const emailLoginApi = (data: IEmailLoginReq) => {
   return ajax<IEmailLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/email_login`,
+    url: `${AUTH_PUBLIC}/email_login`,
   })
 }
 
@@ -126,6 +129,6 @@ export const resetPasswordApi = (data: IResetPasswordReq) => {
   return ajax<IResetPasswordRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/reset_password`,
+    url: `${AUTH_PUBLIC}/reset_password`,
   })
 }

@@ -16,7 +16,7 @@ import ajax from 'renderModule/utils/request/ajax'
 export const getUserInfoApi = () => {
   return ajax<IUserInfoRes>({
     method: 'GET',
-    url: `${baseUrl}/api/user/user_info`,
+    url: `${baseUrl}/api/user/v1/user_info`,
   })
 }
 /**
@@ -26,7 +26,7 @@ export const updateInfoApi = (data: IUpdateInfoReq) => {
   return ajax<IUpdateInfoRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/user/update_info`,
+    url: `${baseUrl}/api/user/v1/update_info`,
   })
 }
 
@@ -37,7 +37,7 @@ export const updatePasswordApi = (data: IUpdatePasswordReq) => {
   return ajax<IUpdatePasswordRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/user/update_password`,
+    url: `${baseUrl}/api/user/v1/update_password`,
   })
 }
 
@@ -48,6 +48,6 @@ export const updateEmailApi = (data: IUpdateEmailReq) => {
   return ajax<IUpdateEmailRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/user/update_email`,
+    url: `${baseUrl}/api/user/v1/update_email`,
   })
 }

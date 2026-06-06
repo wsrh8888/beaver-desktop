@@ -187,6 +187,7 @@ export interface ISender {
   userId: string
   avatar: string
   nickName: string
+  userType: number // 1普通用户 2bot 3robot
 }
 
 // 会话信息请求

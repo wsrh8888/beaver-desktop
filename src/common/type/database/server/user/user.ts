@@ -68,6 +68,7 @@ export type DBGetUsersBasicInfoRes = Array<{
   userId: string
   nickName: string
   avatar: string
+  userType: number
 }>
 
 /**
@@ -86,6 +87,7 @@ export type DBGetAllUsersRes = Array<{
   phone: string
   email: string
   gender: number
+  userType: number
   status: number
   version: number
   createdAt: number

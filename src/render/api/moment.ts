@@ -26,7 +26,7 @@ export const createMomentApi = (data: ICreateMomentReq) => {
   return ajax<ICreateMomentRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/moment/create`,
+    url: `${baseUrl}/api/moment/v1/create`,
   })
 }
 
@@ -40,7 +40,7 @@ export const getMomentListApi = (data: IGetMomentListReq) => {
       page: data.page,
       limit: data.limit,
     },
-    url: `${baseUrl}/api/moment/list`,
+    url: `${baseUrl}/api/moment/v1/list`,
   })
 }
 
@@ -54,7 +54,7 @@ export const likeMomentApi = (data: ILikeMomentReq) => {
       momentId: data.momentId,
       status: data.status,
     },
-    url: `${baseUrl}/api/moment/like`,
+    url: `${baseUrl}/api/moment/v1/like`,
   })
 }
 
@@ -70,7 +70,7 @@ export const createMomentCommentApi = (data: ICreateMomentCommentReq) => {
       parentId: data.parentId,
       replyToCommentId: data.replyToCommentId,
     },
-    url: `${baseUrl}/api/moment/comment/create`,
+    url: `${baseUrl}/api/moment/v1/comment/create`,
   })
 }
 
@@ -83,7 +83,7 @@ export const getMomentDetailApi = (data: IGetMomentDetailReq) => {
     data: {
       momentId: data.momentId,
     },
-    url: `${baseUrl}/api/moment/detail`,
+    url: `${baseUrl}/api/moment/v1/detail`,
   })
 }
 
@@ -96,7 +96,7 @@ export const deleteMomentApi = (data: IDeleteMomentReq) => {
     data: {
       momentId: data.momentId,
     },
-    url: `${baseUrl}/api/moment/delete`,
+    url: `${baseUrl}/api/moment/v1/delete`,
   })
 }
 
@@ -107,7 +107,7 @@ export const getMomentCommentsApi = (data: IGetMomentCommentsReq) => {
   return ajax<IGetMomentCommentsRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/moment/comments`,
+    url: `${baseUrl}/api/moment/v1/comments`,
   })
 }
 
@@ -130,7 +130,7 @@ export const getMomentChildCommentsApi = (
   return ajax<IGetMomentCommentsRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/moment/comments`,
+    url: `${baseUrl}/api/moment/v1/comments`,
   })
 }
 
@@ -141,6 +141,6 @@ export const getMomentLikesApi = (data: IGetMomentLikesReq) => {
   return ajax<IGetMomentLikesRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/moment/likes`,
+    url: `${baseUrl}/api/moment/v1/likes`,
   })
 }

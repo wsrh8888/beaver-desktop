@@ -16,7 +16,7 @@ export const getNotificationEventsByIdsApi = (data: IGetNotificationEventsByIdsR
   return ajax<IGetNotificationEventsByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/notification/getEventsByIds`,
+    url: `${getBaseUrl()}/api/notification/v1/getEventsByIds`,
   })
 }
 
@@ -27,7 +27,7 @@ export const getNotificationInboxByIdsApi = (data: IGetNotificationInboxByIdsReq
   return ajax<IGetNotificationInboxByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/notification/getInboxByIds`,
+    url: `${getBaseUrl()}/api/notification/v1/getInboxByIds`,
   })
 }
 
@@ -38,6 +38,6 @@ export const getNotificationReadCursorsApi = (data: IGetNotificationReadCursorsR
   return ajax<IGetNotificationReadCursorsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/notification/getReadCursors`,
+    url: `${getBaseUrl()}/api/notification/v1/getReadCursors`,
   })
 }

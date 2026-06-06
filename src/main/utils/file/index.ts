@@ -78,6 +78,48 @@ export async function getFileSize(filePath: string): Promise<number> {
   }
 }
 
+/** 从完整 URL 提取文件后缀 */
+export function getFileExtFromUrl(fileUrl: string): string {
+  if (!fileUrl)
+    return ''
+
+  try {
+    if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+      return path.extname(new URL(fileUrl).pathname)
+    }
+  }
+  catch {
+    // ignore
+  }
+
+  return ''
+}
+
+/** 根据文件内容 MD5 生成本地磁盘文件名 */
+export function getCacheLocalFileName(md5: string, fileUrl?: string): string {
+  if (!md5)
+    return ''
+
+  const ext = fileUrl ? getFileExtFromUrl(fileUrl) : ''
+  return `${md5}${ext}`
+}
+
+/**
+ * 将临时下载文件移动到内容寻址的最终路径
+ * 若目标已存在（同内容去重）则删除临时文件
+ */
+export async function moveDownloadToCache(tempPath: string, finalPath: string): Promise<string> {
+  await createDir(path.dirname(finalPath))
+
+  if (await fileExists(finalPath)) {
+    await deleteFile(tempPath)
+    return finalPath
+  }
+
+  await fs.promises.rename(tempPath, finalPath)
+  return finalPath
+}
+
 /**
  * 计算文件MD5
  */

@@ -5,13 +5,6 @@ import { getFileInfo } from 'renderModule/utils/file/index'
 import ajax from 'renderModule/utils/request/ajax'
 
 /**
- * @description: 预览文件
- */
-export const previewOnlineFileApi = (fileKey: string) => {
-  return `${baseUrl}/api/file/preview/${fileKey}`
-}
-
-/**
  * @description: 文件上传总入口
  */
 export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFileUploadResult> => {
@@ -28,8 +21,8 @@ export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFile
  */
 const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
   // 根据目标选择URL
-  const baseEndpoint = target === 'qiniu' ? 'uploadQiniu' : 'uploadLocal'
-  let uploadUrl = `${baseUrl}/api/file/${baseEndpoint}`
+  const uploadPath = target === 'qiniu' ? '/api/file/v1/uploadQiniu' : '/api/file/v1/uploadLocal'
+  let uploadUrl = `${baseUrl}${uploadPath}`
 
   if (fileKey) {
     uploadUrl += `?fileKey=${encodeURIComponent(fileKey)}`
@@ -53,12 +46,14 @@ const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'lo
   })
   if (result.code !== 0) {
     Message.error(result.msg)
-    return Promise.reject(new Error(result.message))
+    return Promise.reject(new Error(result.msg))
   }
 
+  const fileUrl = result.result.fileUrl || result.result.fileKey
+
   return {
-    fileKey: result.result.fileKey,
-    fileUrl: result.result.fileUrl, // 使用后端返回的完整URL
+    fileKey: fileUrl,
+    fileUrl, // 使用后端返回的完整URL
     originalName: result.result.originalName,
     fileInfo,
   }

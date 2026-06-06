@@ -76,6 +76,7 @@ class UserBusiness extends BaseBusiness<UserSyncItem> {
             email: user.email,
             gender: user.gender,
             status: user.status,
+            userType: user.userType,
             version: user.version,
             createdAt: Math.floor(user.createdAt / 1000), // 转换为秒级时间戳
             updatedAt: Math.floor(user.updatedAt / 1000),

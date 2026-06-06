@@ -1,10 +1,4 @@
 import type {
-  IFriendSyncReq,
-  IFriendSyncRes,
-  IFriendUserVersionsReq,
-  IFriendUserVersionsRes,
-  IFriendVerifySyncReq,
-  IFriendVerifySyncRes,
   IGetFriendsListByIdsReq,
   IGetFriendsListByIdsRes,
   IGetFriendVerifiesListByIdsReq,
@@ -14,46 +8,13 @@ import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
 
 /**
- * @description: 好友数据同步
- */
-export const friendSyncApi = (data: IFriendSyncReq) => {
-  return ajax<IFriendSyncRes>({
-    method: 'POST',
-    data,
-    url: `${getBaseUrl()}/api/friend/sync`,
-  })
-}
-
-/**
- * @description: 好友验证数据同步
- */
-export const friendVerifySyncApi = (data: IFriendVerifySyncReq) => {
-  return ajax<IFriendVerifySyncRes>({
-    method: 'POST',
-    data,
-    url: `${getBaseUrl()}/api/friend/verifySync`,
-  })
-}
-
-/**
- * @description: 获取好友用户版本信息（用于数据同步）
- */
-export const friendUserVersionsApi = (data: IFriendUserVersionsReq) => {
-  return ajax<IFriendUserVersionsRes>({
-    method: 'POST',
-    data,
-    url: `${getBaseUrl()}/api/friend/friend-user-versions`,
-  })
-}
-
-/**
  * @description: 批量获取好友数据
  */
 export const getFriendsListByIdsApi = (data: IGetFriendsListByIdsReq) => {
   return ajax<IGetFriendsListByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/friend/getFriendsListByIds`,
+    url: `${getBaseUrl()}/api/friend/v1/getFriendsListByIds`,
   })
 }
 
@@ -64,8 +25,8 @@ export const getFriendVerifiesListByIdsApi = (data: IGetFriendVerifiesListByIdsR
   return ajax<IGetFriendVerifiesListByIdsRes>({
     method: 'POST',
     data: {
-      verifyIds: data.verifyIds, // 后端期望的字段名
+      verifyIds: data.verifyIds,
     },
-    url: `${getBaseUrl()}/api/friend/getFriendVerifiesListByIds`,
+    url: `${getBaseUrl()}/api/friend/v1/getFriendVerifiesListByIds`,
   })
 }
