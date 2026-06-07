@@ -2,17 +2,8 @@
  * @description: 下载更新参数接口
  */
 export interface IDownloadOptions {
-  /**
-   * @description: 文件Key（包含MD5和后缀名）
-   */
-  fileKey: string
-  /**
-   * @description: 文件MD5值用于校验
-   */
+  fileUrl: string
   md5: string
-  /**
-   * @description: 文件版本
-   */
   version: string
 }
 

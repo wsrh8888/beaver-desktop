@@ -3,7 +3,6 @@ import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 
 /**
  * @description: 从编辑器 DOM 提取结构化消息列表 (IMessageMsg 格式)
- * 遵循语义化：IMG 仅代表图片或表情
  */
 export function parseEditorDOM(editorElement: HTMLElement): IMessageMsg[] {
   const messages: IMessageMsg[] = []
@@ -20,29 +19,27 @@ export function parseEditorDOM(editorElement: HTMLElement): IMessageMsg[] {
     } else if (node.nodeType === Node.ELEMENT_NODE) {
       const el = node as HTMLElement
       if (el.tagName === 'IMG') {
-        const fileKey = el.getAttribute('data-file-key')
+        const fileUrl = el.getAttribute('data-file-url')
         const typeStr = el.getAttribute('data-type') || 'image'
         const infoStr = el.getAttribute('data-info')
         const info = infoStr ? JSON.parse(infoStr) : {}
 
-        if (fileKey) {
+        if (fileUrl) {
           const msg: IMessageMsg = { type: MessageType.IMAGE }
 
-          // 只处理本应属于 IMG 标签的类型
           if (typeStr === 'emoji') {
             msg.type = MessageType.EMOJI
             msg.emojiMsg = {
-              fileKey,
+              fileUrl,
               emojiId: info.emojiId || '',
               packageId: info.packageId || '',
               width: info.width,
               height: info.height
             }
           } else {
-            // 纯图片
             msg.type = MessageType.IMAGE
             msg.imageMsg = {
-              fileKey,
+              fileUrl,
               width: info.width || 0,
               height: info.height || 0
             }
@@ -62,7 +59,6 @@ export function parseEditorDOM(editorElement: HTMLElement): IMessageMsg[] {
 
   editorElement.childNodes.forEach(child => walk(child))
 
-  // 合并连续文本块
   const merged: IMessageMsg[] = []
   for (const msg of messages) {
     const last = merged[merged.length - 1]

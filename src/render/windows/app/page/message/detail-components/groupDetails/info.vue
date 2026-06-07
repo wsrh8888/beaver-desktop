@@ -282,10 +282,10 @@ export default defineComponent({
       if (!file)
         return
       const uploadResult = await uploadFile(file)
-      if (uploadResult?.fileKey) {
+      if (uploadResult?.fileUrl) {
         await updateGroupInfoApi({
           groupId: groupId.value,
-          avatar: uploadResult.fileKey,
+          avatar: uploadResult.fileUrl,
         })
         await groupStore.updateGroupInfo(groupInfo.value!.conversationId)
         Message.success('头像上传成功')

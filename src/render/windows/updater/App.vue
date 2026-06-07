@@ -93,7 +93,7 @@
       <div class="action-buttons-container">
         <!-- 空闲状态按钮 -->
         <div class="button-set" :class="{ active: updateStatus === 'idle' }">
-          <BeaverButton type="default" size="small" @click="handleClose">
+          <BeaverButton v-if="!forceUpdate" type="default" size="small" @click="handleClose">
             稍后再说
           </BeaverButton>
           <BeaverButton type="primary" size="small" @click="handleUpdate">
@@ -119,7 +119,7 @@
 
         <!-- 完成状态按钮 -->
         <div class="button-set" :class="{ active: updateStatus === 'completed' }">
-          <BeaverButton type="default" size="small" @click="handleClose">
+          <BeaverButton v-if="!forceUpdate" type="default" size="small" @click="handleClose">
             稍后安装
           </BeaverButton>
           <BeaverButton type="success" size="small" @click="handleRestart">
@@ -137,7 +137,7 @@
 <script lang="ts">
 import { NotificationModule } from 'commonModule/type/preload/notification'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
-import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import { defineComponent, onMounted, onUnmounted, ref, computed } from 'vue'
 
 export default defineComponent({
   name: 'UpdaterApp',
@@ -147,11 +147,15 @@ export default defineComponent({
   setup() {
     const updateInfo = ref({
       version: '',
-      fileKey: '',
+      fileUrl: '',
       size: 0,
       description: '',
       releaseNotes: '',
+      forceUpdate: false,
+      md5: '',
     })
+
+    const forceUpdate = computed(() => !!updateInfo.value.forceUpdate)
 
     const updateStatus = ref<'idle' | 'downloading' | 'completed'>('idle')
     const downloadProgress = ref(0)
@@ -172,7 +176,7 @@ export default defineComponent({
 
       // 构建下载参数
       const downloadOptions = {
-        fileKey: updateInfo.value.fileKey, // 直接使用 fileKey
+        fileUrl: updateInfo.value.fileUrl,
         md5: updateInfo.value.md5,
         version: updateInfo.value.version,
       }
@@ -199,7 +203,7 @@ export default defineComponent({
     const handleRestart = () => {
       // 构建重启参数
       const restartOptions = {
-        fileKey: updateInfo.value.fileKey,
+        fileUrl: updateInfo.value.fileUrl,
         md5: updateInfo.value.md5,
         version: updateInfo.value.version,
       }
@@ -222,7 +226,7 @@ export default defineComponent({
     const checkLocalUpdateFile = async () => {
       try {
         // 检查缓存数据库中是否有这个文件的记录
-        const result = await electron?.cache.get('PUBLIC_UPDATE', updateInfo.value.fileKey)
+        const result = await electron?.cache.get('PUBLIC_UPDATE', updateInfo.value.fileUrl)
         console.error('检查本地更新文件:', result)
         // 如果返回的是本地路径（而不是在线URL），说明文件已存在
         if (result && result.includes('file://')) {
@@ -256,6 +260,7 @@ export default defineComponent({
       updateStatus,
       downloadProgress,
       autoUpdate,
+      forceUpdate,
       handleUpdate,
       handleCancel,
       handleRestart,

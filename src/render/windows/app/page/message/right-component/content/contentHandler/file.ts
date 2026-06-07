@@ -34,8 +34,8 @@ class FileHandler extends BaseMessageHandler {
   }
 
   private async handleSave(message: any): Promise<void> {
-    const fileUrl = message.msg.fileMsg?.url
-    const filename = message.msg.fileMsg?.name || 'file'
+    const fileUrl = message.msg.fileMsg?.fileUrl
+    const filename = message.msg.fileMsg?.fileName || 'file'
     if (fileUrl) {
       await this.downloadFile(fileUrl, filename)
     }

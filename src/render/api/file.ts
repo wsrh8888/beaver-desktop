@@ -49,11 +49,13 @@ const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'lo
     return Promise.reject(new Error(result.msg))
   }
 
-  const fileUrl = result.result.fileUrl || result.result.fileKey
+  const fileUrl = result.result.fileUrl
+  if (!fileUrl) {
+    return Promise.reject(new Error('上传响应缺少 fileUrl'))
+  }
 
   return {
-    fileKey: fileUrl,
-    fileUrl, // 使用后端返回的完整URL
+    fileUrl,
     originalName: result.result.originalName,
     fileInfo,
   }

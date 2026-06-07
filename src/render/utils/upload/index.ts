@@ -6,13 +6,12 @@ export type UploadFileType = 'image' | 'video' | 'audio' | 'file'
 
 // 上传结果的基础结构
 export interface UploadResult {
-  fileKey: string
-  fileUrl?: string // 完整的文件访问URL（后端直接返回）
+  fileUrl: string
   style: UploadStyle
   type: UploadFileType
   originalName?: string
   size?: number
-  thumbnailKey?: string // 视频封面图文件ID（仅视频类型）
+  thumbnailUrl?: string
 }
 
 // 不同类型文件的样式信息
@@ -137,11 +136,14 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
 
   // 先上传文件
   const uploadResult = await uploadFileApi(file, file.name)
-  const fileUrl = uploadResult.fileUrl || uploadResult.fileKey
+  const fileUrl = uploadResult.fileUrl
+  if (!fileUrl) {
+    throw new Error('上传响应缺少 fileUrl')
+  }
 
   const style = await getFileStyle(file, fileType)
 
-  let thumbnailKey: string | undefined
+  let thumbnailUrl: string | undefined
 
   if (fileType === 'video') {
     try {
@@ -149,7 +151,7 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
       const baseName = getFileNameFromUrl(fileUrl).replace(/\.[^.]+$/, '') || `video_${Date.now()}`
       const thumbnailFile = base64ToFile(thumbnailBase64, `${baseName}_thumb.jpg`)
       const thumbnailUploadResult = await uploadFileApi(thumbnailFile, `${baseName}_thumb.jpg`)
-      thumbnailKey = thumbnailUploadResult.fileUrl || thumbnailUploadResult.fileKey
+      thumbnailUrl = thumbnailUploadResult.fileUrl
     }
     catch (error) {
       console.error('生成视频封面失败:', error)
@@ -157,13 +159,12 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
   }
 
   return {
-    fileKey: fileUrl,
     fileUrl,
     style,
     type: fileType,
     originalName: uploadResult.originalName,
     size: file.size,
-    thumbnailKey,
+    thumbnailUrl,
   }
 }
 

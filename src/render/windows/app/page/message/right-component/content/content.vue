@@ -26,6 +26,12 @@
         <ImageMessage v-else-if="message.msg?.type === 2 && message.msg?.imageMsg" :msg="message.msg" />
         <!-- 视频消息组件 -->
         <VideoMessage v-else-if="message.msg?.type === 3 && message.msg?.videoMsg" :msg="message.msg" />
+        <!-- 语音消息组件（type=5，按住说话） -->
+        <VoiceMessage
+          v-else-if="message.msg?.type === 5 && message.msg?.voiceMsg"
+          :msg="message.msg"
+          :is-self="message.sender.userId === userStore.getUserId"
+        />
         <!-- 音频文件消息组件（type=8） -->
         <AudioFileMessage v-else-if="message.msg?.type === 8" :msg="message.msg" />
         <!-- 通知消息组件（type=7） -->
@@ -89,6 +95,7 @@ import ReplyMessage from './message/reply.vue'
 import RecalledMessage from './message/recalled.vue'
 import TextMessage from './message/text.vue'
 import VideoMessage from './message/video.vue'
+import VoiceMessage from './message/voice.vue'
 import { getSelectedText, hasTextSelected } from './utils/copy'
 import { MessageContentType } from './utils/data'
 
@@ -111,6 +118,7 @@ export default defineComponent({
     RecalledMessage,
     ReplyMessage,
     VideoMessage,
+    VoiceMessage,
   },
   setup() {
     const userInfo = ref({

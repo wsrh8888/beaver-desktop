@@ -42,10 +42,10 @@ export interface ITextMessage {
 }
 
 export interface IImageMessage {
-  fileName: string // 图片文件ID
-  width?: number // 图片宽度（可选）
-  height?: number // 图片高度（可选）
-  size?: number // 文件大小（字节，可选）
+  fileUrl: string
+  width?: number
+  height?: number
+  size?: number
 }
 
 export interface IMessage {
@@ -64,44 +64,43 @@ export interface IMessage {
   callMsg?: ICallMessage | null | undefined
 }
 
-// 视频消息
 export interface IVideoMessage {
-  fileName: string // 视频文件ID
-  width?: number // 视频宽度（可选）
-  height?: number // 视频高度（可选）
-  duration?: number // 视频时长（秒，可选）
-  thumbnailKey?: string // 视频封面图文件ID（可选）
-  size?: number // 文件大小（字节，可选）
+  fileUrl: string
+  width?: number
+  height?: number
+  duration?: number
+  thumbnailUrl?: string
+  size?: number
 }
 
 // 文件消息
 export interface IFileMessage {
-  fileName: string // 文件ID
-  fileKey?: string // 文件ID（兼容字段）
-  size?: number // 文件大小（字节，可选）
-  mimeType?: string // MIME类型（可选，如 application/pdf）
+  fileUrl: string
+  fileName?: string
+  size?: number
+  mimeType?: string
 }
 
 // 语音消息（移动端录制的短语音）
 export interface IVoiceMessage {
-  fileName: string // 语音文件ID
-  duration?: number // 语音时长（秒，可选）
-  size?: number // 文件大小（字节，可选）
+  fileUrl: string
+  duration?: number
+  size?: number
 }
 
 // 音频文件消息（用户上传的音频文件）
 export interface IAudioFileMessage {
-  fileName: string // 音频文件ID
-  fileKey?: string // 文件ID（兼容字段）
-  duration?: number // 音频时长（秒，可选）
-  size?: number // 文件大小（字节，可选）
+  fileUrl: string
+  fileName?: string
+  duration?: number
+  size?: number
 }
 
 // 表情消息
 export interface IEmojiMessage {
-  fileName: string // 表情图片文件ID
-  emojiId: number // 表情ID
-  packageId: number // 表情包ID
+  fileUrl: string
+  emojiId: number
+  packageId: number
 }
 
 // 通知消息（会话内的通知，如：xxx加入了群聊、xxx创建了群等）

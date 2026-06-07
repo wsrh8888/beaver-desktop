@@ -2,7 +2,7 @@
   <div class="message-video">
     <div :style="{ width: `${videoSize.width}px`, height: `${videoSize.height}px` }" class="video-container">
       <!-- 视频封面 -->
-      <BeaverImage v-if="msg.videoMsg?.thumbnailKey" :file-name="msg.videoMsg?.thumbnailKey" alt="视频封面"
+      <BeaverImage v-if="msg.videoMsg?.thumbnailUrl" :file-name="msg.videoMsg.thumbnailUrl" alt="视频封面"
         image-class="video-thumbnail" />
       <!-- 播放按钮遮罩层 -->
       <div class="video-overlay" @click="handleVideoPlay">
@@ -63,17 +63,16 @@ export default defineComponent({
 
     // 处理视频播放
     const handleVideoPlay = async () => {
-      const fileKey = props.msg.videoMsg?.fileKey
-      if (!fileKey) {
-        console.error('视频文件ID不能为空', props.msg)
+      const mediaUrl = props.msg.videoMsg?.fileUrl
+      if (!mediaUrl) {
+        console.error('视频文件URL不能为空', props.msg)
         return
       }
 
       try {
-        // 获取视频URL（优先使用缓存，否则使用在线URL）
-        let videoUrl = fileKey
+        let videoUrl = mediaUrl
         try {
-          const cachedUrl = await electron.cache.get(CacheType.USER_VIDEO, fileKey)
+          const cachedUrl = await electron.cache.get(CacheType.USER_VIDEO, mediaUrl)
           if (cachedUrl) {
             videoUrl = cachedUrl
           }
@@ -81,14 +80,12 @@ export default defineComponent({
         catch {
           // 缓存获取失败，使用在线URL
         }
-        console.error('videoUrl', videoUrl)
 
-        // 打开视频播放器窗口
         await electron.window.openWindow('video', {
           unique: true,
           params: {
             url: videoUrl,
-            title: getFileNameFromUrl(fileKey),
+            title: getFileNameFromUrl(mediaUrl),
           },
         })
       }

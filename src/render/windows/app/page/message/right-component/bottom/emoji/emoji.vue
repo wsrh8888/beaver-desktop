@@ -106,10 +106,10 @@ export default defineComponent({
       const msg: IMessageMsg = {
         type: MessageType.EMOJI,
         emojiMsg: {
-          fileKey: emoji.fileKey,
+          fileUrl: emoji.fileKey,
           emojiId: emoji.emojiId,
           packageId: emoji.packageId || '',
-          width: 120, // 默认表情包大小，可根据后续需求调整
+          width: 120,
           height: 120
         }
       }

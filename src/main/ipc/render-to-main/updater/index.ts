@@ -37,19 +37,23 @@ class UpdaterHandler {
    */
   private async handleDownloadUpdate(event: Electron.IpcMainEvent, data: IDownloadOptions) {
     try {
-      const { fileKey, md5, version } = data
-      logger.info({ text: '开始下载更新', data: { fileKey, md5, version } }, 'UpdaterHandler')
+      const { fileUrl, md5, version } = data
+      logger.info({ text: '开始下载更新', data: { fileUrl, md5, version } }, 'UpdaterHandler')
 
       const cacheRoot = getCachePath()
       const updateDir = path.join(cacheRoot, cacheTypeToFilePath[CacheType.PUBLIC_UPDATE])
-      const downloadUrl = fileKey
-      const filePath = path.join(updateDir, getCacheLocalFileName(md5, fileKey))
+      const downloadUrl = fileUrl
+      const filePath = path.join(updateDir, getCacheLocalFileName(md5 || version, fileUrl))
 
       if (fs.existsSync(filePath)) {
+        if (!md5) {
+          event.sender.send(UpdateCommand.DOWNLOAD_PROGRESS, 100)
+          return
+        }
         const existingMd5 = await calculateFileMD5(filePath)
         if (existingMd5 === md5) {
           await dBServicemediaCache.upsert({
-            url: fileKey,
+            url: fileUrl,
             md5,
             path: filePath,
             type: CacheType.PUBLIC_UPDATE,
@@ -72,7 +76,7 @@ class UpdaterHandler {
         },
       )
 
-      if (downloadedFile.md5 !== md5) {
+      if (md5 && downloadedFile.md5 !== md5) {
         logger.error({ text: 'MD5校验失败', data: { fileMd5: downloadedFile.md5, expectedMd5: md5 } }, 'UpdaterHandler')
         fs.unlinkSync(downloadedFile.path)
         throw new Error('MD5校验失败')
@@ -82,13 +86,13 @@ class UpdaterHandler {
 
       try {
         await dBServicemediaCache.upsert({
-          url: fileKey,
+          url: fileUrl,
           md5: downloadedFile.md5,
           path: savedPath,
           type: CacheType.PUBLIC_UPDATE,
           size: downloadedFile.size,
         })
-        logger.info({ text: '下载记录已保存到数据库', data: { fileKey, filePath: savedPath, fileSize: downloadedFile.size } }, 'UpdaterHandler')
+        logger.info({ text: '下载记录已保存到数据库', data: { fileUrl, filePath: savedPath, fileSize: downloadedFile.size } }, 'UpdaterHandler')
       }
       catch (error) {
         logger.error({ text: '保存下载记录失败', data: error }, 'UpdaterHandler')
@@ -107,12 +111,12 @@ class UpdaterHandler {
    */
   private async handleStartUpdate(event: Electron.IpcMainEvent, data: IDownloadOptions) {
     try {
-      const { fileKey, md5, version } = data
-      logger.info({ text: '开始升级', data: { fileKey, md5, version } }, 'UpdaterHandler')
+      const { fileUrl, md5, version } = data
+      logger.info({ text: '开始升级', data: { fileUrl, md5, version } }, 'UpdaterHandler')
 
       const cacheRoot = getCachePath()
       const updateDir = path.join(cacheRoot, cacheTypeToFilePath[CacheType.PUBLIC_UPDATE])
-      const filePath = path.join(updateDir, getCacheLocalFileName(md5, fileKey))
+      const filePath = path.join(updateDir, getCacheLocalFileName(md5 || version, fileUrl))
 
       if (!fs.existsSync(filePath)) {
         throw new Error(`安装包文件不存在: ${filePath}`)

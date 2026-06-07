@@ -5,6 +5,10 @@
         <TextMessage v-if="msg.replyMsg.originMsg.type === MessageType.TEXT" :msg="msg.replyMsg.originMsg" />
         <ImageMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.IMAGE" :msg="msg.replyMsg.originMsg" />
         <VideoMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.VIDEO" :msg="msg.replyMsg.originMsg" />
+        <VoiceMessage
+          v-else-if="msg.replyMsg.originMsg.type === MessageType.VOICE && msg.replyMsg.originMsg.voiceMsg"
+          :msg="msg.replyMsg.originMsg"
+        />
         <EmojiMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.EMOJI" :msg="msg.replyMsg.originMsg" />
         <AudioFileMessage v-else-if="msg.replyMsg.originMsg.type === MessageType.AUDIO_FILE"
           :msg="msg.replyMsg.originMsg" />
@@ -17,6 +21,10 @@
       <TextMessage v-if="msg.replyMsg?.replyMsg?.type === MessageType.TEXT" :msg="msg.replyMsg.replyMsg" />
       <ImageMessage v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.IMAGE" :msg="msg.replyMsg.replyMsg" />
       <VideoMessage v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.VIDEO" :msg="msg.replyMsg.replyMsg" />
+      <VoiceMessage
+        v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.VOICE && msg.replyMsg.replyMsg.voiceMsg"
+        :msg="msg.replyMsg.replyMsg"
+      />
       <EmojiMessage v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.EMOJI" :msg="msg.replyMsg.replyMsg" />
       <AudioFileMessage v-else-if="msg.replyMsg?.replyMsg?.type === MessageType.AUDIO_FILE"
         :msg="msg.replyMsg.replyMsg" />
@@ -35,6 +43,7 @@ import ImageMessage from './image.vue'
 import VideoMessage from './video.vue'
 import EmojiMessage from './emoji.vue'
 import AudioFileMessage from './audio.vue'
+import VoiceMessage from './voice.vue'
 
 export default defineComponent({
   name: 'ReplyMessage',
@@ -54,6 +63,7 @@ export default defineComponent({
     VideoMessage,
     EmojiMessage,
     AudioFileMessage,
+    VoiceMessage,
   },
   setup(props) {
 

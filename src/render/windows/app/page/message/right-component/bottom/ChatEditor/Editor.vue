@@ -42,11 +42,11 @@ export default defineComponent({
       const images = inputRef.value.querySelectorAll('img.editor-media-node') as NodeListOf<HTMLImageElement>
       for (const img of images) {
         if (!img.src || img.src === window.location.href) {
-          const fileKey = img.getAttribute('data-file-key')
+          const fileUrl = img.getAttribute('data-file-url')
           const type = img.getAttribute('data-type')
-          if (fileKey) {
+          if (fileUrl) {
             const cacheType = type === 'emoji' ? CacheType.USER_AVATAR : CacheType.USER_IMAGE
-            const localPath = await window.electron.cache.get(cacheType, fileKey)
+            const localPath = await window.electron.cache.get(cacheType, fileUrl)
             if (localPath) {
               img.src = localPath
             }
@@ -185,32 +185,34 @@ export default defineComponent({
             if (res.type === 'image') {
               messageViewStore.appendMediaToDraft({
                 type: res.type,
-                fileKey: res.fileKey,
+                fileUrl: res.fileUrl,
                 info: {
                   size: res.size,
                   width: res.style?.width,
                   height: res.style?.height,
-                  thumbnailKey: res.thumbnailKey
+                  thumbnailUrl: res.thumbnailUrl
                 }
               })
             } else {
+              const mediaUrl = res.fileUrl
               const msg: IMessageMsg = {
                 type: res.type === 'video' ? MessageType.VIDEO
                   : (res.type === 'audio' ? MessageType.AUDIO_FILE : MessageType.FILE),
                 videoMsg: res.type === 'video' ? {
-                  fileKey: res.fileKey,
+                  fileUrl: mediaUrl,
                   width: res.style?.width || 0,
                   height: res.style?.height || 0,
-                  duration: res.style?.duration || 0
+                  duration: res.style?.duration || 0,
+                  thumbnailUrl: res.thumbnailUrl
                 } : null,
                 fileMsg: res.type === 'file' ? {
-                  fileKey: res.fileKey,
+                  fileUrl: mediaUrl,
                   fileName: res.originalName || 'file',
                   size: res.size || 0,
                   mimeType: ''
                 } : null,
                 audioFileMsg: res.type === 'audio' ? {
-                  fileKey: res.fileKey,
+                  fileUrl: mediaUrl,
                   fileName: res.originalName || 'audio',
                   duration: res.style?.duration || 0,
                   size: res.size || 0

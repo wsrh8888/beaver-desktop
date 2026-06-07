@@ -56,27 +56,29 @@ export default defineComponent({
         const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
 
         for (const res of uploadResults) {
+          const mediaUrl = res.fileUrl
           const msg: IMessageMsg = {
             type: res.type === 'image' ? MessageType.IMAGE : (res.type === 'video' ? MessageType.VIDEO : (res.type === 'audio' ? MessageType.AUDIO_FILE : MessageType.FILE)),
             imageMsg: res.type === 'image' ? {
-              fileKey: res.fileKey,
+              fileUrl: mediaUrl,
               width: res.style?.width || 0,
               height: res.style?.height || 0
             } : null,
             videoMsg: res.type === 'video' ? {
-              fileKey: res.fileKey,
+              fileUrl: mediaUrl,
               width: res.style?.width || 0,
               height: res.style?.height || 0,
-              duration: res.style?.duration || 0
+              duration: res.style?.duration || 0,
+              thumbnailUrl: res.thumbnailUrl
             } : null,
             fileMsg: res.type === 'file' ? {
-              fileKey: res.fileKey,
+              fileUrl: mediaUrl,
               fileName: res.originalName || 'file',
               size: res.size || 0,
               mimeType: ''
             } : null,
             audioFileMsg: res.type === 'audio' ? {
-              fileKey: res.fileKey,
+              fileUrl: mediaUrl,
               fileName: res.originalName || 'audio',
               duration: res.style?.duration || 0,
               size: res.size || 0
@@ -103,7 +105,7 @@ export default defineComponent({
         const msg: IMessageMsg = {
           type: MessageType.IMAGE,
           imageMsg: {
-            fileKey: uploadResult.fileKey,
+            fileUrl: uploadResult.fileUrl,
             width: uploadResult.style?.width || 0,
             height: uploadResult.style?.height || 0
           }

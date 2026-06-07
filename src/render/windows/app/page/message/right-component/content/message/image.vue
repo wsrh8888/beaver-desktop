@@ -1,7 +1,7 @@
 <template>
   <div class="message-image">
     <div :style="{ width: `${imageSize.width}px`, height: `${imageSize.height}px` }">
-      <BeaverImage :file-name="msg.imageMsg?.fileKey" alt="图片" image-class="message-image-content"
+      <BeaverImage :file-name="msg.imageMsg?.fileUrl || ''" alt="图片" image-class="message-image-content"
         @click="handleImageClick" />
     </div>
   </div>
@@ -41,15 +41,14 @@ export default defineComponent({
 
     // 处理图片点击
     const handleImageClick = async () => {
-      const fileKey = props.msg.imageMsg?.fileKey
-      if (!fileKey)
+      const mediaUrl = props.msg.imageMsg?.fileUrl
+      if (!mediaUrl)
         return
 
       try {
-        // 获取图片URL（优先使用缓存，否则使用在线URL）
-        let imageUrl = fileKey
+        let imageUrl = mediaUrl
         try {
-          const cachedUrl = await electron.cache.get(CacheType.USER_IMAGE, fileKey)
+          const cachedUrl = await electron.cache.get(CacheType.USER_IMAGE, mediaUrl)
           if (cachedUrl) {
             imageUrl = cachedUrl
           }
