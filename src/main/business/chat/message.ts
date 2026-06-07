@@ -6,6 +6,8 @@ import { chatSyncApi } from 'mainModule/api/chat'
 import type { QueueItem } from '../base/base'
 import dBServiceMessage from 'mainModule/database/services/chat/message'
 import dBServiceUser from 'mainModule/database/services/user/user'
+import dBServiceUserSyncStatus from 'mainModule/database/services/user/sync-status'
+import { userSyncApi } from 'mainModule/api/user'
 import { generateMessagePreview } from 'commonModule/utils/conversation/message'
 import type { IChatMessageSendBody } from 'commonModule/type/ws/message-types'
 import { WsType } from 'commonModule/type/ws/command'
@@ -56,13 +58,14 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
 
     // 2. 构造即时同步到 Render 的结构
     // 优先从本地数据库获取发送者（自己）的基础信息
-    let senderInfo = { avatar: '', nickName: '' }
+    let senderInfo = { avatar: '', nickName: '', userType: 1 }
     try {
       const userDetails = await dBServiceUser.getUsersBasicInfo({ userIds: [userId] })
       if (userDetails && userDetails.length > 0) {
         senderInfo = {
           avatar: userDetails[0].avatar || '',
           nickName: userDetails[0].nickName || '',
+          userType: userDetails[0].userType,
         }
       }
     } catch (e) {
@@ -114,6 +117,16 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     this.sendingTimers.set(messageId, timer)
 
     return formattedMessage
+  }
+
+  /**
+   * @description: 服务端 ACK 回执（表示已收到，取消发送超时）
+   */
+  handleAck(messageId: string) {
+    if (!messageId) {
+      return
+    }
+    this.clearTimers([messageId])
   }
 
   /**
@@ -179,6 +192,8 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       // 业务逻辑：获取所有发送者ID（排除空值）
       const senderIds = [...new Set(actualMessages.map((m: any) => m.sendUserId).filter((id: string) => id && id.trim()))]
 
+      await this.ensureLocalSenders(senderIds as string[])
+
       // 业务逻辑：获取发送者信息
       const senderInfoMap = new Map()
       if (senderIds.length > 0) {
@@ -189,6 +204,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
               userId: detail.userId,
               nickName: detail.nickName,
               avatar: detail.avatar,
+              userType: detail.userType,
             })
           })
         }
@@ -210,6 +226,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
             userId: message.sendUserId || '',
             avatar: senderDetail?.avatar || '',
             nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
+            userType: message.sendUserId ? senderDetail!.userType : 1,
           },
           // 按照你的要求简写：
           created_at: message.createdAt ? new Date(Number(message.createdAt) * 1000) : new Date(),
@@ -244,6 +261,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
 
       // 获取发送者信息
       const senderIds = [...new Set(messages.map((m: any) => m.sendUserId).filter((id: any) => id))]
+      await this.ensureLocalSenders(senderIds as string[])
       const senderInfoMap = new Map()
       if (senderIds.length > 0) {
         const senderDetails = await dBServiceUser.getUsersBasicInfo({ userIds: senderIds as string[] })
@@ -262,6 +280,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
             userId: m.sendUserId || '',
             avatar: sender?.avatar || '',
             nickName: sender?.nickName || (m.sendUserId ? '用户' : '系统消息'),
+            userType: m.sendUserId ? sender!.userType : 1,
           },
           created_at: m.createdAt ? new Date(Number(m.createdAt) * 1000) : new Date(),
           status: 0,
@@ -288,6 +307,58 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     catch (error) {
       console.error('Failed to batch delete messages:', error)
       return { success: false }
+    }
+  }
+
+  /**
+   * 本地缺少的用户（如 bot）从服务端补拉并写入本地 users 表
+   */
+  private async ensureLocalSenders(userIds: string[]) {
+    if (userIds.length === 0) {
+      return
+    }
+
+    const localUsers = await dBServiceUser.getUsersBasicInfo({ userIds })
+    const localIdSet = new Set(localUsers.map(u => u.userId))
+    const missingIds = userIds.filter(id => !localIdSet.has(id))
+    if (missingIds.length === 0) {
+      return
+    }
+
+    try {
+      const syncRes = await userSyncApi({
+        userVersions: missingIds.map(userId => ({ userId, version: 0 })),
+      })
+      const users = syncRes.result?.users || []
+      if (users.length === 0) {
+        return
+      }
+
+      await dBServiceUser.batchCreate({
+        usersData: users.map(user => ({
+          userId: user.userId,
+          nickName: user.nickName,
+          avatar: user.avatar,
+          abstract: user.abstract,
+          phone: user.phone,
+          email: user.email,
+          gender: user.gender,
+          userType: user.userType,
+          status: user.status,
+          version: user.version,
+          updatedAt: user.updatedAt,
+        })),
+      })
+
+      await dBServiceUserSyncStatus.batchUpsertUserSyncStatus(
+        users.map(user => ({
+          userId: user.userId,
+          userVersion: user.version,
+        })),
+      )
+    }
+    catch (error) {
+      console.error('[MessageBusiness] 补拉发送者信息失败:', error)
     }
   }
 

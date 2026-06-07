@@ -20,27 +20,28 @@ class MediaService extends BaseService {
   async upsert(req: DBUpsertMediaReq): Promise<void> {
     const now = Math.floor(Date.now() / 1000)
 
-    // 先尝试查找现有记录
     const existing = await this.db
       .select()
       .from(media)
-      .where(eq(media.fileKey as any, req.fileKey))
+      .where(eq(media.url as any, req.url))
       .limit(1)
 
     if (existing.length > 0) {
-      // 更新现有记录：更新时间戳，确保未被标记删除
       await this.db
         .update(media)
         .set({
+          path: req.path,
+          size: req.size,
+          md5: req.md5,
           updatedAt: now,
-          isDeleted: 0, // 确保未被标记删除
+          isDeleted: 0,
         })
-        .where(eq(media.fileKey as any, req.fileKey))
+        .where(eq(media.url as any, req.url))
     }
     else {
-      // 插入新记录
       await this.db.insert(media).values({
-        fileKey: req.fileKey,
+        url: req.url,
+        md5: req.md5,
         path: req.path,
         type: req.type,
         size: req.size,
@@ -52,13 +53,13 @@ class MediaService extends BaseService {
   }
 
   /**
-   * @description 根据文件名获取媒体信息
+   * @description 根据完整 URL 获取媒体缓存信息
    */
   async getMediaInfo(req: DBGetMediaInfoReq): Promise<DBGetMediaInfoRes> {
     const result = await this.db
       .select()
       .from(media)
-      .where(and(eq(media.fileKey as any, req.fileKey), eq(media.isDeleted as any, 0)))
+      .where(and(eq(media.url as any, req.url), eq(media.isDeleted as any, 0)))
       .limit(1)
 
     if (result.length === 0) {
@@ -67,7 +68,8 @@ class MediaService extends BaseService {
 
     const record = result[0]
     return {
-      fileKey: record.fileKey,
+      url: record.url,
+      md5: record.md5 || undefined,
       path: record.path,
       type: record.type,
       size: record.size || undefined,
@@ -87,9 +89,8 @@ class MediaService extends BaseService {
         isDeleted: 1,
         updatedAt: Math.floor(Date.now() / 1000),
       })
-      .where(eq(media.fileKey as any, req.fileKey))
+      .where(eq(media.url as any, req.url))
   }
 }
 
-// 导出媒体服务实例
 export default new MediaService()

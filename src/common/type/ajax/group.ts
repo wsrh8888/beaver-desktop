@@ -719,3 +719,97 @@ export interface IGroupSearchRes {
   list: IGroupSearchItem[]
   count: number
 }
+
+// ---------- 群机器人（Webhook）----------
+
+// 列表项（只返回基础信息）
+export interface IBotItem {
+  botId: string
+  name: string
+  description: string
+  avatar: string
+  botType: string
+  status: number
+  createdAt: number
+}
+
+// 机器人安全设置
+export interface IBotSecurity {
+  keywordsEnabled: boolean // 是否启用关键词校验
+  keywords: string[] // 关键词列表（最多10个）
+  ipWhitelistEnabled: boolean // 是否启用IP白名单
+  ipWhitelist: string[] // IP地址列表
+  signatureEnabled: boolean // 是否启用签名校验
+  signatureSecret: string // 签名密钥
+  signatureUpdated: number // 密钥最后更新时间戳
+}
+
+// 详情项（包含完整信息和安全设置）
+export interface IBotDetail {
+  botId: string
+  name: string
+  description: string
+  avatar: string
+  webhookUrl: string
+  botType: string
+  status: number
+  creatorUserId: string
+  createdAt: number
+  security: IBotSecurity // 安全设置
+}
+
+export interface ICreateBotReq {
+  groupId: string
+  name: string
+  description?: string
+  avatar?: string
+  type: string
+}
+
+export interface ICreateBotRes {
+  botId: string
+  webhookUrl: string
+  secret: string
+}
+
+export interface IListBotsReq {
+  groupId: string
+}
+
+export interface IListBotsRes {
+  list: IBotItem[]
+}
+
+export interface IGetBotDetailReq {
+  botId: string
+}
+
+export interface IGetBotDetailRes extends IBotDetail {}
+
+export interface IUpdateBotReq {
+  botId: string
+  name?: string
+  description?: string
+  avatar?: string
+  type?: string
+  status?: number
+  security?: IBotSecurity // 安全设置
+}
+
+export interface IUpdateBotRes {
+}
+
+export interface IDeleteBotReq {
+  botId: string
+}
+
+export interface IDeleteBotRes {
+}
+
+export interface IResetBotSecretReq {
+  botId: string
+}
+
+export interface IResetBotSecretRes {
+  secret: string
+}

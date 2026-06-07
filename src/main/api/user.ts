@@ -9,6 +9,6 @@ export const userSyncApi = (data: IUserSyncReq) => {
   return ajax<IUserSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/user/sync`,
+    url: `${getBaseUrl()}/api/user/v1/sync`,
   })
 }

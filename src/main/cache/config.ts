@@ -56,3 +56,11 @@ export const cacheTypeToFilePath: Record<CacheType, string> = {
   [CacheType.USER_VIDEO]: '/users/[userId]/cache/videos',
   [CacheType.USER_IMAGE]: '/users/[userId]/cache/images',
 }
+
+/** 按日期分目录，例如 2026/06/06 */
+export function getDateFolder(date: Date = new Date()): string {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}/${month}/${day}`
+}

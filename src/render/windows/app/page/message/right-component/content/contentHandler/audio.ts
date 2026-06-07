@@ -34,18 +34,20 @@ class AudioHandler extends BaseMessageHandler {
   }
 
   private async handleSave(message: any): Promise<void> {
-    const audioUrl = message.msg.audioMsg?.url
-    const filename = message.msg.audioMsg?.name || 'audio.mp3'
+    const audioUrl = message.msg.audioFileMsg?.fileUrl
+    const filename = message.msg.audioFileMsg?.fileName || 'audio.mp3'
     if (audioUrl) {
       await this.downloadFile(audioUrl, filename)
     }
   }
 
   private async handlePlay(message: any): Promise<void> {
-    console.log('播放音频功能开发中', message)
-    // TODO: 实现播放逻辑
+    const audioUrl = message.msg.audioFileMsg?.fileUrl
+    if (!audioUrl)
+      return
+    console.log('播放音频文件:', audioUrl)
   }
 }
 
 // 导出单例实例
-export const audioHandler = new AudioHandler()
+export const audioFileHandler = new AudioHandler()

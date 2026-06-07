@@ -8,13 +8,13 @@ import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
 
 /**
- * @description: 上报统计埋点事件和日志
+ * @description: 上报统计埋点事件
  */
 export const reportEventsApi = (data: IReportEventsReq) => {
   return ajax<IReportEventsRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/track/events`,
+    url: `${baseUrl}/api/platform/track_public/v1/report_events`,
   })
 }
 
@@ -25,6 +25,6 @@ export const logEventsApi = (data: ILogEventsReq) => {
   return ajax<ILogEventsRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/track/logs`,
+    url: `${baseUrl}/api/platform/track_public/v1/log_events`,
   })
 }

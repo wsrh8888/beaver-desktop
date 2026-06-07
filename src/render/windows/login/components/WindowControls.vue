@@ -27,9 +27,6 @@ export default defineComponent({
 
 <style lang="less" scoped>
 .window-controls {
-  position: absolute;
-  top: 0;
-  right: 0;
   width: 100%;
   height: var(--height-header);
   display: flex;
@@ -38,6 +35,7 @@ export default defineComponent({
   padding: 0 var(--spacing-2);
   z-index: 1000;
   -webkit-app-region: drag;
+  position: absolute;
 
   .control-buttons {
     display: flex;

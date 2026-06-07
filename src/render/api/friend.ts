@@ -28,7 +28,7 @@ export const getFriendListApi = (data: IFriendListReq) => {
   return ajax<IFriendListRes>({
     method: 'GET',
     data,
-    url: `${baseUrl}/api/friend/friend_list`,
+    url: `${baseUrl}/api/friend/v1/friend_list`,
   })
 }
 
@@ -41,7 +41,7 @@ export const getFriendInfoApi = (data: IFriendInfoReq) => {
   return ajax<IFriendInfo>({
     params: data,
     method: 'GET',
-    url: `${baseUrl}/api/friend/friend_info`,
+    url: `${baseUrl}/api/friend/v1/friend_info`,
   })
 }
 
@@ -52,7 +52,7 @@ export const getSearchFriendApi = (data: ISearchUser) => {
   return ajax<IResSearchUserInfo>({
     method: 'GET',
     params: data, // 使用 params 而不是 data，因为是 GET 请求
-    url: `${baseUrl}/api/friend/search`,
+    url: `${baseUrl}/api/friend/v1/search`,
   })
 }
 
@@ -63,7 +63,7 @@ export const applyAddFriendApi = (data: IAddFriendReq) => {
   return ajax<IAddFriendRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/friend/add_friend`,
+    url: `${baseUrl}/api/friend/v1/add_friend`,
   })
 }
 
@@ -74,7 +74,7 @@ export const valiFrienddAPi = (data: IValidStatusReq) => {
   return ajax<IValidStatusRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/friend/valid`,
+    url: `${baseUrl}/api/friend/v1/valid`,
   })
 }
 
@@ -85,7 +85,7 @@ export const deleteFriendAPi = (data: IDeleteFriendReq) => {
   return ajax<IDeleteFriendRes>({
     data,
     method: 'DELETE',
-    url: `${baseUrl}/api/friend/delete`,
+    url: `${baseUrl}/api/friend/v1/friend`,
   })
 }
 
@@ -96,7 +96,7 @@ export const updateRemarkNameApi = (data: INoticeUpdateReq) => {
   return ajax<INoticeUpdateRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/friend/update_notice`,
+    url: `${baseUrl}/api/friend/v1/update_notice`,
   })
 }
 
@@ -107,7 +107,7 @@ export const getValidListApi = (data: IValidListReq) => {
   return ajax<IValidListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/friend/valid_list`,
+    url: `${baseUrl}/api/friend/v1/valid_list`,
   })
 }
 
@@ -118,6 +118,6 @@ export const searchValidInfoApi = (data: ISearchValidInfoReq) => {
   return ajax<ISearchValidInfoRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/friend/searchValidInfo`,
+    url: `${baseUrl}/api/friend/v1/searchValidInfo`,
   })
 }

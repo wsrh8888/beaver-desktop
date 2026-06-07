@@ -29,8 +29,9 @@ export interface IGetLatestVersionReq {
 // 获取最新版本响应
 export interface IGetLatestVersionRes {
   hasUpdate: boolean
+  forceUpdate?: boolean
   version?: string // 最新版本号
-  fileKey: string // 文件ID
+  fileUrl: string // 安装包完整 URL
   size: number // 安装包大小
   md5: string // MD5校验
   description?: string // 版本描述

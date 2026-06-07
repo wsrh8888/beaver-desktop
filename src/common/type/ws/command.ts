@@ -33,9 +33,17 @@ export enum WsCommand {
    */
   MESSAGE_SYNC = 'MESSAGE_SYNC',
   /**
-   * @description: 心跳消息类（应用级心跳）
+   * @description: 心跳探测（客户端发 PING，服务端回 PONG）
    */
-  HEARTBEAT = 'HEARTBEAT',
+  PING = 'PING',
+  /**
+   * @description: 心跳回应
+   */
+  PONG = 'PONG',
+  /**
+   * @description: 服务端收到业务消息后的回执（单向，无需回复）
+   */
+  ACK = 'ACK',
 }
 
 /**

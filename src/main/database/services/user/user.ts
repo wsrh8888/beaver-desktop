@@ -41,6 +41,7 @@ class User extends BaseService {
           phone: req.phone,
           email: req.email,
           gender: req.gender,
+          userType: req.userType,
           status: req.status,
           version: req.version,
           updatedAt: req.updatedAt,
@@ -150,6 +151,7 @@ class User extends BaseService {
           userId: users.userId,
           nickName: users.nickName,
           avatar: users.avatar,
+          userType: users.userType,
         })
         .from(users)
         .where(sql`${users.userId} IN (${sql.join(req.userIds.map(id => sql`${id}`), sql`, `)})`)
@@ -158,6 +160,7 @@ class User extends BaseService {
         userId: user.userId,
         nickName: user.nickName,
         avatar: user.avatar || '',
+        userType: user.userType,
       }))
     }
     catch (error) {
@@ -180,6 +183,7 @@ class User extends BaseService {
           phone: users.phone,
           email: users.email,
           gender: users.gender,
+          userType: users.userType,
           status: users.status,
           version: users.version,
           createdAt: users.createdAt,
@@ -195,6 +199,7 @@ class User extends BaseService {
         phone: user.phone || '',
         email: user.email || '',
         gender: user.gender || 0,
+        userType: user.userType,
         status: user.status || 0,
         version: user.version || 0,
         createdAt: user.createdAt || 0,

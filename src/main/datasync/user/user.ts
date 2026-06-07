@@ -118,6 +118,7 @@ class UserSyncModule {
         phone: user.phone,
         email: user.email,
         gender: user.gender,
+        userType: user.userType,
         status: user.status,
         version: user.version,
         createdAt: user.createdAt,

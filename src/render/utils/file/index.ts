@@ -29,6 +29,24 @@ interface FileInfo {
   videoFile?: VideoInfo
 }
 
+/** 从完整 URL 提取文件名 */
+export function getFileNameFromUrl(fileUrl: string): string {
+  if (!fileUrl)
+    return ''
+
+  try {
+    if (fileUrl.startsWith('http://') || fileUrl.startsWith('https://')) {
+      const name = new URL(fileUrl).pathname.split('/').pop()
+      return name || fileUrl
+    }
+  }
+  catch {
+    // ignore
+  }
+
+  return fileUrl.split(/[/\\]/).pop() || fileUrl
+}
+
 /**
  * @description: 获取文件的md5
  * @param {File} file

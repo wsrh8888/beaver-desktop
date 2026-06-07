@@ -38,7 +38,7 @@ import ajax from 'renderModule/utils/request/ajax'
 export const createEmojiPackageApi = (data: ICreateEmojiPackageReq) => {
   return ajax<ICreateEmojiPackageRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/packageCreate`,
+    url: `${baseUrl}/api/emoji/v1/packageCreate`,
     data,
   })
 }
@@ -49,7 +49,7 @@ export const createEmojiPackageApi = (data: ICreateEmojiPackageReq) => {
 export const addEmojiToPackageApi = (data: IAddEmojiToPackageReq) => {
   return ajax<IAddEmojiToPackageRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/packageAddEmoji`,
+    url: `${baseUrl}/api/emoji/v1/packageAddEmoji`,
     data,
   })
 }
@@ -60,7 +60,7 @@ export const addEmojiToPackageApi = (data: IAddEmojiToPackageReq) => {
 export const deleteEmojiFromPackageApi = (data: IDeleteEmojiFromPackageReq) => {
   return ajax<ICommonRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/packageDeleteEmoji`,
+    url: `${baseUrl}/api/emoji/v1/packageDeleteEmoji`,
     data,
   })
 }
@@ -71,7 +71,7 @@ export const deleteEmojiFromPackageApi = (data: IDeleteEmojiFromPackageReq) => {
 export const batchAddEmojiToPackageApi = (data: IBatchAddEmojiToPackageReq) => {
   return ajax<IBatchAddEmojiToPackageRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/packageBatchAdd`,
+    url: `${baseUrl}/api/emoji/v1/packageBatchAdd`,
     data,
   })
 }
@@ -82,7 +82,7 @@ export const batchAddEmojiToPackageApi = (data: IBatchAddEmojiToPackageReq) => {
 export const addEmojiApi = (data: IAddEmojiReq) => {
   return ajax<ICommonRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/add`,
+    url: `${baseUrl}/api/emoji/v1/add`,
     data,
   })
 }
@@ -93,7 +93,7 @@ export const addEmojiApi = (data: IAddEmojiReq) => {
 export const updateFavoriteEmojiApi = (data: IUpdateFavoriteEmojiReq) => {
   return ajax<ICommonRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/favoriteEmoji`,
+    url: `${baseUrl}/api/emoji/v1/favoriteEmoji`,
     data,
   })
 }
@@ -104,7 +104,7 @@ export const updateFavoriteEmojiApi = (data: IUpdateFavoriteEmojiReq) => {
 export const getEmojisListApi = (data: IGetEmojisListReq) => {
   return ajax<IGetEmojisListRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/favoriteList`,
+    url: `${baseUrl}/api/emoji/v1/favoriteList`,
     data,
   })
 }
@@ -115,7 +115,7 @@ export const getEmojisListApi = (data: IGetEmojisListReq) => {
 export const getEmojiPackagesApi = (data: IGetEmojiPackagesReq) => {
   return ajax<IGetEmojiPackagesRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/packageList`,
+    url: `${baseUrl}/api/emoji/v1/packageList`,
     data,
   })
 }
@@ -126,7 +126,7 @@ export const getEmojiPackagesApi = (data: IGetEmojiPackagesReq) => {
 export const getEmojiPackageDetailApi = (data: IGetEmojiPackageDetailReq) => {
   return ajax<IGetEmojiPackageDetailRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/packageInfo`,
+    url: `${baseUrl}/api/emoji/v1/packageInfo`,
     data,
   })
 }
@@ -137,7 +137,7 @@ export const getEmojiPackageDetailApi = (data: IGetEmojiPackageDetailReq) => {
 export const updateFavoriteEmojiPackageApi = (data: IUpdateFavoriteEmojiPackageReq) => {
   return ajax<ICommonRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/packageFavorite`,
+    url: `${baseUrl}/api/emoji/v1/packageFavorite`,
     data,
   })
 }
@@ -148,7 +148,7 @@ export const updateFavoriteEmojiPackageApi = (data: IUpdateFavoriteEmojiPackageR
 export const getUserFavoritePackagesApi = (data: IGetUserFavoritePackagesReq) => {
   return ajax<IGetUserFavoritePackagesRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/favoritePackageList`,
+    url: `${baseUrl}/api/emoji/v1/favoritePackageList`,
     data,
   })
 }
@@ -159,7 +159,7 @@ export const getUserFavoritePackagesApi = (data: IGetUserFavoritePackagesReq) =>
 export const getEmojisByIdsApi = (data: IGetEmojisByIdsReq) => {
   return ajax<IGetEmojisByIdsRes>({
     method: 'POST',
-    url: `${baseUrl}/api/emoji/emojis-by-ids`,
+    url: `${baseUrl}/api/emoji/v1/emojis-by-ids`,
     data,
   })
 }

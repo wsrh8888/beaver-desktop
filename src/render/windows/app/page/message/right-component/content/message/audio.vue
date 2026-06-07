@@ -34,7 +34,6 @@
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
 import { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { previewOnlineFileApi } from 'renderModule/api/file'
 import AudioIconSvg from 'renderModule/assets/image/chat/audio-icon.svg'
 import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
@@ -73,15 +72,14 @@ export default defineComponent({
 
     // 处理播放
     const handlePlay = async () => {
-      const fileKey = props.msg.audioFileMsg?.fileName
-      if (!fileKey)
+      const mediaUrl = props.msg.audioFileMsg?.fileUrl
+      if (!mediaUrl)
         return
 
       try {
-        // 获取音频URL（优先使用缓存，否则使用在线URL）
-        let audioUrl = previewOnlineFileApi(fileKey)
+        let audioUrl = mediaUrl
         try {
-          const cachedUrl = await electron.cache.get(CacheType.USER_IMAGE, fileKey)
+          const cachedUrl = await electron.cache.get(CacheType.USER_IMAGE, mediaUrl)
           if (cachedUrl) {
             audioUrl = cachedUrl
           }
@@ -106,8 +104,8 @@ export default defineComponent({
 
     // 处理下载
     const handleDownload = () => {
-      const fileKey = props.msg.audioFileMsg?.fileName
-      console.log('下载文件:', fileKey)
+      const mediaUrl = props.msg.audioFileMsg?.fileUrl
+      console.log('下载文件:', mediaUrl)
       // TODO: 实现文件下载功能
     }
 

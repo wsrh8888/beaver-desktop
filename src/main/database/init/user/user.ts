@@ -11,6 +11,7 @@ export const initUserTable = (sqlite: any) => {
       avatar TEXT,
       abstract TEXT,
       gender INTEGER DEFAULT 3,
+      user_type INTEGER DEFAULT 1,
       status INTEGER DEFAULT 1,
       source INTEGER DEFAULT 0,
       version INTEGER DEFAULT 0,
