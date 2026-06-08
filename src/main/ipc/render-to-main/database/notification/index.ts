@@ -17,6 +17,8 @@ class NotificationHandler {
         return await notificationEventBusiness.getByIds(data?.eventIds || [])
       case DataNotificationCommand.GET_INBOX_BY_IDS:
         return await notificationInboxBusiness.getByEventIds(userId, data?.eventIds || [])
+      case DataNotificationCommand.GET_INBOX_BY_CATEGORY:
+        return await notificationInboxBusiness.getInboxByCategory(userId, data?.category || '', data?.limit)
       case DataNotificationCommand.GET_READ_CURSORS:
         return await notificationReadCursorBusiness.getCursors(userId, data?.categories)
       case DataNotificationCommand.GET_UNREAD_SUMMARY:

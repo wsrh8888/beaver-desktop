@@ -39,12 +39,15 @@ class LocalServer {
   async start(): Promise<void> {
     try {
 
-      this.server = this.app.listen(58794, '127.0.0.1', () => {
+      this.server = this.app.listen(38794, '127.0.0.1', () => {
+        console.log('Local server started on port 58794')
       })
 
       this.server.on('error', (err: any) => {
       })
+
     } catch (error: any) {
+      console.error('Local server start error:', error)
       throw error
     }
   }

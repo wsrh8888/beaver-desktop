@@ -184,6 +184,12 @@ export const databaseModule: IDatabaseModule = {
         data: params,
       })
     },
+    getInboxByCategory: async (params: { category: string, limit?: number }) => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.NOTIFICATION, {
+        command: DataNotificationCommand.GET_INBOX_BY_CATEGORY,
+        data: params,
+      })
+    },
     getReadCursors: async (params: IGetNotificationReadCursorsReq): Promise<IGetNotificationReadCursorsRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.NOTIFICATION, {
         command: DataNotificationCommand.GET_READ_CURSORS,

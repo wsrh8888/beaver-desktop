@@ -104,16 +104,13 @@ class WsManager {
     if (this.isConnected || this.status === 'connecting') {
       return
     }
-    logger.info({ text: '开始连接WebSocket', data: { userId } })
-
-    this.status = 'connecting'
-
     if (!token || !userId) {
       logger.warn({ text: '没有token或userId，无法连接WebSocket' })
       return
     }
 
     logger.info({ text: '开始连接WebSocket', data: { userId } })
+    this.status = 'connecting'
     this.isClose = false
     this.isManualClose = false
 
@@ -207,7 +204,6 @@ class WsManager {
 
   private handleMessage(data: string) {
     try {
-      logger.info({ text: '收到WebSocket消息', data })
       const message = JSON.parse(data) as WsControlFrame & WsMessage
 
       // 控制帧：PONG（扁平 JSON，服务端回复客户端 PING）
@@ -279,7 +275,7 @@ class WsManager {
   private startHeartbeat() {
     this.sendHeartbeat()
     this.heartbeatTimer = setInterval(() => {
-      this.sendPing()
+      this.sendHeartbeat()
     }, this.heartbeatInterval)
   }
 
@@ -327,6 +323,8 @@ class WsManager {
   private reconnect() {
     if (this.reconnectTimer) return
 
+    if (this.reconnectAttempts >= this.maxReconnectAttempts) {
+      logger.error({ text: '达到最大重连次数，停止重连' })
       if (this.eventCallbacks.onReconnectFailed) {
         this.eventCallbacks.onReconnectFailed()
       }

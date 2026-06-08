@@ -22,6 +22,9 @@
       v-if="momentStore.currentMomentId"
       @close="momentStore.hideMomentDetail()"
     />
+
+    <!-- 朋友圈消息 -->
+    <MomentMessages />
   </div>
 </template>
 
@@ -32,6 +35,7 @@ import MomentCreate from './components/create/index.vue'
 
 import MomentDetail from './components/details/index.vue'
 import MomentHeader from './components/header/index.vue'
+import MomentMessages from './components/messages/index.vue'
 import { useMomentStore } from './store/moment/moment'
 import { useUserStore } from './store/user/user'
 import notificationManager from './notification-manager'
@@ -42,6 +46,7 @@ export default defineComponent({
     MomentContent,
     MomentCreate,
     MomentDetail,
+    MomentMessages,
   },
   setup() {
     const showPublishModal = ref(false)

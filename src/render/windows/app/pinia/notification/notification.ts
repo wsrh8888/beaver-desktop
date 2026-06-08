@@ -6,7 +6,7 @@ export interface INotificationSummary {
   byCat?: Array<{ category: string, unread: number }>
 }
 
-const DEFAULT_CATEGORIES = ['social', 'group', 'system']
+const DEFAULT_CATEGORIES = ['social', 'group', 'system', 'moment']
 
 export const useNotificationStore = defineStore('useNotificationStore', {
   state: () => ({
@@ -24,7 +24,7 @@ export const useNotificationStore = defineStore('useNotificationStore', {
 
   actions: {
     /**
-     * 初始化未读数据（默认统计 social/group/system 分类）
+     * 初始化未读数据（默认统计 social/group/system/moment 分类）
      */
     async init(categories: string[] = DEFAULT_CATEGORIES) {
       this.reset()

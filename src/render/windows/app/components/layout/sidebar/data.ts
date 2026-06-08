@@ -30,6 +30,7 @@ export const outsideList = [
     title: '朋友圈',
     defaultIcon: momentSvg,
     activeIcon: momentActive,
+    badgeCategories: ['moment'],
   },
 ]
 
