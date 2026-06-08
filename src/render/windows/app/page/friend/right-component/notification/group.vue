@@ -23,7 +23,9 @@
 
 <script lang="ts">
 import type { INotificationItem } from 'commonModule/type/view/notification'
+import { useRouterHelper } from 'renderModule/utils/router/index'
 import { useGroupJoinRequestStore } from 'renderModule/windows/app/pinia/group/group-join-request'
+import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import NotificationItem from './item.vue'
 
@@ -35,6 +37,8 @@ export default defineComponent({
   setup() {
     const notifications = ref<INotificationItem[]>([])
     const groupJoinRequestStore = useGroupJoinRequestStore()
+    const messageViewStore = useMessageViewStore()
+    const routerHelper = useRouterHelper()
     const groupJoinRequestList = computed(() => groupJoinRequestStore.getEnhancedRequestList)
 
     onMounted(async () => {
@@ -60,6 +64,7 @@ export default defineComponent({
           statusClass: getStatusClass(item.status),
           canApprove: item.status === 0,
           canReject: item.status === 0,
+          groupId: item.groupId,
         } as INotificationItem
       })
     }
@@ -137,8 +142,13 @@ export default defineComponent({
     }
 
     const handleItemClick = (item: INotificationItem) => {
-      console.log('点击群通知项:', item)
-      // TODO: 可以跳转到群详情或申请详情页面
+      if (!item.groupId) {
+        return
+      }
+
+      const conversationId = `group_${item.groupId}`
+      messageViewStore.setCurrentChat(conversationId)
+      routerHelper.push('/message')
     }
 
     return {

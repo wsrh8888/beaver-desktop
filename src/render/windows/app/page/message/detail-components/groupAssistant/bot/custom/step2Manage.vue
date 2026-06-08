@@ -57,7 +57,17 @@
             <img src="renderModule/assets/image/common/help.svg" class="bot-custom-manage__help-icon" alt="帮助" @click.stop="showSignHelp">
           </label>
         </div>
-        
+
+        <label v-if="keywordsEnabled" class="bot-custom-manage__field bot-custom-manage__field--nested">
+          <span class="bot-custom-manage__label">关键词（最多10个，每行一个）</span>
+          <textarea v-model="formKeywords" class="bot-custom-manage__textarea" rows="3" placeholder="例如：deploy&#10;build success" />
+        </label>
+
+        <label v-if="ipWhitelistEnabled" class="bot-custom-manage__field bot-custom-manage__field--nested">
+          <span class="bot-custom-manage__label">IP 白名单（每行一个）</span>
+          <textarea v-model="formIpWhitelist" class="bot-custom-manage__textarea" rows="3" placeholder="例如：192.168.1.10&#10;10.0.0.0/24" />
+        </label>
+
         <!-- 签名校验密钥 -->
         <div v-if="signEnabled" class="bot-custom-manage__sign-section">
           <div class="bot-custom-manage__sign-input-wrapper">
@@ -125,6 +135,15 @@ export default defineComponent({
     const ipWhitelistEnabled = ref(false) // IP 白名单开关
     const signEnabled = ref(false) // 签名校验开关
     const signSecret = ref('') // 签名密钥
+    const formKeywords = ref('')
+    const formIpWhitelist = ref('')
+
+    const parseLines = (value: string) => {
+      return value
+        .split(/[\n,，]/)
+        .map(item => item.trim())
+        .filter(Boolean)
+    }
 
     const defaultAvatar = customTemplate.avatar
     const groupBotId = computed(() => String(groupAssistantViewStore.groupBotId))
@@ -136,7 +155,9 @@ export default defineComponent({
       webhookUrl: string
       security?: {
         keywordsEnabled: boolean
+        keywords?: string[]
         ipWhitelistEnabled: boolean
+        ipWhitelist?: string[]
         signatureEnabled: boolean
         signatureSecret: string
       }
@@ -149,6 +170,8 @@ export default defineComponent({
       ipWhitelistEnabled.value = bot.security?.ipWhitelistEnabled || false
       signEnabled.value = bot.security?.signatureEnabled || false
       signSecret.value = bot.security?.signatureSecret || ''
+      formKeywords.value = (bot.security?.keywords || []).join('\n')
+      formIpWhitelist.value = (bot.security?.ipWhitelist || []).join('\n')
     }
 
     const loadBot = async () => {
@@ -178,6 +201,23 @@ export default defineComponent({
         Message.error('请填写名称')
         return
       }
+
+      const keywords = parseLines(formKeywords.value)
+      const ipWhitelist = parseLines(formIpWhitelist.value)
+
+      if (keywordsEnabled.value && keywords.length === 0) {
+        Message.error('请填写至少一个关键词')
+        return
+      }
+      if (keywords.length > 10) {
+        Message.error('关键词最多10个')
+        return
+      }
+      if (ipWhitelistEnabled.value && ipWhitelist.length === 0) {
+        Message.error('请填写至少一个 IP 地址')
+        return
+      }
+
       submitting.value = true
       const res = await updateBotApi({
         botId: groupBotId.value,
@@ -187,9 +227,9 @@ export default defineComponent({
         status: undefined, // 暂时不更新状态
         security: {
           keywordsEnabled: keywordsEnabled.value,
-          keywords: [], // TODO: 实现关键词输入
+          keywords,
           ipWhitelistEnabled: ipWhitelistEnabled.value,
-          ipWhitelist: [], // TODO: 实现IP白名单输入
+          ipWhitelist,
           signatureEnabled: signEnabled.value,
           signatureSecret: signSecret.value,
           signatureUpdated: Date.now(),
@@ -259,6 +299,8 @@ export default defineComponent({
       ipWhitelistEnabled,
       signEnabled,
       signSecret,
+      formKeywords,
+      formIpWhitelist,
       pickAvatar,
       onAvatarChange,
       submitSave,
@@ -382,6 +424,11 @@ export default defineComponent({
     color: #ff4d4f;
     margin-top: 8px;
     line-height: 1.6;
+  }
+
+  .bot-custom-manage__field--nested {
+    margin-top: 4px;
+    margin-bottom: 12px;
   }
 
   .bot-custom-manage__security {

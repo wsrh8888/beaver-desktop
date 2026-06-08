@@ -20,6 +20,10 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      */
     replyingTo: null as IChatHistory | null,
     /**
+     * @description: 当前正在编辑的消息，null 表示非编辑模式
+     */
+    editingTo: null as IChatHistory | null,
+    /**
      * @description: 是否处于多选模式
      */
     isMultiSelectMode: false,
@@ -132,6 +136,23 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
       }
     },
 
+    setEditingTo(message: IChatHistory | null) {
+      this.editingTo = message
+      if (!this.currentChatId)
+        return
+
+      if (message) {
+        const content = message.msg?.textMsg?.content
+          || message.msg?.markdownMsg?.content
+          || ''
+        this.replyingTo = null
+        this.updateDraft(this.currentChatId, { html: content, replyingTo: null })
+      }
+      else {
+        this.updateDraft(this.currentChatId, { html: '' })
+      }
+    },
+
     /**
      * @description: 进入多选模式，可选择预先选中一条消息
      */
@@ -179,6 +200,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
 
       this.currentChatId = conversationId
       this.replyingTo = draft.replyingTo
+      this.editingTo = null
 
       // 如果切换到了不同的会话，才标记已读
       // 委托给conversation store处理已读逻辑

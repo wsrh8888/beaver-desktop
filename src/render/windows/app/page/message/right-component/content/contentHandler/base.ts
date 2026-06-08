@@ -2,7 +2,7 @@
  * 基础消息处理器类
  */
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
-import { deleteMessageApi, recallMessageApi } from 'renderModule/api/chat'
+import { deleteMessageApi, editMessageApi, recallMessageApi } from 'renderModule/api/chat'
 import Message from 'renderModule/components/ui/message'
 import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
@@ -57,6 +57,37 @@ export abstract class BaseMessageHandler implements IMessageHandler {
   protected setReplyMessage(message: any): void {
     const messageViewStore = useMessageViewStore()
     messageViewStore.setReplyingTo(message)
+  }
+
+  /** 进入编辑模式 */
+  protected setEditingMessage(message: any): void {
+    const messageViewStore = useMessageViewStore()
+    messageViewStore.setEditingTo(message)
+  }
+
+  /** 提交编辑（24 小时内、文本/Markdown） */
+  protected async submitEditMessage(message: any, newContent: string): Promise<void> {
+    const trimmed = newContent.trim()
+    if (!trimmed) {
+      Message.error('消息内容不能为空')
+      return
+    }
+
+    const createdAt = new Date(message.created_at).getTime()
+    if (Date.now() - createdAt > 24 * 60 * 60 * 1000) {
+      Message.error('超过24小时，无法编辑')
+      return
+    }
+
+    const res = await editMessageApi({ messageId: message.messageId, content: trimmed })
+    if (res.code === 0) {
+      const messageStore = useMessageStore()
+      messageStore.updateMessageContent(message.conversationId, message.messageId, trimmed)
+      useMessageViewStore().setEditingTo(null)
+    }
+    else {
+      Message.error(res.msg || '编辑失败')
+    }
   }
 
   /** 进入多选模式，并预先选中当前消息 */
