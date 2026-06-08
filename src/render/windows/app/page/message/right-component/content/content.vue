@@ -26,6 +26,8 @@
         <ImageMessage v-else-if="message.msg?.type === 2 && message.msg?.imageMsg" :msg="message.msg" />
         <!-- 视频消息组件 -->
         <VideoMessage v-else-if="message.msg?.type === 3 && message.msg?.videoMsg" :msg="message.msg" />
+        <!-- 文件消息组件（type=4） -->
+        <FileMessage v-else-if="message.msg?.type === 4 && message.msg?.fileMsg" :msg="message.msg" />
         <!-- 语音消息组件（type=5，按住说话） -->
         <VoiceMessage
           v-else-if="message.msg?.type === 5 && message.msg?.voiceMsg"
@@ -46,8 +48,11 @@
         <MergedForwardMessage v-else-if="message.msg?.type === 12 && message.msg?.forwardMsg" :msg="message.msg" />
         <!-- Markdown 消息组件（type=13） -->
         <MarkdownMessage v-else-if="message.msg?.type === 13 && message.msg?.markdownMsg" :msg="message.msg" />
+        <div v-if="message.status === 3 && (message.msg?.type === 1 || message.msg?.type === 13)" class="edited-tag">
+          已编辑
+        </div>
         <!-- 发送状态指示器 -->
-        <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
+        <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
           <div v-if="message.sendStatus === 0" class="status-sending">
             <div class="sending-spinner" />
             发送中...
@@ -56,7 +61,7 @@
             <img class="retry-icon" src="renderModule/assets/image/chat/retry.svg" alt="重试" />
             发送失败，点击重试
           </div>
-        </div> -->
+        </div>
       </div>
     </div>
 
@@ -73,7 +78,9 @@
 <script lang="ts">
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
+import { MessageStatus } from 'commonModule/type/ajax/chat'
 import ContextMenu from 'renderModule/components/ui/context-menu/index.vue'
+import { ChatCore } from 'renderModule/core/message/index'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
@@ -87,6 +94,7 @@ import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
 import CallMessage from './message/call.vue'
 import EmojiMessage from './message/emoji.vue'
+import FileMessage from './message/file.vue'
 import ImageMessage from './message/image.vue'
 import MarkdownMessage from './message/markdown.vue'
 import MergedForwardMessage from './message/merged-forward.vue'
@@ -110,6 +118,7 @@ export default defineComponent({
     AudioFileMessage,
     CallMessage,
     EmojiMessage,
+    FileMessage,
     TextMessage,
     ImageMessage,
     MarkdownMessage,
@@ -312,6 +321,21 @@ export default defineComponent({
       }
     })
 
+    const retrySend = async (message: any) => {
+      if (message.sendStatus !== MessageStatus.FAILED || !message.msg) {
+        return
+      }
+
+      const conversationId = message.conversationId || messageViewStore.currentChatId
+      if (!conversationId) {
+        return
+      }
+
+      const chatType = conversationId.startsWith('group_') ? 'group' : 'private'
+      await messageStore.removeMessages(conversationId, [message.messageId])
+      await ChatCore.sendMessage(conversationId, message.msg, chatType)
+    }
+
     return {
       CacheType,
       messages,
@@ -329,6 +353,7 @@ export default defineComponent({
       handleMessageClick,
       userInfo,
       showUserInfo,
+      retrySend,
     }
   },
 })
@@ -382,6 +407,10 @@ export default defineComponent({
         margin-right: 8px;
         margin-left: 0;
         color: white;
+
+        .edited-tag {
+          color: rgba(255, 255, 255, 0.75);
+        }
       }
     }
 
@@ -417,6 +446,46 @@ export default defineComponent({
       position: relative;
       background-color: #FF7D45;
       border-bottom-left-radius: 2px;
+
+      .edited-tag {
+        margin-top: 4px;
+        font-size: 11px;
+        color: #909399;
+      }
+
+      .message-status {
+        margin-top: 6px;
+        font-size: 12px;
+
+        .status-sending {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: rgba(255, 255, 255, 0.85);
+        }
+
+        .status-failed {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #ffeb3b;
+          cursor: pointer;
+
+          .retry-icon {
+            width: 14px;
+            height: 14px;
+          }
+        }
+
+        .sending-spinner {
+          width: 12px;
+          height: 12px;
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          border-top-color: #fff;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+        }
+      }
     }
 
     // 多选模式复选框
@@ -460,6 +529,12 @@ export default defineComponent({
         }
       }
     }
+  }
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
 }
 

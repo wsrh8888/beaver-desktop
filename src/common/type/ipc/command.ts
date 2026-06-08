@@ -162,6 +162,10 @@ export enum CacheCommand {
    * @description: 设置缓存内容
    */
   SET = 'cache:set',
+  /**
+   * @description: 下载并打开本地文件
+   */
+  OPEN = 'cache:open',
 }
 
 /**

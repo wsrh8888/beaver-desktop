@@ -379,6 +379,7 @@ export interface IChatHistory {
   sender: ISender // 发送者信息
   created_at: string // 创建时间
   sendStatus?: MessageStatus // 发送状态（本地发送状态）
+  status?: number // 消息状态 1:正常 2:已撤回 3:已编辑
 }
 
 // 聊天数据同步请求

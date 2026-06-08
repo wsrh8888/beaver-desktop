@@ -37,6 +37,8 @@ import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import AudioIconSvg from 'renderModule/assets/image/chat/audio-icon.svg'
 import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
+import Message from 'renderModule/components/ui/message'
+import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
@@ -103,10 +105,25 @@ export default defineComponent({
     }
 
     // 处理下载
-    const handleDownload = () => {
+    const handleDownload = async () => {
       const mediaUrl = props.msg.audioFileMsg?.fileUrl
-      console.log('下载文件:', mediaUrl)
-      // TODO: 实现文件下载功能
+      const filename = props.msg.audioFileMsg?.fileName || getFileNameFromUrl(mediaUrl || '') || 'audio'
+      if (!mediaUrl) {
+        Message.error('无法获取文件地址')
+        return
+      }
+
+      const response = await fetch(mediaUrl)
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+      Message.success('已开始下载')
     }
 
     return {

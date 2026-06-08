@@ -43,4 +43,8 @@ export interface INotificationItem {
    * 是否可以拒绝
    */
   canReject?: boolean
+  /**
+   * 关联群组 ID（群通知跳转用）
+   */
+  groupId?: string
 }

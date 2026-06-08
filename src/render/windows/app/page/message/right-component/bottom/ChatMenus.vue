@@ -14,6 +14,9 @@
         <!-- 引用回复预览条 -->
         <ReplyBar />
 
+        <!-- 编辑消息预览条 -->
+        <EditBar />
+
         <!-- 核心编辑器子组件 -->
         <ChatEditor ref="editorRef" />
 
@@ -40,6 +43,7 @@ import MultiActions from './ChatActions/MultiActions.vue'
 import ChatToolbar from './ChatToolbar/Toolbar.vue'
 import ChatEditor from './ChatEditor/Editor.vue'
 import ReplyBar from './ChatReply/ReplyBar.vue'
+import EditBar from './ChatEdit/EditBar.vue'
 import EmojiComponent from './emoji/emoji.vue'
 
 export default defineComponent({
@@ -49,6 +53,7 @@ export default defineComponent({
     ChatToolbar,
     ChatEditor,
     ReplyBar,
+    EditBar,
     EmojiComponent
   },
   setup() {

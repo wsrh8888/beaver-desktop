@@ -275,6 +275,20 @@ export const useMessageStore = defineStore('useMessageStore', {
       }
     },
 
+    updateMessageContent(conversationId: string, messageId: string, content: string) {
+      const history = this.chatHistory.get(conversationId)
+      if (!history)
+        return
+      const message = history.find(m => m.messageId === messageId)
+      if (!message?.msg)
+        return
+      if (message.msg.textMsg)
+        message.msg.textMsg.content = content
+      else if (message.msg.markdownMsg)
+        message.msg.markdownMsg.content = content
+      message.status = 3
+    },
+
     /**
      * @description: 批量删除消息（同步删除本地状态和本地数据库）
      */

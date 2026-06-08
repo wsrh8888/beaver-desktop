@@ -1,5 +1,4 @@
 import customAvatar from 'renderModule/assets/image/groupAssistant/custom.svg'
-import gitlabAvatar from 'renderModule/assets/image/groupAssistant/gitlab.svg'
 /** 与服务端 GroupBotModel.type 一致 */
 export type GroupBotType = 'custom' | 'gitlab' | ''
 
@@ -39,16 +38,6 @@ export const botTemplateOptions: IBotTemplateOption[] = [
     preset: {
       name: '',
       description: '',
-    },
-  },
-  {
-    key: 'gitlab',
-    name: 'GitLab',
-    desc: '基于 Git 的开源软件托管软件',
-    avatar: gitlabAvatar,
-    preset: {
-      name: 'GitLab 机器人',
-      description: '接收 GitLab Pipeline / Push 等事件通知',
     },
   },
 ]

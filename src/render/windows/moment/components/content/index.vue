@@ -63,12 +63,6 @@ export default defineComponent({
       momentStore.showMomentDetail(momentId)
     }
 
-    // 处理发送评论
-    const handleSendComment = (momentId: string, commentData: any) => {
-      console.log('发送评论:', momentId, commentData)
-      // TODO: 调用API发送评论
-    }
-
     onMounted(async () => {
       await momentStore.loadMoments()
     })
@@ -83,7 +77,6 @@ export default defineComponent({
       handleScroll,
       handleMomentClick,
       handleComment,
-      handleSendComment,
     }
   },
 })

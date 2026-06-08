@@ -1,15 +1,13 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+import { CacheType } from 'commonModule/type/cache/cache'
+import Message from 'renderModule/components/ui/message'
+import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { BaseMessageHandler } from './base'
 
 /**
  * 视频消息处理器
  */
 class VideoHandler extends BaseMessageHandler {
-  // 视频消息的菜单项
-  private videoMenuItems: ContextMenuItem[] = [
-
-  ]
-
   handleCommand(commandId: string, message: any): Promise<void> {
     switch (commandId) {
       case 'save':
@@ -30,20 +28,41 @@ class VideoHandler extends BaseMessageHandler {
   }
 
   getMenuItems(): ContextMenuItem[] {
-    return [{ id: 'multiSelect', label: '多选' }]
+    return [
+      { id: 'play', label: '播放' },
+      { id: 'save', label: '下载' },
+      { id: 'multiSelect', label: '多选' },
+    ]
   }
 
   private async handleSave(message: any): Promise<void> {
-    const videoUrl = message.msg.videoMsg?.url
-    const filename = message.msg.videoMsg?.name || 'video.mp4'
+    const videoUrl = message.msg.videoMsg?.fileUrl
+    const filename = message.msg.videoMsg?.fileName || getFileNameFromUrl(videoUrl) || 'video.mp4'
     if (videoUrl) {
       await this.downloadFile(videoUrl, filename)
     }
   }
 
   private async handlePlay(message: any): Promise<void> {
-    console.log('播放视频功能开发中', message)
-    // TODO: 实现播放逻辑
+    const mediaUrl = message.msg.videoMsg?.fileUrl
+    if (!mediaUrl) {
+      Message.error('无法获取视频地址')
+      return
+    }
+
+    let videoUrl = mediaUrl
+    const cachedUrl = await electron.cache.get(CacheType.USER_VIDEO, mediaUrl)
+    if (cachedUrl) {
+      videoUrl = cachedUrl
+    }
+
+    await electron.window.openWindow('video', {
+      unique: true,
+      params: {
+        url: videoUrl,
+        title: getFileNameFromUrl(mediaUrl),
+      },
+    })
   }
 }
 

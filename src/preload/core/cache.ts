@@ -14,4 +14,9 @@ export const cacheModule: ICacheModule = {
   set: async (type: CacheType, fileKey: string): Promise<any> => {
     return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, CacheCommand.SET, { type, fileKey })
   },
+
+  // 下载并打开本地文件
+  open: async (type: CacheType, fileKey: string): Promise<string | null> => {
+    return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, CacheCommand.OPEN, { type, fileKey })
+  },
 }
