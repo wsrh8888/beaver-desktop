@@ -105,7 +105,7 @@ export interface IEmojiMessage {
 
 // 通知消息（会话内的通知，如：xxx加入了群聊、xxx创建了群等）
 export interface INotificationMessage {
-  type: number // 通知类型：1=好友欢迎 2=创建群 3=加入群 4=退出群 5=踢出成员 6=转让群主等
+  type: number // 通知类型：1=好友欢迎 2=创建群 3=加入群 4=退出群 5=踢出成员 6=转让群主 7=添加群机器人 8=移除群机器人
   actors: string[] // 相关用户ID列表
 }
 
@@ -127,7 +127,7 @@ export interface IForwardMessage {
 // 撤回消息
 export interface IWithdrawMessage {
   originMsgId: string
-  originMsg?: IMessage | null // 被撤回的消息内容快照（用于重新编辑）
+  originMsg?: IMessage | null // 被撤回的消息内容快照
 }
 
 // 通话消息
@@ -326,20 +326,6 @@ export interface IPinnedChatRes {
   message: string
 }
 
-// 编辑消息请求
-export interface IEditMessageReq {
-  messageId: string // 客户端消息ID
-  content: string // 新的消息内容
-}
-
-// 编辑消息响应
-export interface IEditMessageRes {
-  id: number // 数据库自增ID
-  messageId: string // 客户端消息ID
-  content: string // 编辑后的内容
-  editTime: string // 编辑时间
-}
-
 // 撤回消息请求
 export interface IRecallMessageReq {
   messageId: string // 客户端消息ID
@@ -534,3 +520,11 @@ export interface IHideChatReq {
 
 // 隐藏会话响应
 export interface IHideChatRes { }
+
+// 标记消息媒体状态请求（如语音已播放）
+export interface IMarkMessageMediaReq {
+  messageIds: string[]
+}
+
+// 标记消息媒体状态响应
+export interface IMarkMessageMediaRes { }

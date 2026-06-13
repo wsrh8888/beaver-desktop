@@ -3,7 +3,7 @@ import { CacheType } from 'commonModule/type/cache/cache'
 import { defineStore } from 'pinia'
 import { calculateImageSize } from 'renderModule/utils/image/index'
 import { useConversationStore } from '../../conversation/conversation'
-import { useVoicePlayerStore } from './voicePlayer'
+import { AudioPlayer } from 'renderModule/core/media/audio'
 
 /**
  * @description: 消息视图状态管理
@@ -19,10 +19,6 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 当前正在引用/回复的消息，null 表示无引用
      */
     replyingTo: null as IChatHistory | null,
-    /**
-     * @description: 当前正在编辑的消息，null 表示非编辑模式
-     */
-    editingTo: null as IChatHistory | null,
     /**
      * @description: 是否处于多选模式
      */
@@ -136,23 +132,6 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
       }
     },
 
-    setEditingTo(message: IChatHistory | null) {
-      this.editingTo = message
-      if (!this.currentChatId)
-        return
-
-      if (message) {
-        const content = message.msg?.textMsg?.content
-          || message.msg?.markdownMsg?.content
-          || ''
-        this.replyingTo = null
-        this.updateDraft(this.currentChatId, { html: content, replyingTo: null })
-      }
-      else {
-        this.updateDraft(this.currentChatId, { html: '' })
-      }
-    },
-
     /**
      * @description: 进入多选模式，可选择预先选中一条消息
      */
@@ -190,7 +169,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
     async setCurrentChat(conversationId: string) {
       if (this.currentChatId === conversationId) return
 
-      useVoicePlayerStore().stop()
+      AudioPlayer.stop()
 
       // 退出多选模式
       this.exitMultiSelect()
@@ -200,7 +179,6 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
 
       this.currentChatId = conversationId
       this.replyingTo = draft.replyingTo
-      this.editingTo = null
 
       // 如果切换到了不同的会话，才标记已读
       // 委托给conversation store处理已读逻辑

@@ -1,52 +1,98 @@
 <template>
-  <div class="login__content">
-    <router-view />
+  <div class="login-page">
+    <WindowControls />
+    <BrandSection />
+    <section class="login-page__main">
+      <beaver-login
+        class="login-page__sdk"
+        :app-id="openAppId"
+        @login="handleLogin"
+      />
+    </section>
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import BeaverSDK from '@beaver/js-sdk'
+import type { ISdkLoginEvent } from '@beaver/js-sdk'
+import { openAppId } from 'commonModule/config'
+import Message from 'renderModule/components/ui/message'
+import { oauthCodeLoginApi } from 'renderModule/api/auth'
+import { defineComponent, onMounted } from 'vue'
+import BrandSection from './components/BrandSection.vue'
+import WindowControls from './components/WindowControls.vue'
+
+function parseLoginEvent(payload: CustomEvent | ISdkLoginEvent): ISdkLoginEvent | null {
+  if (payload instanceof CustomEvent) {
+    const detail = payload.detail as ISdkLoginEvent | ISdkLoginEvent[]
+    if (Array.isArray(detail)) {
+      return detail[0] ?? null
+    }
+    return detail ?? null
+  }
+  return payload
+}
 
 export default defineComponent({
+  name: 'LoginApp',
+  components: {
+    WindowControls,
+    BrandSection,
+  },
   setup() {
+    onMounted(() => {
+      BeaverSDK.register()
+    })
+
+    const handleLogin = async (payload: CustomEvent | ISdkLoginEvent) => {
+      const event = parseLoginEvent(payload)
+      if (!event || event.code === 0 ) {
+        const res = await oauthCodeLoginApi({ appId: openAppId, code: event.result.authCode })
+        if (res.code === 0) {
+          electron.storage.setAsync('userInfo', {
+            userId: res.result.userId,
+            token: res.result.token,
+          }, { persist: true })
+          
+          electron.auth.login()
+        }
+        else {
+          Message.error(res.msg )
+        }
+      }
+    }
+
     return {
+      openAppId,
+      handleLogin,
     }
   },
 })
 </script>
 
 <style lang="less" scoped>
-.login__content {
+.login-page {
+  width: 100%;
   height: 100%;
   display: flex;
+  overflow: hidden;
+  position: relative;
+  background: #ffffff;
+  flex-shrink: 0;
+}
 
-  .login__left {
-    width: 391px;
-    height: 100%;
-    background: #7c7676;
-  }
+.login-page__main {
+  flex: 1;
+  width: 400px;
+  min-width: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
 
-  .login__right {
-    flex: 1;
-    padding: 20px;
-
-    .login__right__header {
-      height: 172px;
-    }
-
-    .login__right__content {
-      width: 100%;
-
-      .btn__login {
-        width: 100%;
-        height: 40px;
-      }
-    }
-
-    // .login__right__footer {
-    //   width: 100%;
-    //   height: 100px;
-    // }
+  .login-page__sdk {
+    width: 100%;
+    max-width: 360px;
   }
 }
 </style>

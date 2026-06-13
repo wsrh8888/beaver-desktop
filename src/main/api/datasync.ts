@@ -29,6 +29,8 @@ import type {
   IGetSyncNotificationReadCursorsRes,
   IGetSyncDeletedMessagesReq,
   IGetSyncDeletedMessagesRes,
+  IGetSyncMessageMediasReq,
+  IGetSyncMessageMediasRes,
 } from 'commonModule/type/ajax/datasync'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
@@ -195,5 +197,16 @@ export const datasyncGetSyncDeletedMessagesApi = (data: IGetSyncDeletedMessagesR
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/datasync/v1/getSyncDeletedMessages`,
+  })
+}
+
+/**
+ * @description: 获取需要同步的消息媒体状态
+ */
+export const datasyncGetSyncMessageMediasApi = (data: IGetSyncMessageMediasReq) => {
+  return ajax<IGetSyncMessageMediasRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncMessageMedias`,
   })
 }

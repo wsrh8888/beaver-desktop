@@ -3,7 +3,7 @@
     <!-- 第一步：添加机器人 -->
     <botCustomStep1Add v-if="!isEdit" @close="handleClose" @created="handleCreated" />
     <!-- 第二步：管理机器人 -->
-    <botCustomStep2Manage v-else @close="handleClose" />
+    <botCustomStep2Manage v-else @close="handleClose" @saved="handleSaved" />
   </div>
 </template>
 
@@ -27,6 +27,11 @@ export default defineComponent({
 
     const handleCreated = (botId: string) => {
       groupAssistantViewStore.groupBotId = botId
+      groupAssistantViewStore.markListDirty()
+    }
+
+    const handleSaved = () => {
+      groupAssistantViewStore.markListDirty()
     }
 
     const handleClose = () => {
@@ -36,6 +41,7 @@ export default defineComponent({
     return {
       isEdit,
       handleCreated,
+      handleSaved,
       handleClose,
     }
   },

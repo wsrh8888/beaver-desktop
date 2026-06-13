@@ -169,7 +169,27 @@ export enum CacheCommand {
 }
 
 /**
- * @description: 认证相关的Command
+ * @description: 键盘快捷键相关的 Command
+ */
+export enum KeyboardCommand {
+  /**
+   * @description: 更新单个快捷键 actionId → binding
+   */
+  SET = 'keyboard:set',
+}
+
+/**
+ * @description: 用户设置（主进程 store 读写）
+ */
+export enum SettingsCommand {
+  GET_ACCOUNT = 'settings:getAccount',
+  GET_DEVICE = 'settings:getDevice',
+  SAVE_ACCOUNT = 'settings:saveAccount',
+  SAVE_DEVICE = 'settings:saveDevice',
+}
+
+/**
+ * @description: 认证相关的 Command
  */
 export enum AuthCommand {
   /**

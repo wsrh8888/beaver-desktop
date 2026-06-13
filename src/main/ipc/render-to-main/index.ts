@@ -8,6 +8,8 @@ import {
   LoggerCommand,
   NetworkCommand,
   NotificationCommand,
+  KeyboardCommand,
+  SettingsCommand,
   StorageCommand,
   UpdateCommand,
   WebSocketCommand,
@@ -32,6 +34,8 @@ import notificationHandler from './notification'
 import storageHandler from './storage'
 import updaterHandler from './updater'
 import webSocketHandler from './websocket'
+import keyboardHandler from './keyboard'
+import settingsHandler from './settings'
 import windowHandler from './window'
 
 const loggerName = 'render-to-main-msg'
@@ -40,6 +44,8 @@ const commandGroups = [
   { enum: WinHook, handler: windowHandler },
   { enum: ClipboardCommand, handler: clipboardHandler },
   { enum: StorageCommand, handler: storageHandler },
+  { enum: KeyboardCommand, handler: keyboardHandler },
+  { enum: SettingsCommand, handler: settingsHandler },
   { enum: ConfigCommand, handler: configHandler },
   { enum: UpdateCommand, handler: updaterHandler },
   { enum: NotificationCommand, handler: notificationHandler },

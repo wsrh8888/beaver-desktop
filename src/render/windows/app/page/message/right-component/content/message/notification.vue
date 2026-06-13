@@ -66,6 +66,10 @@ export default defineComponent({
           return `${actorNames.join('、')} 被移出群聊`
         case 6: // 转让群主
           return `群主已转让给 ${actorNames.join('、')}`
+        case 7: // 添加群机器人
+          return `${actorNames[0]} 添加了群机器人`
+        case 8: // 移除群机器人
+          return `${actorNames[0]} 移除了群机器人`
         default:
           return `[通知消息]`
       }
@@ -88,7 +92,6 @@ export default defineComponent({
 
 .notification-text {
   font-size: 12px;
-  color: #ffffff;
   text-align: center;
   line-height: 1.5;
 }

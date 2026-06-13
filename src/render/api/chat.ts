@@ -8,8 +8,6 @@ import type {
   IDeleteMessagesRes,
   IDeleteRecentReq,
   IDeleteRecentRes,
-  IEditMessageReq,
-  IEditMessageRes,
   IForwardMessageReq,
   IForwardMessageRes,
   IHideChatReq,
@@ -28,6 +26,8 @@ import type {
   IUpdateReadSeqRes,
   IGetForwardDetailsReq,
   IGetForwardDetailsRes,
+  IMarkMessageMediaReq,
+  IMarkMessageMediaRes,
 } from 'commonModule/type/ajax/chat'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -103,17 +103,6 @@ export const pinnedChatApi = (data: IPinnedChatReq) => {
     method: 'POST',
     data,
     url: `${baseUrl}/api/chat/v1/pinnedChat`,
-  })
-}
-
-/**
- * @description: 编辑消息
- */
-export const editMessageApi = (data: IEditMessageReq) => {
-  return ajax<IEditMessageRes>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/chat/v1/edit`,
   })
 }
 
@@ -199,5 +188,16 @@ export const hideChatApi = (data: IHideChatReq) => {
     method: 'POST',
     data,
     url: `${baseUrl}/api/chat/v1/hideChat`,
+  })
+}
+
+/**
+ * @description: 标记消息媒体状态（如语音已播放）
+ */
+export const markMessageMediaApi = (data: IMarkMessageMediaReq) => {
+  return ajax<IMarkMessageMediaRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/v1/markMessageMedia`,
   })
 }

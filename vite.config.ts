@@ -82,6 +82,7 @@ export default defineConfig(({ command: _command }) => {
           call: path.resolve(__dirname, 'call.html'),
           'call-incoming': path.resolve(__dirname, 'call-incoming.html'),
           ai: path.resolve(__dirname, 'ai.html'),
+          settings: path.resolve(__dirname, 'settings.html'),
         },
         output: {
           format: 'es', // 确保输出 ES 模块格式

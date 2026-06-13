@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { app } from 'electron'
+import { app, globalShortcut } from 'electron'
 
 // 支持分配不同的本地缓存目录，用于多开测试
 if (process.env.APP_PROFILE) {
@@ -35,6 +35,7 @@ import messageManager from './message-manager'
 import { store } from './store'
 import { mcpManager } from './mcp-manager/index.js'
 import localServer from './server'
+import keyboardHandler from './ipc/render-to-main/keyboard'
 
 // 屏蔽安全警告
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
@@ -85,6 +86,8 @@ class Main {
 
     
     mcpManager.init()
+    // store 启动时已从 config.json 加载 settings，此处直接注册本机快捷键
+    keyboardHandler.init()
   }
 
   setupEventListeners() {
@@ -101,6 +104,9 @@ class Main {
           trayHandler.destroy()
         }
       })
+    })
+    app.on('will-quit', () => {
+      globalShortcut.unregisterAll()
     })
   }
 

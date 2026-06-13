@@ -1,26 +1,38 @@
 <template>
   <div
     class="voice-message"
-    :class="{ 'is-self': isSelf, 'is-playing': isPlaying }"
     :style="{ width: `${bubbleWidth}px` }"
     @click.stop="handlePlay"
   >
-    <div class="voice-waves" :class="{ playing: isPlaying, reverse: isSelf }">
-      <span class="wave-bar" />
-      <span class="wave-bar" />
-      <span class="wave-bar" />
+    <div class="voice-content" :class="{ 'is-self': isSelf }">
+      <div class="voice-icon" :class="{ 'voice-playing': isPlaying, 'voice-icon-sent': isSelf }">
+        <template v-if="isPlaying">
+          <img class="voice-layer" :src="wedgeIcon" alt="">
+          <img class="voice-layer voice-wave-2" :src="arc2Icon" alt="">
+          <img class="voice-layer voice-wave-3" :src="arc3Icon" alt="">
+        </template>
+        <img v-else class="voice-layer voice-layer-full" :src="fullIcon" alt="">
+      </div>
+      <span class="voice-duration">{{ durationLabel }}</span>
     </div>
-    <span class="voice-duration">{{ durationLabel }}</span>
     <span v-if="!isSelf && !hasPlayed" class="voice-unread" />
   </div>
 </template>
 
 <script lang="ts">
-import { CacheType } from 'commonModule/type/cache/cache'
 import { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { useVoicePlayerStore } from 'renderModule/windows/app/pinia/view/message/voicePlayer'
-import { computed, defineComponent, PropType } from 'vue'
-import { storeToRefs } from 'pinia'
+import { AudioPlayer, audioPlayerState } from 'renderModule/core/media/audio'
+import { useMessageMediaStore } from 'renderModule/windows/app/pinia/message/message-media'
+import { computed, defineComponent, PropType, toRefs } from 'vue'
+
+import voiceIconDark from 'renderModule/assets/image/chat/voice-icon-dark.svg'
+import voiceIconLight from 'renderModule/assets/image/chat/voice-icon-light.svg'
+import voiceWedgeDark from 'renderModule/assets/image/chat/voice-wedge-dark.svg'
+import voiceWedgeLight from 'renderModule/assets/image/chat/voice-wedge-light.svg'
+import voiceArc2Dark from 'renderModule/assets/image/chat/voice-arc2-dark.svg'
+import voiceArc2Light from 'renderModule/assets/image/chat/voice-arc2-light.svg'
+import voiceArc3Dark from 'renderModule/assets/image/chat/voice-arc3-dark.svg'
+import voiceArc3Light from 'renderModule/assets/image/chat/voice-arc3-light.svg'
 
 export default defineComponent({
   name: 'VoiceMessage',
@@ -33,12 +45,23 @@ export default defineComponent({
       type: Boolean,
       default: false,
     },
+    messageId: {
+      type: String,
+      default: '',
+    },
   },
   setup(props) {
-    const voicePlayerStore = useVoicePlayerStore()
-    const { playingFileUrl, playedFileUrls } = storeToRefs(voicePlayerStore)
+    const { playingMessageId } = toRefs(audioPlayerState)
+    const messageMediaStore = useMessageMediaStore()
 
     const fileUrl = computed(() => props.msg.voiceMsg?.fileUrl || '')
+
+    const playbackId = computed(() => {
+      if (props.messageId)
+        return props.messageId
+      const url = fileUrl.value
+      return url ? `voice-url:${url}` : ''
+    })
 
     const durationSec = computed(() => {
       const raw = props.msg.voiceMsg?.duration
@@ -48,52 +71,42 @@ export default defineComponent({
     })
 
     const bubbleWidth = computed(() => {
-      return Math.min(200, Math.max(96, 72 + durationSec.value * 6))
+      return Math.min(200, Math.max(80, 80 + durationSec.value * 6))
     })
 
-    const durationLabel = computed(() => `${durationSec.value}″`)
+    const durationLabel = computed(() => `${durationSec.value}"`)
+
+    const fullIcon = computed(() => props.isSelf ? voiceIconLight : voiceIconDark)
+    const wedgeIcon = computed(() => props.isSelf ? voiceWedgeLight : voiceWedgeDark)
+    const arc2Icon = computed(() => props.isSelf ? voiceArc2Light : voiceArc2Dark)
+    const arc3Icon = computed(() => props.isSelf ? voiceArc3Light : voiceArc3Dark)
 
     const isPlaying = computed(() => {
-      const url = fileUrl.value
-      return !!url && playingFileUrl.value === url
+      return !!playbackId.value && playingMessageId.value === playbackId.value
     })
 
     const hasPlayed = computed(() => {
       if (props.isSelf)
         return true
-      const url = fileUrl.value
-      return !!url && playedFileUrls.value.includes(url)
+      return messageMediaStore.isPlayed(playbackId.value)
     })
 
-    const resolveAudioUrl = async () => {
-      const url = fileUrl.value
-      if (!url)
-        return ''
-
-      try {
-        const cached = await electron.cache.get(CacheType.USER_IMAGE, url)
-        return cached || url
-      }
-      catch {
-        return url
-      }
-    }
-
     const handlePlay = async () => {
+      const id = playbackId.value
       const url = fileUrl.value
-      if (!url)
+      if (!id || !url)
         return
 
-      const audioUrl = await resolveAudioUrl()
-      if (!audioUrl)
-        return
-
-      await voicePlayerStore.toggle(url, audioUrl)
+      await AudioPlayer.toggleVoice(id, url)
     }
 
     return {
       bubbleWidth,
       durationLabel,
+      fullIcon,
+      wedgeIcon,
+      arc2Icon,
+      arc3Icon,
       isPlaying,
       hasPlayed,
       handlePlay,
@@ -104,87 +117,97 @@ export default defineComponent({
 
 <style lang="less" scoped>
 .voice-message {
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+}
+
+.voice-content {
   display: flex;
   align-items: center;
   gap: 8px;
-  min-height: 36px;
-  padding: 6px 4px;
-  cursor: pointer;
-  user-select: none;
-  position: relative;
+  padding: 2px 0;
+  width: 100%;
 
   &.is-self {
     flex-direction: row-reverse;
   }
 }
 
-.voice-duration {
-  font-size: 14px;
-  font-weight: 500;
-  color: #fff;
-  line-height: 1;
+.voice-icon {
+  position: relative;
+  width: 18px;
+  height: 18px;
   flex-shrink: 0;
+
+  &.voice-icon-sent {
+    transform: scaleX(-1);
+  }
+
+  .voice-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 18px;
+    height: 18px;
+    display: block;
+  }
+
+  .voice-layer-full {
+    position: static;
+  }
+
+  &.voice-playing {
+    .voice-wave-2 {
+      animation: voiceWave2 1s infinite;
+    }
+
+    .voice-wave-3 {
+      animation: voiceWave3 1s infinite;
+    }
+  }
 }
 
-.voice-waves {
-  display: flex;
-  align-items: center;
-  gap: 3px;
-  width: 20px;
-  height: 20px;
+.voice-duration {
+  font-size: 14px;
+  font-weight: 400;
+  color: inherit;
+  line-height: 1;
   flex-shrink: 0;
-
-  &.reverse {
-    flex-direction: row-reverse;
-  }
-
-  .wave-bar {
-    display: block;
-    width: 3px;
-    height: 8px;
-    border-radius: 2px;
-    background-color: #fff;
-    opacity: 0.85;
-    transform-origin: center bottom;
-  }
-
-  &.playing .wave-bar {
-    animation: voiceWave 1s ease-in-out infinite;
-
-    &:nth-child(1) {
-      animation-delay: 0s;
-    }
-
-    &:nth-child(2) {
-      animation-delay: 0.15s;
-    }
-
-    &:nth-child(3) {
-      animation-delay: 0.3s;
-    }
-  }
 }
 
 .voice-unread {
   position: absolute;
   top: 50%;
-  right: -10px;
+  left: 100%;
+  margin-left: 10px;
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background-color: #ff4d4f;
+  background-color: #e75e58;
   transform: translateY(-50%);
 }
 
-@keyframes voiceWave {
+@keyframes voiceWave2 {
   0%,
-  100% {
-    height: 8px;
-    opacity: 0.6;
+  33% {
+    opacity: 0;
   }
 
-  50% {
-    height: 16px;
+  34%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes voiceWave3 {
+  0%,
+  66% {
+    opacity: 0;
+  }
+
+  67%,
+  100% {
     opacity: 1;
   }
 }

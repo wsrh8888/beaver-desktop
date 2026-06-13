@@ -10,6 +10,7 @@ export interface DatabaseConfig {
 
 export interface IConfig {
   baseUrl: string
+  openAppId: string
 }
 
 export interface IConfigs {

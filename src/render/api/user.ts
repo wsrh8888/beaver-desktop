@@ -3,9 +3,10 @@ import type {
   IUpdateEmailRes,
   IUpdateInfoReq,
   IUpdateInfoRes,
-  IUpdatePasswordReq,
-  IUpdatePasswordRes,
+  IUpdateUserSettingsReq,
+  IUpdateUserSettingsRes,
   IUserInfoRes,
+  IUserSettingsRes,
 } from 'commonModule/type/ajax/user'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -31,17 +32,6 @@ export const updateInfoApi = (data: IUpdateInfoReq) => {
 }
 
 /**
- * @description: 修改密码
- */
-export const updatePasswordApi = (data: IUpdatePasswordReq) => {
-  return ajax<IUpdatePasswordRes>({
-    data,
-    method: 'POST',
-    url: `${baseUrl}/api/user/v1/update_password`,
-  })
-}
-
-/**
  * @description: 修改邮箱
  */
 export const updateEmailApi = (data: IUpdateEmailReq) => {
@@ -49,5 +39,26 @@ export const updateEmailApi = (data: IUpdateEmailReq) => {
     data,
     method: 'POST',
     url: `${baseUrl}/api/user/v1/update_email`,
+  })
+}
+
+/**
+ * @description: 获取用户设置
+ */
+export const getUserSettingsApi = () => {
+  return ajax<IUserSettingsRes>({
+    method: 'GET',
+    url: `${baseUrl}/api/user/v1/settings`,
+  })
+}
+
+/**
+ * @description: 更新用户设置
+ */
+export const updateUserSettingsApi = (data: IUpdateUserSettingsReq) => {
+  return ajax<IUpdateUserSettingsRes>({
+    data,
+    method: 'POST',
+    url: `${baseUrl}/api/user/v1/update_settings`,
   })
 }

@@ -3,6 +3,7 @@ export { initTables } from '../init'
 
 export { chatConversations } from './chat/conversation'
 // 聊天相关表
+export { chatMessageMedias } from './chat/message-media'
 export { chats } from './chat/message'
 export { chatSyncStatus } from './chat/sync-status'
 export { chatUserConversations } from './chat/user-conversation'

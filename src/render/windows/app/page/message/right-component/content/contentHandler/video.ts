@@ -1,6 +1,6 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
-import { CacheType } from 'commonModule/type/cache/cache'
 import Message from 'renderModule/components/ui/message'
+import { VideoPlayer } from 'renderModule/core/media/video'
 import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { BaseMessageHandler } from './base'
 
@@ -50,19 +50,7 @@ class VideoHandler extends BaseMessageHandler {
       return
     }
 
-    let videoUrl = mediaUrl
-    const cachedUrl = await electron.cache.get(CacheType.USER_VIDEO, mediaUrl)
-    if (cachedUrl) {
-      videoUrl = cachedUrl
-    }
-
-    await electron.window.openWindow('video', {
-      unique: true,
-      params: {
-        url: videoUrl,
-        title: getFileNameFromUrl(mediaUrl),
-      },
-    })
+    await VideoPlayer.open(mediaUrl)
   }
 }
 

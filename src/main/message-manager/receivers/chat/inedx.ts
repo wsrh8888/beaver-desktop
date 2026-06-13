@@ -1,5 +1,6 @@
 import logger from 'mainModule/utils/log'
 import conversationReceiver from './conversation-receiver'
+import messageMediaReceiver from './message-media-receiver'
 import messageReceiver from './message-receiver'
 import userConversationReceiver from './user-conversation-receiver'
 
@@ -11,6 +12,7 @@ class ChatMessageRouter {
   private messageReceiver = messageReceiver
   private conversationReceiver = conversationReceiver
   private userConversationReceiver = userConversationReceiver
+  private messageMediaReceiver = messageMediaReceiver
 
   /**
    * 处理聊天消息
@@ -38,6 +40,10 @@ class ChatMessageRouter {
       // 用户会话相关的更新 - 只调用用户会话receiver
       case 'chat_user_conversation_receive':
         await this.userConversationReceiver.handleTableUpdates(wsMessage.data.body)
+        break
+
+      case 'chat_message_media_receive':
+        await this.messageMediaReceiver.handleTableUpdates(wsMessage.data.body)
         break
 
       default:

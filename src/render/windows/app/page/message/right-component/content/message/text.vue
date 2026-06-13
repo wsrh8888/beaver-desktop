@@ -53,7 +53,7 @@ export default defineComponent({
   font-size: 13px;
   line-height: 1.5;
   word-break: break-word;
-  color: #ffffff;
+  color: inherit;
   padding: 5px;
   /* 覆盖全局 user-select: none，允许选中文字后复制 */
   -webkit-user-select: text;

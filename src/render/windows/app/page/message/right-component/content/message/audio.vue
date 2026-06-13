@@ -32,12 +32,12 @@
 </template>
 
 <script lang="ts">
-import { CacheType } from 'commonModule/type/cache/cache'
-import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import AudioIconSvg from 'renderModule/assets/image/chat/audio-icon.svg'
 import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
+import { AudioPlayer } from 'renderModule/core/media/audio'
 import Message from 'renderModule/components/ui/message'
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { computed, defineComponent, PropType } from 'vue'
 
@@ -79,25 +79,7 @@ export default defineComponent({
         return
 
       try {
-        let audioUrl = mediaUrl
-        try {
-          const cachedUrl = await electron.cache.get(CacheType.USER_IMAGE, mediaUrl)
-          if (cachedUrl) {
-            audioUrl = cachedUrl
-          }
-        }
-        catch {
-          // 缓存获取失败，使用在线URL
-        }
-
-        // 打开音频播放器窗口
-        await electron.window.openWindow('audio', {
-          unique: true,
-          params: {
-            url: audioUrl,
-            title: fileName.value,
-          },
-        })
+        await AudioPlayer.play(mediaUrl, fileName.value)
       }
       catch (error) {
         console.error('打开音频播放器失败:', error)

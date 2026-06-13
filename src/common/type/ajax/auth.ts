@@ -24,6 +24,18 @@ export interface IEmailPasswordLoginRes {
   userId: string
 }
 
+// OAuth 授权码登录（PC 客户端 SDK 登录后换取 IM Token）
+export interface IOAuthCodeLoginReq {
+  appId: string
+  code: string
+  deviceId?: string
+}
+
+export interface IOAuthCodeLoginRes {
+  token: string
+  userId: string
+}
+
 // 用户认证请求
 export interface IAuthenticationReq {
   token?: string
@@ -68,7 +80,7 @@ export interface ILogoutRes {}
 // 获取手机验证码请求
 export interface IGetPhoneCodeReq {
   phone: string
-  type: string // 验证码类型：register(注册)、reset(重置密码)、login(登录)
+  type: string // 验证码类型：register(注册)、reset(重置密码)、login(登录)、update_email(修改邮箱)
 }
 
 // 获取手机验证码响应
@@ -79,7 +91,7 @@ export interface IGetPhoneCodeRes {
 // 获取邮箱验证码请求
 export interface IGetEmailCodeReq {
   email: string
-  type: string // 验证码类型：register(注册)、reset(重置密码)、login(登录)
+  type: string // 验证码类型：register(注册)、reset(重置密码)、login(登录)、update_email(修改邮箱)
 }
 
 // 获取邮箱验证码响应
@@ -121,3 +133,36 @@ export interface IResetPasswordReq {
 export interface IResetPasswordRes {
   message: string
 }
+
+// 修改密码请求
+export interface IUpdatePasswordReq {
+  oldPassword: string
+  newPassword: string
+}
+
+// 修改密码响应
+export interface IUpdatePasswordRes {}
+
+// 设备信息
+export interface IDeviceInfo {
+  deviceId: string
+  deviceType: string
+  deviceOs: string
+  deviceName: string
+  lastLoginTime: string
+  isActive: boolean
+  lastLoginIp: string
+}
+
+// 获取登录设备列表响应
+export interface IGetDevicesRes {
+  devices: IDeviceInfo[]
+}
+
+// 踢下线设备请求
+export interface IKickDeviceReq {
+  deviceId: string
+}
+
+// 踢下线设备响应
+export interface IKickDeviceRes {}

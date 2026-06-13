@@ -17,9 +17,6 @@ import { uploadFile } from 'renderModule/utils/upload'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message/index'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { ChatCore } from 'renderModule/core/message/index'
-import { editMessageApi } from 'renderModule/api/chat'
-import Message from 'renderModule/components/ui/message'
-import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { MessageType } from 'commonModule/type/ajax/chat'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { parseEditorDOM } from 'renderModule/utils/message/index'
@@ -92,32 +89,6 @@ export default defineComponent({
 
       const basicMessages = parseEditorDOM(inputRef.value)
       if (basicMessages.length === 0) return
-
-      const editingTo = messageViewStore.editingTo
-      if (editingTo) {
-        const text = basicMessages[0]?.textMsg?.content?.trim()
-        if (!text || basicMessages.length !== 1) {
-          Message.error('编辑消息仅支持单条纯文本')
-          return
-        }
-
-        const createdAt = new Date(editingTo.created_at).getTime()
-        if (Date.now() - createdAt > 24 * 60 * 60 * 1000) {
-          Message.error('超过24小时，无法编辑')
-          return
-        }
-
-        const res = await editMessageApi({ messageId: editingTo.messageId, content: text })
-        if (res.code === 0) {
-          useMessageStore().updateMessageContent(editingTo.conversationId, editingTo.messageId, text)
-          messageViewStore.setEditingTo(null)
-          clear()
-        }
-        else {
-          Message.error(res.msg || '编辑失败')
-        }
-        return
-      }
 
       const conversationInfo = conversationStore.getConversationInfo(conversationId)
       const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'

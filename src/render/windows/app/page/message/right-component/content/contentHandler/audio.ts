@@ -1,4 +1,5 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+import { AudioPlayer } from 'renderModule/core/media/audio'
 import { BaseMessageHandler } from './base'
 
 /**
@@ -43,9 +44,10 @@ class AudioHandler extends BaseMessageHandler {
 
   private async handlePlay(message: any): Promise<void> {
     const audioUrl = message.msg.audioFileMsg?.fileUrl
+    const title = message.msg.audioFileMsg?.fileName || '未知文件'
     if (!audioUrl)
       return
-    console.log('播放音频文件:', audioUrl)
+    await AudioPlayer.play(audioUrl, title)
   }
 }
 

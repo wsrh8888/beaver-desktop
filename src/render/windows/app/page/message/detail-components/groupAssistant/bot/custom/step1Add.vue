@@ -45,7 +45,6 @@ import Message from 'renderModule/components/ui/message'
 import { uploadFile } from 'renderModule/utils/upload'
 import { botTemplateOptions } from '../../config'
 import { useGroupAssistantViewStore } from 'renderModule/windows/app/pinia/view/message/groupAssistant'
-import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { defineComponent, ref } from 'vue'
 
 const customTemplate = botTemplateOptions.find(item => item.key === 'custom')!
@@ -56,7 +55,6 @@ export default defineComponent({
   emits: ['close', 'created'],
   setup(_, { emit }) {
     const groupAssistantViewStore = useGroupAssistantViewStore()
-    const userStore = useUserStore()
     const avatarInputRef = ref<HTMLInputElement | null>(null)
     const submitting = ref(false)
     const formName = ref('')

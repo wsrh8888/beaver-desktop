@@ -3,12 +3,17 @@ import type {
   IEmailLoginRes,
   IEmailPasswordLoginReq,
   IEmailPasswordLoginRes,
+  IOAuthCodeLoginReq,
+  IOAuthCodeLoginRes,
   IEmailRegisterReq,
   IEmailRegisterRes,
+  IGetDevicesRes,
   IGetEmailCodeReq,
   IGetEmailCodeRes,
   IGetPhoneCodeReq,
   IGetPhoneCodeRes,
+  IKickDeviceReq,
+  IKickDeviceRes,
   ILogoutReq,
   ILogoutRes,
   IPhoneLoginReq,
@@ -17,6 +22,8 @@ import type {
   IPhoneRegisterRes,
   IResetPasswordReq,
   IResetPasswordRes,
+  IUpdatePasswordReq,
+  IUpdatePasswordRes,
 } from 'commonModule/type/ajax/auth'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -43,6 +50,17 @@ export const emailPasswordLoginApi = (data: IEmailPasswordLoginReq) => {
     method: 'POST',
     data,
     url: `${AUTH_PUBLIC}/email_password_login`,
+  })
+}
+
+/**
+ * @description: OAuth 授权码登录（SDK 登录成功后换取 IM Token）
+ */
+export const oauthCodeLoginApi = (data: IOAuthCodeLoginReq) => {
+  return ajax<IOAuthCodeLoginRes>({
+    method: 'POST',
+    data,
+    url: `${AUTH_PUBLIC}/oauth_code_login`,
   })
 }
 
@@ -130,5 +148,37 @@ export const resetPasswordApi = (data: IResetPasswordReq) => {
     method: 'POST',
     data,
     url: `${AUTH_PUBLIC}/reset_password`,
+  })
+}
+
+/**
+ * @description: 修改密码
+ */
+export const updatePasswordApi = (data: IUpdatePasswordReq) => {
+  return ajax<IUpdatePasswordRes>({
+    method: 'POST',
+    data,
+    url: `${AUTH}/update_password`,
+  })
+}
+
+/**
+ * @description: 获取登录设备列表
+ */
+export const getDevicesApi = () => {
+  return ajax<IGetDevicesRes>({
+    method: 'GET',
+    url: `${AUTH}/devices`,
+  })
+}
+
+/**
+ * @description: 踢下线指定设备
+ */
+export const kickDeviceApi = (data: IKickDeviceReq) => {
+  return ajax<IKickDeviceRes>({
+    method: 'POST',
+    data,
+    url: `${AUTH}/kick_device`,
   })
 }

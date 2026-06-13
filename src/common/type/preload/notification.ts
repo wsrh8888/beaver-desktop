@@ -134,6 +134,10 @@ export enum NotificationChatCommand {
    * 用户会话设置表更新 - user_conversations表有变更
    */
   USER_CONVERSATION_UPDATE = 'userConversationUpdate',
+  /**
+   * 消息媒体状态表更新 - message_medias表有变更
+   */
+  MESSAGE_MEDIA_UPDATE = 'messageMediaUpdate',
 }
 
 export enum NotificationEmojiCommand {

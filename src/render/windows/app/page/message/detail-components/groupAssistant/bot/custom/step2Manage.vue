@@ -113,7 +113,6 @@ import { uploadFile } from 'renderModule/utils/upload'
 import { copyToClipboard } from '../../../../right-component/content/utils/copy'
 import { botTemplateOptions } from '../../config'
 import { useGroupAssistantViewStore } from 'renderModule/windows/app/pinia/view/message/groupAssistant'
-import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { computed, defineComponent, onMounted, ref } from 'vue'
 
 const customTemplate = botTemplateOptions.find(item => item.key === 'custom')!
@@ -121,10 +120,9 @@ const customTemplate = botTemplateOptions.find(item => item.key === 'custom')!
 export default defineComponent({
   name: 'botCustomManage',
   components: { BeaverButton },
-  emits: ['close'],
+  emits: ['close', 'saved'],
   setup(_, { emit }) {
     const groupAssistantViewStore = useGroupAssistantViewStore()
-    const userStore = useUserStore()
     const avatarInputRef = ref<HTMLInputElement | null>(null)
     const submitting = ref(false)
     const formName = ref('')
@@ -143,6 +141,25 @@ export default defineComponent({
         .split(/[\n,，]/)
         .map(item => item.trim())
         .filter(Boolean)
+    }
+
+    const buildSecurityPayload = () => {
+      const keywords = parseLines(formKeywords.value)
+      const ipWhitelist = parseLines(formIpWhitelist.value)
+      return {
+        keywordsEnabled: keywordsEnabled.value,
+        keywords: keywordsEnabled.value ? keywords : [],
+        ipWhitelistEnabled: ipWhitelistEnabled.value,
+        ipWhitelist: ipWhitelistEnabled.value ? ipWhitelist : [],
+        signatureEnabled: signEnabled.value,
+        signatureSecret: signSecret.value,
+        signatureUpdated: Date.now(),
+      }
+    }
+
+    const markSaved = () => {
+      groupAssistantViewStore.markListDirty()
+      emit('saved')
     }
 
     const defaultAvatar = customTemplate.avatar
@@ -192,8 +209,24 @@ export default defineComponent({
       if (!file)
         return
       const result = await uploadFile(file)
-      if (result?.fileUrl)
-        formAvatar.value = result.fileUrl
+      if (!result?.fileUrl)
+        return
+
+      formAvatar.value = result.fileUrl
+
+      const res = await updateBotApi({
+        botId: groupBotId.value,
+        avatar: result.fileUrl,
+      })
+      if (res.code === 0) {
+        Message.success('头像已更新')
+        markSaved()
+      }
+      else
+        Message.error('头像保存失败')
+
+      if (avatarInputRef.value)
+        avatarInputRef.value.value = ''
     }
 
     const submitSave = async () => {
@@ -223,21 +256,14 @@ export default defineComponent({
         botId: groupBotId.value,
         name: formName.value.trim(),
         description: formDescription.value.trim(),
-        avatar: formAvatar.value, // 直接传递 fileUrl
-        status: undefined, // 暂时不更新状态
-        security: {
-          keywordsEnabled: keywordsEnabled.value,
-          keywords,
-          ipWhitelistEnabled: ipWhitelistEnabled.value,
-          ipWhitelist,
-          signatureEnabled: signEnabled.value,
-          signatureSecret: signSecret.value,
-          signatureUpdated: Date.now(),
-        },
+        avatar: formAvatar.value,
+        security: buildSecurityPayload(),
       })
       submitting.value = false
-      if (res.code === 0)
+      if (res.code === 0) {
         Message.success('已保存')
+        markSaved()
+      }
     }
 
     const handleResetSecret = async () => {

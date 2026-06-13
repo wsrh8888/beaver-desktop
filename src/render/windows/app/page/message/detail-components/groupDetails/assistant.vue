@@ -103,6 +103,10 @@ export default defineComponent({
       loadList()
     }, { immediate: true })
 
+    watch(() => groupAssistantStore.listVersion, () => {
+      loadList()
+    })
+
     watch(() => groupAssistantStore.visible, (visible, prevVisible) => {
       if (prevVisible && !visible)
         loadList()

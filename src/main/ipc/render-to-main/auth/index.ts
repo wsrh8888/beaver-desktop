@@ -4,6 +4,8 @@ import AppApplication from 'mainModule/application/app'
 import LoginApplication from 'mainModule/application/login'
 import cacheManager from 'mainModule/cache'
 import dbManager from 'mainModule/database/db'
+import keyboardHandler from 'mainModule/ipc/render-to-main/keyboard'
+import { ensureSettingsDefaults } from 'mainModule/store/ensureSettings'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import wsManager from 'mainModule/ws-manager'
@@ -78,11 +80,15 @@ class AuthHandler {
   async handleLogout() {
     try {
       logger.info({ text: '开始登出流程' }, 'AuthHandler')
-      // cache初始化
 
-      // 1. 清空store的所有数据
+      const device = store.get('deviceSettings')
       store.clearAll()
-      logger.info({ text: 'Store数据已清空' }, 'AuthHandler')
+      if (device) {
+        store.set('deviceSettings', device, { persist: true })
+      }
+      ensureSettingsDefaults(store)
+      keyboardHandler.init()
+      logger.info({ text: 'Store数据已清空，本机设置已保留' }, 'AuthHandler')
 
       // 2. 切换回公共日志
       logger.init()

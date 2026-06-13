@@ -7,7 +7,9 @@ import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useContactStore } from '../contact/contact'
 import { useEmojiStore } from '../emoji/emoji'
 import { useNotificationStore } from '../notification/notification'
+import { useMessageMediaStore } from '../message/message-media'
 import { useUpdateStore } from '../update/index'
+import { syncAccountSettings } from 'renderModule/windows/settings/pinia/settings'
 
 /**
  * @description: 全局应用状态管理
@@ -72,11 +74,13 @@ export const useAppStore = defineStore('useAppStore', {
       const contactStore = useContactStore()
       const emojiStore = useEmojiStore()
       const notificationStore = useNotificationStore()
+      const messageMediaStore = useMessageMediaStore()
 
       try {
         console.log('[AppStore] 开始加载/刷新各模块数据...')
         const promises = [
           userStore.init(),
+          syncAccountSettings(),
           contactStore.init(),
           friendStore.init(),
           conversationStore.init(),
@@ -84,6 +88,7 @@ export const useAppStore = defineStore('useAppStore', {
           updateStore.init(),
           emojiStore.init(),
           notificationStore.init(),
+          messageMediaStore.init(),
         ]
         await Promise.all(promises)
         console.log('[AppStore] 各模块数据同步加载完成')

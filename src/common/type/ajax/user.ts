@@ -21,16 +21,14 @@ export interface IUpdateInfoRes {
   message: string
 }
 
-// 修改密码请求
+// 修改密码请求（已迁移至 auth 模块，保留类型兼容）
 export interface IUpdatePasswordReq {
   oldPassword: string
   newPassword: string
 }
 
 // 修改密码响应
-export interface IUpdatePasswordRes {
-  message: string
-}
+export interface IUpdatePasswordRes {}
 
 // 修改邮箱请求
 export interface IUpdateEmailReq {
@@ -42,6 +40,35 @@ export interface IUpdateEmailReq {
 export interface IUpdateEmailRes {
   message: string
 }
+
+// 用户设置 - 隐私
+export interface IUserSettingsPrivacy {
+  allowFriendRequest: boolean
+  showOnlineStatus: boolean
+  allowSearchByPhone: boolean
+  allowSearchByEmail: boolean
+}
+
+// 用户设置 - 通知策略（账号级，多端同步）
+export interface IUserSettingsNotification {
+  notifyFriendRequest: boolean
+  notifyGroupMessage: boolean
+  notifyMoment: boolean
+}
+
+// 获取用户设置响应
+export interface IUserSettingsRes {
+  privacy: IUserSettingsPrivacy
+  notification: IUserSettingsNotification
+}
+
+// 更新用户设置请求（局部更新）
+export interface IUpdateUserSettingsReq {
+  privacy?: Partial<IUserSettingsPrivacy>
+  notification?: Partial<IUserSettingsNotification>
+}
+
+export interface IUpdateUserSettingsRes {}
 
 // 找回密码请求
 export interface IResetPasswordReq {

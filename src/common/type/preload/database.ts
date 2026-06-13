@@ -76,6 +76,10 @@ export interface IDatabaseModule {
      * 批量删除消息
      */
     deleteMessages(params: { messageIds: string[] }): Promise<{ success: boolean }>
+    /**
+     * 获取已标记媒体状态的消息ID列表
+     */
+    getMessageMediaIds(): Promise<{ messageIds: string[] }>
   }
   group: {
     getGroupList(params: IGetGroupListReq): Promise<IGroupListRes>

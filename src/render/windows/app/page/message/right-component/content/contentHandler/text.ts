@@ -18,9 +18,6 @@ class TextHandler extends BaseMessageHandler {
         return Promise.resolve('forward' as any)
       case 'recall':
         return this.recallMessage(message)
-      case 'edit':
-        this.setEditingMessage(message)
-        return Promise.resolve()
       case 'delete':
         return this.deleteMessage(message)
       case 'multiSelect':
@@ -32,7 +29,7 @@ class TextHandler extends BaseMessageHandler {
   }
 
   getSupportedCommands(): string[] {
-    return ['copy', 'reply', 'forward', 'edit', 'recall', 'delete', 'multiSelect']
+    return ['copy', 'reply', 'forward', 'recall', 'delete', 'multiSelect']
   }
 
   getMenuItems(hasTextSelected: boolean = false, isSender: boolean = false): ContextMenuItem[] {
@@ -45,7 +42,6 @@ class TextHandler extends BaseMessageHandler {
       { id: 'forward', label: '转发' },
     ]
     if (isSender) {
-      items.push({ id: 'edit', label: '编辑' })
       items.push({ id: 'recall', label: '撤回' })
     }
     items.push({ id: 'delete', label: '删除' })

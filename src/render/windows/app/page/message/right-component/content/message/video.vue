@@ -2,7 +2,7 @@
   <div class="message-video">
     <div :style="{ width: `${videoSize.width}px`, height: `${videoSize.height}px` }" class="video-container">
       <!-- 视频封面 -->
-      <BeaverImage v-if="msg.videoMsg?.thumbnailUrl" :file-name="msg.videoMsg.thumbnailUrl" alt="视频封面"
+      <BeaverImage v-if="msg.videoMsg.thumbnailUrl" :file-name="msg.videoMsg.thumbnailUrl" alt="视频封面"
         image-class="video-thumbnail" />
       <!-- 播放按钮遮罩层 -->
       <div class="video-overlay" @click="handleVideoPlay">
@@ -20,8 +20,7 @@
 
 <script lang="ts">
 import { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { CacheType } from 'commonModule/type/cache/cache'
-import { getFileNameFromUrl } from 'renderModule/utils/file/index'
+import { VideoPlayer } from 'renderModule/core/media/video'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
@@ -70,24 +69,7 @@ export default defineComponent({
       }
 
       try {
-        let videoUrl = mediaUrl
-        try {
-          const cachedUrl = await electron.cache.get(CacheType.USER_VIDEO, mediaUrl)
-          if (cachedUrl) {
-            videoUrl = cachedUrl
-          }
-        }
-        catch {
-          // 缓存获取失败，使用在线URL
-        }
-
-        await electron.window.openWindow('video', {
-          unique: true,
-          params: {
-            url: videoUrl,
-            title: getFileNameFromUrl(mediaUrl),
-          },
-        })
+        await VideoPlayer.open(mediaUrl)
       }
       catch (error) {
         console.error('打开视频播放器失败:', error)
