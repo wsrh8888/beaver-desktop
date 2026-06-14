@@ -1,14 +1,13 @@
-import { AuthCommand } from 'commonModule/type/ipc/command'
+import { AuthCommand, SettingsCommand } from 'commonModule/type/ipc/command'
 import { BrowserWindow } from 'electron'
 import AppApplication from 'mainModule/application/app'
 import LoginApplication from 'mainModule/application/login'
 import cacheManager from 'mainModule/cache'
 import dbManager from 'mainModule/database/db'
-import keyboardHandler from 'mainModule/ipc/render-to-main/keyboard'
-import { ensureSettingsDefaults } from 'mainModule/store/ensureSettings'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import wsManager from 'mainModule/ws-manager'
+import settings from 'mainModule/ipc/render-to-main/settings'
 
 class AuthHandler {
   /**
@@ -53,6 +52,10 @@ class AuthHandler {
           text: '开始初始化数据库',
         })
         await dbManager.init(userInfo?.userId)
+
+        // 初始化设置模块
+        await settings.handle(void 0 as any, SettingsCommand.SETTINGS_INIT, {})
+
         logger.info({ text: '用户缓存初始化完成' }, 'AuthHandler')
       }
 
@@ -81,14 +84,8 @@ class AuthHandler {
     try {
       logger.info({ text: '开始登出流程' }, 'AuthHandler')
 
-      const device = store.get('deviceSettings')
       store.clearAll()
-      if (device) {
-        store.set('deviceSettings', device, { persist: true })
-      }
-      ensureSettingsDefaults(store)
-      keyboardHandler.init()
-      logger.info({ text: 'Store数据已清空，本机设置已保留' }, 'AuthHandler')
+      logger.info({ text: 'Store数据已清空' }, 'AuthHandler')
 
       // 2. 切换回公共日志
       logger.init()

@@ -1,8 +1,6 @@
 import type { KeyboardActionId } from 'commonModule/type/mainStore'
 import { KeyboardCommand } from 'commonModule/type/ipc/command'
-import searchApplication from 'mainModule/application/search'
 import { getScreenshots } from 'mainModule/utils/capture'
-import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import { BrowserWindow, globalShortcut } from 'electron'
 
@@ -27,19 +25,17 @@ class KeyboardHandler {
   /** actionId → 已注册的 Electron accelerator */
   private registered = new Map<KeyboardActionId, string>()
 
-  init() {
-    const keyboard = store.get('deviceSettings')!.keyboard
-    ;(Object.keys(keyboard) as KeyboardActionId[]).forEach((actionId) => {
-      this.set(actionId, keyboard[actionId])
-    })
-  }
-
   set(actionId: KeyboardActionId, binding: string) {
+    // 如果是发送消息，则不注册
+    if (actionId === 'sendMessage') {
+      return
+    }
     this.unregister(actionId)
 
     if (!binding) {
       return
     }
+    
 
     const accelerator = toElectronAccelerator(binding)
     const registered = globalShortcut.register(accelerator, () => {
@@ -65,36 +61,27 @@ class KeyboardHandler {
     this.registered.delete(actionId)
   }
 
-  /** 快捷键按下后，按 actionId 分发业务 */
-  handleAction(actionId: KeyboardActionId) {
+  private handleAction(actionId: KeyboardActionId) {
     switch (actionId) {
       case 'screenshot':
         getScreenshots().startCapture()
         break
-      case 'search': {
-        const existing = BrowserWindow.getAllWindows().find(win => (win as any).__appName === 'search')
-        if (existing) {
-          existing.show()
-          existing.focus()
-          return
-        }
-        searchApplication.createBrowserWindow()
-        break
-      }
       case 'toggleWindow': {
-        const appWindow = BrowserWindow.getAllWindows().find(win => (win as any).__appName === 'app')
-        if (!appWindow) {
+        const windows = BrowserWindow.getAllWindows().filter(win => !win.isDestroyed())
+        if (!windows.length) {
           return
         }
-        if (appWindow.isVisible() && appWindow.isFocused()) {
-          appWindow.hide()
+        if (windows.some(win => win.isVisible())) {
+          windows.forEach(win => win.hide())
         }
         else {
-          appWindow.show()
-          appWindow.focus()
+          windows.forEach(win => win.show())
+          windows[0].focus()
         }
         break
       }
+      case 'sendMessage':
+        break
       default:
         logger.warn({
           text: '未知快捷键动作',
@@ -103,22 +90,15 @@ class KeyboardHandler {
     }
   }
 
-  /** IPC 入口 */
   handle(
     _event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent,
     command: KeyboardCommand | string,
     data?: { actionId?: KeyboardActionId, binding?: string },
   ): void {
-    switch (command) {
-      case KeyboardCommand.SET:
-        if (!data?.actionId || !data.binding) {
-          return
-        }
-        this.set(data.actionId, data.binding)
-        break
-      default:
-        console.error(`键盘快捷键处理未知命令: ${command}`)
+    if (command !== KeyboardCommand.SET || !data?.actionId || data.binding === undefined) {
+      return
     }
+    this.set(data.actionId, data.binding)
   }
 }
 

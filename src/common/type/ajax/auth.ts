@@ -148,9 +148,11 @@ export interface IDeviceInfo {
   deviceId: string
   deviceType: string
   deviceOs: string
+  deviceModel: string
+  deviceOsVersion: string
   deviceName: string
   lastLoginTime: string
-  isActive: boolean
+  isOnline: boolean
   lastLoginIp: string
 }
 

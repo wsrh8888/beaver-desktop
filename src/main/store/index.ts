@@ -2,7 +2,6 @@ import type { IStore, IStoreDataMap, IStoreKey, IStoreOptions, IStoreValue } fro
 import path from 'node:path'
 import ElectronStore from 'electron-store'
 import { getRootPath } from 'mainModule/config'
-import { ensureSettingsDefaults } from './ensureSettings'
 
 /**
  * 这里不要引入其他的业务，否则容易死循环, 尤其是log
@@ -39,7 +38,6 @@ class Store implements IStore {
       for (const [key, value] of Object.entries(fileData)) {
         this.memoryStore.set(key, value)
       }
-      ensureSettingsDefaults(this)
     }
     catch (error) {
       console.error(error)

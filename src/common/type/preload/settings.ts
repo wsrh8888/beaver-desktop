@@ -1,8 +1,6 @@
-import type { IAccountSettings, IDeviceSettings } from 'commonModule/type/settings'
+import type { IUserSettings } from 'commonModule/type/settings'
 
 export interface ISettingsModule {
-  getAccount: () => Promise<IAccountSettings>
-  getDevice: () => Promise<IDeviceSettings>
-  saveAccount: (account: IAccountSettings) => Promise<IAccountSettings>
-  saveDevice: (device: IDeviceSettings) => Promise<IDeviceSettings>
+  get: () => Promise<IUserSettings>
+  update: (settings: IUserSettings) => Promise<IUserSettings>
 }

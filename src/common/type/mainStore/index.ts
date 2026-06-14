@@ -1,6 +1,6 @@
-import type { IAccountSettings, IDeviceSettings, KeyboardActionId } from '../settings'
+import type { IUserSettings, KeyboardActionId } from '../settings'
 
-export type { IAccountSettings, IDeviceSettings, KeyboardActionId }
+export type { IUserSettings, KeyboardActionId }
 
 export interface IStoreOptions {
   /**
@@ -41,8 +41,7 @@ export interface IStoreDataMap {
     source: string
     avatar: string
   }
-  accountSettings: IAccountSettings
-  deviceSettings: IDeviceSettings
+  settings: IUserSettings
 }
 
 // 获取存储键对应的类型

@@ -84,7 +84,7 @@ export interface ElectronAPP {
   call: ICallModule
 
   /**
-   * @description: 键盘快捷键模块
+   * @description: 键盘快捷键
    */
   keyboard: IKeyboardModule
 

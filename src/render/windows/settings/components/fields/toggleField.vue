@@ -3,10 +3,7 @@
     <div class="field-title">
       {{ section.label }}
     </div>
-    <div v-if="!isSettingsLoaded" class="loading-tip">
-      加载中...
-    </div>
-    <div v-else class="toggle-list">
+    <div class="toggle-list">
       <div
         v-for="field in section.fields"
         :key="`${field.scope}-${field.key}`"
@@ -34,9 +31,9 @@
 </template>
 
 <script lang="ts">
-import type { ISettingsSection, LocalSettingsKey, NotificationSettingsKey, PrivacySettingsKey, SettingsToggleScope } from '../../config/settingsRegistry'
+import type { ISettingsSection, NotificationSettingsKey, PrivacySettingsKey, SettingsToggleScope } from '../../config/settingsRegistry'
 import Message from 'renderModule/components/ui/message'
-import { computed, defineComponent, type PropType } from 'vue'
+import { defineComponent, type PropType } from 'vue'
 import { useSettingsStore } from '../../pinia/settings'
 
 export default defineComponent({
@@ -49,19 +46,18 @@ export default defineComponent({
   },
   setup() {
     const settingsStore = useSettingsStore()
-    const isSettingsLoaded = computed(() => settingsStore.isLoaded)
 
     const getValue = (scope: SettingsToggleScope, key: string) => {
-      if (!settingsStore.account || !settingsStore.device) {
+      if (!settingsStore.settings) {
         return false
       }
       if (scope === 'privacy') {
-        return settingsStore.account.privacy[key as PrivacySettingsKey]
+        return settingsStore.settings.privacy[key as PrivacySettingsKey]
       }
       if (scope === 'notification') {
-        return settingsStore.account.notification[key as NotificationSettingsKey]
+        return settingsStore.settings.notification[key as NotificationSettingsKey]
       }
-      return settingsStore.device[key as LocalSettingsKey]
+      return false
     }
 
     const handleToggle = async (scope: SettingsToggleScope, key: string, value: boolean) => {
@@ -72,16 +68,12 @@ export default defineComponent({
       else if (scope === 'notification') {
         ok = await settingsStore.updateNotification(key as NotificationSettingsKey, value)
       }
-      else {
-        ok = await settingsStore.updateLocal(key as LocalSettingsKey, value)
-      }
       if (!ok) {
         Message.error('保存失败')
       }
     }
 
     return {
-      isSettingsLoaded,
       getValue,
       handleToggle,
     }
@@ -96,13 +88,6 @@ export default defineComponent({
     font-weight: 500;
     color: #2D3436;
     margin-bottom: 8px;
-  }
-
-  .loading-tip {
-    text-align: center;
-    padding: 48px 0;
-    font-size: 14px;
-    color: #B2BEC3;
   }
 
   .toggle-list {

@@ -65,8 +65,7 @@ export default defineComponent({
     })
 
     const triggerEditorSend = () => {
-      // 模拟 Enter 键触发编辑器的 onKeydown
-      editorRef.value?.onKeydown(new KeyboardEvent('keydown', { key: 'Enter' }))
+      editorRef.value?.send?.()
     }
 
     // 高度调整逻辑

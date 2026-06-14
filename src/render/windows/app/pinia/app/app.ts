@@ -9,7 +9,6 @@ import { useEmojiStore } from '../emoji/emoji'
 import { useNotificationStore } from '../notification/notification'
 import { useMessageMediaStore } from '../message/message-media'
 import { useUpdateStore } from '../update/index'
-import { syncAccountSettings } from 'renderModule/windows/settings/pinia/settings'
 
 /**
  * @description: 全局应用状态管理
@@ -80,7 +79,6 @@ export const useAppStore = defineStore('useAppStore', {
         console.log('[AppStore] 开始加载/刷新各模块数据...')
         const promises = [
           userStore.init(),
-          syncAccountSettings(),
           contactStore.init(),
           friendStore.init(),
           conversationStore.init(),

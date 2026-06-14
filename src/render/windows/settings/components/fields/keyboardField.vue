@@ -6,10 +6,7 @@
     <div class="field-desc">
       点击快捷键区域后按下组合键即可修改，修改后立即生效
     </div>
-    <div v-if="!isSettingsLoaded" class="loading-tip">
-      加载中...
-    </div>
-    <div v-else class="keyboard-list">
+    <div class="keyboard-list">
       <div
         v-for="item in section.keyboard"
         :key="item.id"
@@ -47,21 +44,11 @@ function formatKeyboardEvent(event: KeyboardEvent): string | null {
   if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
     return null
   }
-
   const parts: string[] = []
-  if (event.ctrlKey) {
-    parts.push('Ctrl')
-  }
-  if (event.altKey) {
-    parts.push('Alt')
-  }
-  if (event.shiftKey) {
-    parts.push('Shift')
-  }
-  if (event.metaKey) {
-    parts.push('Cmd')
-  }
-
+  if (event.ctrlKey) parts.push('Ctrl')
+  if (event.altKey) parts.push('Alt')
+  if (event.shiftKey) parts.push('Shift')
+  if (event.metaKey) parts.push('Cmd')
   const key = event.key.length === 1 ? event.key.toUpperCase() : event.key
   parts.push(key)
   return parts.join('+')
@@ -78,8 +65,7 @@ export default defineComponent({
   setup() {
     const settingsStore = useSettingsStore()
     const recordingId = ref<KeyboardActionId | null>(null)
-    const isSettingsLoaded = computed(() => settingsStore.isLoaded)
-    const keyboard = computed(() => settingsStore.device?.keyboard ?? {})
+    const keyboard = computed(() => settingsStore.settings?.keyboard ?? {})
 
     const startRecord = (actionId: KeyboardActionId) => {
       recordingId.value = actionId
@@ -106,6 +92,7 @@ export default defineComponent({
       recordingId.value = null
       const ok = await settingsStore.updateKeyboard(actionId, binding)
       if (!ok) {
+        console.error('快捷键保存失败', ok)
         Message.error('快捷键保存失败')
       }
     }
@@ -120,7 +107,6 @@ export default defineComponent({
 
     return {
       recordingId,
-      isSettingsLoaded,
       keyboard,
       startRecord,
     }
@@ -142,13 +128,6 @@ export default defineComponent({
     color: #B2BEC3;
     margin-bottom: 24px;
     line-height: 1.5;
-  }
-
-  .loading-tip {
-    text-align: center;
-    padding: 48px 0;
-    font-size: 14px;
-    color: #B2BEC3;
   }
 
   .keyboard-list {

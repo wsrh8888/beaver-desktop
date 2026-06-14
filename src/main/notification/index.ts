@@ -1,6 +1,5 @@
 import type { SystemNotificationOptions } from 'commonModule/type/preload/notification'
 import { BrowserWindow, Notification } from 'electron'
-import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 /**
  * @description: 系统通知管理器
@@ -12,10 +11,6 @@ class NotificationManager {
    */
   show(options: SystemNotificationOptions): void {
     try {
-      if (store.get('deviceSettings')!.enableDesktopNotify === false) {
-        return
-      }
-
       // 检查通知权限
       if (!Notification.isSupported()) {
         logger.warn({ text: '当前系统不支持通知' }, 'NotificationManager')

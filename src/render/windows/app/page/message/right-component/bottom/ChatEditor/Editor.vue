@@ -22,6 +22,20 @@ import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { parseEditorDOM } from 'renderModule/utils/message/index'
 import { CacheType } from 'commonModule/type/cache/cache'
 
+function formatKeyEvent(event: KeyboardEvent): string | null {
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
+    return null
+  }
+  const parts: string[] = []
+  if (event.ctrlKey) parts.push('Ctrl')
+  if (event.altKey) parts.push('Alt')
+  if (event.shiftKey) parts.push('Shift')
+  if (event.metaKey) parts.push('Cmd')
+  const key = event.key.length === 1 ? event.key.toUpperCase() : event.key
+  parts.push(key)
+  return parts.join('+')
+}
+
 export default defineComponent({
   name: 'ChatEditor',
   setup() {
@@ -29,6 +43,7 @@ export default defineComponent({
     const conversationStore = useConversationStore()
     const inputRef = ref<HTMLDivElement | null>(null)
     const inputValue = ref('')
+    const sendMessageKey = ref('')
 
     const hasContent = computed(() => {
       // 有文字或有图片节点（innerHTML 非空）均视为有内容
@@ -117,8 +132,7 @@ export default defineComponent({
 
     // 统一处理键盘事件
     const onKeydown = async (e: KeyboardEvent) => {
-      // Enter：发送消息
-      if (e.key === 'Enter') {
+      if (formatKeyEvent(e) === sendMessageKey.value) {
         e.preventDefault()
         if (hasContent.value) {
           await sendMixedContent()
@@ -243,6 +257,8 @@ export default defineComponent({
     }
 
     onMounted(async () => {
+      const settings = await electron.settings.get()
+      sendMessageKey.value = settings.keyboard.sendMessage
       const draft = messageViewStore.getDraft(messageViewStore.currentChatId || '')
       if (inputRef.value) {
         inputRef.value.innerHTML = draft.html || ''
@@ -262,7 +278,8 @@ export default defineComponent({
       onPaste,
       clear,
       focus,
-      setContent
+      setContent,
+      send: sendMixedContent,
     }
   }
 })

@@ -42,6 +42,7 @@ export const updateEmailApi = (data: IUpdateEmailReq) => {
   })
 }
 
+
 /**
  * @description: 获取用户设置
  */

@@ -22,7 +22,7 @@
           <div class="device-name">
             {{ device.deviceName || '未知设备' }}
             <span v-if="isCurrentDevice(device.deviceId)" class="current-tag">本机</span>
-            <span v-else-if="device.isActive" class="online-tag">在线</span>
+            <span v-else-if="device.isOnline" class="online-tag">在线</span>
           </div>
           <div class="device-meta">
             {{ formatDeviceMeta(device) }}
@@ -32,7 +32,7 @@
           </div>
         </div>
         <BeaverButton
-          v-if="!isCurrentDevice(device.deviceId) && device.isActive"
+          v-if="!isCurrentDevice(device.deviceId) && device.isOnline"
           type="default"
           size="small"
           :loading="kickingId === device.deviceId"
@@ -86,7 +86,10 @@ export default defineComponent({
     const isCurrentDevice = (deviceId: string) => deviceId === currentDeviceId.value
 
     const formatDeviceMeta = (device: IDeviceInfo) => {
-      return [device.deviceType, device.deviceOs, device.lastLoginIp].filter(Boolean).join(' · ')
+      const osLabel = device.deviceOsVersion
+        ? `${device.deviceOs} ${device.deviceOsVersion}`
+        : device.deviceOs
+      return [device.deviceModel, osLabel, device.lastLoginIp].filter(Boolean).join(' · ')
     }
 
     const handleKick = (deviceId: string) => {

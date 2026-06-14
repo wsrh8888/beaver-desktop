@@ -56,7 +56,6 @@ export default defineComponent({
   font-size: 13px;
   line-height: 1.6;
   word-break: break-word;
-  color: #ffffff;
   padding: 5px;
   -webkit-user-select: text;
   user-select: text;
@@ -64,7 +63,6 @@ export default defineComponent({
   :deep(h1), :deep(h2), :deep(h3), :deep(h4), :deep(h5), :deep(h6) {
     margin: 10px 0 5px 0;
     font-weight: bold;
-    color: #ffffff;
   }
 
   :deep(h1) { font-size: 18px; }

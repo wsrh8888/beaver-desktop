@@ -36,7 +36,7 @@ class IpcRenderManager {
    * @param data - 附带的数据
    * @returns Promise<any> 主进程处理结果的 Promise
    */
-  invoke(event: string, command: string, data?: any) {
+  invoke<T = unknown>(event: string, command: string, data?: any): Promise<T> {
     return ipcRenderer.invoke(event, command, data)
   }
 

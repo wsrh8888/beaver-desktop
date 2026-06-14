@@ -35,8 +35,6 @@ import messageManager from './message-manager'
 import { store } from './store'
 import { mcpManager } from './mcp-manager/index.js'
 import localServer from './server'
-import keyboardHandler from './ipc/render-to-main/keyboard'
-
 // 屏蔽安全警告
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -86,8 +84,6 @@ class Main {
 
     
     mcpManager.init()
-    // store 启动时已从 config.json 加载 settings，此处直接注册本机快捷键
-    keyboardHandler.init()
   }
 
   setupEventListeners() {
