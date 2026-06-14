@@ -5,7 +5,8 @@
     <section class="login-page__main">
       <beaver-login
         class="login-page__sdk"
-        :app-id="openAppId"
+        :app-id="openAppId" 
+        :env="currentConfig.env"
         @login="handleLogin"
       />
     </section>
@@ -13,14 +14,15 @@
 </template>
 
 <script lang="ts">
-import BeaverSDK from '@beaver/js-sdk'
-import type { ISdkLoginEvent } from '@beaver/js-sdk'
+import BeaverSDK from '@beaver-im/js-sdk'
+import type { ISdkLoginEvent } from '@beaver-im/js-sdk'
 import { openAppId } from 'commonModule/config'
 import Message from 'renderModule/components/ui/message'
 import { oauthCodeLoginApi } from 'renderModule/api/auth'
 import { defineComponent, onMounted } from 'vue'
 import BrandSection from './components/BrandSection.vue'
 import WindowControls from './components/WindowControls.vue'
+import { getCurrentConfig } from 'commonModule/config'
 
 function parseLoginEvent(payload: CustomEvent | ISdkLoginEvent): ISdkLoginEvent | null {
   if (payload instanceof CustomEvent) {
@@ -64,6 +66,7 @@ export default defineComponent({
 
     return {
       openAppId,
+      currentConfig: getCurrentConfig(),
       handleLogin,
     }
   },
