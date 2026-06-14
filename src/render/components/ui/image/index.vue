@@ -20,7 +20,7 @@ import { ref, watch } from 'vue'
 export default {
   name: 'BeaverImage',
   props: {
-    // 文件名（用于获取在线文件）
+    // 完整文件 URL（业务层统一存 URL，不再拼接 preview 路径）
     fileName: {
       type: String,
       required: true,

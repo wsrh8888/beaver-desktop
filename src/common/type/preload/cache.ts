@@ -34,4 +34,9 @@ export interface ICacheModule {
    */
   set(type: CacheType, fileKey: string, data: any, options?: ICacheOptions): Promise<any>
 
+  /**
+   * 下载并打开本地文件
+   */
+  open(type: CacheType, fileKey: string): Promise<string | null>
+
 }

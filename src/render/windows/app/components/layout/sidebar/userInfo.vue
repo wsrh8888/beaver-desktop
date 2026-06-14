@@ -162,9 +162,8 @@ export default defineComponent({
           globalStore.setComponent('profile')
           handleClose()
           break
-        case 'about':
-          // 显示关于全局组件
-          globalStore.setComponent('about')
+        case 'settings':
+          electron.window.openWindow('settings', { unique: true })
           handleClose()
           break
         case 'logout':

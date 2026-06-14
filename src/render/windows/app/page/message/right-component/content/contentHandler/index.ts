@@ -2,12 +2,13 @@ import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/in
 
 import type { IMessageHandler } from './base'
 import { MessageContentType } from 'renderModule/windows/app/page/message/right-component/content/utils/data'
-import { audioHandler } from './audio'
+import { audioFileHandler } from './audio'
 import { emojiHandler } from './emoji'
 import { fileHandler } from './file'
 import { imageHandler } from './image'
 import { textHandler } from './text'
 import { videoHandler } from './video'
+import { voiceHandler } from './voice'
 
 // 导出工厂方法
 export function getMenuItems(messageType: MessageContentType, hasTextSelected: boolean = false, isSender: boolean = false) {
@@ -30,11 +31,13 @@ export class MessageHandlerFactory {
       case MessageContentType.VIDEO:
         return videoHandler
       case MessageContentType.VOICE:
-        return audioHandler
+        return voiceHandler
       case MessageContentType.FILE:
         return fileHandler
       case MessageContentType.EMOJI:
         return emojiHandler
+      case MessageContentType.AUDIO_FILE:
+        return audioFileHandler
       case MessageContentType.CALL:
       case MessageContentType.WITHDRAW:
       case MessageContentType.REPLY:

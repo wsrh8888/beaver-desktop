@@ -105,6 +105,11 @@ export const databaseModule: IDatabaseModule = {
         data: params,
       })
     },
+    getMessageMediaIds: async (): Promise<{ messageIds: string[] }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.CHAT, {
+        command: DataChatCommand.GET_MESSAGE_MEDIA_IDS,
+      })
+    },
   },
   group: {
     getGroupList: async (params: IGetGroupListReq): Promise<IGroupListRes> => {
@@ -181,6 +186,12 @@ export const databaseModule: IDatabaseModule = {
     getInboxByIds: async (params: IGetNotificationInboxByIdsReq): Promise<IGetNotificationInboxByIdsRes> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.NOTIFICATION, {
         command: DataNotificationCommand.GET_INBOX_BY_IDS,
+        data: params,
+      })
+    },
+    getInboxByCategory: async (params: { category: string, limit?: number }) => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.NOTIFICATION, {
+        command: DataNotificationCommand.GET_INBOX_BY_CATEGORY,
         data: params,
       })
     },

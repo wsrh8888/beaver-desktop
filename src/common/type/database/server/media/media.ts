@@ -8,24 +8,26 @@ import type { IDBMedia } from '../../db/media'
  * @description 添加或更新媒体记录请求
  */
 export interface DBUpsertMediaReq {
-  fileKey: string
+  url: string
+  md5?: string
   path: string
   type: string
   size?: number
 }
 
 /**
- * @description 根据文件名获取媒体信息请求
+ * @description 根据完整 URL 获取媒体缓存信息请求
  */
 export interface DBGetMediaInfoReq {
-  fileKey: string
+  url: string
 }
 
 /**
- * @description 根据文件名获取媒体信息响应
+ * @description 根据完整 URL 获取媒体缓存信息响应
  */
 export type DBGetMediaInfoRes = {
-  fileKey: string
+  url: string
+  md5?: string
   path: string
   type: string
   size?: number
@@ -38,5 +40,5 @@ export type DBGetMediaInfoRes = {
  * @description 标记为删除状态请求
  */
 export interface DBDeleteMediaReq {
-  fileKey: string
+  url: string
 }

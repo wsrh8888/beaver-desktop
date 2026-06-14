@@ -172,6 +172,17 @@ export interface IGetSyncDeletedMessagesRes {
   serverTimestamp: number // 服务端处理时间戳
 }
 
+// 获取消息媒体状态同步请求
+export interface IGetSyncMessageMediasReq {
+  since?: number // 从这个时间戳之后开始同步
+}
+
+// 获取消息媒体状态同步响应
+export interface IGetSyncMessageMediasRes {
+  messageIds: string[] // 已标记媒体状态的消息ID列表
+  serverTimestamp: number // 服务端同步时间戳
+}
+
 // 获取好友同步请求
 export interface IGetSyncFriendsReq {
   since?: number // 从这个版本号之后开始同步，不传则同步所有

@@ -32,12 +32,13 @@
 </template>
 
 <script lang="ts">
-import { CacheType } from 'commonModule/type/cache/cache'
-import { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { previewOnlineFileApi } from 'renderModule/api/file'
 import AudioIconSvg from 'renderModule/assets/image/chat/audio-icon.svg'
 import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import playerSvg from 'renderModule/assets/image/chat/play.svg'
+import { AudioPlayer } from 'renderModule/core/media/audio'
+import Message from 'renderModule/components/ui/message'
+import { IMessageMsg } from 'commonModule/type/ws/message-types'
+import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { computed, defineComponent, PropType } from 'vue'
 
 export default defineComponent({
@@ -73,31 +74,12 @@ export default defineComponent({
 
     // 处理播放
     const handlePlay = async () => {
-      const fileKey = props.msg.audioFileMsg?.fileName
-      if (!fileKey)
+      const mediaUrl = props.msg.audioFileMsg?.fileUrl
+      if (!mediaUrl)
         return
 
       try {
-        // 获取音频URL（优先使用缓存，否则使用在线URL）
-        let audioUrl = previewOnlineFileApi(fileKey)
-        try {
-          const cachedUrl = await electron.cache.get(CacheType.USER_IMAGE, fileKey)
-          if (cachedUrl) {
-            audioUrl = cachedUrl
-          }
-        }
-        catch {
-          // 缓存获取失败，使用在线URL
-        }
-
-        // 打开音频播放器窗口
-        await electron.window.openWindow('audio', {
-          unique: true,
-          params: {
-            url: audioUrl,
-            title: fileName.value,
-          },
-        })
+        await AudioPlayer.play(mediaUrl, fileName.value)
       }
       catch (error) {
         console.error('打开音频播放器失败:', error)
@@ -105,10 +87,25 @@ export default defineComponent({
     }
 
     // 处理下载
-    const handleDownload = () => {
-      const fileKey = props.msg.audioFileMsg?.fileName
-      console.log('下载文件:', fileKey)
-      // TODO: 实现文件下载功能
+    const handleDownload = async () => {
+      const mediaUrl = props.msg.audioFileMsg?.fileUrl
+      const filename = props.msg.audioFileMsg?.fileName || getFileNameFromUrl(mediaUrl || '') || 'audio'
+      if (!mediaUrl) {
+        Message.error('无法获取文件地址')
+        return
+      }
+
+      const response = await fetch(mediaUrl)
+      const blob = await response.blob()
+      const downloadUrl = window.URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = downloadUrl
+      link.download = filename
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      window.URL.revokeObjectURL(downloadUrl)
+      Message.success('已开始下载')
     }
 
     return {

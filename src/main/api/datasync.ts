@@ -29,6 +29,8 @@ import type {
   IGetSyncNotificationReadCursorsRes,
   IGetSyncDeletedMessagesReq,
   IGetSyncDeletedMessagesRes,
+  IGetSyncMessageMediasReq,
+  IGetSyncMessageMediasRes,
 } from 'commonModule/type/ajax/datasync'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
@@ -40,7 +42,7 @@ export const datasyncGetSyncAllUsersApi = (data: IGetSyncAllUsersReq) => {
   return ajax<IGetSyncAllUsersRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncAllUsers`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncAllUsers`,
   })
 }
 
@@ -51,7 +53,7 @@ export const datasyncGetSyncGroupInfoApi = (data: IGetSyncGroupInfoReq) => {
   return ajax<IGetSyncGroupInfoRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncGroupInfo`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncGroupInfo`,
   })
 }
 
@@ -62,7 +64,7 @@ export const datasyncGetSyncGroupMembersApi = (data: IGetSyncGroupMembersReq) =>
   return ajax<IGetSyncGroupMembersRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncGroupMembers`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncGroupMembers`,
   })
 }
 
@@ -73,7 +75,7 @@ export const datasyncGetSyncGroupRequestsApi = (data: IGetSyncGroupRequestsReq) 
   return ajax<IGetSyncGroupRequestsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncGroupRequests`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncGroupRequests`,
   })
 }
 
@@ -84,7 +86,7 @@ export const datasyncGetSyncChatMessagesApi = (data: IGetSyncChatMessagesReq) =>
   return ajax<IGetSyncChatMessagesRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncChatMessages`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncChatMessages`,
   })
 }
 
@@ -95,7 +97,7 @@ export const datasyncGetSyncChatConversationsApi = (data: IGetSyncChatConversati
   return ajax<IGetSyncChatConversationsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncChatConversations`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncChatConversations`,
   })
 }
 
@@ -106,7 +108,7 @@ export const datasyncGetSyncChatUserConversationsApi = (data: IGetSyncChatUserCo
   return ajax<IGetSyncChatUserConversationsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncChatUserConversations`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncChatUserConversations`,
   })
 }
 
@@ -117,7 +119,7 @@ export const datasyncGetSyncFriendsApi = (data: IGetSyncFriendsReq) => {
   return ajax<IGetSyncFriendsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncFriends`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncFriends`,
   })
 }
 
@@ -128,7 +130,7 @@ export const datasyncGetSyncFriendVerifiesApi = (data: IGetSyncFriendVerifiesReq
   return ajax<IGetSyncFriendVerifiesRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncFriendVerifies`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncFriendVerifies`,
   })
 }
 
@@ -139,7 +141,7 @@ export const datasyncGetSyncEmojisApi = (data: IGetSyncEmojisReq) => {
   return ajax<IGetSyncEmojisRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncEmojis`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncEmojis`,
   })
 }
 
@@ -150,7 +152,7 @@ export const datasyncGetSyncEmojiCollectsApi = (data: IGetSyncEmojiCollectsReq) 
   return ajax<IGetSyncEmojiCollectsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncEmojiCollects`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncEmojiCollects`,
   })
 }
 
@@ -161,7 +163,7 @@ export const datasyncGetSyncNotificationEventsApi = (data: IGetSyncNotificationE
   return ajax<IGetSyncNotificationEventsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncNotificationEvents`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncNotificationEvents`,
   })
 }
 
@@ -172,7 +174,7 @@ export const datasyncGetSyncNotificationInboxesApi = (data: IGetSyncNotification
   return ajax<IGetSyncNotificationInboxesRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncNotificationInboxes`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncNotificationInboxes`,
   })
 }
 
@@ -183,7 +185,7 @@ export const datasyncGetSyncNotificationReadCursorsApi = (data: IGetSyncNotifica
   return ajax<IGetSyncNotificationReadCursorsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncNotificationReadCursors`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncNotificationReadCursors`,
   })
 }
 
@@ -194,6 +196,17 @@ export const datasyncGetSyncDeletedMessagesApi = (data: IGetSyncDeletedMessagesR
   return ajax<IGetSyncDeletedMessagesRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/getSyncDeletedMessages`,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncDeletedMessages`,
+  })
+}
+
+/**
+ * @description: 获取需要同步的消息媒体状态
+ */
+export const datasyncGetSyncMessageMediasApi = (data: IGetSyncMessageMediasReq) => {
+  return ajax<IGetSyncMessageMediasRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncMessageMedias`,
   })
 }

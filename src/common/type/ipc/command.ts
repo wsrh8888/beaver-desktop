@@ -162,10 +162,42 @@ export enum CacheCommand {
    * @description: 设置缓存内容
    */
   SET = 'cache:set',
+  /**
+   * @description: 下载并打开本地文件
+   */
+  OPEN = 'cache:open',
 }
 
 /**
- * @description: 认证相关的Command
+ * @description: 键盘快捷键相关的 Command
+ */
+export enum KeyboardCommand {
+  /**
+   * @description: 更新单个快捷键 actionId → binding
+   */
+  SET = 'keyboard:set',
+}
+
+/**
+ * @description: 用户设置（主进程 store 读写）
+ */
+export enum SettingsCommand {
+  /**
+   * @description: 初始化用户设置（登录后拉取云端）
+   */
+  SETTINGS_INIT = 'settings:init',
+  /**
+   * @description: 获取用户设置
+   */
+  SETTINGS_GET = 'settings:get',
+  /**
+   * @description: 保存用户设置
+   */
+  SETTINGS_UPDATE = 'settings:update',
+}
+
+/**
+ * @description: 认证相关的 Command
  */
 export enum AuthCommand {
   /**

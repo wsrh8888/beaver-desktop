@@ -1,24 +1,23 @@
 /**
- * 生成自定义User Agent标识
- * @param version 应用版本号
- * @returns 自定义标识字符串
+ * User-Agent 工具类
+ * 对标大厂：型号 + 系统版本 + 设备名
+ * BeaverDesktop/1.0.0 (windows; x64) device_id/xxx model/Windows-PC os/10.0.19045 name/DESKTOP-HOME
  */
-export function generateUserAgentIdentifier(version: string = '1.1.0'): string {
-  const platform = process.platform
+
+import os from 'node:os'
+
+function encodeUAToken(value: string): string {
+  return encodeURIComponent(value)
+}
+
+export function generateUserAgentIdentifier(): string {
+  const version = process.custom.VERSION
+  const deviceId = process.custom.DEVICE_ID
+  const platformName = process.custom.PLATFORM
   const arch = process.arch
-  const deviceId = process.custom?.DEVICE_ID || ''
+  const archName = arch === 'arm64' ? 'arm64' : 'x64'
+  const osVersion = os.release()
+  const name = os.hostname()
 
-  // 构建标识符
-  let identifier = ''
-  if (platform === 'win32') {
-    identifier = arch === 'arm64' ? 'beaver_desktop_windows_arm64' : 'beaver_desktop_windows_x64'
-  }
-  else if (platform === 'darwin') {
-    identifier = arch === 'arm64' ? 'beaver_desktop_macos_arm64' : 'beaver_desktop_macos_x64'
-  }
-  else if (platform === 'linux') {
-    identifier = arch === 'arm64' ? 'beaver_desktop_linux_arm64' : 'beaver_desktop_linux_x64'
-  }
-
-  return `BeaverDesktop/${version} ${identifier} device_id/${deviceId}`
+  return `BeaverDesktop/${version} (${platformName}; ${archName}) device_id/${deviceId} model/${platformName} os/${osVersion} name/${encodeUAToken(name)}`
 }

@@ -18,11 +18,7 @@
         <!-- 头像区域（顶部居中） -->
         <div class="avatar-section">
           <div class="avatar-wrapper" @click="handleAvatarClick">
-            <BeaverImage
-              :file-name="formData.avatar"
-              :cache-type="CacheType.USER_AVATAR"
-              image-class="avatar-image"
-            />
+            <img :src="formData.avatar" alt="头像" class="avatar-image">
             <div class="avatar-overlay">
               <div class="avatar-icon">
                 <img :src="cameraIcon" alt="更换头像">
@@ -115,10 +111,8 @@
 </template>
 
 <script lang="ts">
-import { CacheType } from 'commonModule/type/cache/cache'
 import cameraIcon from 'renderModule/assets/image/leftBar/settings/camera.svg'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { uploadFile } from 'renderModule/utils/upload'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
@@ -127,7 +121,6 @@ import { defineComponent, ref, watch } from 'vue'
 export default defineComponent({
   name: 'ProfileComponent',
   components: {
-    BeaverImage,
     BeaverButton,
   },
   emits: ['close'],
@@ -184,8 +177,8 @@ export default defineComponent({
       try {
         // 上传头像文件
         const uploadResult = await uploadFile(file)
-        if (uploadResult && uploadResult.fileKey) {
-          formData.value.avatar = uploadResult.fileKey
+        if (uploadResult && uploadResult.fileUrl) {
+          formData.value.avatar = uploadResult.fileUrl
           Message.success('头像上传成功')
         }
         else {
@@ -247,7 +240,6 @@ export default defineComponent({
     }
 
     return {
-      CacheType,
       cameraIcon,
       formData,
       avatarInputRef,

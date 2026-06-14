@@ -1,7 +1,6 @@
 import type { SystemNotificationOptions } from 'commonModule/type/preload/notification'
 import { BrowserWindow, Notification } from 'electron'
 import logger from 'mainModule/utils/log'
-
 /**
  * @description: 系统通知管理器
  */

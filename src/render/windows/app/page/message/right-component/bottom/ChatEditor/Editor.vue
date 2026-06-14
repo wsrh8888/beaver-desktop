@@ -22,6 +22,20 @@ import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { parseEditorDOM } from 'renderModule/utils/message/index'
 import { CacheType } from 'commonModule/type/cache/cache'
 
+function formatKeyEvent(event: KeyboardEvent): string | null {
+  if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
+    return null
+  }
+  const parts: string[] = []
+  if (event.ctrlKey) parts.push('Ctrl')
+  if (event.altKey) parts.push('Alt')
+  if (event.shiftKey) parts.push('Shift')
+  if (event.metaKey) parts.push('Cmd')
+  const key = event.key.length === 1 ? event.key.toUpperCase() : event.key
+  parts.push(key)
+  return parts.join('+')
+}
+
 export default defineComponent({
   name: 'ChatEditor',
   setup() {
@@ -29,6 +43,7 @@ export default defineComponent({
     const conversationStore = useConversationStore()
     const inputRef = ref<HTMLDivElement | null>(null)
     const inputValue = ref('')
+    const sendMessageKey = ref('')
 
     const hasContent = computed(() => {
       // 有文字或有图片节点（innerHTML 非空）均视为有内容
@@ -42,11 +57,11 @@ export default defineComponent({
       const images = inputRef.value.querySelectorAll('img.editor-media-node') as NodeListOf<HTMLImageElement>
       for (const img of images) {
         if (!img.src || img.src === window.location.href) {
-          const fileKey = img.getAttribute('data-file-key')
+          const fileUrl = img.getAttribute('data-file-url')
           const type = img.getAttribute('data-type')
-          if (fileKey) {
+          if (fileUrl) {
             const cacheType = type === 'emoji' ? CacheType.USER_AVATAR : CacheType.USER_IMAGE
-            const localPath = await window.electron.cache.get(cacheType, fileKey)
+            const localPath = await window.electron.cache.get(cacheType, fileUrl)
             if (localPath) {
               img.src = localPath
             }
@@ -87,12 +102,11 @@ export default defineComponent({
       const conversationId = messageViewStore.currentChatId
       if (!conversationId) return
 
-      const conversationInfo = conversationStore.getConversationInfo(conversationId)
-      const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
-
       const basicMessages = parseEditorDOM(inputRef.value)
       if (basicMessages.length === 0) return
 
+      const conversationInfo = conversationStore.getConversationInfo(conversationId)
+      const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
       const replyTo = messageViewStore.replyingTo
 
       for (let i = 0; i < basicMessages.length; i++) {
@@ -118,8 +132,7 @@ export default defineComponent({
 
     // 统一处理键盘事件
     const onKeydown = async (e: KeyboardEvent) => {
-      // Enter：发送消息
-      if (e.key === 'Enter') {
+      if (formatKeyEvent(e) === sendMessageKey.value) {
         e.preventDefault()
         if (hasContent.value) {
           await sendMixedContent()
@@ -185,32 +198,34 @@ export default defineComponent({
             if (res.type === 'image') {
               messageViewStore.appendMediaToDraft({
                 type: res.type,
-                fileKey: res.fileKey,
+                fileUrl: res.fileUrl,
                 info: {
                   size: res.size,
                   width: res.style?.width,
                   height: res.style?.height,
-                  thumbnailKey: res.thumbnailKey
+                  thumbnailUrl: res.thumbnailUrl
                 }
               })
             } else {
+              const mediaUrl = res.fileUrl
               const msg: IMessageMsg = {
                 type: res.type === 'video' ? MessageType.VIDEO
                   : (res.type === 'audio' ? MessageType.AUDIO_FILE : MessageType.FILE),
                 videoMsg: res.type === 'video' ? {
-                  fileKey: res.fileKey,
+                  fileUrl: mediaUrl,
                   width: res.style?.width || 0,
                   height: res.style?.height || 0,
-                  duration: res.style?.duration || 0
+                  duration: res.style?.duration || 0,
+                  thumbnailUrl: res.thumbnailUrl
                 } : null,
                 fileMsg: res.type === 'file' ? {
-                  fileKey: res.fileKey,
+                  fileUrl: mediaUrl,
                   fileName: res.originalName || 'file',
                   size: res.size || 0,
                   mimeType: ''
                 } : null,
                 audioFileMsg: res.type === 'audio' ? {
-                  fileKey: res.fileKey,
+                  fileUrl: mediaUrl,
                   fileName: res.originalName || 'audio',
                   duration: res.style?.duration || 0,
                   size: res.size || 0
@@ -242,6 +257,8 @@ export default defineComponent({
     }
 
     onMounted(async () => {
+      const settings = await electron.settings.get()
+      sendMessageKey.value = settings.keyboard.sendMessage
       const draft = messageViewStore.getDraft(messageViewStore.currentChatId || '')
       if (inputRef.value) {
         inputRef.value.innerHTML = draft.html || ''
@@ -261,7 +278,8 @@ export default defineComponent({
       onPaste,
       clear,
       focus,
-      setContent
+      setContent,
+      send: sendMixedContent,
     }
   }
 })

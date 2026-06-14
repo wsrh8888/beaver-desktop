@@ -1,4 +1,4 @@
-import { AuthCommand } from 'commonModule/type/ipc/command'
+import { AuthCommand, SettingsCommand } from 'commonModule/type/ipc/command'
 import { BrowserWindow } from 'electron'
 import AppApplication from 'mainModule/application/app'
 import LoginApplication from 'mainModule/application/login'
@@ -7,6 +7,7 @@ import dbManager from 'mainModule/database/db'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import wsManager from 'mainModule/ws-manager'
+import settings from 'mainModule/ipc/render-to-main/settings'
 
 class AuthHandler {
   /**
@@ -51,6 +52,10 @@ class AuthHandler {
           text: '开始初始化数据库',
         })
         await dbManager.init(userInfo?.userId)
+
+        // 初始化设置模块
+        await settings.handle(void 0 as any, SettingsCommand.SETTINGS_INIT, {})
+
         logger.info({ text: '用户缓存初始化完成' }, 'AuthHandler')
       }
 
@@ -78,9 +83,7 @@ class AuthHandler {
   async handleLogout() {
     try {
       logger.info({ text: '开始登出流程' }, 'AuthHandler')
-      // cache初始化
 
-      // 1. 清空store的所有数据
       store.clearAll()
       logger.info({ text: 'Store数据已清空' }, 'AuthHandler')
 

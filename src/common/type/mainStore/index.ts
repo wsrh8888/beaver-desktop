@@ -1,3 +1,7 @@
+import type { IUserSettings, KeyboardActionId } from '../settings'
+
+export type { IUserSettings, KeyboardActionId }
+
 export interface IStoreOptions {
   /**
    * @description: 是否持久化到文件
@@ -37,6 +41,7 @@ export interface IStoreDataMap {
     source: string
     avatar: string
   }
+  settings: IUserSettings
 }
 
 // 获取存储键对应的类型

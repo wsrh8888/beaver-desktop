@@ -8,8 +8,6 @@ import type {
   IDeleteMessagesRes,
   IDeleteRecentReq,
   IDeleteRecentRes,
-  IEditMessageReq,
-  IEditMessageRes,
   IForwardMessageReq,
   IForwardMessageRes,
   IHideChatReq,
@@ -28,6 +26,8 @@ import type {
   IUpdateReadSeqRes,
   IGetForwardDetailsReq,
   IGetForwardDetailsRes,
+  IMarkMessageMediaReq,
+  IMarkMessageMediaRes,
 } from 'commonModule/type/ajax/chat'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -37,7 +37,7 @@ import ajax from 'renderModule/utils/request/ajax'
 export const getRecentChatListApi = (params: IRecentChatListReq) => {
   return ajax<IRecentChatRes>({
     method: 'GET',
-    url: `${baseUrl}/api/chat/getRecentChatList`,
+    url: `${baseUrl}/api/chat/v1/getRecentChatList`,
     params, // GET请求使用params传递查询参数
   })
 }
@@ -48,7 +48,7 @@ export const getcreateConversationApi = (data: ICreateConversationReq) => {
   return ajax<IRecentChatRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/createConversation`,
+    url: `${baseUrl}/api/chat/v1/createConversation`,
   })
 }
 
@@ -59,7 +59,7 @@ export const getRecentChatInfoApi = (data: IConversationInfoReq) => {
   return ajax<IConversationInfoRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/getConversationInfo`,
+    url: `${baseUrl}/api/chat/v1/getConversationInfo`,
   })
 }
 /**
@@ -69,7 +69,7 @@ export const getChatHistoryApi = (data: IChatHistoryReq) => {
   return ajax<IChatHistoryRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/getChatHistory`,
+    url: `${baseUrl}/api/chat/v1/getChatHistory`,
   })
 }
 
@@ -80,7 +80,7 @@ export const sendMsgApi = (data: ISendMsgReq) => {
   return ajax<ISendMsgRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/sendMsg`,
+    url: `${baseUrl}/api/chat/v1/sendMsg`,
   })
 }
 
@@ -91,7 +91,7 @@ export const deleteRecentApi = (data: IDeleteRecentReq) => {
   return ajax<IDeleteRecentRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/deleteRecentChat`,
+    url: `${baseUrl}/api/chat/v1/deleteRecentChat`,
   })
 }
 
@@ -102,18 +102,7 @@ export const pinnedChatApi = (data: IPinnedChatReq) => {
   return ajax<IPinnedChatRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/pinnedChat`,
-  })
-}
-
-/**
- * @description: 编辑消息
- */
-export const editMessageApi = (data: IEditMessageReq) => {
-  return ajax<IEditMessageRes>({
-    method: 'POST',
-    data,
-    url: `${baseUrl}/api/chat/edit`,
+    url: `${baseUrl}/api/chat/v1/pinnedChat`,
   })
 }
 
@@ -124,7 +113,7 @@ export const recallMessageApi = (data: IRecallMessageReq) => {
   return ajax<IRecallMessageRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/recall`,
+    url: `${baseUrl}/api/chat/v1/recall`,
   })
 }
 
@@ -135,7 +124,7 @@ export const forwardMessageApi = (data: IForwardMessageReq) => {
   return ajax<IForwardMessageRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/forward`,
+    url: `${baseUrl}/api/chat/v1/forward`,
   })
 }
 
@@ -145,7 +134,7 @@ export const forwardMessageApi = (data: IForwardMessageReq) => {
 export const getForwardDetailsApi = (params: IGetForwardDetailsReq) => {
   return ajax<IGetForwardDetailsRes>({
     method: 'GET',
-    url: `${baseUrl}/api/chat/getForwardDetails`,
+    url: `${baseUrl}/api/chat/v1/getForwardDetails`,
     params,
   })
 }
@@ -157,7 +146,7 @@ export const deleteMessagesApi = (data: IDeleteMessagesReq) => {
   return ajax<IDeleteMessagesRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/deleteMessages`,
+    url: `${baseUrl}/api/chat/v1/deleteMessages`,
   })
 }
 
@@ -176,7 +165,7 @@ export const updateReadSeqApi = (data: IUpdateReadSeqReq) => {
   return ajax<IUpdateReadSeqRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/updateReadSeq`,
+    url: `${baseUrl}/api/chat/v1/updateReadSeq`,
   })
 }
 
@@ -187,7 +176,7 @@ export const muteChatApi = (data: IMuteChatReq) => {
   return ajax<IMuteChatRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/muteChat`,
+    url: `${baseUrl}/api/chat/v1/muteChat`,
   })
 }
 
@@ -198,6 +187,17 @@ export const hideChatApi = (data: IHideChatReq) => {
   return ajax<IHideChatRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/chat/hideChat`,
+    url: `${baseUrl}/api/chat/v1/hideChat`,
+  })
+}
+
+/**
+ * @description: 标记消息媒体状态（如语音已播放）
+ */
+export const markMessageMediaApi = (data: IMarkMessageMediaReq) => {
+  return ajax<IMarkMessageMediaRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/chat/v1/markMessageMedia`,
   })
 }

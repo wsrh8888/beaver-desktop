@@ -1,6 +1,5 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { addEmojiApi, updateFavoriteEmojiApi } from 'renderModule/api/emoji'
-import { previewOnlineFileApi } from 'renderModule/api/file'
 import Message from 'renderModule/components/ui/message'
 import { BaseMessageHandler } from './base'
 
@@ -47,12 +46,12 @@ class ImageHandler extends BaseMessageHandler {
   }
 
   private async handleCopy(message: any): Promise<void> {
-    const fileKey = message?.msg?.imageMsg?.fileKey
-    if (!fileKey) {
+    const mediaUrl = message?.msg?.imageMsg?.fileUrl
+    if (!mediaUrl) {
       Message.error('无法获取图片')
       return
     }
-    const ok = await window.electron.clipboard.copyImage(fileKey)
+    const ok = await window.electron.clipboard.copyImage(mediaUrl)
     if (ok) {
       Message.success('图片已复制到剪贴板')
     }
@@ -111,17 +110,16 @@ class ImageHandler extends BaseMessageHandler {
 
   // 处理图片消息：先创建表情，再收藏
   private async handleAddImageToEmoji(message: any): Promise<void> {
-    const fileKey = message.msg.imageMsg?.fileKey
-    if (!fileKey) {
-      console.error('无法获取图片文件Key')
+    const mediaUrl = message.msg.imageMsg?.fileUrl
+    if (!mediaUrl) {
+      console.error('无法获取图片URL')
       return
     }
 
-    // 生成表情标题（可以根据需要调整）
     const title = `表情_${Date.now()}`
 
     const result = await addEmojiApi({
-      fileKey,
+      fileKey: mediaUrl,
       title,
       packageId: undefined,
       emojiInfo: {
@@ -137,11 +135,9 @@ class ImageHandler extends BaseMessageHandler {
   }
 
   private async handleDownload(message: any): Promise<void> {
-    console.error('121111111111111111', message)
-    const imageUrl = previewOnlineFileApi(message.msg.imageMsg?.fileKey)
-    const filename = message.msg.imageMsg?.fileKey
+    const imageUrl = message.msg.imageMsg?.fileUrl
     if (imageUrl) {
-      await this.downloadFile(imageUrl, filename)
+      await this.downloadFile(imageUrl, imageUrl)
     }
   }
 }

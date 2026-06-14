@@ -1,7 +1,7 @@
 <template>
   <div class="message-emoji">
     <div class="emoji-content" :style="{ width: emojiSize.width + 'px', height: emojiSize.height + 'px' }">
-      <BeaverImage :file-name="msg.emojiMsg?.fileKey || ''" alt="表情" image-class="emoji-image" />
+      <BeaverImage :file-name="msg.emojiMsg?.fileUrl || ''" alt="表情" image-class="emoji-image" />
     </div>
   </div>
 </template>

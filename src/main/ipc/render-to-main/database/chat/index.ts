@@ -3,6 +3,7 @@ import { DataChatCommand } from 'commonModule/type/ipc/database'
 import conversationBusiness from 'mainModule/business/chat/conversation'
 import messageBusiness from 'mainModule/business/chat/message'
 import dbServiceChatUserConversation from 'mainModule/database/services/chat/user-conversation'
+import dbServiceChatMessageMedia from 'mainModule/database/services/chat/message-media'
 import { store } from 'mainModule/store'
 
 class ChatHandler {
@@ -27,6 +28,8 @@ class ChatHandler {
         return await dbServiceChatUserConversation.getChatConversationsByVerRange({ header, params: data })
       case DataChatCommand.DELETE_MESSAGES:
         return await messageBusiness.batchDelete(header, data)
+      case DataChatCommand.GET_MESSAGE_MEDIA_IDS:
+        return await dbServiceChatMessageMedia.getMessageIds({ userId: userStore.userId })
       default:
         throw new Error('聊天数据库命令处理失败ChatHandler')
     }

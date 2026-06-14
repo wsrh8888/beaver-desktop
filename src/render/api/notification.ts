@@ -20,7 +20,7 @@ export const markReadByEventApi = (data: IMarkReadByEventReq) => {
   return ajax<IMarkReadByEventRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/notification/markReadByEvent`,
+    url: `${baseUrl}/api/notification/v1/markReadByEvent`,
   })
 }
 
@@ -31,7 +31,7 @@ export const deleteNotificationApi = (data: IDeleteNotificationReq) => {
   return ajax<IDeleteNotificationRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/notification/deleteNotification`,
+    url: `${baseUrl}/api/notification/v1/deleteNotification`,
   })
 }
 
@@ -42,7 +42,7 @@ export const markReadByCategoryApi = (data: IMarkReadByCategoryReq) => {
   return ajax<IMarkReadByCategoryRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/notification/markReadByCategory`,
+    url: `${baseUrl}/api/notification/v1/markReadByCategory`,
   })
 }
 
@@ -53,7 +53,7 @@ export const markReadByCursorApi = (data: IMarkReadByCursorReq) => {
   return ajax<IMarkReadByCursorRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/notification/markReadByCursor`,
+    url: `${baseUrl}/api/notification/v1/markReadByCursor`,
   })
 }
 
@@ -64,6 +64,6 @@ export const getUnreadSummaryApi = (data: IGetUnreadSummaryReq) => {
   return ajax<IGetUnreadSummaryRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/notification/getUnreadSummary`,
+    url: `${baseUrl}/api/notification/v1/getUnreadSummary`,
   })
 }

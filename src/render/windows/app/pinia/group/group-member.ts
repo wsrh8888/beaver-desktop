@@ -59,7 +59,6 @@ export const useGroupMemberStore = defineStore('groupMemberStore', {
 
       try {
         const result = await electron.database.group.getGroupMembers({ groupId })
-        console.error('cxcxcxcsd11111111111111111111f', result)
         if (result?.list) {
           this.memberMap.set(groupId, result.list)
         }

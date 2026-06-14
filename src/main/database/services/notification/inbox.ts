@@ -1,5 +1,5 @@
 import type { IDBNotificationInbox } from 'commonModule/type/database/db/notification'
-import { and, eq, gt, inArray, sql } from 'drizzle-orm'
+import { and, desc, eq, gt, inArray, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { notificationInboxes } from 'mainModule/database/tables/notification/inbox'
 import type {
@@ -194,7 +194,7 @@ class dBServiceNotificationInbox extends BaseService {
             )
           : eq(notificationInboxes.userId as any, userId as any),
       )
-      .orderBy(notificationInboxes.createdAt)
+      .orderBy(desc(notificationInboxes.createdAt))
       .limit(limit)
       .all()
     return { inboxes }

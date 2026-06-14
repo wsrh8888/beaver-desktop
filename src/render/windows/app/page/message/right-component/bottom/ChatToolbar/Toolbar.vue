@@ -30,24 +30,23 @@ export default defineComponent({
           break
         case 'image':
         case 'file':
-        case 'video':
           await handleFileUpload(toolType)
           break
         case 'screenshot':
           await handleScreenshot()
           break
+        default:
+          break
       }
     }
 
-    const handleFileUpload = async (toolType: string) => {
+    const handleFileUpload = async (toolType: 'image' | 'file') => {
       try {
         const conversationId = messageViewStore.currentChatId
         if (!conversationId) return
 
-        const acceptMap: Record<string, string | undefined> = {
+        const acceptMap: Record<'image' | 'file', string | undefined> = {
           image: 'image/*',
-          video: 'video/*',
-          audio: 'audio/*',
           file: undefined,
         }
         const uploadResults = await selectAndUploadFile(acceptMap[toolType], true)
@@ -56,32 +55,25 @@ export default defineComponent({
         const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
 
         for (const res of uploadResults) {
-          const msg: IMessageMsg = {
-            type: res.type === 'image' ? MessageType.IMAGE : (res.type === 'video' ? MessageType.VIDEO : (res.type === 'audio' ? MessageType.AUDIO_FILE : MessageType.FILE)),
-            imageMsg: res.type === 'image' ? {
-              fileKey: res.fileKey,
-              width: res.style?.width || 0,
-              height: res.style?.height || 0
-            } : null,
-            videoMsg: res.type === 'video' ? {
-              fileKey: res.fileKey,
-              width: res.style?.width || 0,
-              height: res.style?.height || 0,
-              duration: res.style?.duration || 0
-            } : null,
-            fileMsg: res.type === 'file' ? {
-              fileKey: res.fileKey,
-              fileName: res.originalName || 'file',
-              size: res.size || 0,
-              mimeType: ''
-            } : null,
-            audioFileMsg: res.type === 'audio' ? {
-              fileKey: res.fileKey,
-              fileName: res.originalName || 'audio',
-              duration: res.style?.duration || 0,
-              size: res.size || 0
-            } : null
-          }
+          const mediaUrl = res.fileUrl
+          const msg: IMessageMsg = res.type === 'image'
+            ? {
+                type: MessageType.IMAGE,
+                imageMsg: {
+                  fileUrl: mediaUrl,
+                  width: res.style?.width || 0,
+                  height: res.style?.height || 0,
+                },
+              }
+            : {
+                type: MessageType.FILE,
+                fileMsg: {
+                  fileUrl: mediaUrl,
+                  fileName: res.originalName || 'file',
+                  size: res.size || 0,
+                  mimeType: '',
+                },
+              }
           await ChatCore.sendMessage(conversationId, msg, chatType)
         }
       } catch (error) {
@@ -103,7 +95,7 @@ export default defineComponent({
         const msg: IMessageMsg = {
           type: MessageType.IMAGE,
           imageMsg: {
-            fileKey: uploadResult.fileKey,
+            fileUrl: uploadResult.fileUrl,
             width: uploadResult.style?.width || 0,
             height: uploadResult.style?.height || 0
           }

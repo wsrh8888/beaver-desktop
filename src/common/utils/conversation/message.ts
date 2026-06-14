@@ -15,7 +15,9 @@ export function generateMessagePreview(msg: any): string {
     case MessageType.FILE:
       return `[文件] ${msg.fileMsg?.fileName || ''}`
     case MessageType.VOICE:
-      return '[语音]'
+      return `[语音] ${msg.voiceMsg?.duration ? `${msg.voiceMsg.duration}″` : ''}`
+    case MessageType.AUDIO_FILE:
+      return `[音频] ${msg.audioFileMsg?.fileName || ''}`
     case MessageType.EMOJI:
       return '[表情]'
     case MessageType.WITHDRAW:

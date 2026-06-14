@@ -11,44 +11,56 @@
         <span
           :class="messageViewStore.selectedMessageIds.includes(message.messageId) ? 'cb-checked' : 'cb-unchecked'" />
       </div>
+
+      <!-- 用户头像 -->
       <div v-if="message.sender.userId" class="message-avatar">
         <BeaverImage :cache-type="CacheType.USER_AVATAR" :file-name="message.sender.avatar"
-          :alt="message.sender.nickName" image-class="avatar-image" @click.stop="showUserInfo($event, message)" />
+          :alt="message.sender.nickName" image-class="avatar-image" />
       </div>
+
+      <!--  -->
       <div class="message-content" @contextmenu.prevent="handleContextMenu($event, message)"
         @click="handleMessageClick($event, message)">
         <!-- 已撤回消息 -->
-        <RecalledMessage v-if="message.msg?.type === 10" :msg="message.msg" :sender="(message.sender as any)"
-          @re-edit="(text) => $emit('re-edit', text)" />
+        <RecalledMessage v-if="message.msg.type === 10" :msg="message.msg" :sender="(message.sender as any)" />
         <!-- 文本消息组件 -->
-        <TextMessage v-else-if="message.msg?.type === 1" :msg="message.msg" />
+        <TextMessage v-else-if="message.msg.type === 1" :msg="message.msg" />
         <!-- 图片消息组件 -->
-        <ImageMessage v-else-if="message.msg?.type === 2 && message.msg?.imageMsg" :msg="message.msg" />
+        <ImageMessage v-else-if="message.msg.type === 2 && message.msg.imageMsg" :msg="message.msg" />
         <!-- 视频消息组件 -->
-        <VideoMessage v-else-if="message.msg?.type === 3 && message.msg?.videoMsg" :msg="message.msg" />
+        <VideoMessage v-else-if="message.msg.type === 3 && message.msg.videoMsg" :msg="message.msg" />
+        <!-- 文件消息组件（type=4） -->
+        <FileMessage v-else-if="message.msg.type === 4 && message.msg.fileMsg" :msg="message.msg" />
+        <!-- 语音消息组件（type=5，按住说话） -->
+        <VoiceMessage
+          v-else-if="message.msg.type === 5 && message.msg.voiceMsg"
+          :msg="message.msg"
+          :message-id="message.messageId"
+          :is-self="message.sender.userId === userStore.getUserId"
+        />
         <!-- 音频文件消息组件（type=8） -->
-        <AudioFileMessage v-else-if="message.msg?.type === 8" :msg="message.msg" />
+        <AudioFileMessage v-else-if="message.msg.type === 8" :msg="message.msg" />
         <!-- 通知消息组件（type=7） -->
-        <NotificationMessage v-else-if="message.msg?.type === 7 && message.msg?.notificationMsg" :msg="message.msg" />
+        <NotificationMessage v-else-if="message.msg.type === 7 && message.msg.notificationMsg" :msg="message.msg" />
         <!-- 表情消息组件（type=6） -->
-        <EmojiMessage v-else-if="message.msg?.type === 6 && message.msg?.emojiMsg" :msg="message.msg" />
+        <EmojiMessage v-else-if="message.msg.type === 6 && message.msg.emojiMsg" :msg="message.msg" />
         <!-- 音视频通话组件（type=9） -->
-        <CallMessage v-else-if="message.msg?.type === 9" :msg="message.msg" />
+        <CallMessage v-else-if="message.msg.type === 9" :msg="message.msg" />
         <!-- 回复消息组件（type=11） -->
-        <ReplyMessage v-else-if="message.msg?.type === 11" :msg="message.msg" :sender="(message.sender as any)" />
+        <ReplyMessage v-else-if="message.msg.type === 11" :msg="message.msg" :sender="(message.sender as any)" />
         <!-- 合并转发消息组件（type=12） -->
-        <MergedForwardMessage v-else-if="message.msg?.type === 12 && message.msg?.forwardMsg" :msg="message.msg" />
-        <!-- 发送状态指示器 -->
-        <!-- <div v-if="message.sendStatus !== undefined && message.sender.userId === userStore.getUserId" class="message-status">
-          <div v-if="message.sendStatus === 0" class="status-sending">
-            <div class="sending-spinner" />
-            发送中...
-          </div>
-          <div v-else-if="message.sendStatus === 2" class="status-failed" @click="retrySend(message)">
-            <img class="retry-icon" src="renderModule/assets/image/chat/retry.svg" alt="重试" />
-            发送失败，点击重试
-          </div>
-        </div> -->
+        <MergedForwardMessage v-else-if="message.msg.type === 12 && message.msg.forwardMsg" :msg="message.msg" />
+        <!-- Markdown 消息组件（type=13） -->
+        <MarkdownMessage v-else-if="message.msg.type === 13 && message.msg.markdownMsg" :msg="message.msg" />
+        <!-- 发送失败 -->
+        <div
+          v-if="message.sendStatus === MessageStatus.FAILED && message.sender.userId === userStore.getUserId"
+          class="message-status status-failed"
+          @click="retrySend(message)"
+        >
+          <img class="retry-icon" src="renderModule/assets/image/chat/retry.svg" alt="重试" />
+          发送失败，点击重试
+        </div>
       </div>
     </div>
 
@@ -56,7 +68,6 @@
     <ContextMenu trigger="manual" :visible="contextMenuVisible" :menu-items="contextMenuItems"
       :position="contextMenuPosition" @update:visible="contextMenuVisible = $event"
       @command="(item) => handleMenuCommand(item, currentMessage)" />
-    <UserInfo v-if="userInfo.show" :user-info="userInfo" />
     <!-- 转发对话框 -->
     <ForwardDialog v-model="forwardDialogVisible" :message-id="forwardMessageId" />
   </div>
@@ -65,7 +76,9 @@
 <script lang="ts">
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
+import { MessageStatus } from 'commonModule/type/ajax/chat'
 import ContextMenu from 'renderModule/components/ui/context-menu/index.vue'
+import { ChatCore } from 'renderModule/core/message/index'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
@@ -73,51 +86,45 @@ import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
-import userInfo from './components/userInfo.vue'
 import ForwardDialog from './components/ForwardDialog.vue'
 import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
 import CallMessage from './message/call.vue'
 import EmojiMessage from './message/emoji.vue'
+import FileMessage from './message/file.vue'
 import ImageMessage from './message/image.vue'
+import MarkdownMessage from './message/markdown.vue'
 import MergedForwardMessage from './message/merged-forward.vue'
 import NotificationMessage from './message/notification.vue'
 import ReplyMessage from './message/reply.vue'
 import RecalledMessage from './message/recalled.vue'
 import TextMessage from './message/text.vue'
 import VideoMessage from './message/video.vue'
+import VoiceMessage from './message/voice.vue'
 import { getSelectedText, hasTextSelected } from './utils/copy'
 import { MessageContentType } from './utils/data'
 
 export default defineComponent({
   name: 'ChatContent',
-  emits: ['re-edit'],
   components: {
-    UserInfo: userInfo,
     ForwardDialog,
     BeaverImage,
     ContextMenu,
     AudioFileMessage,
     CallMessage,
     EmojiMessage,
+    FileMessage,
     TextMessage,
     ImageMessage,
+    MarkdownMessage,
     MergedForwardMessage,
     NotificationMessage,
     RecalledMessage,
     ReplyMessage,
     VideoMessage,
+    VoiceMessage,
   },
   setup() {
-    const userInfo = ref({
-      show: false,
-      position: {
-        top: '0px',
-        left: '0px',
-        // right: '0px'
-      },
-      friendId: 0,
-    })
     const userStore = useUserStore()
     const messageStore = useMessageStore()
     const messageViewStore = useMessageViewStore()
@@ -127,6 +134,7 @@ export default defineComponent({
     const contextMenuPosition = ref<{ x: number, y: number } | null>(null)
     const contextMenuItems = ref<ContextMenuItem[]>([])
     const currentMessage = ref<any>(null) // 当前右键点击的消息
+    const contextMenuSelectedText = ref('')
     const forwardDialogVisible = ref(false)
     const forwardMessageId = ref('')
 
@@ -184,8 +192,7 @@ export default defineComponent({
 
       // 检查是否有文本被选中（仅对文本消息有效），并在打开菜单时立刻保存选中内容（点击菜单项时选区可能已丢失）
       const hasSelected = messageType === MessageContentType.TEXT && hasTextSelected()
-      if (messageType === MessageContentType.TEXT)
-        (message as any)._selectedText = getSelectedText()
+      contextMenuSelectedText.value = messageType === MessageContentType.TEXT ? getSelectedText() : ''
 
       // 根据消息类型获取菜单项（撤回只对自己发的消息显示）
       const isSender = message.sender.userId === userStore.getUserId
@@ -209,23 +216,22 @@ export default defineComponent({
       }
 
       // 获取消息类型
-      const messageType = message.msg?.type
+      const messageType = message.msg.type
       if (typeof messageType !== 'number' || !(messageType in MessageContentType)) {
         console.error('无效的消息类型:', messageType)
         return
       }
 
-      const result = await MessageHandlerFactory.handleCommand(messageType as MessageContentType, String(item.id), message)
+      const menuMessage = contextMenuSelectedText.value
+        ? { ...message, _selectedText: contextMenuSelectedText.value }
+        : message
+
+      const result = await MessageHandlerFactory.handleCommand(messageType as MessageContentType, String(item.id), menuMessage)
       // 转发命令由上层弹窗处理
       if (result === 'forward') {
         forwardMessageId.value = message.messageId
         forwardDialogVisible.value = true
       }
-    }
-
-    // 点击其他地方时隐藏用户信息
-    const hideDialog = () => {
-      userInfo.value.show = false
     }
 
     const scrollToBottom = async () => {
@@ -265,43 +271,50 @@ export default defineComponent({
       }
     }
 
-    watch(messages, () => {
-      scrollToBottom()
-    }, { deep: true })
+    watch(
+      () => {
+        const list = messages.value
+        if (!list.length)
+          return ''
+        return list[list.length - 1].messageId
+      },
+      (newLastId, oldLastId) => {
+        if (newLastId && newLastId !== oldLastId)
+          scrollToBottom()
+      },
+    )
 
     onMounted(() => {
       scrollToBottom()
-      // 添加全局点击事件监听
-      document.addEventListener('click', hideDialog)
-      // 添加滚动监听器
       if (messageContainer.value) {
         messageContainer.value.addEventListener('scroll', handleScroll)
       }
     })
-    const showUserInfo = (event: MouseEvent, message: any) => {
-      if (message.sender.userId === userStore.getUserId) {
-        return
-      }
-      userInfo.value.show = false
-      userInfo.value.show = true
-      userInfo.value.position = {
-        top: `${event.clientY}px`,
-        left: `${event.clientX + 18}px`,
-      }
 
-      userInfo.value.friendId = message.sender.userId
-      event.preventDefault()
-    }
     onBeforeUnmount(() => {
-      // 清理事件监听
-      document.removeEventListener('click', hideDialog)
       if (messageContainer.value) {
         messageContainer.value.removeEventListener('scroll', handleScroll)
       }
     })
 
+    const retrySend = async (message: any) => {
+      if (message.sendStatus !== MessageStatus.FAILED || !message.msg) {
+        return
+      }
+
+      const conversationId = message.conversationId || messageViewStore.currentChatId
+      if (!conversationId) {
+        return
+      }
+
+      const chatType = conversationId.startsWith('group_') ? 'group' : 'private'
+      await messageStore.removeMessages(conversationId, [message.messageId])
+      await ChatCore.sendMessage(conversationId, message.msg, chatType)
+    }
+
     return {
       CacheType,
+      MessageStatus,
       messages,
       userStore,
       messageViewStore,
@@ -315,8 +328,7 @@ export default defineComponent({
       handleContextMenu,
       handleMenuCommand,
       handleMessageClick,
-      userInfo,
-      showUserInfo,
+      retrySend,
     }
   },
 })
@@ -366,10 +378,10 @@ export default defineComponent({
 
       .message-content {
         background-color: #FF7D45;
-        border-bottom-right-radius: 2px;
+        // border-bottom-right-radius: 2px;
         margin-right: 8px;
         margin-left: 0;
-        color: white;
+        color: #fff;
       }
     }
 
@@ -390,7 +402,6 @@ export default defineComponent({
       background-color: #FFE6D9;
       flex-shrink: 0;
       overflow: hidden;
-      cursor: pointer;
 
       .avatar-image {
         width: 100%;
@@ -403,8 +414,27 @@ export default defineComponent({
       padding: 8px;
       border-radius: 12px;
       position: relative;
-      background-color: #FF7D45;
-      border-bottom-left-radius: 2px;
+      background-color: #fff;
+      color: #2d3436;
+      // border-bottom-left-radius: 2px;
+
+      .message-status {
+        margin-top: 6px;
+        font-size: 12px;
+
+        &.status-failed {
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          color: #ffeb3b;
+          cursor: pointer;
+
+          .retry-icon {
+            width: 14px;
+            height: 14px;
+          }
+        }
+      }
     }
 
     // 多选模式复选框

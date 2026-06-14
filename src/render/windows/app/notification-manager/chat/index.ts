@@ -4,6 +4,7 @@ import { NotificationChatCommand } from 'commonModule/type/preload/notification'
 import Logger from 'renderModule/utils/logger'
 // 导入聊天模块的通知处理器
 import conversationNotificationManager from './conversation'
+import messageMediaNotificationManager from './message-media'
 import messageNotificationManager from './message'
 import userConversationNotificationManager from './user-conversation'
 
@@ -31,6 +32,9 @@ class ChatNotificationRouter {
         break
       case NotificationChatCommand.USER_CONVERSATION_UPDATE:
         await userConversationNotificationManager.processUserConversationUpdate(params.data)
+        break
+      case NotificationChatCommand.MESSAGE_MEDIA_UPDATE:
+        await messageMediaNotificationManager.processMessageMediaUpdate(params.data)
         break
       default:
         console.warn('未知的聊天通知命令:', params.command)

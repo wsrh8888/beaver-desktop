@@ -110,7 +110,7 @@ class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> 
         return { total: 0, byCat: [] }
 
       const hasCategories = !!categories && categories.length > 0
-      const filterCategories = hasCategories ? categories : ['social', 'group', 'system']
+      const filterCategories = hasCategories ? categories : ['social', 'group', 'system', 'moment']
 
       // 为每个分类计算真正的未读数：createdAt > lastReadAt 且 isRead = 0
       const byCatPromises = filterCategories.map(async (category) => {
@@ -158,6 +158,27 @@ class NotificationInboxBusiness extends BaseBusiness<NotificationInboxSyncItem> 
     catch (error) {
       logger.error({ text: '标记事件已读失败', data: { error: (error as any)?.message } })
       return false
+    }
+  }
+
+  /**
+   * 按分类获取通知收件箱列表
+   */
+  async getInboxByCategory(userId: string, category: string, limit = 100) {
+    try {
+      if (!userId || !category)
+        return { inboxes: [] }
+
+      const result = await dBServiceNotificationInbox.getByUserIdAndCategories({
+        userId,
+        categories: [category],
+        limit,
+      })
+      return result
+    }
+    catch (error) {
+      logger.error({ text: '按分类获取通知收件箱失败', data: { error: (error as any)?.message } })
+      return { inboxes: [] }
     }
   }
 

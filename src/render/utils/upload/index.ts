@@ -1,17 +1,17 @@
 import { uploadFileApi } from 'renderModule/api/file'
-import { getAudioInfo, getFileType, getImageAttribute, getVideoInfo, getVideoThumbnail } from 'renderModule/utils/file/index'
+import { getFileNameFromUrl, getAudioInfo, getFileType, getImageAttribute, getVideoInfo, getVideoThumbnail } from 'renderModule/utils/file/index'
 
 // 上传文件类型
 export type UploadFileType = 'image' | 'video' | 'audio' | 'file'
 
 // 上传结果的基础结构
 export interface UploadResult {
-  fileKey: string
+  fileUrl: string
   style: UploadStyle
   type: UploadFileType
   originalName?: string
   size?: number
-  thumbnailKey?: string // 视频封面图文件ID（仅视频类型）
+  thumbnailUrl?: string
 }
 
 // 不同类型文件的样式信息
@@ -136,33 +136,35 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
 
   // 先上传文件
   const uploadResult = await uploadFileApi(file, file.name)
+  const fileUrl = uploadResult.fileUrl
+  if (!fileUrl) {
+    throw new Error('上传响应缺少 fileUrl')
+  }
 
-  // 根据类型获取样式信息
   const style = await getFileStyle(file, fileType)
 
-  let thumbnailKey: string | undefined
+  let thumbnailUrl: string | undefined
 
-  // 如果是视频，生成并上传封面图
   if (fileType === 'video') {
     try {
       const thumbnailBase64 = await getVideoThumbnail(file, 0)
-      const thumbnailFile = base64ToFile(thumbnailBase64, `${uploadResult.fileKey}_thumb.jpg`)
-      const thumbnailUploadResult = await uploadFileApi(thumbnailFile, `${uploadResult.fileKey}_thumb.jpg`)
-      thumbnailKey = thumbnailUploadResult.fileKey
+      const baseName = getFileNameFromUrl(fileUrl).replace(/\.[^.]+$/, '') || `video_${Date.now()}`
+      const thumbnailFile = base64ToFile(thumbnailBase64, `${baseName}_thumb.jpg`)
+      const thumbnailUploadResult = await uploadFileApi(thumbnailFile, `${baseName}_thumb.jpg`)
+      thumbnailUrl = thumbnailUploadResult.fileUrl
     }
     catch (error) {
       console.error('生成视频封面失败:', error)
-      // 封面生成失败不影响主文件上传
     }
   }
 
   return {
-    fileKey: uploadResult.fileKey,
+    fileUrl,
     style,
     type: fileType,
     originalName: uploadResult.originalName,
     size: file.size,
-    thumbnailKey,
+    thumbnailUrl,
   }
 }
 

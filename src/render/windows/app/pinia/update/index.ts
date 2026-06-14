@@ -54,8 +54,9 @@ export const useUpdateStore = defineStore('update', {
       await electron.window?.openWindow('updater', {
         params: {
           hasUpdate: this.updateInfo.hasUpdate,
+          forceUpdate: this.updateInfo.forceUpdate,
           version: this.updateInfo.version,
-          fileKey: this.updateInfo.fileKey,
+          fileUrl: this.updateInfo.fileUrl,
           size: this.updateInfo.size,
           md5: this.updateInfo.md5,
           description: this.updateInfo.description,

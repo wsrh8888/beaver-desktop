@@ -8,6 +8,7 @@ export interface IDBUser {
   avatar?: string
   abstract?: string // 个性签名
   gender?: number // 性别：1男 2女 3未知
+  userType: number // 1普通用户 2bot 3robot
   status?: number
   version?: number // 版本号
   createdAt?: number

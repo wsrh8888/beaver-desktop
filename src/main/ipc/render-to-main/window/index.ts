@@ -15,6 +15,7 @@ import videoApplication from 'mainModule/application/video'
 import callApplication from 'mainModule/application/call'
 import CallIncomingApplication from 'mainModule/application/call-incoming'
 import aiApplication from 'mainModule/application/ai'
+import settingsApplication from 'mainModule/application/settings'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
@@ -172,6 +173,10 @@ class WindowHandler {
           break
         case 'ai':
           newWindow = aiApplication.createBrowserWindow()
+          break
+        case 'settings':
+          settingsApplication.createBrowserWindow()
+          newWindow = (settingsApplication as any).win
           break
       }
 

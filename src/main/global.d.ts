@@ -18,6 +18,12 @@ declare namespace NodeJS {
        * @description: 应用版本
        */
       VERSION: string
+
+      /**
+       * @description: 操作系统平台
+       * @values: 'windows' | 'mac' | 'linux' | 'ios' | 'android'
+       */
+      PLATFORM: string
     }
   }
 }

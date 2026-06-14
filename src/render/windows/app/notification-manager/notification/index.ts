@@ -22,6 +22,9 @@ class NotificationNotificationRouter {
       case NotificationNotificationCommand.INBOX_UPDATE:
         await inboxNotificationManager.processInboxUpdate(params.data)
         break
+      case NotificationNotificationCommand.READ_CURSOR_UPDATE:
+        await inboxNotificationManager.processInboxUpdate({ source: 'business' })
+        break
       default:
         console.warn('未知的通知通知命令:', params.command)
     }

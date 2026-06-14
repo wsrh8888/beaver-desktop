@@ -24,11 +24,29 @@ export function initCustom() {
   // 使用 node-machine-id 获取真正的机器唯一标识
   // 这会返回一个 SHA-256 哈希值，确保每台机器的唯一性
   const deviceId = machineIdSync()
+  
+  // 检测当前运行的操作系统平台
+  let platform: 'windows' | 'mac' | 'linux' | 'ios' | 'android'
+  if (process.platform === 'win32') {
+    platform = 'windows'
+  }
+  else if (process.platform === 'darwin') {
+    platform = 'mac'
+  }
+  else if (process.platform === 'linux') {
+    platform = 'linux'
+  }
+  else {
+    // 其他平台（如 android/ios 在 Electron 中不会出现）
+    platform = 'linux'
+  }
+  
   process.custom = {
     ENV: 'prod',
     TOOLS: false,
     DEVICE_ID: deviceId,
     VERSION: getVersion(),
+    PLATFORM: platform,
   }
 }
 

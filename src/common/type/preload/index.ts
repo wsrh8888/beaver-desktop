@@ -11,6 +11,8 @@ import type { IUpdateModule } from './update'
 import type { IWebSocketModule } from './websocket'
 import type { IWindowModule } from './window'
 import type { ICallModule } from './call'
+import type { IKeyboardModule } from './keyboard'
+import type { ISettingsModule } from './settings'
 
 /**
  * @description: Electron preload接口
@@ -80,4 +82,14 @@ export interface ElectronAPP {
    * @description: 通话模块
    */
   call: ICallModule
+
+  /**
+   * @description: 键盘快捷键
+   */
+  keyboard: IKeyboardModule
+
+  /**
+   * @description: 用户设置（主进程 store）
+   */
+  settings: ISettingsModule
 }

@@ -1,7 +1,7 @@
 {
   "name": "beaver",
   "type": "module",
-  "version": "1.2.0",
+  "version": "2.0.0",
   "private": true,
   "description": "beaverIM",
   "author": "Robert",
@@ -44,7 +44,13 @@
           ]
         }
       ],
-      "icon": "resource/app.ico"
+      "icon": "resource/app.ico",
+      "protocols": {
+        "name": "Beaver OAuth Protocol",
+        "schemes": [
+          "beaver"
+        ]
+      }
     },
     "nsis": {
       "oneClick": true,
@@ -68,6 +74,8 @@
     ]
   },
   "dependencies": {
+    "@beaver-im/js-sdk": "^1.0.0",
+    "@koa/router": "^12.0.2",
     "@modelcontextprotocol/sdk": "1.24.3",
     "@rollup/plugin-commonjs": "^28.0.1",
     "@rollup/plugin-node-resolve": "^15.3.0",
@@ -84,7 +92,11 @@
     "electron-updater": "^6.3.9",
     "express": "^5.2.1",
     "extract-zip": "^2.0.1",
+    "koa": "^2.16.4",
+    "koa-bodyparser": "^4.4.1",
+    "koa-cors": "^0.0.16",
     "livekit-client": "^2.17.1",
+    "marked": "^18.0.4",
     "node-machine-id": "^1.1.12",
     "sql.js": "^1.13.0",
     "uuid": "^11.1.0",
@@ -92,10 +104,16 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.16.1",
+    "@koa/cors": "^5.0.0",
     "@types/cors": "^2.8.19",
     "@types/crypto-js": "^4.2.2",
     "@types/express": "^5.0.6",
     "@types/ini": "^4.1.1",
+    "@types/koa": "^3.0.3",
+    "@types/koa__cors": "^5.0.1",
+    "@types/koa__router": "^12.0.5",
+    "@types/koa-bodyparser": "^4.3.13",
+    "@types/koa-router": "^7.4.9",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^20.14.11",
     "@types/postcss-pxtorem": "^6.1.0",

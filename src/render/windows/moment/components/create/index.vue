@@ -70,7 +70,6 @@
 <script lang="ts">
 import type { ICreateMomentReq } from 'commonModule/type/ajax/moment'
 import type { UploadResult } from 'renderModule/utils/upload'
-import { previewOnlineFileApi } from 'renderModule/api/file'
 import { createMomentApi } from 'renderModule/api/moment'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -168,8 +167,8 @@ export default defineComponent({
         await electron.window.openWindow('image', {
           unique: true,
           params: {
-            url: previewOnlineFileApi(file.fileKey),
-            list: mediaFiles.value.map(f => previewOnlineFileApi(f.fileKey)),
+            url: file.fileKey,
+            list: mediaFiles.value.map(f => f.fileKey),
             index: currentIndex,
           },
         })
@@ -399,8 +398,10 @@ export default defineComponent({
 
 .publish-media-section {
   .media-grid {
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(9, 60px);
+    gap: 8px;
+    justify-content: start;
   }
 
   .media-item {

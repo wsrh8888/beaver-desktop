@@ -1,5 +1,5 @@
 import path from 'node:path'
-import { app, session } from 'electron'
+import { app, globalShortcut } from 'electron'
 
 // 支持分配不同的本地缓存目录，用于多开测试
 if (process.env.APP_PROFILE) {
@@ -15,6 +15,15 @@ if (process.env.USE_FAKE_MEDIA === 'true') {
   console.log('检测到 USE_FAKE_MEDIA，已启用模拟媒体设备')
 }
 
+// 注册自定义协议（用于 OAuth 回调）
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('beaver', process.execPath, [path.resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient('beaver')
+}
+
 import logger from 'mainModule/utils/log'
 import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
 import trayHandler from './application/tray'
@@ -25,7 +34,7 @@ import authHandler from './ipc/render-to-main/auth'
 import messageManager from './message-manager'
 import { store } from './store'
 import { mcpManager } from './mcp-manager/index.js'
-
+import localServer from './server'
 // 屏蔽安全警告
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
 
@@ -55,14 +64,8 @@ class Main {
   async onAppReady() {
     await app.whenReady()
 
-    // 默认允许媒体权限（摄像头、麦克风），避免环境差异导致的权限弹窗或拦截
-    session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
-      if (permission === 'media') {
-        return callback(true)
-      }
-      callback(false)
-    })
-
+    // 启动本地 HTTP 服务（用于第三方网页检测登录状态）
+   
     if (store.get('userInfo')?.token) {
       // 初始化登录状态
       authHandler.handleLogin()
@@ -73,10 +76,18 @@ class Main {
     // IPC已在beforeAppReady中初始化，这里不需要重复初始化
     // ipcBase.init()
 
+     try {
+      await localServer.start()
+    } catch (error: any) {
+      logger.error({ text: `本地服务启动失败: ${error.message}` })
+    }
+
+    
     mcpManager.init()
   }
 
   setupEventListeners() {
+
     app.on('window-all-closed', () => {
       if (process.platform !== 'darwin') {
         app.quit()
@@ -89,6 +100,9 @@ class Main {
           trayHandler.destroy()
         }
       })
+    })
+    app.on('will-quit', () => {
+      globalShortcut.unregisterAll()
     })
   }
 
@@ -114,6 +128,7 @@ class Main {
     const customIdentifier = generateUserAgentIdentifier()
     app.userAgentFallback = `${app.userAgentFallback || ''} ${customIdentifier}`.trim()
   }
+
 
   beforeAppReady() {
     messageManager.init()

@@ -32,6 +32,7 @@ export enum DataChatCommand {
   GET_CHAT_MESSAGES_BY_SEQ_RANGE = 'chat:getChatMessagesBySeqRange',
   GET_CHAT_CONVERSATIONS_BY_VER_RANGE = 'chat:getChatConversationsByVerRange',
   DELETE_MESSAGES = 'chat:deleteMessages',
+  GET_MESSAGE_MEDIA_IDS = 'chat:getMessageMediaIds',
 }
 
 export enum DataEmojiCommand {
@@ -44,6 +45,7 @@ export enum DataEmojiCommand {
 export enum DataNotificationCommand {
   GET_EVENTS_BY_IDS = 'notification:getEventsByIds',
   GET_INBOX_BY_IDS = 'notification:getInboxByIds',
+  GET_INBOX_BY_CATEGORY = 'notification:getInboxByCategory',
   GET_READ_CURSORS = 'notification:getReadCursors',
   GET_UNREAD_SUMMARY = 'notification:getUnreadSummary',
 }

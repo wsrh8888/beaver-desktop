@@ -54,7 +54,7 @@ export const getEmojisByIdsApi = (data: { ids: string[] }) => {
   return ajax({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/emoji/getEmojisByUuids`,
+    url: `${getBaseUrl()}/api/emoji/v1/getEmojisByUuids`,
   })
 }
 
@@ -63,7 +63,7 @@ export const getEmojiCollectsByIdsApi = (data: { ids: string[] }) => {
   return ajax<EmojiCollectsResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/emoji/collects-by-ids`,
+    url: `${getBaseUrl()}/api/emoji/v1/collects-by-ids`,
   })
 }
 
@@ -72,7 +72,7 @@ export const getEmojiPackageCollectsByIdsApi = (data: { ids: string[] }) => {
   return ajax<EmojiPackageCollectsResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/emoji/package-collects-by-ids`,
+    url: `${getBaseUrl()}/api/emoji/v1/package-collects-by-ids`,
   })
 }
 
@@ -81,7 +81,7 @@ export const getEmojiPackagesByIdsApi = (data: { ids: string[] }) => {
   return ajax<EmojiPackagesResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/emoji/packages-by-ids`,
+    url: `${getBaseUrl()}/api/emoji/v1/packages-by-ids`,
   })
 }
 
@@ -90,7 +90,7 @@ export const getEmojiPackageContentsByPackageIdsApi = (data: { packageIds: strin
   return ajax<EmojiPackageContentsResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/emoji/package-contents-by-package-ids`,
+    url: `${getBaseUrl()}/api/emoji/v1/package-contents-by-package-ids`,
   })
 }
 
@@ -99,6 +99,6 @@ export const getEmojiPackageContentsByRelationIdsApi = (data: { relationIds: str
   return ajax<EmojiPackageContentsResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/emoji/package-contents-by-relation-ids`,
+    url: `${getBaseUrl()}/api/emoji/v1/package-contents-by-relation-ids`,
   })
 }

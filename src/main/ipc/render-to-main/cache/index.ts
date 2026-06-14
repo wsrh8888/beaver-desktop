@@ -2,6 +2,7 @@ import { CacheCommand } from 'commonModule/type/ipc/command'
 import cacheManager from 'mainModule/cache'
 // import { FileCacheManager } from 'mainModule/cache/manager'
 import logger from 'mainModule/utils/log'
+import { shell } from 'electron'
 
 /**
  * 缓存IPC处理器 - 清晰的方法分离
@@ -17,6 +18,14 @@ class CacheHandler {
           return await cacheManager.get(data.type, data.fileKey)
         case CacheCommand.SET:
           return await cacheManager.add(data.type, data.fileKey)
+        case CacheCommand.OPEN: {
+          const localPath = await cacheManager.add(data.type, data.fileKey)
+          if (!localPath) {
+            return null
+          }
+          await shell.openPath(localPath)
+          return localPath
+        }
         default:
           logger.error({ text: `缓存处理未知命令: ${command}` }, 'CacheHandler')
           return null

@@ -71,3 +71,12 @@ export interface IDBChatSyncStatus {
   createdAt?: number
   updatedAt?: number
 }
+
+// 消息媒体状态表（语音已听等）
+export interface IDBChatMessageMedia {
+  id?: number
+  userId: string
+  messageId: string
+  version?: number
+  createdAt?: number
+}

@@ -3,12 +3,17 @@ import type {
   IEmailLoginRes,
   IEmailPasswordLoginReq,
   IEmailPasswordLoginRes,
+  IOAuthCodeLoginReq,
+  IOAuthCodeLoginRes,
   IEmailRegisterReq,
   IEmailRegisterRes,
+  IGetDevicesRes,
   IGetEmailCodeReq,
   IGetEmailCodeRes,
   IGetPhoneCodeReq,
   IGetPhoneCodeRes,
+  IKickDeviceReq,
+  IKickDeviceRes,
   ILogoutReq,
   ILogoutRes,
   IPhoneLoginReq,
@@ -17,6 +22,8 @@ import type {
   IPhoneRegisterRes,
   IResetPasswordReq,
   IResetPasswordRes,
+  IUpdatePasswordReq,
+  IUpdatePasswordRes,
 } from 'commonModule/type/ajax/auth'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -28,7 +35,7 @@ export const phoneLoginApi = (data: IPhoneLoginReq) => {
   return ajax<IPhoneLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/phone_login`,
+    url: `${baseUrl}/api/auth/auth_public/v1/phone_login`,
   })
 }
 
@@ -39,7 +46,18 @@ export const emailPasswordLoginApi = (data: IEmailPasswordLoginReq) => {
   return ajax<IEmailPasswordLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/email_password_login`,
+    url: `${baseUrl}/api/auth/auth_public/v1/email_password_login`,
+  })
+}
+
+/**
+ * @description: OAuth 授权码登录（SDK 登录成功后换取 IM Token）
+ */
+export const oauthCodeLoginApi = (data: IOAuthCodeLoginReq) => {
+  return ajax<IOAuthCodeLoginRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/auth/auth_public/v1/oauth_code_login`,
   })
 }
 
@@ -49,7 +67,7 @@ export const emailPasswordLoginApi = (data: IEmailPasswordLoginReq) => {
 export const authenticationApi = () => {
   return ajax({
     method: 'GET',
-    url: `${baseUrl}/api/auth/authentication`,
+    url: `${baseUrl}/api/auth/auth_public/v1/authentication`,
   })
 }
 
@@ -60,7 +78,7 @@ export const phoneRegisterApi = (data: IPhoneRegisterReq) => {
   return ajax<IPhoneRegisterRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/phone_register`,
+    url: `${baseUrl}/api/auth/auth_public/v1/phone_register`,
   })
 }
 
@@ -71,7 +89,7 @@ export const emailRegisterApi = (data: IEmailRegisterReq) => {
   return ajax<IEmailRegisterRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/email_register`,
+    url: `${baseUrl}/api/auth/auth_public/v1/email_register`,
   })
 }
 
@@ -82,7 +100,7 @@ export const logoutApi = (data: ILogoutReq) => {
   return ajax<ILogoutRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/logout`,
+    url: `${baseUrl}/api/auth/auth/v1/logout`,
   })
 }
 
@@ -93,7 +111,7 @@ export const getPhoneCodeApi = (data: IGetPhoneCodeReq) => {
   return ajax<IGetPhoneCodeRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/phonecode`,
+    url: `${baseUrl}/api/auth/auth_public/v1/phonecode`,
   })
 }
 
@@ -104,7 +122,7 @@ export const getEmailCodeApi = (data: IGetEmailCodeReq) => {
   return ajax<IGetEmailCodeRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/emailcode`,
+    url: `${baseUrl}/api/auth/auth_public/v1/emailcode`,
   })
 }
 
@@ -115,7 +133,7 @@ export const emailLoginApi = (data: IEmailLoginReq) => {
   return ajax<IEmailLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/email_login`,
+    url: `${baseUrl}/api/auth/auth_public/v1/email_login`,
   })
 }
 
@@ -126,6 +144,38 @@ export const resetPasswordApi = (data: IResetPasswordReq) => {
   return ajax<IResetPasswordRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/reset_password`,
+    url: `${baseUrl}/api/auth/auth_public/v1/reset_password`,
+  })
+}
+
+/**
+ * @description: 修改密码
+ */
+export const updatePasswordApi = (data: IUpdatePasswordReq) => {
+  return ajax<IUpdatePasswordRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/auth/auth/v1/update_password`,
+  })
+}
+
+/**
+ * @description: 获取登录设备列表
+ */
+export const getDevicesApi = () => {
+  return ajax<IGetDevicesRes>({
+    method: 'GET',
+    url: `${baseUrl}/api/auth/auth/v1/devices`,
+  })
+}
+
+/**
+ * @description: 踢下线指定设备
+ */
+export const kickDeviceApi = (data: IKickDeviceReq) => {
+  return ajax<IKickDeviceRes>({
+    method: 'POST',
+    data,
+    url: `${baseUrl}/api/auth/auth/v1/kick_device`,
   })
 }

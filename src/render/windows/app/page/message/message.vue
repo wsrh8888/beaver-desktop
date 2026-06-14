@@ -5,8 +5,8 @@
     </div>
     <div v-show="currentChatId" class="message__right">
       <ChatHeaderComponent @show-details="handleShowDetails" />
-      <ChatContentComponent @re-edit="handleReEdit" />
-      <ChatMenusComponent ref="menusRef" />
+      <ChatContentComponent />
+      <ChatMenusComponent />
     </div>
 
     <!-- 各种详情组件放在外层，因为使用了fixed定位 -->
@@ -19,15 +19,19 @@
 
     <!-- 合并转发详情 (由 store 控制显示) -->
     <MergedForwardViewer />
+
+    <!-- 群助手弹窗（全局层，由 pinia 控制） -->
+    <GroupAssistantOverlay />
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
 import { useMessageViewStore } from '../../pinia/view/message'
-import GroupDetailsComponent from './detail-components/GroupDetails.vue'
+import GroupDetailsComponent from './detail-components/groupDetails/index.vue'
 import PrivateDetailsComponent from './detail-components/PrivateDetails.vue'
 import MergedForwardViewer from './detail-components/MergedForwardViewer.vue'
+import GroupAssistantOverlay from './detail-components/groupAssistant/index.vue'
 import MessageLeftComponent from './left-components/MessageLeft.vue'
 import ChatMenusComponent from './right-component/bottom/ChatMenus.vue'
 import ChatContentComponent from './right-component/content/content.vue'
@@ -44,13 +48,13 @@ export default defineComponent({
     GroupDetailsComponent,
     PrivateDetailsComponent,
     MergedForwardViewer,
+    GroupAssistantOverlay,
   },
   setup() {
     // 当前显示的详情类型
     type DetailType = 'private' | 'group' | 'ai'
     const currentDetailType = ref<DetailType | null>(null)
     const messageViewStore = useMessageViewStore()
-    const menusRef = ref<any>(null)
 
     // 统一处理显示详情
     const handleShowDetails = (type: DetailType) => {
@@ -66,17 +70,11 @@ export default defineComponent({
       currentDetailType.value = null
     }
 
-    const handleReEdit = (text: string) => {
-      menusRef.value?.setEditorContent(text)
-    }
-
     return {
       currentChatId,
       currentDetailType,
       handleShowDetails,
       hideDetails,
-      menusRef,
-      handleReEdit,
     }
   },
 })

@@ -14,6 +14,8 @@ import { storageModule } from './core/storage'
 import { updateModule } from './core/update'
 import { websocketModule } from './core/websocket'
 import { windowModule } from './core/window'
+import { keyboardModule } from './core/keyboard'
+import { settingsModule } from './core/settings'
 import { callModule } from './core/call'
 
 // Define the new electron API structure
@@ -21,6 +23,8 @@ const electronAPI: ElectronAPP = {
   logger: loggerModule,
   window: windowModule,
   call: callModule,
+  keyboard: keyboardModule,
+  settings: settingsModule,
   app: appModule,
   clipboard: clipboardModule,
   storage: storageModule,

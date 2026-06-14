@@ -42,10 +42,10 @@ export interface ITextMessage {
 }
 
 export interface IImageMessage {
-  fileName: string // 图片文件ID
-  width?: number // 图片宽度（可选）
-  height?: number // 图片高度（可选）
-  size?: number // 文件大小（字节，可选）
+  fileUrl: string
+  width?: number
+  height?: number
+  size?: number
 }
 
 export interface IMessage {
@@ -64,49 +64,48 @@ export interface IMessage {
   callMsg?: ICallMessage | null | undefined
 }
 
-// 视频消息
 export interface IVideoMessage {
-  fileName: string // 视频文件ID
-  width?: number // 视频宽度（可选）
-  height?: number // 视频高度（可选）
-  duration?: number // 视频时长（秒，可选）
-  thumbnailKey?: string // 视频封面图文件ID（可选）
-  size?: number // 文件大小（字节，可选）
+  fileUrl: string
+  width?: number
+  height?: number
+  duration?: number
+  thumbnailUrl?: string
+  size?: number
 }
 
 // 文件消息
 export interface IFileMessage {
-  fileName: string // 文件ID
-  fileKey?: string // 文件ID（兼容字段）
-  size?: number // 文件大小（字节，可选）
-  mimeType?: string // MIME类型（可选，如 application/pdf）
+  fileUrl: string
+  fileName?: string
+  size?: number
+  mimeType?: string
 }
 
 // 语音消息（移动端录制的短语音）
 export interface IVoiceMessage {
-  fileName: string // 语音文件ID
-  duration?: number // 语音时长（秒，可选）
-  size?: number // 文件大小（字节，可选）
+  fileUrl: string
+  duration?: number
+  size?: number
 }
 
 // 音频文件消息（用户上传的音频文件）
 export interface IAudioFileMessage {
-  fileName: string // 音频文件ID
-  fileKey?: string // 文件ID（兼容字段）
-  duration?: number // 音频时长（秒，可选）
-  size?: number // 文件大小（字节，可选）
+  fileUrl: string
+  fileName?: string
+  duration?: number
+  size?: number
 }
 
 // 表情消息
 export interface IEmojiMessage {
-  fileName: string // 表情图片文件ID
-  emojiId: number // 表情ID
-  packageId: number // 表情包ID
+  fileUrl: string
+  emojiId: number
+  packageId: number
 }
 
 // 通知消息（会话内的通知，如：xxx加入了群聊、xxx创建了群等）
 export interface INotificationMessage {
-  type: number // 通知类型：1=好友欢迎 2=创建群 3=加入群 4=退出群 5=踢出成员 6=转让群主等
+  type: number // 通知类型：1=好友欢迎 2=创建群 3=加入群 4=退出群 5=踢出成员 6=转让群主 7=添加群机器人 8=移除群机器人
   actors: string[] // 相关用户ID列表
 }
 
@@ -128,7 +127,7 @@ export interface IForwardMessage {
 // 撤回消息
 export interface IWithdrawMessage {
   originMsgId: string
-  originMsg?: IMessage | null // 被撤回的消息内容快照（用于重新编辑）
+  originMsg?: IMessage | null // 被撤回的消息内容快照
 }
 
 // 通话消息
@@ -187,6 +186,7 @@ export interface ISender {
   userId: string
   avatar: string
   nickName: string
+  userType: number // 1普通用户 2bot 3robot
 }
 
 // 会话信息请求
@@ -326,20 +326,6 @@ export interface IPinnedChatRes {
   message: string
 }
 
-// 编辑消息请求
-export interface IEditMessageReq {
-  messageId: string // 客户端消息ID
-  content: string // 新的消息内容
-}
-
-// 编辑消息响应
-export interface IEditMessageRes {
-  id: number // 数据库自增ID
-  messageId: string // 客户端消息ID
-  content: string // 编辑后的内容
-  editTime: string // 编辑时间
-}
-
 // 撤回消息请求
 export interface IRecallMessageReq {
   messageId: string // 客户端消息ID
@@ -379,6 +365,7 @@ export interface IChatHistory {
   sender: ISender // 发送者信息
   created_at: string // 创建时间
   sendStatus?: MessageStatus // 发送状态（本地发送状态）
+  status?: number // 消息状态 1:正常 2:已撤回 3:已编辑
 }
 
 // 聊天数据同步请求
@@ -533,3 +520,11 @@ export interface IHideChatReq {
 
 // 隐藏会话响应
 export interface IHideChatRes { }
+
+// 标记消息媒体状态请求（如语音已播放）
+export interface IMarkMessageMediaReq {
+  messageIds: string[]
+}
+
+// 标记消息媒体状态响应
+export interface IMarkMessageMediaRes { }

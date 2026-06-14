@@ -1,7 +1,9 @@
 import type { IDBNotificationReadCursor } from 'commonModule/type/database/db/notification'
+import { NotificationModule, NotificationNotificationCommand } from 'commonModule/type/preload/notification'
 import type { QueueItem } from '../base/base'
 import dBServiceNotificationReadCursor  from 'mainModule/database/services/notification/read-cursor'
 import { getNotificationReadCursorsApi } from 'mainModule/api/notification'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 import Logger from 'mainModule/utils/logger'
 
@@ -133,6 +135,9 @@ class NotificationReadCursorBusiness extends BaseBusiness<NotificationReadCursor
           // 更新本地数据库
           await this.batchUpsertCursors(cursorRows)
           logger.info({ text: `通知已读游标同步成功: userId=${userId}, count=${response.result.cursors.length}` })
+          sendMainNotification('*', NotificationModule.DATABASE_NOTIFICATION, NotificationNotificationCommand.READ_CURSOR_UPDATE, {
+            source: 'business',
+          })
         } else {
           logger.info({ text: '通知已读游标同步完成: noUpdates=true' })
         }

@@ -1,4 +1,5 @@
 import MomentEventManager from './moment'
+import MomentInboxNotificationManager from './inbox'
 
 /**
  * @description: 事件中心
@@ -6,10 +7,12 @@ import MomentEventManager from './moment'
 class NotificationManager {
   init() {
     MomentEventManager.init()
+    MomentInboxNotificationManager.init()
   }
 
   off() {
     MomentEventManager.off()
+    MomentInboxNotificationManager.off()
   }
 }
 

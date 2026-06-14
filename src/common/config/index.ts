@@ -3,15 +3,18 @@ import type { IConfig, IConfigs } from '../type/config'
 const config: IConfigs = {
   dev: {
     baseUrl: 'http://127.0.0.1:20800',
-    wsUrl: 'http://127.0.0.1:20800/api/ws/ws',
+    openAppId: 'app_2db39e38',
+    env: 'dev',
   },
   test: {
     baseUrl: 'https://server-test.wsrh8888.com/beaver',
-    wsUrl: 'https://serverr-test.wsrh8888.com/beaver/api/ws/ws',
+    openAppId: 'app_2db39e38',
+    env: 'test',
   },
   prod: {
     baseUrl: 'https://server.wsrh8888.com/beaver',
-    wsUrl: 'https://server.wsrh8888.com/beaver/api/ws/ws',
+    openAppId: 'app_2db39e38',
+    env: 'prod',
   },
 }
 
@@ -35,12 +38,13 @@ function getCurrentConfig(): IConfig {
 // 解构配置
 const {
   baseUrl,
-  wsUrl,
+  openAppId,
 } = getCurrentConfig()
 export const getBaseUrl = () => getCurrentConfig().baseUrl
+export const getOpenAppId = () => getCurrentConfig().openAppId
 
 export {
   baseUrl,
+  openAppId,
   getCurrentConfig,
-  wsUrl,
 }
