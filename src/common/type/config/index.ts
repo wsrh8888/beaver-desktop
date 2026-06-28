@@ -12,6 +12,8 @@ export interface IConfig {
   baseUrl: string
   openAppId: string
   env: string
+  /** 原始日志 Bucket，对应 log */
+  logId: string
 }
 
 export interface IConfigs {
