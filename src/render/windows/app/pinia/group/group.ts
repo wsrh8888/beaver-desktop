@@ -103,14 +103,23 @@ export const useGroupStore = defineStore('groupStore', {
         // 通过electron.database批量获取指定的群组信息
         const result = await electron.database.group.getGroupsBatch({ groupIds })
 
-        // 更新group store
+        // 更新 group store（已解散群不会出现在 batch 结果中）
         for (const group of result.list) {
           this.upsertGroup({
             conversationId: group.conversationId,
+            groupId: group.groupId,
             title: group.title,
             avatar: group.avatar,
             version: group.version,
           } as any)
+        }
+
+        // 未返回的 groupId 说明成员关系失效或群已解散，从列表移除
+        const activeIds = new Set(result.list.map(g => g.groupId))
+        for (const groupId of groupIds) {
+          if (!activeIds.has(groupId)) {
+            this.removeGroup(groupId)
+          }
         }
 
         return result.list
@@ -122,10 +131,13 @@ export const useGroupStore = defineStore('groupStore', {
     },
 
     /**
-     * @description: 移除群组
+     * @description: 移除群组（支持 groupId 或 conversationId）
      */
-    removeGroup(groupId: string) {
-      this._groupList = this._groupList.filter(group => group.conversationId !== groupId)
+    removeGroup(groupIdOrConversationId: string) {
+      const conversationId = groupIdOrConversationId.startsWith('group_')
+        ? groupIdOrConversationId
+        : `group_${groupIdOrConversationId}`
+      this._groupList = this._groupList.filter(group => group.conversationId !== conversationId)
     },
   },
 })

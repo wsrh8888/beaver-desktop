@@ -80,6 +80,10 @@ export interface IDatabaseModule {
      * 获取已标记媒体状态的消息ID列表
      */
     getMessageMediaIds(): Promise<{ messageIds: string[] }>
+    /**
+     * 从本地列表隐藏会话
+     */
+    hideConversation(params: { conversationId: string }): Promise<{ success: boolean }>
   }
   group: {
     getGroupList(params: IGetGroupListReq): Promise<IGroupListRes>

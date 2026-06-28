@@ -87,7 +87,7 @@ class GroupSync {
         avatar: group.avatar, // 头像文件名
         creatorId: group.creatorId,
         joinType: group.joinType,
-        status: group.isDeleted ? 0 : 1,
+        status: group.status ?? 1, // 1正常 2冻结 3解散
         version: group.version,
         createdAt: group.createdAt,
         updatedAt: group.updatedAt,
@@ -105,6 +105,7 @@ class GroupSync {
         updatedGroups: localGroups.map(group => ({
           groupId: group.groupId,
           version: group.version,
+          status: group.status,
         })),
       })
     }

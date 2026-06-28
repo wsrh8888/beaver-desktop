@@ -256,6 +256,17 @@ export const useConversationStore = defineStore('useConversationStore', {
     },
 
     /**
+     * @description: 从本地列表移除会话（隐藏 user_conversation）
+     */
+    async removeLocalConversation(conversationId: string) {
+      await electron.database.chat.hideConversation({ conversationId })
+      this.conversations = this.conversations.filter(
+        conv => conv.conversationId !== conversationId,
+      )
+      electron.notification.deleteTrayItem(conversationId)
+    },
+
+    /**
      * @description: 标记会话为已读（本地立即更新 + API同步）
      */
     async markConversationAsRead(conversationId: string) {

@@ -33,6 +33,7 @@ export enum DataChatCommand {
   GET_CHAT_CONVERSATIONS_BY_VER_RANGE = 'chat:getChatConversationsByVerRange',
   DELETE_MESSAGES = 'chat:deleteMessages',
   GET_MESSAGE_MEDIA_IDS = 'chat:getMessageMediaIds',
+  HIDE_CONVERSATION = 'chat:hideConversation',
 }
 
 export enum DataEmojiCommand {

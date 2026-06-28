@@ -61,6 +61,7 @@ import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
+import { tryOpenConversation } from 'renderModule/utils/chat/openConversation'
 import { computed, defineComponent, ref } from 'vue'
 
 export default defineComponent({
@@ -100,11 +101,15 @@ export default defineComponent({
     })
 
     // 处理点击事件
-    const handleItemClick = (chat: any, isExpandBtn: boolean = false) => {
+    const handleItemClick = async (chat: any, isExpandBtn: boolean = false) => {
       if (isExpandBtn) {
         isExpanded.value = true
       }
       else if (chat.conversationId !== 'expand') {
+        const canOpen = await tryOpenConversation(chat.conversationId)
+        if (!canOpen) {
+          return
+        }
         messageViewStore.setCurrentChat(chat.conversationId)
       }
     }
