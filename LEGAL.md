@@ -8,15 +8,7 @@
 
 ### 📋 重要法律声明
 
-**Beaver IM** 是一个开源的即时通讯平台，支持**学习、交流和商业使用**。
-
-### ✅ 允许用途
-
-- ✅ **个人学习** - 技术学习、研究和交流
-- ✅ **个人商业** - 个人开发者、创业者商业应用
-- ✅ **企业商业** - 公司/企业级商业应用和部署
-- ✅ **二次开发** - 基于本项目进行功能扩展和定制
-- ✅ **技术集成** - 集成到其他产品和服务中
+**Beaver IM** 是一个开源的即时通讯平台，主要用于**技术学习和交流**，支持个人学习和个人商业使用。
 
 ### 🚫 禁止用途
 
@@ -43,32 +35,43 @@
    - 使用者应获得相关方的明确授权
 
 3. **合规要求**
+   - **公司或企业级商业应用必须事先获得明确授权**
+   - 个人学习和个人商业使用无需授权
    - 必须遵守数据保护法规（如GDPR、个人信息保护法等）
    - 确保用户隐私和数据安全
-   - 建立适当的数据保护和隐私政策
 
-### 🛡️ 安全使用建议
+### 🛡️ 合规建议
 
-#### 商业应用建议
-- 🔒 实施数据保护和加密措施
-- 📞 建立合规的客服和支持体系
-- 📊 定期进行安全审计和更新
-- 📋 制定用户协议和隐私政策
-- ⚖️ 遵守当地法律法规和行业标准
+#### 企业使用
+- 📋 **必须事先获得明确授权**
+- 🔒 实施数据保护措施
+- 📞 建立合规的客服体系
+- 📊 定期进行安全审计
 
-#### 技术安全建议
-- 🔐 使用HTTPS/TLS加密通信
-- 🛡️ 实施适当的访问控制
-- 📝 记录安全事件日志
-- 🔄 及时更新和修补安全漏洞
+#### 个人使用
+- ✅ 个人学习和个人商业使用无需授权
+- 🔐 保护个人隐私
+- 📱 遵守平台使用条款
+- ⚠️ 发现违法行为及时举报
 
-### ⚠ 免责声明
 
-**本项目仅供学习与交流使用，禁止用于任何违法、犯罪及侵犯他人合法权益的行为。使用过程中请遵守相关法律法规，因违规或非法用途造成的任何后果，责任由使用者自行承担。**
 
-### ❤️ 倡导
+### 📋 项目来源标注要求
 
-**热爱祖国、遵纪守法，珍惜和享受美好生活，让技术为社会带来更多积极的价值。**
+**重要**：如果您基于本项目进行二次开发或发布，**必须**在项目中保留以下信息：
+
+#### 🖥️ **前端项目（移动端/桌面端/Web应用）**
+- **关于页面**：必须在"关于我们"、"关于应用"或类似页面中包含项目来源标注
+- **必需文本**："基于 [Beaver IM](https://github.com/wsrh8888/beaver-server) 开源IM项目开发"
+- **链接**：必须提供可点击的原始项目链接
+
+#### 🔧 **后端项目（服务器/API服务）**
+- **README.md**：必须在项目介绍或描述中包含来源标注
+- **必需文本**："基于 [Beaver IM](https://github.com/wsrh8888/beaver-server) 开源IM项目开发"
+- **链接**：必须提供可点击的原始项目链接
+
+#### 📄 **通用要求**
+- **LICENSE 文件**：保留原项目 MIT 协议信息
 
 ### 📞 举报机制
 
@@ -84,15 +87,7 @@
 
 ### 📋 Important Legal Notice
 
-**Beaver IM** is an open-source instant messaging platform that supports **learning, communication, and commercial use**.
-
-### ✅ Permitted Uses
-
-- ✅ **Personal Learning** - Technical learning, research, and communication
-- ✅ **Personal Commercial** - Individual developers and entrepreneurs commercial applications
-- ✅ **Enterprise Commercial** - Company/enterprise-level commercial applications and deployment
-- ✅ **Secondary Development** - Feature extension and customization based on this project
-- ✅ **Technical Integration** - Integration into other products and services
+**Beaver IM** is an open-source instant messaging platform primarily designed for **technical learning and communication**, supporting both personal learning and personal commercial use.
 
 ### 🚫 Prohibited Uses
 
@@ -119,32 +114,41 @@ The following uses are strictly prohibited:
    - Users must obtain explicit authorization from relevant parties
 
 3. **Compliance Requirements**
+   - **Company or enterprise-level commercial applications require explicit authorization**
+   - Personal learning and personal commercial use require no authorization
    - Must comply with data protection regulations (GDPR, CCPA, etc.)
    - Ensure user privacy and data security
-   - Establish appropriate data protection and privacy policies
 
-### 🛡️ Safe Usage Recommendations
+### 🛡️ Compliance Recommendations
 
-#### Commercial Application Recommendations
-- 🔒 Implement data protection and encryption measures
-- 📞 Establish compliant customer service and support systems
-- 📊 Conduct regular security audits and updates
-- 📋 Develop user agreements and privacy policies
-- ⚖️ Comply with local laws and industry standards
+#### Enterprise Use
+- 📋 **Explicit authorization required**
+- 🔒 Implement data protection measures
+- 📞 Establish compliant customer service systems
+- 📊 Conduct regular security audits
 
-#### Technical Security Recommendations
-- 🔐 Use HTTPS/TLS encrypted communications
-- 🛡️ Implement appropriate access controls
-- 📝 Record security event logs
-- 🔄 Update and patch security vulnerabilities promptly
+#### Personal Use
+- ✅ Personal learning and personal commercial use require no authorization
+- 🔐 Protect personal privacy
+- 📱 Comply with platform terms of service
+- ⚠️ Report illegal activities promptly
 
-### ⚠ Disclaimer
+### 📋 Project Attribution Requirements
 
-**This project is intended for learning and communication purposes only, and is prohibited for any illegal, criminal, or activities that infringe upon the legitimate rights of others. Please comply with relevant laws and regulations during use. Users shall bear sole responsibility for any consequences arising from violations or illegal uses.**
+**Important**: If you develop or publish based on this project, you **must** retain the following information:
 
-### ❤️ Advocacy
+#### 🖥️ **Frontend Projects (Mobile/Desktop/Web Applications)**
+- **About page**: Must include project attribution in "About Us" or "About App" pages
+- **Required text**: "Based on [Beaver IM](https://github.com/wsrh8888/beaver-server) open-source IM project"
+- **Link**: Must provide a clickable original project link
 
-**Love your country, abide by laws and regulations, cherish and enjoy a better life, and let technology bring more positive value to society.**
+#### 🔧 **Backend Projects (Server/API Services)**
+- **README.md**: Must include attribution in project description or introduction
+- **Required text**: "Based on [Beaver IM](https://github.com/wsrh8888/beaver-server) open-source IM project"
+- **Link**: Must provide a clickable original project link
+
+#### 📄 **General Requirements**
+- **LICENSE file**: Retain the original project MIT license information
 
 ### 📞 Reporting Mechanism
 
@@ -166,4 +170,4 @@ If illegal usage is discovered:
 
 **最后更新 / Last Updated**: 2025-01-27
 
-**联系方式 / Contact**: [751135385@qq.com](mailto:751135385@qq.com)
+**联系方式 / Contact**: [751135385@qq.com](mailto:751135385@qq.com) 
