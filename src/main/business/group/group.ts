@@ -11,6 +11,9 @@ import dBServiceUser  from 'mainModule/database/services/user/user'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
+/** 群状态：1正常 2冻结 3解散 */
+const GROUP_STATUS_ACTIVE = 1
+
 /**
  * 群组同步队列项
  */
@@ -64,17 +67,19 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     // 业务逻辑：提取群组ID列表
     const groupIds = humanMemberships.map((membership) => membership.groupId)
 
-    // 业务逻辑：获取这些群组的详细信息
+    // 业务逻辑：获取这些群组的详细信息，仅返回有效群（未解散/未冻结）
     const groupDetails = await dbServiceGroup.getGroupsByIds(groupIds)
+    const activeGroups = groupDetails.filter((group: any) => group.status === GROUP_STATUS_ACTIVE)
 
     // 业务逻辑：组装返回数据
-    const list = groupDetails.map((group: any) => {
+    const list = activeGroups.map((group: any) => {
       return {
         groupId: group.groupId,
         title: group.title || '',
         avatar: group.avatar || '',
         conversationId: `group_${group.groupId}`, // conversationId格式：group_${groupId}
         version: group.version || 0,
+        status: group.status || GROUP_STATUS_ACTIVE,
       }
     })
 
@@ -85,31 +90,36 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
   }
 
   /**
-   * 批量获取多个群组的详细信息
+   * 批量获取多个群组的详细信息（与 getGroupList 相同过滤规则）
    */
-  async getGroupsBatch(_header: ICommonHeader, params: IGetGroupsBatchReq): Promise<IGroupListRes> {
+  async getGroupsBatch(header: ICommonHeader, params: IGetGroupsBatchReq): Promise<IGroupListRes> {
+    const { userId } = header
     const { groupIds } = params
 
-    // 调用服务层批量获取群组信息
-    const groups = await dbServiceGroup.getGroupsByIds(groupIds)
-
-    // 业务逻辑：获取每个群组的成员数量
-    const memberCounts = new Map<string, number>()
-    for (const groupId of groupIds) {
-      const members = await dBServiceGroupMember.getGroupMembers({ groupId })
-      memberCounts.set(groupId, members.length)
+    if (groupIds.length === 0) {
+      return { list: [], count: 0 }
     }
 
-    // 业务逻辑：组装返回数据
-    const list = groups.map((group: any) => {
-      return {
+    const userMemberships = await dBServiceGroupMember.getUserMemberships({ userId })
+    const activeGroupIds = new Set(userMemberships.map((m: any) => m.groupId))
+    const eligibleGroupIds = groupIds.filter(id => activeGroupIds.has(id))
+
+    if (eligibleGroupIds.length === 0) {
+      return { list: [], count: 0 }
+    }
+
+    const groups = await dbServiceGroup.getGroupsByIds(eligibleGroupIds)
+
+    const list = groups
+      .filter((group: any) => group.status === GROUP_STATUS_ACTIVE)
+      .map((group: any) => ({
         groupId: group.groupId,
         title: group.title || '',
         avatar: group.avatar || '',
-        conversationId: `group_${group.groupId}`, // conversationId格式：group_${groupId}
+        conversationId: `group_${group.groupId}`,
         version: group.version || 0,
-      }
-    })
+        status: group.status || GROUP_STATUS_ACTIVE,
+      }))
 
     return {
       list,
@@ -319,6 +329,7 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
           updatedGroups: response.result.groups.map((group: any) => ({
             groupId: group.groupId,
             version: group.version,
+            status: group.status || GROUP_STATUS_ACTIVE,
           })),
         })
       }

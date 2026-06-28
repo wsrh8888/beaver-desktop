@@ -110,6 +110,12 @@ export const databaseModule: IDatabaseModule = {
         command: DataChatCommand.GET_MESSAGE_MEDIA_IDS,
       })
     },
+    hideConversation: async (params: { conversationId: string }): Promise<{ success: boolean }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.CHAT, {
+        command: DataChatCommand.HIDE_CONVERSATION,
+        data: params,
+      })
+    },
   },
   group: {
     getGroupList: async (params: IGetGroupListReq): Promise<IGroupListRes> => {

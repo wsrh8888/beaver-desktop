@@ -1,5 +1,6 @@
 import Logger from 'renderModule/utils/logger'
 import { useGroupMemberStore } from '../../pinia/group/group-member'
+import { useGroupStore } from '../../pinia/group/group'
 
 const logger = new Logger('DatabaseGroupMemberEventManager')
 
@@ -23,6 +24,8 @@ class DatabaseGroupMemberEventManager {
 
         // 调用group-member store的方法来批量更新群成员信息
         const updatedGroupIds = await groupMemberStore.updateMembersByGroupIds(groupIds as string[])
+
+        await useGroupStore().updateGroupsByIds(groupIds as string[])
 
         logger.info({
           text: `群成员表更新处理完成，重新加载了 ${updatedGroupIds?.length || 0} 个群组的成员信息`,

@@ -170,6 +170,7 @@ import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import MessageBox from 'renderModule/components/ui/messagebox'
+import { removeDissolvedGroupConversation } from 'renderModule/utils/chat/openConversation'
 import { uploadFile } from 'renderModule/utils/upload'
 import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
@@ -345,6 +346,7 @@ export default defineComponent({
         return
       await MessageBox.confirm('确定要退出该群聊吗？', '确认操作')
       await quitGroupApi({ groupId: groupId.value })
+      groupStore.removeGroup(groupId.value)
       Message.success('已退出群聊')
       emit('close')
     }
@@ -354,6 +356,10 @@ export default defineComponent({
         return
       await MessageBox.confirm('确定要解散该群聊吗？此操作不可恢复！', '确认操作')
       await deleteGroupApi({ groupId: groupId.value })
+      groupStore.removeGroup(groupId.value)
+      if (groupInfo.value?.conversationId) {
+        await removeDissolvedGroupConversation(groupInfo.value.conversationId, { showMessage: false })
+      }
       Message.success('已解散群聊')
       emit('close')
     }

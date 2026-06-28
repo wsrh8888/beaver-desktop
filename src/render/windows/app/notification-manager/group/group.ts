@@ -18,10 +18,7 @@ class DatabaseGroupEventManager {
 
       // 处理推送的数据格式
       if (data?.updatedGroups && Array.isArray(data.updatedGroups)) {
-        // 提取群组ID列表
         const groupIds = data.updatedGroups.map((group: any) => group.groupId)
-
-        // 调用group store的方法来批量更新群组信息
         const updatedGroups = await groupStore.updateGroupsByIds(groupIds)
 
         logger.info({

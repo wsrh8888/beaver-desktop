@@ -17,36 +17,36 @@
 
 ## ✨ 核心特性
 
-- 🔐 **安全认证** - 用户注册、登录、密码找回
-- 💬 **即时通讯** - 私聊、群聊支持文本、图片、表情
-- 👥 **社交功能** - 好友管理、二维码添加、好友备注
-- 🖼️ **多媒体支持** - 图片发送、文件传输、屏幕截图
-- 📱 **多端同步** - 与移动端数据实时同步
-- 🔄 **实时通信** - WebSocket 长连接保证消息实时性
-- 🖥️ **原生体验** - 桌面级应用，支持系统托盘
-- 🎨 **现代化UI** - 简洁美观的用户界面
+- 🔐 **账号登录** - 密码登录、扫码登录
+- 💬 **即时通讯** - 私聊/群聊，支持文本、语音、Markdown、图片、视频、表情及转发回复
+- 👥 **群组能力** - 创建群聊、群助手（Webhook 机器人）
+- 🤝 **好友社交** - 好友申请与资料管理、朋友圈发布与互动
+- 📞 **音视频通话** - 私聊/群聊语音视频通话
+- 🖥️ **桌面体验** - 系统托盘、快捷键、区域截图、账号与存储设置
+- 🔄 **实时同步** - WebSocket 长连接，与移动端消息数据保持一致
 
 ## 🛠️ 技术栈
 
-- **Electron** 31.x - 跨平台桌面应用框架
-- **Vue 3** - 渐进式 JavaScript 框架
-- **TypeScript** - 类型安全
-- **Pinia** - 状态管理
-- **SQLite** - 本地数据存储
-- **WebSocket** - 实时通信
+- **Electron** 31 - 跨平台桌面应用
+- **Vue 3** + **Vite** + **TypeScript** - 前端渲染与工程化
+- **Pinia** + **Vue Router** - 状态管理与路由
+- **SQLite** + **Drizzle ORM** - 本地消息与会话存储
+- **WebSocket** - 实时消息推送
+- **LiveKit** - 音视频通话
 
 ## 📱 功能展示
 
 ### 🔐 用户认证
 <div align="center">
-  <img src="./static/desktop/login.jpg" width="300" alt="登录界面"/>
-  <img src="./static/desktop/find-password.jpg" width="300" alt="找回密码"/>
-  <img src="./static/desktop/profile-edit.jpg" width="300" alt="编辑个人资料"/>
+  <img src="./static/desktop/登录-密码登录.png" width="300" alt="密码登录"/>
+  <img src="./static/desktop/登录-扫码登录.png" width="300" alt="扫码登录"/>
 </div>
 
 ### 💬 聊天功能
 <div align="center">
   <img src="./static/desktop/message.png" width="300" alt="消息主界面"/>
+  <img src="./static/desktop/聊天-语音.png" width="300" alt="语音消息"/>
+  <img src="./static/desktop/聊天-markdown.png" width="300" alt="Markdown 消息"/>
   <img src="./static/desktop/private-detail.png" width="300" alt="私聊详情"/>
   <img src="./static/desktop/group-detail.png" width="300" alt="群聊详情"/>
   <img src="./static/desktop/image.png" width="300" alt="图片预览"/>
@@ -59,76 +59,62 @@
   <img src="./static/desktop/call.png" width="300" alt="音视频通话"/>
 </div>
 
-### 👥 社交功能
+### 👥 群聊功能
+<div align="center">
+  <img src="./static/desktop/create-group.png" width="300" alt="创建群聊"/>
+  <img src="./static/desktop/群助手-列表.png" width="300" alt="群助手列表"/>
+  <img src="./static/desktop/群助手-添加群助手.png" width="300" alt="添加群助手"/>
+</div>
+
+### 👥 好友管理
 <div align="center">
   <img src="./static/desktop/friend-list.png" width="300" alt="好友列表"/>
   <img src="./static/desktop/friend-detail.png" width="300" alt="好友详情"/>
   <img src="./static/desktop/friend-verify.png" width="300" alt="好友申请"/>
 </div>
 
-### 👥 群聊功能
+### 📸 朋友圈
 <div align="center">
-  <img src="./static/desktop/create-group.png" width="300" alt="创建群聊"/>
+  <img src="./static/desktop/朋友圈-主页.png" width="300" alt="朋友圈主页"/>
+  <img src="./static/desktop/朋友圈-发布朋友圈.png" width="300" alt="发布朋友圈"/>
+  <img src="./static/desktop/朋友圈-详情内容.png" width="300" alt="动态详情"/>
+  <img src="./static/desktop/朋友圈-点赞.png" width="300" alt="点赞"/>
+  <img src="./static/desktop/朋友圈-评论.png" width="300" alt="评论"/>
+</div>
+
+### 👤 个人中心
+<div align="center">
+  <img src="./static/desktop/profile-edit.jpg" width="300" alt="编辑个人资料"/>
 </div>
 
 ### ⚙️ 系统功能
 <div align="center">
   <img src="./static/desktop/about.png" width="300" alt="关于页面"/>
-  <img src="./static/desktop/update.png" width="300" alt="升级页面"/>
+  <img src="./static/desktop/设置-检查更新.png" width="300" alt="检查更新"/>
+  <img src="./static/desktop/设置-快捷键.png" width="300" alt="快捷键设置"/>
+  <img src="./static/desktop/设置-账号与存储.png" width="300" alt="账号与存储"/>
 </div>
-
-## 🚀 快速开始
-
-### 环境要求
-- Node.js >= 22.0.0
-
-### 安装步骤
-```bash
-# 克隆项目
-git clone https://github.com/wsrh8888/beaver-desktop.git
-cd beaver-desktop
-
-# 安装依赖
-npm install
-
-# 启动开发模式
-npm run dev
-
-# 构建项目
-npm run build-renderer
-
-# 在 Electron 中运行
-npm run package
-```
 
 ## 🔗 相关项目
 
 | 项目 | 仓库地址 | 说明 |
 |------|----------|------|
 | **beaver-server** | [GitHub](https://github.com/wsrh8888/beaver-server) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-server) | 后端服务 |
-| **beaver-flutter** | [GitHub](https://github.com/wsrh8888/beaver-flutter) | 移动端应用 (Flutter - 推荐) |
+| **beaver-flutter** | [GitHub](https://github.com/wsrh8888/beaver-flutter) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-flutter) | 移动端应用 (Flutter - 推荐) |
 | **beaver-desktop** | [GitHub](https://github.com/wsrh8888/beaver-desktop) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-desktop) | 桌面端应用 |
-| **beaver-uniapp** | [GitHub](https://github.com/wsrh8888/beaver-uniapp) | 移动端应用 (Uniapp - 已废弃) |
+| **beaver-manager** | [GitHub](https://github.com/wsrh8888/beaver-manager) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-manager) | 后台管理系统 |
+| **beaver-open** | [GitHub](https://github.com/wsrh8888/beaver-open) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-open) | 开放平台 |
+| **beaver-oauth** | [GitHub](https://github.com/wsrh8888/beaver-oauth) \| [Gitee](https://gitee.com/dawwdadfrf/beaver-oauth) | OAuth 授权登录 |
 
 ## 📚 文档与帮助
 
 - 📖 **详细文档**: [Beaver IM 文档](https://wsrh8888.github.io/beaver-docs/)
+- 📝 **更新记录**: [CHANGELOG.md](CHANGELOG.md)
 - 🎥 **视频教程**: [B站教程](https://www.bilibili.com/video/BV1HrrKYeEB4/)
-- 📱 **体验包下载**: [海狸IM Android体验包](https://github.com/wsrh8888/beaver-docs/releases/download/lastest/latest.apk)
 - 💬 **QQ群**:
-  - [1013328597](https://qm.qq.com/q/82rbf7QBzO) - 群一 (已满)
+  - [1013328597](https://qm.qq.com/q/82rbf7QBzO) - 群一
   - [1044762885](https://qm.qq.com/q/82rbf7QBzO) - 群二
   - [1003121259](https://qm.qq.com/q/82rbf7QBzO) - 群三
-
-## 🤝 贡献指南
-
-我们欢迎所有形式的贡献！
-
-1. Fork 本仓库
-2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
-3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
-4. 推送到分支 (`git push origin feature/AmazingFeature`)
-5. 开启 Pull Request
 
 ## ⭐ 支持项目
 
@@ -143,17 +129,11 @@ npm run package
   <img src="./static/sponsor/zhifubao.jpg" width="200" alt="支付宝赞助码"/>
 </div>
 
-## 📄 开源协议
+## 📄 开源协议与法律声明
 
-本项目基于 [MIT](LICENSE) 协议开源。
+- 本项目采用 [MIT](LICENSE) 协议开源
+- 使用、二次开发或商业部署前，请阅读 [法律免责声明](LEGAL.md)，了解允许/禁止用途及责任划分
 
 ## ⭐ Star历史
 
 [![Star History Chart](https://api.star-history.com/svg?repos=wsrh8888/beaver-desktop&type=Date)](https://star-history.com/#wsrh8888/beaver-desktop&Date)
-
----
-
-<div align="center">
-  <strong>Made with ❤️ by Beaver IM Team</strong><br>
-  <em>企业级即时通讯平台</em>
-</div>

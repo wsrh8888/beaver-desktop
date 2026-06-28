@@ -14,36 +14,36 @@
 
 ## ✨ Core Features
 
-- 🔐 **Secure Authentication** - User registration, login, password recovery
-- 💬 **Instant Messaging** - Private chat, group chat with text, images, emojis
-- 👥 **Social Features** - Friend management, QR code adding, friend notes
-- 🖼️ **Multimedia Support** - Image sending, file transfer, screenshot sharing
-- 📱 **Multi-platform Sync** - Real-time data sync between mobile and desktop
-- 🔄 **Real-time Communication** - WebSocket long connection ensures message real-time
-- 🖥️ **Native Experience** - Desktop-grade application with system tray
-- 🎨 **Modern UI** - Clean and beautiful user interface
+- 🔐 **Account Login** - Password login and QR code login
+- 💬 **Instant Messaging** - Private/group chat with text, voice, Markdown, images, video, emojis, forward and reply
+- 👥 **Group Features** - Create groups and manage group assistants (Webhook bots)
+- 🤝 **Friends & Social** - Friend requests, profile management, and Moments feed
+- 📞 **Audio/Video Calls** - Voice and video calls in private and group chats
+- 🖥️ **Desktop Experience** - System tray, keyboard shortcuts, screenshot tool, account and storage settings
+- 🔄 **Real-time Sync** - WebSocket keeps messages consistent across desktop and mobile
 
 ## 🛠️ Technology Stack
 
-- **Electron** 31.x - Cross-platform desktop application framework
-- **Vue 3** - Progressive JavaScript framework
-- **TypeScript** - Type safety
-- **Pinia** - State management
-- **SQLite** - Local data storage
-- **WebSocket** - Real-time communication
+- **Electron** 31 - Cross-platform desktop application
+- **Vue 3** + **Vite** + **TypeScript** - Frontend rendering and tooling
+- **Pinia** + **Vue Router** - State management and routing
+- **SQLite** + **Drizzle ORM** - Local message and conversation storage
+- **WebSocket** - Real-time message delivery
+- **LiveKit** - Audio and video calls
 
 ## 📱 Feature Showcase
 
 ### 🔐 User Authentication
 <div align="center">
-  <img src="./static/desktop/login.jpg" width="300" alt="Login Interface"/>
-  <img src="./static/desktop/find-password.jpg" width="300" alt="Password Recovery"/>
-  <img src="./static/desktop/profile-edit.jpg" width="300" alt="Edit Profile"/>
+  <img src="./static/desktop/登录-密码登录.png" width="300" alt="Password Login"/>
+  <img src="./static/desktop/登录-扫码登录.png" width="300" alt="QR Code Login"/>
 </div>
 
 ### 💬 Chat Features
 <div align="center">
   <img src="./static/desktop/message.png" width="300" alt="Message Interface"/>
+  <img src="./static/desktop/聊天-语音.png" width="300" alt="Voice Message"/>
+  <img src="./static/desktop/聊天-markdown.png" width="300" alt="Markdown Message"/>
   <img src="./static/desktop/private-detail.png" width="300" alt="Private Chat Details"/>
   <img src="./static/desktop/group-detail.png" width="300" alt="Group Chat Details"/>
   <img src="./static/desktop/image.png" width="300" alt="Image Preview"/>
@@ -56,76 +56,62 @@
   <img src="./static/desktop/call.png" width="300" alt="Audio/Video Call"/>
 </div>
 
-### 👥 Social Features
+### 👥 Group Features
+<div align="center">
+  <img src="./static/desktop/create-group.png" width="300" alt="Create Group"/>
+  <img src="./static/desktop/群助手-列表.png" width="300" alt="Group Assistant List"/>
+  <img src="./static/desktop/群助手-添加群助手.png" width="300" alt="Add Group Assistant"/>
+</div>
+
+### 👥 Friend Management
 <div align="center">
   <img src="./static/desktop/friend-list.png" width="300" alt="Friend List"/>
   <img src="./static/desktop/friend-detail.png" width="300" alt="Friend Details"/>
   <img src="./static/desktop/friend-verify.png" width="300" alt="Friend Request"/>
 </div>
 
-### 👥 Group Features
+### 📸 Moments
 <div align="center">
-  <img src="./static/desktop/create-group.png" width="300" alt="Create Group"/>
+  <img src="./static/desktop/朋友圈-主页.png" width="300" alt="Moments Feed"/>
+  <img src="./static/desktop/朋友圈-发布朋友圈.png" width="300" alt="Post Moment"/>
+  <img src="./static/desktop/朋友圈-详情内容.png" width="300" alt="Moment Details"/>
+  <img src="./static/desktop/朋友圈-点赞.png" width="300" alt="Like"/>
+  <img src="./static/desktop/朋友圈-评论.png" width="300" alt="Comment"/>
+</div>
+
+### 👤 Profile
+<div align="center">
+  <img src="./static/desktop/profile-edit.jpg" width="300" alt="Edit Profile"/>
 </div>
 
 ### ⚙️ System Features
 <div align="center">
   <img src="./static/desktop/about.png" width="300" alt="About Page"/>
-  <img src="./static/desktop/update.png" width="300" alt="Update Page"/>
+  <img src="./static/desktop/设置-检查更新.png" width="300" alt="Check for Updates"/>
+  <img src="./static/desktop/设置-快捷键.png" width="300" alt="Keyboard Shortcuts"/>
+  <img src="./static/desktop/设置-账号与存储.png" width="300" alt="Account & Storage"/>
 </div>
-
-## 🚀 Quick Start
-
-### System Requirements
-- Node.js >= 22.0.0
-
-### Installation Steps
-```bash
-# Clone project
-git clone https://github.com/wsrh8888/beaver-desktop.git
-cd beaver-desktop
-
-# Install dependencies
-npm install
-
-# Start development mode
-npm run dev
-
-# Build project
-npm run build-renderer
-
-# Run in Electron
-npm run package
-```
 
 ## 🔗 Related Projects
 
 | Project | Repository | Description |
 |---------|------------|-------------|
 | **beaver-server** | [GitHub](https://github.com/wsrh8888/beaver-server) / [Gitee](https://gitee.com/dawwdadfrf/beaver-server) | Backend Service |
-| **beaver-flutter** | [GitHub](https://github.com/wsrh8888/beaver-flutter) | Mobile App (Flutter - Recommended) |
+| **beaver-flutter** | [GitHub](https://github.com/wsrh8888/beaver-flutter) / [Gitee](https://gitee.com/dawwdadfrf/beaver-flutter) | Mobile App (Flutter - Recommended) |
 | **beaver-desktop** | [GitHub](https://github.com/wsrh8888/beaver-desktop) / [Gitee](https://gitee.com/dawwdadfrf/beaver-desktop) | Desktop App |
-| **beaver-uniapp** | [GitHub](https://github.com/wsrh8888/beaver-uniapp) | Mobile App (Uniapp - Deprecated) |
+| **beaver-manager** | [GitHub](https://github.com/wsrh8888/beaver-manager) / [Gitee](https://gitee.com/dawwdadfrf/beaver-manager) | Admin Management System |
+| **beaver-open** | [GitHub](https://github.com/wsrh8888/beaver-open) / [Gitee](https://gitee.com/dawwdadfrf/beaver-open) | Open Platform |
+| **beaver-oauth** | [GitHub](https://github.com/wsrh8888/beaver-oauth) / [Gitee](https://gitee.com/dawwdadfrf/beaver-oauth) | OAuth Authorization Login |
 
 ## 📚 Documentation & Help
 
 - 📖 **Detailed Documentation**: [Beaver IM Docs](https://wsrh8888.github.io/beaver-docs/)
+- 📝 **Changelog**: [CHANGELOG.md](CHANGELOG.md)
 - 🎥 **Video Tutorial**: [Bilibili Tutorial](https://www.bilibili.com/video/BV1HrrKYeEB4/)
-- 📱 **Experience Package Download**: [Beaver IM Android Experience Package](https://github.com/wsrh8888/beaver-docs/releases/download/lastest/latest.apk)
 - 💬 **QQ Groups**:
-  - [1013328597](https://qm.qq.com/q/82rbf7QBzO) - Group 1 (Full)
+  - [1013328597](https://qm.qq.com/q/82rbf7QBzO) - Group 1
   - [1044762885](https://qm.qq.com/q/82rbf7QBzO) - Group 2
   - [1003121259](https://qm.qq.com/q/82rbf7QBzO) - Group 3
-
-## 🤝 Contributing
-
-We welcome all forms of contributions!
-
-1. Fork this repository
-2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## ⭐ Support Project
 
@@ -140,17 +126,11 @@ If this project helps you, welcome to buy me a coffee ☕
   <img src="./static/sponsor/zhifubao.jpg" width="200" alt="Alipay Sponsor Code"/>
 </div>
 
-## 📄 License
+## 📄 License & Legal
 
-This project is licensed under the [MIT](LICENSE) License.
+- This project is licensed under the [MIT](LICENSE) License
+- Before use, modification, or commercial deployment, please read the [Legal Disclaimer](LEGAL.md) for permitted/prohibited uses and liability terms
 
 ## ⭐ Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=wsrh8888/beaver-desktop&type=Date)](https://star-history.com/#wsrh8888/beaver-desktop&Date)
-
----
-
-<div align="center">
-  <strong>Made with ❤️ by Beaver IM Team</strong><br>
-  <em>Enterprise Instant Messaging Platform</em>
-</div>

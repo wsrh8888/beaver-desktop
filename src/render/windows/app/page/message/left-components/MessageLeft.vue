@@ -61,6 +61,7 @@ import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import AppStatusComponent from 'renderModule/windows/app/components/business/status/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
+import { tryOpenConversation } from 'renderModule/utils/chat/openConversation'
 import { computed, defineComponent, ref } from 'vue'
 import TopConversationsComponent from './TopConversations.vue'
 import IncomingCallList from './IncomingCallList.vue'
@@ -81,7 +82,11 @@ export default defineComponent({
     const chatList = computed(() => conversationStore.getConversations.filter(chat => !chat.isTop))
 
     // 处理聊天项点击
-    const handleChatClick = (chat: any) => {
+    const handleChatClick = async (chat: any) => {
+      const canOpen = await tryOpenConversation(chat.conversationId)
+      if (!canOpen) {
+        return
+      }
       messageViewStore.setCurrentChat(chat.conversationId)
     }
 

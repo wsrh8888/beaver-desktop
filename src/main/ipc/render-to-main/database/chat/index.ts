@@ -30,6 +30,13 @@ class ChatHandler {
         return await messageBusiness.batchDelete(header, data)
       case DataChatCommand.GET_MESSAGE_MEDIA_IDS:
         return await dbServiceChatMessageMedia.getMessageIds({ userId: userStore.userId })
+      case DataChatCommand.HIDE_CONVERSATION:
+        await dbServiceChatUserConversation.updateSettings({
+          userId: header.userId,
+          conversationId: data.conversationId,
+          settings: { isHidden: 1 },
+        })
+        return { success: true }
       default:
         throw new Error('聊天数据库命令处理失败ChatHandler')
     }

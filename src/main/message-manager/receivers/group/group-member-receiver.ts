@@ -33,8 +33,8 @@ class GroupMemberReceiver {
         case 'group_members':
           // 处理 group_members 表的更新数据
           for (const dataItem of update.data || []) {
-            if (dataItem?.groupId && dataItem?.userId && dataItem?.version) {
-              await groupMemberBusiness.handleTableUpdates(dataItem.userId, dataItem.groupId, dataItem.version)
+            if (dataItem?.groupId && dataItem?.version) {
+              await groupMemberBusiness.handleTableUpdates(dataItem.userId || '', dataItem.groupId, dataItem.version)
             }
           }
           break
