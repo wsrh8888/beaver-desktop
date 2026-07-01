@@ -9,8 +9,8 @@
     </div>
     <div v-else class="ai-right-content__list">
       <div
-        v-for="(message, index) in messages"
-        :key="index"
+        v-for="message in messages"
+        :key="message.id"
         class="ai-right-content__message"
         :class="{ 'user-message': message.role === 'user', 'ai-message': message.role === 'assistant' }"
       >
@@ -19,8 +19,10 @@
           <img v-else src="renderModule/assets/image/ai/robot.svg" alt="AI">
         </div>
         <div class="ai-right-content__bubble">
-          <div class="ai-right-content__text">{{ message.content }}</div>
-          <div class="ai-right-content__time">{{ formatTime(message.timestamp) }}</div>
+          <div class="ai-right-content__text">
+            {{ message.content }}<span v-if="message.streaming" class="ai-right-content__cursor">|</span>
+          </div>
+          <div class="ai-right-content__time">{{ formatChatTime(message.timestamp) }}</div>
         </div>
       </div>
     </div>
@@ -29,31 +31,22 @@
 
 <script lang="ts">
 import { defineComponent, computed } from 'vue'
-
-export interface AiRightContentMessageItem {
-  role: string
-  content: string
-  timestamp: number
-}
+import type { IAiMessage } from 'renderModule/windows/ai/types/chat'
+import { formatChatTime } from 'renderModule/windows/ai/utils/formatTime'
 
 export default defineComponent({
   name: 'AiRightContent',
   props: {
     messages: {
-      type: Array as () => AiRightContentMessageItem[],
-      default: () => []
-    }
+      type: Array as () => IAiMessage[],
+      default: () => [],
+    },
   },
   setup(props) {
     const hasMessages = computed(() => (props.messages?.length ?? 0) > 0)
 
-    const formatTime = (timestamp: number) => {
-      const date = new Date(timestamp)
-      return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
-    }
-
-    return { hasMessages, formatTime }
-  }
+    return { hasMessages, formatChatTime }
+  },
 })
 </script>
 
@@ -62,6 +55,7 @@ export default defineComponent({
   flex: 1;
   overflow-y: auto;
   padding: 24px;
+  background: #F9FAFB;
 
   .ai-right-content__empty {
     display: flex;
@@ -85,14 +79,14 @@ export default defineComponent({
 
     h3 {
       font-size: 18px;
-      font-weight: 500;
+      font-weight: 600;
       color: #2D3436;
       margin-bottom: 8px;
     }
 
     p {
       font-size: 13px;
-      color: #B2BEC3;
+      color: #636E72;
     }
   }
 
@@ -112,7 +106,8 @@ export default defineComponent({
 
       &.ai-message {
         .ai-right-content__bubble {
-          background: #F9FAFB;
+          background: #FFFFFF;
+          border: 1px solid #EBEEF5;
           border-radius: 4px 12px 12px 12px;
         }
       }
@@ -144,6 +139,14 @@ export default defineComponent({
           line-height: 1.5;
           color: #2D3436;
           margin-bottom: 8px;
+          white-space: pre-wrap;
+          word-break: break-word;
+        }
+
+        .ai-right-content__cursor {
+          display: inline-block;
+          color: #FF7D45;
+          animation: blink 1s step-end infinite;
         }
 
         .ai-right-content__time {
@@ -153,6 +156,12 @@ export default defineComponent({
         }
       }
     }
+  }
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
   }
 }
 </style>

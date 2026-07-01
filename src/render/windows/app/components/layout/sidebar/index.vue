@@ -9,12 +9,12 @@
         v-for="item in outsideList"
         :key="item.id"
         class="nav-item app__no_drag"
-        :class="{ active: item.router === route.path }"
-        @click="handleClick(item.router, item.id)"
+        :class="{ active: item.router && item.router === route.path }"
+        @click="handleClick(item)"
       >
         <div class="nav-icon">
           
-          <img :src="item.router === route.path ? item.activeIcon : item.defaultIcon" :alt="item.title">
+          <img :src="item.router && item.router === route.path ? item.activeIcon : item.defaultIcon" :alt="item.title">
           <span
             v-if="badgeCount(item) > 0 && item.id !== 'message'"
             class="badge"
@@ -87,16 +87,22 @@ export default {
     const showUserInfo = ref(false)
     const avatarRef = ref<HTMLElement | null>(null)
 
-    const handleClick = (path: string, id?: string) => {
-      if (id === 'moment') {
-        // 打开朋友圈独立窗口
+    const handleClick = (item: { id: string; router?: string }) => {
+      if (item.id === 'moment') {
         electron.window.openWindow('moment', {
           unique: true,
         })
+        return
       }
-      else {
+      if (item.id === 'ai') {
+        electron.window.openWindow('ai', {
+          unique: true,
+        })
+        return
+      }
+      if (item.router) {
         nextTick(() => {
-          router.push({ path })
+          router.push({ path: item.router })
         })
       }
     }
