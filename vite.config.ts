@@ -16,13 +16,7 @@ const alias = {
 export default defineConfig(({ command: _command }) => {
   return {
     plugins: [
-      vue({
-        template: {
-          compilerOptions: {
-            isCustomElement: tag => tag === 'beaver-login',
-          },
-        },
-      }),
+      vue(),
       svgLoader({
         defaultImport: 'url', // or 'raw'
       }),
@@ -82,6 +76,8 @@ export default defineConfig(({ command: _command }) => {
           call: path.resolve(__dirname, 'call.html'),
           'call-incoming': path.resolve(__dirname, 'call-incoming.html'),
           ai: path.resolve(__dirname, 'ai.html'),
+          circle: path.resolve(__dirname, 'circle.html'),
+          workbench: path.resolve(__dirname, 'workbench.html'),
           settings: path.resolve(__dirname, 'settings.html'),
         },
         output: {

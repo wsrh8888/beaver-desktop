@@ -16,6 +16,7 @@ import { websocketModule } from './core/websocket'
 import { windowModule } from './core/window'
 import { keyboardModule } from './core/keyboard'
 import { settingsModule } from './core/settings'
+import { workbenchModule } from './core/workbench'
 import { callModule } from './core/call'
 
 // Define the new electron API structure
@@ -35,6 +36,7 @@ const electronAPI: ElectronAPP = {
   notification: notificationModule,
   auth: authModule,
   datasync: datasyncModule,
+  workbench: workbenchModule,
 }
 
 // Expose the new API structure to the main world

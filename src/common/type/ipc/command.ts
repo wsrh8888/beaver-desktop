@@ -297,3 +297,14 @@ export enum NotificationCommand {
    */
   DeleteTrayItem = 'notification:deleteTrayItem',
 }
+
+/**
+ * @description: 工作台内嵌 WebContentsView 相关 Command
+ */
+export enum WorkbenchCommand {
+  EMBED_OPEN = 'workbench:embedOpen',
+  EMBED_HIDE_ALL = 'workbench:embedHideAll',
+  EMBED_SET_BOUNDS = 'workbench:embedSetBounds',
+  EMBED_RELOAD = 'workbench:embedReload',
+  EMBED_CLOSE = 'workbench:embedClose',
+}

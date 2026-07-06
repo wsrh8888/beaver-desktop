@@ -15,6 +15,8 @@ import videoApplication from 'mainModule/application/video'
 import callApplication from 'mainModule/application/call'
 import CallIncomingApplication from 'mainModule/application/call-incoming'
 import aiApplication from 'mainModule/application/ai'
+import circleApplication from 'mainModule/application/circle'
+import workbenchApplication from 'mainModule/application/workbench'
 import settingsApplication from 'mainModule/application/settings'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
@@ -173,6 +175,14 @@ class WindowHandler {
           break
         case 'ai':
           newWindow = aiApplication.createBrowserWindow()
+          break
+        case 'circle':
+          circleApplication.createBrowserWindow()
+          newWindow = (circleApplication as any).win
+          break
+        case 'workbench':
+          workbenchApplication.createBrowserWindow()
+          newWindow = (workbenchApplication as any).win
           break
         case 'settings':
           settingsApplication.createBrowserWindow()

@@ -14,6 +14,7 @@ import {
   UpdateCommand,
   WebSocketCommand,
   WinHook,
+  WorkbenchCommand,
 } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcMainManager from 'mainModule/utils/ipc/ipc-main-manager'
@@ -37,6 +38,7 @@ import webSocketHandler from './websocket'
 import settingsHandler from './settings'
 import keyboardHandler from './keyboard'
 import windowHandler from './window'
+import workbenchHandler from './workbench'
 
 const loggerName = 'render-to-main-msg'
 
@@ -56,6 +58,7 @@ const commandGroups = [
   { enum: NetworkCommand, handler: networkHandler },
   { enum: WebSocketCommand, handler: webSocketHandler },
   { enum: LoggerCommand, handler: loggerHandler },
+  { enum: WorkbenchCommand, handler: workbenchHandler },
 ]
 
 class IpcManager {

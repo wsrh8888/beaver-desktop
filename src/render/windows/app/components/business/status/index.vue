@@ -168,7 +168,7 @@ const handleRetry = async () => {
 .chat-content-loading {
   position: fixed;
   top: 0;
-  left: 348px; /* 68px(导航栏) + 280px(消息列表) */
+  left: 336px; /* 56px(导航栏) + 280px(消息列表) */
   right: 0;
   bottom: 0;
   z-index: 15;
