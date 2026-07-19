@@ -5,8 +5,8 @@
     <section class="login-page__main">
       <beaver-login
         class="login-page__sdk"
-        :app-id="openAppId" 
-        :env="currentConfig.env"
+        :app-id="openAppId"
+        :api-base="currentConfig.baseUrl"
         @login="handleLogin"
       />
     </section>
