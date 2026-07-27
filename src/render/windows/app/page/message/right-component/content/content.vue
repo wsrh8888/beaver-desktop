@@ -52,6 +52,8 @@
         <MergedForwardMessage v-else-if="message.msg.type === 12 && message.msg.forwardMsg" :msg="message.msg" />
         <!-- Markdown 消息组件（type=13） -->
         <MarkdownMessage v-else-if="message.msg.type === 13 && message.msg.markdownMsg" :msg="message.msg" />
+        <!-- 名片消息（type=16） -->
+        <CardMessage v-else-if="message.msg.type === 16 && message.msg.cardMsg" :msg="message.msg" />
         <!-- 发送失败 -->
         <div
           v-if="message.sendStatus === MessageStatus.FAILED && message.sender.userId === userStore.getUserId"
@@ -90,6 +92,7 @@ import ForwardDialog from './components/ForwardDialog.vue'
 import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
 import CallMessage from './message/call.vue'
+import CardMessage from './message/card.vue'
 import EmojiMessage from './message/emoji.vue'
 import FileMessage from './message/file.vue'
 import ImageMessage from './message/image.vue'
@@ -112,6 +115,7 @@ export default defineComponent({
     ContextMenu,
     AudioFileMessage,
     CallMessage,
+    CardMessage,
     EmojiMessage,
     FileMessage,
     TextMessage,

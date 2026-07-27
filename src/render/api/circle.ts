@@ -3,6 +3,8 @@ import type {
   ICreateCircleRes,
   ICreatePostReq,
   ICreatePostRes,
+  IGetCircleDetailReq,
+  IGetCircleDetailRes,
   IGetMyCircleListReq,
   IGetMyCircleListRes,
   IGetPostListReq,
@@ -30,6 +32,14 @@ export const searchCircleApi = (data: ISearchCircleReq) => {
     method: 'GET',
     params: data,
     url: `${baseUrl}/api/circle/v1/circle/search`,
+  })
+}
+
+export const getCircleDetailApi = (data: IGetCircleDetailReq) => {
+  return ajax<IGetCircleDetailRes>({
+    method: 'GET',
+    params: data,
+    url: `${baseUrl}/api/circle/v1/circle/detail`,
   })
 }
 

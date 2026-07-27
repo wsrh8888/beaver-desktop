@@ -54,6 +54,13 @@ export interface IVoiceMsg {
 
 export interface IMarkdownMsg {
   content: string
+  title?: string
+}
+
+export interface ICardMsg {
+  cardType: number // 1=个人 2=群 3=圈子
+  id: string
+  expireAt?: number // 秒，0=不过期
 }
 
 export interface IMessageMsg {
@@ -76,6 +83,7 @@ export interface IMessageMsg {
     msgList?: IMessageMsg[]
   } | null
   markdownMsg?: IMarkdownMsg | null
+  cardMsg?: ICardMsg | null
 }
 
 export interface IMessageSender {

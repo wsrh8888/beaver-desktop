@@ -106,6 +106,12 @@
         <div class="group-details-info__settings-title">
           群聊设置
         </div>
+        <div class="group-details-info__settings-item group-details-info__settings-item--click" @click="shareVisible = true">
+          <div class="group-details-info__settings-label">
+            分享群聊
+          </div>
+          <img class="group-details-info__settings-arrow" src="renderModule/assets/image/group/expand.svg" alt="">
+        </div>
         <div class="group-details-info__settings-item">
           <div class="group-details-info__settings-label">
             置顶
@@ -160,10 +166,19 @@
       @close="showAddMemberModal = false"
       @confirm="handleAddMemberConfirm"
     />
+
+    <EntityShareDialog
+      v-if="groupInfo"
+      v-model="shareVisible"
+      :card-type="CardType.GROUP"
+      :id="groupInfo.groupId"
+      :name="groupInfo.title || '群聊'"
+    />
   </div>
 </template>
 
 <script lang="ts">
+import { CardType } from 'commonModule/type/ajax/chat'
 import { muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
 import { addGroupMemberApi, deleteGroupApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
@@ -173,6 +188,7 @@ import MessageBox from 'renderModule/components/ui/messagebox'
 import { removeDissolvedGroupConversation } from 'renderModule/utils/chat/openConversation'
 import { uploadFile } from 'renderModule/utils/upload'
 import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
+import EntityShareDialog from 'renderModule/windows/app/page/message/right-component/content/components/entityShareDialog.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
@@ -182,7 +198,7 @@ import { computed, defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'groupDetailsInfo',
-  components: { BeaverButton, BeaverImage, AddGroupMember },
+  components: { BeaverButton, BeaverImage, AddGroupMember, EntityShareDialog },
   emits: ['open', 'close'],
   setup(_props, { emit }) {
     const groupStore = useGroupStore()
@@ -193,6 +209,7 @@ export default defineComponent({
 
     const showAllMembers = ref(false)
     const showAddMemberModal = ref(false)
+    const shareVisible = ref(false)
     const avatarInputRef = ref<HTMLInputElement | null>(null)
     const topEnabled = ref(false)
     const muteEnabled = ref(false)
@@ -365,6 +382,7 @@ export default defineComponent({
     }
 
     return {
+      CardType,
       groupInfo,
       groupMembers,
       displayedMembers,
@@ -375,6 +393,7 @@ export default defineComponent({
       canManageMembers,
       currentUserId,
       showAddMemberModal,
+      shareVisible,
       avatarInputRef,
       toggleShowAllMembers,
       triggerAvatarInput,
@@ -687,6 +706,21 @@ export default defineComponent({
     &:last-child {
       border-bottom: none;
     }
+
+    &--click {
+      cursor: pointer;
+
+      &:hover .group-details-info__settings-label {
+        color: #2d3436;
+      }
+    }
+  }
+
+  .group-details-info__settings-arrow {
+    width: 12px;
+    height: 12px;
+    transform: rotate(-90deg);
+    opacity: 0.45;
   }
 
   .group-details-info__settings-label {

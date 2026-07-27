@@ -70,6 +70,21 @@ export interface IJoinCircleRes {
   status: number
 }
 
+export interface IGetCircleDetailReq {
+  circleId: string
+}
+
+export interface IGetCircleDetailRes {
+  circleId: string
+  name: string
+  description: string
+  avatar: string
+  memberCount: number
+  postCount: number
+  joinType: number
+  role: number
+}
+
 export interface IGetPostListReq {
   circleId: string
   page: number

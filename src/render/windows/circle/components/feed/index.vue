@@ -12,15 +12,23 @@
           <h2>{{ circleStore.currentCircle?.name || '圈子' }}</h2>
           <p>{{ circleStore.currentCircle?.memberCount || 0 }} 成员 · {{ circleStore.postList.length }} 帖子</p>
         </div>
-        <button
-          v-if="canPost"
-          class="circle-feed-header-btn"
-          type="button"
-          @click="circleStore.openCreatePost()"
-        >
-          <img src="renderModule/assets/image/moment/publish.svg" alt="发帖">
-          发帖
-        </button>
+        <div v-if="canPost" class="circle-feed-header-actions">
+          <button
+            class="circle-feed-header-btn circle-feed-header-btn-share"
+            type="button"
+            @click="shareVisible = true"
+          >
+            分享
+          </button>
+          <button
+            class="circle-feed-header-btn"
+            type="button"
+            @click="circleStore.openCreatePost()"
+          >
+            <img src="renderModule/assets/image/moment/publish.svg" alt="发帖">
+            发帖
+          </button>
+        </div>
       </div>
 
       <div class="circle-feed-body">
@@ -38,19 +46,28 @@
         />
       </div>
     </template>
+
+    <CircleShareDialog
+      v-if="circleStore.currentCircle"
+      v-model="shareVisible"
+      :circle-id="circleStore.currentCircle.circleId"
+      :circle-name="circleStore.currentCircle.name"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
 import CirclePostItem from 'renderModule/windows/circle/components/postItem/index.vue'
+import CircleShareDialog from 'renderModule/windows/circle/components/shareDialog/index.vue'
 import { useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
 
 export default defineComponent({
   name: 'CircleFeed',
-  components: { CirclePostItem },
+  components: { CirclePostItem, CircleShareDialog },
   setup() {
     const circleStore = useCircleStore()
+    const shareVisible = ref(false)
 
     const canPost = computed(() => {
       const role = circleStore.currentCircle?.role || 0
@@ -60,6 +77,7 @@ export default defineComponent({
     return {
       circleStore,
       canPost,
+      shareVisible,
     }
   },
 })
@@ -119,6 +137,19 @@ export default defineComponent({
     height: 16px;
     filter: brightness(0) invert(1);
   }
+}
+
+.circle-feed-header-btn-share {
+  background: #FFFFFF;
+  color: #2D3436;
+  border: 1px solid #EBEEF5;
+}
+
+.circle-feed-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .circle-feed-body {

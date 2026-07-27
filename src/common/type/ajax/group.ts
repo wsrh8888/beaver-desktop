@@ -436,6 +436,10 @@ export interface IGroupInfoRes {
    */
   avatar: string
   /**
+   * @description: 成员数量
+   */
+  memberCount: number
+  /**
    * @description: 创建者ID
    */
   creatorId: string

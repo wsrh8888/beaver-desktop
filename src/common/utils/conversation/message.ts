@@ -24,6 +24,19 @@ export function generateMessagePreview(msg: any): string {
       return '[消息已撤回]'
     case MessageType.NOTIFICATION:
       return '[系统消息]'
+    case MessageType.MARKDOWN:
+      return msg.markdownMsg?.title || msg.markdownMsg?.content || '[Markdown]'
+    case MessageType.LINK:
+      return `[链接] ${msg.linkMsg?.title || ''}`
+    case MessageType.CLOUD_DOC:
+      return `[文档] ${msg.cloudDocMsg?.title || ''}`
+    case MessageType.CARD: {
+      const t = msg.cardMsg?.cardType
+      if (t === 1) return '[个人名片]'
+      if (t === 2) return '[群名片]'
+      if (t === 3) return '[圈子名片]'
+      return '[名片]'
+    }
     default:
       return '[未知消息]'
   }
