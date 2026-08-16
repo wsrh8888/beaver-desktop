@@ -11,6 +11,7 @@ export interface IWorkbenchModule {
   setEmbedBounds: (data: { tabId: string, bounds: IWorkbenchEmbedBounds }) => Promise<void>
   reloadEmbed: (data: { tabId: string }) => Promise<void>
   closeEmbed: (data: { tabId: string }) => Promise<void>
+  openExternal: (data: { url: string }) => Promise<void>
   onEmbedState: (callback: (_event: unknown, payload: IWorkbenchEmbedStatePayload) => void) => void
   offEmbedState: (callback: (_event: unknown, payload: IWorkbenchEmbedStatePayload) => void) => void
 }

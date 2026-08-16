@@ -1,9 +1,17 @@
-import type { IWorkbenchAppItem } from 'commonModule/type/ajax/workbench'
+import type { IWorkbenchAppGroup, IWorkbenchAppItem } from 'commonModule/type/ajax/workbench'
+import { resolveWorkbenchEntry } from 'commonModule/type/ajax/workbench'
 import { defineStore } from 'pinia'
 import Message from 'renderModule/components/ui/message'
 import { listWorkbenchAppsApi } from 'renderModule/api/workbench'
 
 export const HOME_TAB_ID = 'home'
+
+/** 内部应用路由 key → 打开方式 */
+const INTERNAL_ROUTE_HANDLERS: Record<string, () => void> = {
+  moment: () => {
+    electron.window.openWindow('moment', { unique: true })
+  },
+}
 
 export interface IWorkbenchTab {
   id: string
@@ -14,7 +22,7 @@ export interface IWorkbenchTab {
 
 export const useWorkbenchStore = defineStore('useWorkbenchStore', {
   state: () => ({
-    appList: [] as IWorkbenchAppItem[],
+    groups: [] as IWorkbenchAppGroup[],
     tabs: [
       { id: HOME_TAB_ID, title: '工作台', type: 'home' },
     ] as IWorkbenchTab[],
@@ -30,19 +38,22 @@ export const useWorkbenchStore = defineStore('useWorkbenchStore', {
       const tab = state.tabs.find(item => item.id === state.activeTabId)
       return tab?.type === 'app' ? tab.app || null : null
     },
+    isEmpty(state): boolean {
+      return !state.groups.some(group => (group.list || []).length > 0)
+    },
   },
   actions: {
     async loadApps() {
       this.loading = true
       this.loadError = ''
-      const res = await listWorkbenchAppsApi()
+      const res = await listWorkbenchAppsApi({ clientScope: 1 })
       this.loading = false
       if (res.code !== 0) {
         this.loadError = res.msg || '获取应用列表失败'
         Message.error(this.loadError)
         return
       }
-      this.appList = (res.result.list || []).sort((a, b) => a.sort - b.sort)
+      this.groups = res.result.groups || []
     },
     switchTab(tabId: string) {
       if (!this.tabs.some(tab => tab.id === tabId))
@@ -50,8 +61,26 @@ export const useWorkbenchStore = defineStore('useWorkbenchStore', {
       this.activeTabId = tabId
     },
     openApp(app: IWorkbenchAppItem) {
-      if (!app.entryUrl) {
-        Message.error('应用入口地址无效')
+      const entry = resolveWorkbenchEntry(app, 'pc')
+      if (!entry) {
+        Message.error('应用入口无效')
+        return
+      }
+
+      // 内部应用 / 路由入口：走原生窗口
+      if (Number(app.appType) === 0 || Number(app.entryConfig?.type) === 0) {
+        const handler = INTERNAL_ROUTE_HANDLERS[entry]
+        if (!handler) {
+          Message.error(`未知内部应用：${entry}`)
+          return
+        }
+        handler()
+        return
+      }
+
+      // openMode: 1 = 系统浏览器打开，不创建内嵌 Tab
+      if (Number(app.openMode) === 1) {
+        void electron.workbench.openExternal({ url: entry })
         return
       }
 

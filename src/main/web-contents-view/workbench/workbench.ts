@@ -1,11 +1,20 @@
 import type { BrowserWindow } from 'electron'
 import type { EmbedViewLoadState, IEmbedViewBounds } from 'commonModule/type/main/embed-view'
 import { WORKBENCH_EMBED_STATE_CHANNEL } from 'commonModule/type/main/web-contents-view/workbench'
+import path from 'node:path'
 import { WebContentsView } from 'electron'
+import bridgeRegistry from 'mainModule/bridge/registry'
+import { __dirname } from 'mainModule/config'
+
+interface IWorkbenchViewOwner {
+  win: BrowserWindow
+  tabId: string
+  view: WebContentsView
+}
 
 /** 工作台内嵌 WebContentsView，只管理 tabId → 实例，显示哪个 Tab 由渲染层决定 */
 class WorkbenchWebContentsView {
-  private views = new Map<string, WebContentsView>()
+  private views = new Map<string, IWorkbenchViewOwner>()
 
   open(win: BrowserWindow, tabId: string, url: string, bounds: IEmbedViewBounds) {
     if (this.views.has(tabId))
@@ -16,9 +25,9 @@ class WorkbenchWebContentsView {
 
   show(win: BrowserWindow, tabId: string, bounds: IEmbedViewBounds) {
     this.detachAll(win)
-    const view = this.views.get(tabId)!
-    win.contentView.addChildView(view)
-    view.setBounds(this.toBounds(bounds))
+    const owner = this.views.get(tabId)!
+    win.contentView.addChildView(owner.view)
+    owner.view.setBounds(this.toBounds(bounds))
   }
 
   hideAll(win: BrowserWindow) {
@@ -26,20 +35,21 @@ class WorkbenchWebContentsView {
   }
 
   setBounds(_win: BrowserWindow, tabId: string, bounds: IEmbedViewBounds) {
-    this.views.get(tabId)?.setBounds(this.toBounds(bounds))
+    this.views.get(tabId)?.view.setBounds(this.toBounds(bounds))
   }
 
   reload(_win: BrowserWindow, tabId: string) {
-    this.views.get(tabId)?.webContents.reload()
+    this.views.get(tabId)?.view.webContents.reload()
   }
 
   closeTab(win: BrowserWindow, tabId: string) {
-    const view = this.views.get(tabId)
-    if (!view)
+    const owner = this.views.get(tabId)
+    if (!owner)
       return
 
-    this.removeFromWindow(win, view)
-    view.webContents.close()
+    this.removeFromWindow(win, owner.view)
+    bridgeRegistry.unregister(owner.view.webContents.id)
+    owner.view.webContents.close()
     this.views.delete(tabId)
   }
 
@@ -50,20 +60,32 @@ class WorkbenchWebContentsView {
   private create(win: BrowserWindow, tabId: string, url: string, bounds: IEmbedViewBounds) {
     const view = new WebContentsView({
       webPreferences: {
+        preload: path.join(__dirname, './preload/bridge.mjs'),
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
       },
     })
     view.setBackgroundColor('#FFFFFF')
-    this.views.set(tabId, view)
+    this.views.set(tabId, { win, tabId, view })
+    bridgeRegistry.register(view.webContents.id, {
+      host: 'workbench',
+      tabId,
+      win,
+    })
     this.bindLoadEvents(win, tabId, view)
+    // 拦截 target=_blank / window.open，避免额外弹出 BrowserWindow（百度等站常见）
+    view.webContents.setWindowOpenHandler(({ url: nextUrl }) => {
+      if (nextUrl)
+        view.webContents.loadURL(nextUrl)
+      return { action: 'deny' }
+    })
     view.webContents.loadURL(url)
     this.show(win, tabId, bounds)
   }
 
   private detachAll(win: BrowserWindow) {
-    this.views.forEach(view => this.removeFromWindow(win, view))
+    this.views.forEach(owner => this.removeFromWindow(win, owner.view))
   }
 
   private removeFromWindow(win: BrowserWindow, view: WebContentsView) {

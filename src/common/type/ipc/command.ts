@@ -307,4 +307,12 @@ export enum WorkbenchCommand {
   EMBED_SET_BOUNDS = 'workbench:embedSetBounds',
   EMBED_RELOAD = 'workbench:embedReload',
   EMBED_CLOSE = 'workbench:embedClose',
+  OPEN_EXTERNAL = 'workbench:openExternal',
+}
+
+/**
+ * @description: 内嵌页 JSBridge 相关 Command（与具体宿主解耦）
+ */
+export enum BridgeCommand {
+  INVOKE = 'bridge:invoke',
 }

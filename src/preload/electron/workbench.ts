@@ -1,4 +1,8 @@
-import type { IWorkbenchEmbedBounds, IWorkbenchEmbedStatePayload, IWorkbenchModule } from 'commonModule/type/preload/workbench'
+import type {
+  IWorkbenchEmbedBounds,
+  IWorkbenchEmbedStatePayload,
+  IWorkbenchModule,
+} from 'commonModule/type/preload/workbench'
 import { WORKBENCH_EMBED_STATE_CHANNEL } from 'commonModule/type/main/web-contents-view/workbench'
 import { WorkbenchCommand } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
@@ -19,6 +23,9 @@ export const workbenchModule: IWorkbenchModule = {
   },
   closeEmbed: (data: { tabId: string }) => {
     return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WorkbenchCommand.EMBED_CLOSE, data)
+  },
+  openExternal: (data: { url: string }) => {
+    return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, WorkbenchCommand.OPEN_EXTERNAL, data)
   },
   onEmbedState: (callback: (_event: unknown, payload: IWorkbenchEmbedStatePayload) => void) => {
     ipcRenderManager.on(WORKBENCH_EMBED_STATE_CHANNEL, callback)

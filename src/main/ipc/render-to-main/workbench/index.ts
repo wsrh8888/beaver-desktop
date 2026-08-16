@@ -1,5 +1,5 @@
 import { WorkbenchCommand } from 'commonModule/type/ipc/command'
-import { BrowserWindow } from 'electron'
+import { BrowserWindow, shell } from 'electron'
 import workbenchWebContentsView from 'mainModule/web-contents-view/workbench/workbench'
 import logger from 'mainModule/utils/log'
 
@@ -29,6 +29,15 @@ class WorkbenchHandler {
       case WorkbenchCommand.EMBED_CLOSE:
         workbenchWebContentsView.closeTab(win, data?.tabId)
         break
+      case WorkbenchCommand.OPEN_EXTERNAL: {
+        const url = typeof data?.url === 'string' ? data.url.trim() : ''
+        if (!url || !/^https?:\/\//i.test(url)) {
+          logger.error({ text: `工作台外开地址不合法: ${url}` }, 'WorkbenchHandler')
+          break
+        }
+        void shell.openExternal(url)
+        break
+      }
       default:
         logger.error({ text: `工作台处理未知命令: ${command}` }, 'WorkbenchHandler')
         break

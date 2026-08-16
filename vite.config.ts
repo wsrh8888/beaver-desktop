@@ -2,8 +2,8 @@ import path from 'node:path'
 import vue from '@vitejs/plugin-vue'
 import postcssPxtorem from 'postcss-pxtorem'
 import { defineConfig } from 'vite'
+import electron from 'vite-plugin-electron'
 import electronRenderer from 'vite-plugin-electron-renderer'
-import electron from 'vite-plugin-electron/simple'
 import svgLoader from 'vite-svg-loader'
 
 const alias = {
@@ -13,6 +13,32 @@ const alias = {
   preloadModule: path.resolve(__dirname, 'src/preload'),
 }
 
+/** 单个 preload 入口（simple 不支持多入口 + inlineDynamicImports） */
+function createPreload(name: string, entry: string) {
+  return {
+    onstart({ reload }: { reload: () => void }) {
+      reload()
+    },
+    vite: {
+      resolve: { alias },
+      build: {
+        outDir: 'dist-electron/preload',
+        rollupOptions: {
+          input: { [name]: entry },
+          external: ['electron', 'electron-screenshots'],
+          output: {
+            format: 'cjs' as const,
+            inlineDynamicImports: true,
+            entryFileNames: '[name].mjs',
+            chunkFileNames: '[name].mjs',
+            assetFileNames: '[name].[ext]',
+          },
+        },
+      },
+    },
+  }
+}
+
 export default defineConfig(({ command: _command }) => {
   return {
     plugins: [
@@ -20,8 +46,8 @@ export default defineConfig(({ command: _command }) => {
       svgLoader({
         defaultImport: 'url', // or 'raw'
       }),
-      electron({
-        main: {
+      electron([
+        {
           entry: path.resolve(__dirname, 'src/main/main.ts'),
           vite: {
             build: {
@@ -35,21 +61,9 @@ export default defineConfig(({ command: _command }) => {
             },
           },
         },
-        preload: {
-          input: path.resolve(__dirname, 'src/preload/index.ts'),
-          vite: {
-            resolve: {
-              alias,
-            },
-            build: {
-              outDir: 'dist-electron/preload',
-              rollupOptions: {
-                external: ['electron', 'electron-screenshots'],
-              },
-            },
-          },
-        },
-      }),
+        createPreload('index', path.resolve(__dirname, 'src/preload/electron/index.ts')),
+        createPreload('bridge', path.resolve(__dirname, 'src/preload/bridge/index.ts')),
+      ]),
       electronRenderer(),
     ],
     resolve: {

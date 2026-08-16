@@ -1,5 +1,6 @@
 import {
   AuthCommand,
+  BridgeCommand,
   CacheCommand,
   ClipboardCommand,
   ConfigCommand,
@@ -24,6 +25,7 @@ const logger = new Logger('render-to-main')
 
 // 各业务 Handler
 import authHandler from './auth'
+import bridgeHandler from './bridge'
 import cacheHandler from './cache'
 import clipboardHandler from './clipboard'
 import configHandler from './config'
@@ -59,6 +61,7 @@ const commandGroups = [
   { enum: WebSocketCommand, handler: webSocketHandler },
   { enum: LoggerCommand, handler: loggerHandler },
   { enum: WorkbenchCommand, handler: workbenchHandler },
+  { enum: BridgeCommand, handler: bridgeHandler },
 ]
 
 class IpcManager {

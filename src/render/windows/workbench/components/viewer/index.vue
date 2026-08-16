@@ -17,6 +17,7 @@
 </template>
 
 <script lang="ts">
+import { resolveWorkbenchEntry } from 'commonModule/type/ajax/workbench'
 import { defineComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { HOME_TAB_ID, useWorkbenchStore } from 'renderModule/windows/workbench/store/workbench/workbench'
 
@@ -61,7 +62,7 @@ export default defineComponent({
       }
 
       const tab = workbenchStore.tabs.find(item => item.id === tabId)
-      const url = tab?.app?.entryUrl
+      const url = tab?.app ? resolveWorkbenchEntry(tab.app, 'pc') : ''
       if (!url)
         return
 

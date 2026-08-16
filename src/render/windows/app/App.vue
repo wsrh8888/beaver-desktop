@@ -4,7 +4,7 @@
     <Sidebar class="app__sidebar app__drag" />
 
     <div class="app__content">
-      <!-- <router-view /> -->
+      <router-view />
     </div>
     <GlobalComponent />
   </div>

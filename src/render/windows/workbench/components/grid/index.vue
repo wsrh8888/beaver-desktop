@@ -5,35 +5,42 @@
       <p>加载应用中...</p>
     </div>
 
-    <div v-else-if="workbenchStore.appList.length === 0" class="workbench-grid-state">
+    <div v-else-if="workbenchStore.isEmpty" class="workbench-grid-state">
       <img src="renderModule/assets/image/leftBar/workbench.svg" alt="工作台">
       <h3>暂无应用</h3>
       <p>管理员在后台配置并上架后，应用会出现在这里</p>
     </div>
 
     <div v-else class="workbench-grid-content">
-      <div class="workbench-grid-cards">
-        <button
-          v-for="app in workbenchStore.appList"
-          :key="app.workbenchAppId"
-          class="workbench-grid-card"
-          type="button"
-          @click="workbenchStore.openApp(app)"
-        >
-          <div class="workbench-grid-card-main">
-            <div class="workbench-grid-card-icon">
-              <img v-if="app.icon" :src="app.icon" alt="icon">
-              <span v-else>{{ app.name.slice(0, 1) }}</span>
+      <section
+        v-for="group in workbenchStore.groups"
+        :key="group.category"
+        class="workbench-grid-group"
+      >
+        <h3 class="workbench-grid-group-title">{{ group.categoryName }}</h3>
+        <div class="workbench-grid-cards">
+          <button
+            v-for="app in group.list"
+            :key="app.workbenchAppId"
+            class="workbench-grid-card"
+            type="button"
+            @click="workbenchStore.openApp(app)"
+          >
+            <div class="workbench-grid-card-main">
+              <div class="workbench-grid-card-icon">
+                <img v-if="app.icon" :src="app.icon" alt="icon">
+                <span v-else>{{ app.name.slice(0, 1) }}</span>
+              </div>
+              <div class="workbench-grid-card-name">
+                {{ app.name }}
+              </div>
             </div>
-            <div class="workbench-grid-card-name">
-              {{ app.name }}
+            <div v-if="app.description" class="workbench-grid-card-desc">
+              {{ app.description }}
             </div>
-          </div>
-          <div v-if="app.description" class="workbench-grid-card-desc">
-            {{ app.description }}
-          </div>
-        </button>
-      </div>
+          </button>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -63,6 +70,19 @@ export default defineComponent({
 
 .workbench-grid-content {
   padding: 24px;
+}
+
+.workbench-grid-group {
+  & + & {
+    margin-top: 24px;
+  }
+}
+
+.workbench-grid-group-title {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #636E72;
 }
 
 .workbench-grid-cards {
