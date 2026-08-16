@@ -3,7 +3,7 @@
     <div class="modal-content" @click.stop>
       <!-- 模态框头部 -->
       <div class="modal-header">
-        <h3>添加群成员</h3>
+        <h3>{{ title }}</h3>
         <button class="close-button" @click="handleClose">
           <img src="renderModule/assets/image/common/close.svg" alt="关闭">
         </button>
@@ -94,6 +94,10 @@ export default defineComponent({
     BeaverImage,
   },
   props: {
+    title: {
+      type: String,
+      default: '添加群成员',
+    },
     groupMemberIds: {
       type: Array as () => string[],
       default: () => [],
@@ -186,6 +190,7 @@ export default defineComponent({
   align-items: center;
   justify-content: center;
   z-index: 2000;
+  pointer-events: auto;
 }
 
 /* 模态框内容 */

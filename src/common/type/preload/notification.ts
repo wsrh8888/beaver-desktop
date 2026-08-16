@@ -9,6 +9,10 @@ export enum NotificationModule {
    */
   DATABASE_GROUP = 'database:group',
   /**
+   * 圈子通知
+   */
+  DATABASE_CIRCLE = 'database:circle',
+  /**
    * 好友通知
    */
   DATABASE_FRIEND = 'database:friend',
@@ -108,6 +112,13 @@ export enum NotificationGroupCommand {
    * 群组验证更新
    */
   GROUP_VALID_UPDATE = 'groupValidUpdate',
+}
+
+export enum NotificationCircleCommand {
+  /**
+   * 圈子资料更新
+   */
+  CIRCLE_UPDATE = 'circleUpdate',
 }
 
 export enum NotificationUserCommand {
@@ -234,6 +245,7 @@ export interface NotificationCommandMap {
   [NotificationModule.DATABASE_FRIEND]: NotificationFriendCommand
   [NotificationModule.DATABASE_USER]: NotificationUserCommand
   [NotificationModule.DATABASE_GROUP]: NotificationGroupCommand
+  [NotificationModule.DATABASE_CIRCLE]: NotificationCircleCommand
   [NotificationModule.DATABASE_CHAT]: NotificationChatCommand
   [NotificationModule.EMOJI]: NotificationEmojiCommand
   [NotificationModule.APP_LIFECYCLE]: NotificationAppLifecycleCommand

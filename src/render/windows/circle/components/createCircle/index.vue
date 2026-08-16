@@ -8,6 +8,27 @@
         </button>
       </div>
       <div class="circle-modal-body">
+        <label class="circle-modal-label">圈子头像</label>
+        <div class="circle-modal-avatar" @click="triggerAvatarInput">
+          <BeaverImage
+            v-if="avatar"
+            :file-name="avatar"
+            alt="圈子头像"
+            image-class="circle-modal-avatar-image"
+          />
+          <div v-else class="circle-modal-avatar-placeholder">
+            <img src="renderModule/assets/image/common/add.svg" alt="上传">
+            <span>上传头像</span>
+          </div>
+          <input
+            ref="avatarInputRef"
+            type="file"
+            accept="image/*"
+            class="circle-modal-avatar-input"
+            @change="onAvatarInputChange"
+          >
+        </div>
+
         <label class="circle-modal-label">圈子名称</label>
         <input v-model="name" class="circle-modal-input" maxlength="32" placeholder="例如：前端交流圈">
         <label class="circle-modal-label">圈子简介</label>
@@ -25,7 +46,7 @@
         <button
           class="circle-modal-btn primary"
           type="button"
-          :disabled="!name.trim() || submitting"
+          :disabled="!canSubmit || submitting"
           @click="handleSubmit"
         >
           创建
@@ -36,36 +57,84 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
+import { computed, defineComponent, ref } from 'vue'
+import { createCircleApi } from 'renderModule/api/circle'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import Message from 'renderModule/components/ui/message'
+import { uploadFile } from 'renderModule/utils/upload'
 import { useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
 
 export default defineComponent({
   name: 'CircleCreateModal',
-  setup() {
-    const circleStore = useCircleStore()
+  components: { BeaverImage },
+  emits: ['close', 'success'],
+  setup(_props, { emit }) {
     const name = ref('')
     const description = ref('')
+    const avatar = ref('')
     const submitting = ref(false)
+    const avatarInputRef = ref<HTMLInputElement | null>(null)
+    const circleStore = useCircleStore()
+
+    const canSubmit = computed(() => !!name.value.trim() && !!avatar.value)
 
     const handleClose = () => {
-      circleStore.closeCreateCircle()
+      emit('close')
+    }
+
+    const triggerAvatarInput = () => {
+      avatarInputRef.value?.click()
+    }
+
+    const onAvatarInputChange = async (e: Event) => {
+      const file = (e.target as HTMLInputElement).files?.[0]
+      if (!file)
+        return
+      const uploadResult = await uploadFile(file)
+      if (uploadResult?.fileUrl) {
+        avatar.value = uploadResult.fileUrl
+      }
+      else {
+        Message.error('头像上传失败，请重试')
+      }
+      if (avatarInputRef.value)
+        avatarInputRef.value.value = ''
     }
 
     const handleSubmit = async () => {
-      if (!name.value.trim() || submitting.value)
+      if (!canSubmit.value || submitting.value)
         return
       submitting.value = true
-      await circleStore.createCircle(name.value, description.value)
+      const res = await createCircleApi({
+        name: name.value.trim(),
+        description: description.value.trim(),
+        avatar: avatar.value,
+        joinType: 0,
+      })
       submitting.value = false
+      if (res.code !== 0) {
+        Message.error(res.msg || '创建圈子失败')
+        return
+      }
+      await circleStore.loadMyCircles()
+      const circleId = res.result.circleId
       name.value = ''
       description.value = ''
+      avatar.value = ''
+      emit('success', circleId)
+      emit('close')
     }
 
     return {
       name,
       description,
+      avatar,
       submitting,
+      canSubmit,
+      avatarInputRef,
       handleClose,
+      triggerAvatarInput,
+      onAvatarInputChange,
       handleSubmit,
     }
   },
@@ -135,6 +204,46 @@ export default defineComponent({
   font-size: 13px;
   font-weight: 500;
   color: #2D3436;
+}
+
+.circle-modal-avatar {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  margin-bottom: 16px;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: #F9FAFB;
+  border: 1px dashed #D8DEE6;
+}
+
+.circle-modal-avatar-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.circle-modal-avatar-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #636E72;
+  font-size: 12px;
+
+  img {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+  }
+}
+
+.circle-modal-avatar-input {
+  display: none;
 }
 
 .circle-modal-input,

@@ -1,46 +1,30 @@
 <template>
   <div class="circle-app">
     <CircleHeader @refresh="handleRefresh" />
-    <div class="circle-app-body">
-      <CircleSidebar />
-      <CircleFeed />
-    </div>
-    <CircleCreateModal v-if="circleStore.showCreateCircle" />
-    <CirclePostModal v-if="circleStore.showCreatePost" />
+    <CirclePage ref="pageRef" />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted } from 'vue'
-import CircleCreateModal from 'renderModule/windows/circle/components/createCircle/index.vue'
-import CircleFeed from 'renderModule/windows/circle/components/feed/index.vue'
+import { defineComponent, ref } from 'vue'
 import CircleHeader from 'renderModule/windows/circle/components/header/index.vue'
-import CirclePostModal from 'renderModule/windows/circle/components/createPost/index.vue'
-import CircleSidebar from 'renderModule/windows/circle/components/sidebar/index.vue'
-import { useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
+import CirclePage from 'renderModule/windows/circle/page/circle/index.vue'
 
 export default defineComponent({
   name: 'CircleApp',
   components: {
     CircleHeader,
-    CircleSidebar,
-    CircleFeed,
-    CircleCreateModal,
-    CirclePostModal,
+    CirclePage,
   },
   setup() {
-    const circleStore = useCircleStore()
+    const pageRef = ref<{ refresh: () => Promise<void> } | null>(null)
 
     const handleRefresh = () => {
-      circleStore.refreshAll()
+      pageRef.value?.refresh()
     }
 
-    onMounted(() => {
-      circleStore.loadMyCircles()
-    })
-
     return {
-      circleStore,
+      pageRef,
       handleRefresh,
     }
   },
@@ -55,11 +39,5 @@ export default defineComponent({
   flex-direction: column;
   background: #FFFFFF;
   overflow: hidden;
-}
-
-.circle-app-body {
-  flex: 1;
-  display: flex;
-  min-height: 0;
 }
 </style>

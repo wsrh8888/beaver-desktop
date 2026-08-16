@@ -2,6 +2,7 @@ import { DatabaseCommand } from 'commonModule/type/ipc/command'
 import { store } from 'mainModule/store'
 import logger from 'mainModule/utils/log'
 import chatHandler from './chat'
+import circleHandler from './circle'
 import emojiHandler from './emoji'
 import friendHandler from './friend'
 import groupHandler from './group'
@@ -30,6 +31,8 @@ class DatabaseHandler {
           return await chatHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.GROUP:
           return await groupHandler.handle(_event, data?.command, data?.data, header)
+        case DatabaseCommand.CIRCLE:
+          return await circleHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.EMOJI:
           return await emojiHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.NOTIFICATION:

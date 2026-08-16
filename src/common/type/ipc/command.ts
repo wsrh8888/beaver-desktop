@@ -242,6 +242,7 @@ export enum DatabaseCommand {
   FRIEND = 'database:friend',
   CHAT = 'database:chat',
   GROUP = 'database:group',
+  CIRCLE = 'database:circle',
   EMOJI = 'database:emoji',
   NOTIFICATION = 'database:notification',
 }

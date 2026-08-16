@@ -6,7 +6,7 @@ import type { IGetNotificationEventsByIdsReq, IGetNotificationEventsByIdsRes, IG
 import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
-import { DataChatCommand, DataEmojiCommand, DataFriendCommand, DataGroupCommand, DataNotificationCommand, DataUserCommand } from 'commonModule/type/ipc/database'
+import { DataChatCommand, DataCircleCommand, DataEmojiCommand, DataFriendCommand, DataGroupCommand, DataNotificationCommand, DataUserCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
@@ -153,6 +153,13 @@ export const databaseModule: IDatabaseModule = {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.GROUP, {
         command: DataGroupCommand.GET_GROUP_JOIN_REQUEST_LIST,
         data: params,
+      })
+    },
+  },
+  circle: {
+    getCircleList: async (): Promise<{ list: Array<{ circleId: string, name: string, avatar?: string }> }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.CIRCLE, {
+        command: DataCircleCommand.GET_CIRCLE_LIST,
       })
     },
   },

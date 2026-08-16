@@ -3,11 +3,12 @@ import type { IConversationItem } from 'commonModule/type/pinia/conversation'
 import { formatConversationTime } from 'commonModule/utils/time/time'
 import { defineStore } from 'pinia'
 import { getRecentChatInfoApi } from 'renderModule/api/chat'
+import { updateReadSeqApi } from 'renderModule/api/chat'
+import { useCircleStore } from '../circle/circle'
 import { useContactStore } from '../contact/contact'
 import { useGroupStore } from '../group/group'
-import { useUserStore } from '../user/user'
 import { useMessageStore } from '../message/message'
-import { updateReadSeqApi } from 'renderModule/api/chat'
+import { useUserStore } from '../user/user'
 
 /**
  * @description: 会话管理
@@ -40,6 +41,7 @@ export const useConversationStore = defineStore('useConversationStore', {
       const userStore = useUserStore()
       const currentUserId = userStore.getUserId
       const groupStore = useGroupStore()
+      const circleStore = useCircleStore()
 
       return this.conversations.map((conversation: IConversationItem) => {
         // 格式化时间：从 updatedAt（秒级）转换为格式化字符串
@@ -81,6 +83,24 @@ export const useConversationStore = defineStore('useConversationStore', {
               ...result,
               avatar: groupInfo.avatar || conversation.avatar,
               nickName: groupInfo.title || conversation.nickName,
+            }
+          }
+        }
+        else if (conversation.chatType === 3 || conversation.conversationId.startsWith('circle_')) {
+          const circleInfo = circleStore.getCircleById(conversation.conversationId)
+          if (circleInfo) {
+            result = {
+              ...result,
+              chatType: 3,
+              avatar: circleInfo.avatar || conversation.avatar,
+              nickName: circleInfo.name || conversation.nickName,
+            }
+          }
+          else {
+            result = {
+              ...result,
+              chatType: 3,
+              nickName: conversation.nickName || '圈子',
             }
           }
         }
@@ -136,6 +156,25 @@ export const useConversationStore = defineStore('useConversationStore', {
               // contactInfo 可能没有 nickName 字段，保持原有 nickName
               nickName: conversation.nickName,
             }
+          }
+        }
+      }
+      else if (conversation.conversationId.startsWith('circle_') || conversation.chatType === 3) {
+        const circleStore = useCircleStore()
+        const circleInfo = circleStore.getCircleById(conversation.conversationId)
+        if (circleInfo) {
+          result = {
+            ...result,
+            chatType: 3,
+            avatar: circleInfo.avatar || conversation.avatar,
+            nickName: circleInfo.name || conversation.nickName,
+          }
+        }
+        else {
+          result = {
+            ...result,
+            chatType: 3,
+            nickName: conversation.nickName || '圈子',
           }
         }
       }

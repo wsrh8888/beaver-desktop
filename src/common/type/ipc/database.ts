@@ -25,6 +25,10 @@ export enum DataGroupCommand {
   GET_GROUP_JOIN_REQUEST_LIST = 'group:getGroupJoinRequestList',
 }
 
+export enum DataCircleCommand {
+  GET_CIRCLE_LIST = 'circle:getCircleList',
+}
+
 export enum DataChatCommand {
   GET_RECENT_CHAT_LIST = 'chat:getRecentChatList',
   GET_CONVERSATION_INFO = 'chat:getConversationInfo',

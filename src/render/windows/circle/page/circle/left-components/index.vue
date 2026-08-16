@@ -1,7 +1,7 @@
 <template>
   <div class="circle-sidebar">
     <div class="circle-sidebar-top">
-      <button class="circle-sidebar-create" type="button" @click="circleStore.openCreateCircle()">
+      <button class="circle-sidebar-create" type="button" @click="$emit('create')">
         <img src="renderModule/assets/image/common/add.svg" alt="创建" class="circle-sidebar-create-icon">
         创建圈子
       </button>
@@ -12,22 +12,20 @@
     </div>
 
     <div class="circle-sidebar-list">
-      <div v-if="circleStore.loadingCircles" class="circle-sidebar-empty">
-        加载中...
-      </div>
-      <div v-else-if="circleStore.myCircles.length === 0" class="circle-sidebar-empty">
-        还没有加入圈子<br>等待他人邀请或分享链接加入
-      </div>
       <div
-        v-for="item in circleStore.myCircles"
+        v-for="item in list"
         :key="item.circleId"
         class="circle-sidebar-item"
-        :class="{ active: circleStore.currentCircleId === item.circleId }"
-        @click="circleStore.selectCircle(item.circleId)"
+        :class="{ active: currentCircleId === item.circleId }"
+        @click="$emit('select', item.circleId)"
       >
         <div class="circle-sidebar-item-avatar">
-          <img v-if="item.avatar" :src="item.avatar" alt="avatar">
-          <span v-else>{{ item.name.slice(0, 1) }}</span>
+          <BeaverImage
+            v-if="item.avatar"
+            :file-name="item.avatar"
+            alt="avatar"
+            image-class="circle-sidebar-item-avatar-img"
+          />
         </div>
         <div class="circle-sidebar-item-main">
           <div class="circle-sidebar-item-name">
@@ -44,14 +42,51 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import type { ICircleListItem } from 'commonModule/type/ajax/circle'
+import { defineComponent, onMounted, ref } from 'vue'
+import { getMyCircleListApi } from 'renderModule/api/circle'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import Message from 'renderModule/components/ui/message'
 import { useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
 
 export default defineComponent({
-  name: 'CircleSidebar',
-  setup() {
+  name: 'CircleLeft',
+  components: { BeaverImage },
+  props: {
+    currentCircleId: {
+      type: String,
+      default: '',
+    },
+  },
+  emits: ['select', 'create'],
+  setup(_props, { expose }) {
+    const list = ref<ICircleListItem[]>([])
+    const loading = ref(false)
     const circleStore = useCircleStore()
-    return { circleStore }
+
+    const loadList = async () => {
+      loading.value = true
+      const res = await getMyCircleListApi({ page: 1, limit: 100 })
+      loading.value = false
+      if (res.code !== 0) {
+        Message.error(res.msg || '获取圈子列表失败')
+        return
+      }
+      list.value = res.result.list || []
+      circleStore.myCircles = list.value
+    }
+
+    onMounted(() => {
+      loadList()
+    })
+
+    expose({ loadList })
+
+    return {
+      list,
+      loading,
+      loadList,
+    }
   },
 })
 </script>
@@ -60,6 +95,8 @@ export default defineComponent({
 .circle-sidebar {
   width: 280px;
   flex-shrink: 0;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #EBEEF5;
@@ -107,14 +144,19 @@ export default defineComponent({
 .circle-sidebar-list {
   flex: 1;
   overflow-y: auto;
-}
 
-.circle-sidebar-empty {
-  padding: 32px 16px;
-  text-align: center;
-  font-size: 13px;
-  line-height: 1.6;
-  color: #636E72;
+  &::-webkit-scrollbar {
+    width: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
 }
 
 .circle-sidebar-item {
@@ -152,21 +194,18 @@ export default defineComponent({
   width: 40px;
   height: 40px;
   border-radius: 8px;
-  background: #FFE6D9;
-  color: #FF7D45;
-  font-size: 16px;
-  font-weight: 600;
+  background: #F0F2F5;
   display: flex;
   align-items: center;
   justify-content: center;
   overflow: hidden;
   flex-shrink: 0;
+}
 
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
+.circle-sidebar-item-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .circle-sidebar-item-main {

@@ -46,10 +46,12 @@ import BeaverDialog from 'renderModule/components/ui/dialog/dialog.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { useContactStore } from 'renderModule/windows/app/pinia/contact/contact'
+import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
+import { useCircleStore } from 'renderModule/windows/app/pinia/circle/circle'
 import { computed, defineComponent, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 
@@ -78,10 +80,12 @@ export default defineComponent({
   setup(props, { emit }) {
     const router = useRouter()
     const contactStore = useContactStore()
+    const conversationStore = useConversationStore()
     const friendStore = useFriendStore()
     const friendViewStore = useFriendViewStore()
     const groupStore = useGroupStore()
     const messageViewStore = useMessageViewStore()
+    const circleStore = useCircleStore()
 
     const loading = ref(false)
     const joining = ref(false)
@@ -176,16 +180,24 @@ export default defineComponent({
           }
         }
         else if (props.cardType === CardType.CIRCLE) {
+          conversationId.value = props.id.startsWith('circle_') ? props.id : `circle_${props.id}`
+          const cached = circleStore.getCircleById(conversationId.value)
+          if (cached) {
+            name.value = cached.name || '圈子'
+            avatar.value = cached.avatar || ''
+            alreadyJoined.value = true
+          }
           const res = await getCircleDetailApi({ circleId: props.id })
           if (res.code !== 0 || !res.result) {
-            loadError.value = res.msg || '获取圈子信息失败'
+            if (!cached)
+              loadError.value = res.msg || '获取圈子信息失败'
           }
           else {
-            name.value = res.result.name || '圈子'
-            avatar.value = res.result.avatar || ''
+            name.value = res.result.name || name.value || '圈子'
+            avatar.value = res.result.avatar || avatar.value
             desc.value = res.result.description
               || `${res.result.memberCount || 0} 位成员`
-            alreadyJoined.value = (res.result.role || 0) > 0
+            alreadyJoined.value = (res.result.role || 0) > 0 || !!circleStore.getCircleById(conversationId.value)
           }
         }
         else {
@@ -235,7 +247,12 @@ export default defineComponent({
     }
 
     const openCircle = async () => {
-      await electron.window.openWindow('circle', { unique: true })
+      if (!props.id)
+        return
+      const conversationId = props.id.startsWith('circle_') ? props.id : `circle_${props.id}`
+      await circleStore.init()
+      await messageViewStore.setCurrentChat(conversationId)
+      router.push('/message')
       handleClose()
     }
 
@@ -279,7 +296,9 @@ export default defineComponent({
             else {
               Message.success('已加入圈子')
               alreadyJoined.value = true
-              handleClose()
+              await circleStore.init()
+              await conversationStore.initConversationById(`circle_${props.id}`)
+              openCircle()
             }
           }
           else {

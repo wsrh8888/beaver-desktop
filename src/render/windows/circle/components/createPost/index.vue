@@ -7,17 +7,45 @@
           <img src="renderModule/assets/image/header/close.svg" alt="关闭">
         </button>
       </div>
+
       <div class="circle-modal-body">
-        <label class="circle-modal-label">标题（可选）</label>
-        <input v-model="title" class="circle-modal-input" maxlength="64" placeholder="给帖子起个标题">
-        <label class="circle-modal-label">内容</label>
         <textarea
           v-model="content"
           class="circle-modal-textarea"
           maxlength="2000"
           placeholder="分享你的想法..."
         />
+
+        <div class="circle-modal-media">
+          <div class="circle-modal-media-grid">
+            <div
+              v-for="(file, index) in mediaFiles"
+              :key="file.fileKey + index"
+              class="circle-modal-media-item"
+            >
+              <BeaverImage
+                :file-name="file.fileKey"
+                alt="图片预览"
+                image-class="circle-modal-media-preview"
+                @click="handleMediaClick(file)"
+              />
+              <button class="circle-modal-media-remove" type="button" @click="removeMediaFile(index)">
+                <img src="renderModule/assets/image/common/close.svg" alt="删除">
+              </button>
+            </div>
+
+            <div
+              v-if="mediaFiles.length < 9"
+              class="circle-modal-media-upload"
+              @click="triggerFileSelect"
+            >
+              <img src="renderModule/assets/image/common/add.svg" alt="添加">
+              <span>添加图片</span>
+            </div>
+          </div>
+        </div>
       </div>
+
       <div class="circle-modal-footer">
         <button class="circle-modal-btn ghost" type="button" @click="handleClose">
           取消
@@ -25,7 +53,7 @@
         <button
           class="circle-modal-btn primary"
           type="button"
-          :disabled="!content.trim() || submitting"
+          :disabled="!canSubmit || submitting"
           @click="handleSubmit"
         >
           发布
@@ -36,36 +64,114 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from 'vue'
-import { useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
+import { computed, defineComponent, ref } from 'vue'
+import { createPostApi } from 'renderModule/api/circle'
+import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import Message from 'renderModule/components/ui/message'
+import { selectAndUploadFile } from 'renderModule/utils/upload'
+
+interface MediaFile {
+  fileKey: string
+  type: number
+}
 
 export default defineComponent({
   name: 'CirclePostModal',
-  setup() {
-    const circleStore = useCircleStore()
-    const title = ref('')
+  components: { BeaverImage },
+  props: {
+    circleId: {
+      type: String,
+      required: true,
+    },
+  },
+  emits: ['close', 'success'],
+  setup(props, { emit }) {
     const content = ref('')
+    const mediaFiles = ref<MediaFile[]>([])
     const submitting = ref(false)
 
+    const canSubmit = computed(() => {
+      return (content.value.trim().length > 0 || mediaFiles.value.length > 0) && !submitting.value
+    })
+
     const handleClose = () => {
-      circleStore.closeCreatePost()
+      if (submitting.value)
+        return
+      emit('close')
+    }
+
+    const triggerFileSelect = async () => {
+      try {
+        const uploadResults = await selectAndUploadFile('image/*', true)
+        const newFiles = uploadResults
+          .slice(0, 9 - mediaFiles.value.length)
+          .map(result => ({
+            fileKey: result.fileUrl,
+            type: 2,
+          }))
+          .filter(item => !!item.fileKey)
+        mediaFiles.value.push(...newFiles)
+      }
+      catch (error) {
+        console.error('文件上传失败:', error)
+        Message.error('图片上传失败')
+      }
+    }
+
+    const removeMediaFile = (index: number) => {
+      mediaFiles.value.splice(index, 1)
+    }
+
+    const handleMediaClick = async (file: MediaFile) => {
+      try {
+        const currentIndex = mediaFiles.value.findIndex(item => item.fileKey === file.fileKey)
+        await electron.window.openWindow('image', {
+          unique: true,
+          params: {
+            url: file.fileKey,
+            list: mediaFiles.value.map(item => item.fileKey),
+            index: currentIndex,
+          },
+        })
+      }
+      catch (error) {
+        console.error('打开图片查看器失败:', error)
+      }
     }
 
     const handleSubmit = async () => {
-      if (!content.value.trim() || submitting.value)
+      if (!canSubmit.value || !props.circleId)
         return
       submitting.value = true
-      await circleStore.createPost(content.value, title.value)
+      const files = mediaFiles.value.map(item => ({
+        fileKey: item.fileKey,
+        type: item.type,
+      }))
+      const res = await createPostApi({
+        circleId: props.circleId,
+        content: content.value.trim(),
+        files: files.length > 0 ? files : undefined,
+      })
       submitting.value = false
-      title.value = ''
+      if (res.code !== 0) {
+        Message.error(res.msg || '发布帖子失败')
+        return
+      }
       content.value = ''
+      mediaFiles.value = []
+      emit('success')
+      emit('close')
     }
 
     return {
-      title,
       content,
+      mediaFiles,
       submitting,
+      canSubmit,
       handleClose,
+      triggerFileSelect,
+      removeMediaFile,
+      handleMediaClick,
       handleSubmit,
     }
   },
@@ -84,11 +190,14 @@ export default defineComponent({
 }
 
 .circle-modal {
-  width: 480px;
+  width: 520px;
+  max-height: 80vh;
   background: #FFFFFF;
   border-radius: 8px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 .circle-modal-header {
@@ -98,6 +207,7 @@ export default defineComponent({
   align-items: center;
   justify-content: space-between;
   border-bottom: 1px solid #EBEEF5;
+  flex-shrink: 0;
 
   h3 {
     margin: 0;
@@ -127,6 +237,7 @@ export default defineComponent({
 
 .circle-modal-body {
   padding: 20px;
+  overflow-y: auto;
 }
 
 .circle-modal-label {
@@ -137,7 +248,6 @@ export default defineComponent({
   color: #2D3436;
 }
 
-.circle-modal-input,
 .circle-modal-textarea {
   width: 100%;
   box-sizing: border-box;
@@ -148,6 +258,9 @@ export default defineComponent({
   color: #2D3436;
   outline: none;
   font-family: inherit;
+  min-height: 120px;
+  padding: 12px;
+  resize: vertical;
 
   &:focus {
     border-color: #FF7D45;
@@ -155,15 +268,77 @@ export default defineComponent({
   }
 }
 
-.circle-modal-input {
-  height: 36px;
-  padding: 0 12px;
+.circle-modal-media-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
-.circle-modal-textarea {
-  min-height: 120px;
-  padding: 12px;
-  resize: vertical;
+.circle-modal-media-item,
+.circle-modal-media-upload {
+  width: 72px;
+  height: 72px;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.circle-modal-media-item {
+  border: 1px solid #EBEEF5;
+}
+
+.circle-modal-media-preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  cursor: pointer;
+}
+
+.circle-modal-media-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 18px;
+  height: 18px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.45);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+
+  img {
+    width: 10px;
+    height: 10px;
+    filter: brightness(0) invert(1);
+  }
+}
+
+.circle-modal-media-upload {
+  border: 1px dashed #D8DEE6;
+  background: #F9FAFB;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  cursor: pointer;
+  color: #636E72;
+  font-size: 12px;
+
+  img {
+    width: 16px;
+    height: 16px;
+    opacity: 0.7;
+  }
+
+  &:hover {
+    border-color: #FF7D45;
+    color: #FF7D45;
+  }
 }
 
 .circle-modal-footer {
@@ -171,6 +346,7 @@ export default defineComponent({
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+  flex-shrink: 0;
 }
 
 .circle-modal-btn {

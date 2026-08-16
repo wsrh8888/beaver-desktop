@@ -76,6 +76,23 @@ export interface IGroupInfoVersionItem {
   version: number // 群资料版本
 }
 
+// 获取圈子信息同步请求
+export interface IGetSyncCircleInfoReq {
+  since?: number // 从这个版本号之后开始同步，不传则同步所有
+}
+
+// 获取圈子信息同步响应
+export interface IGetSyncCircleInfoRes {
+  circleVersions: ICircleInfoVersionItem[]
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// 圈子信息版本信息
+export interface ICircleInfoVersionItem {
+  circleId: string // 圈子ID
+  version: number // 圈子资料版本
+}
+
 // 获取群成员同步请求
 export interface IGetSyncGroupMembersReq {
   since?: number // 从这个版本号之后开始同步，不传则同步所有

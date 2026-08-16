@@ -17,6 +17,10 @@ export enum WsCommand {
    */
   GROUP_OPERATION = 'GROUP_OPERATION',
   /**
+   * @description: 圈子操作类
+   */
+  CIRCLE_OPERATION = 'CIRCLE_OPERATION',
+  /**
    * @description: 用户信息类
    */
   USER_PROFILE = 'USER_PROFILE',

@@ -167,12 +167,13 @@
       @confirm="handleAddMemberConfirm"
     />
 
-    <EntityShareDialog
+    <Share
       v-if="groupInfo"
       v-model="shareVisible"
       :card-type="CardType.GROUP"
       :id="groupInfo.groupId"
       :name="groupInfo.title || '群聊'"
+      :avatar="groupInfo.avatar || ''"
     />
   </div>
 </template>
@@ -181,6 +182,7 @@
 import { CardType } from 'commonModule/type/ajax/chat'
 import { muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
 import { addGroupMemberApi, deleteGroupApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
+import Share from 'renderModule/components/business/share/index.vue'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
@@ -188,7 +190,6 @@ import MessageBox from 'renderModule/components/ui/messagebox'
 import { removeDissolvedGroupConversation } from 'renderModule/utils/chat/openConversation'
 import { uploadFile } from 'renderModule/utils/upload'
 import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
-import EntityShareDialog from 'renderModule/windows/app/page/message/right-component/content/components/entityShareDialog.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
@@ -198,7 +199,7 @@ import { computed, defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'groupDetailsInfo',
-  components: { BeaverButton, BeaverImage, AddGroupMember, EntityShareDialog },
+  components: { BeaverButton, BeaverImage, AddGroupMember, Share },
   emits: ['open', 'close'],
   setup(_props, { emit }) {
     const groupStore = useGroupStore()
