@@ -15,13 +15,15 @@
       </div>
     </header>
 
+    <slot name="mode" />
+
     <div class="ai-layout__body">
-      <div class="ai-layout__left">
+      <div v-if="showLeft" class="ai-layout__left">
         <slot name="left" />
       </div>
 
-      <main class="ai-layout__right">
-        <slot name="right" />
+      <main class="ai-layout__main">
+        <slot name="main" />
       </main>
     </div>
   </div>
@@ -32,6 +34,12 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
   name: 'AiLayout',
+  props: {
+    showLeft: {
+      type: Boolean,
+      default: true,
+    },
+  },
   setup() {
     const handleMinimize = () => {
       window.electron.window.minimize()
@@ -48,9 +56,9 @@ export default defineComponent({
     return {
       handleMinimize,
       handleMaximize,
-      handleClose
+      handleClose,
     }
-  }
+  },
 })
 </script>
 
@@ -111,27 +119,6 @@ export default defineComponent({
     overflow: hidden;
   }
 
-  .ai-layout__nav {
-    width: 68px;
-    flex-shrink: 0;
-    background: #F9FAFB;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-top: 16px;
-
-    .ai-layout__nav-logo {
-      width: 40px;
-      height: 40px;
-
-      img {
-        width: 40px;
-        height: 40px;
-        display: block;
-      }
-    }
-  }
-
   .ai-layout__left {
     width: 280px;
     flex-shrink: 0;
@@ -142,7 +129,7 @@ export default defineComponent({
     overflow: hidden;
   }
 
-  .ai-layout__right {
+  .ai-layout__main {
     flex: 1;
     min-width: 0;
     display: flex;

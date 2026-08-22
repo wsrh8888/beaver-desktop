@@ -93,6 +93,9 @@ export interface IDatabaseModule {
     getGroupJoinRequestList(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
     getAllGroupJoinRequests(params: IGroupJoinRequestListReq): Promise<IGroupJoinRequestListRes>
   }
+  circle: {
+    getCircleList(): Promise<{ list: Array<{ circleId: string, name: string, avatar?: string }> }>
+  }
   /**
    * @description: 表情相关
    */

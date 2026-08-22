@@ -13,7 +13,17 @@ export enum MessageType {
   WITHDRAW = 10, // 撤回消息
   REPLY = 11, // 回复消息
   FORWARD = 12, // 转发消息（聊天记录）
+  MARKDOWN = 13, // Markdown 富文本
+  LINK = 14, // 链接卡片
+  CLOUD_DOC = 15, // 云文档
+  CARD = 16, // 通用名片（个人/群/圈子）
 }
+
+export const CardType = {
+  USER: 1,
+  GROUP: 2,
+  CIRCLE: 3,
+} as const
 /**
  * @deprecated Use MessageType.FORWARD instead
  */

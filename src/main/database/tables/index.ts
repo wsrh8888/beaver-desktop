@@ -26,6 +26,7 @@ export { groups } from './group/groups'
 export { groupJoinRequests } from './group/join-requests'
 export { groupMembers } from './group/members'
 export { groupSyncStatus } from './group/sync-status'
+export { circles } from './circle/circles'
 // 媒体表
 export { media } from './media/media'
 // 通知相关表

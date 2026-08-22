@@ -5,6 +5,7 @@ import logger from 'mainModule/utils/log'
 import WsManager from 'mainModule/ws-manager/index'
 import messageBusiness from 'mainModule/business/chat/message'
 import chatMessageRouter from './receivers/chat/inedx'
+import circleMessageRouter from './receivers/circle/index'
 import emojiMessageRouter from './receivers/emoji/index'
 import friendMessageRouter from './receivers/friend/index'
 import groupMessageRouter from './receivers/group/index'
@@ -177,6 +178,9 @@ class MessageManager {
         break
       case 'GROUP_OPERATION':
         groupMessageRouter.processGroupMessage(wsMessage.content)
+        break
+      case 'CIRCLE_OPERATION':
+        circleMessageRouter.processCircleMessage(wsMessage.content)
         break
       case 'NOTIFICATION':
         notificationMessageRouter.processNotificationMessage(wsMessage.content)

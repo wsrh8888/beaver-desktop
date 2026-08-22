@@ -242,6 +242,7 @@ export enum DatabaseCommand {
   FRIEND = 'database:friend',
   CHAT = 'database:chat',
   GROUP = 'database:group',
+  CIRCLE = 'database:circle',
   EMOJI = 'database:emoji',
   NOTIFICATION = 'database:notification',
 }
@@ -296,4 +297,23 @@ export enum NotificationCommand {
    * @description: 删除托盘菜单项
    */
   DeleteTrayItem = 'notification:deleteTrayItem',
+}
+
+/**
+ * @description: 工作台内嵌 WebContentsView 相关 Command
+ */
+export enum WorkbenchCommand {
+  EMBED_OPEN = 'workbench:embedOpen',
+  EMBED_HIDE_ALL = 'workbench:embedHideAll',
+  EMBED_SET_BOUNDS = 'workbench:embedSetBounds',
+  EMBED_RELOAD = 'workbench:embedReload',
+  EMBED_CLOSE = 'workbench:embedClose',
+  OPEN_EXTERNAL = 'workbench:openExternal',
+}
+
+/**
+ * @description: 内嵌页 JSBridge 相关 Command（与具体宿主解耦）
+ */
+export enum BridgeCommand {
+  INVOKE = 'bridge:invoke',
 }

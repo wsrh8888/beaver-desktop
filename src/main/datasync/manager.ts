@@ -2,6 +2,7 @@ import { NotificationAppLifecycleCommand, NotificationModule } from 'commonModul
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 import { chatDatasync } from './chat'
+import { circleDatasync } from './circle'
 import { emojiDatasync } from './emoji'
 import { friendDatasync } from './friend'
 import { groupDatasync } from './group'
@@ -35,6 +36,7 @@ class DataSyncManager {
       await chatDatasync.checkAndSync()
       await friendDatasync.checkAndSync()
       await groupDatasync.checkAndSync()
+      await circleDatasync.checkAndSync()
       await emojiDatasync.checkAndSync()
       await notificationDatasync.checkAndSync()
 

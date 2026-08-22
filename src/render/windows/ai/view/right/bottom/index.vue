@@ -1,26 +1,21 @@
 <template>
   <div class="ai-right-bottom">
-    <div class="ai-right-bottom__toolbar">
-      <button class="ai-right-bottom__toolbar-btn" title="快速">
-        <img src="renderModule/assets/image/common/add.svg" alt="add" class="ai-right-bottom__icon">
-        快速
-      </button>
-      <button class="ai-right-bottom__toolbar-btn" title="互联网搜索">
-        <img src="renderModule/assets/image/ai/globe.svg" alt="globe" class="ai-right-bottom__icon">
-        互联网搜索
-      </button>
-    </div>
-    <div class="ai-right-bottom__input-wrap">
-      <input
-        :value="inputValue"
-        type="text"
-        class="ai-right-bottom__input"
-        placeholder="好问题，是智慧的开始"
-        @input="$emit('update:inputValue', ($event.target as HTMLInputElement).value)"
-        @keyup.enter="$emit('send')"
+    <textarea
+      :value="inputValue"
+      class="ai-right-bottom__textarea"
+      placeholder="向海狸助手提问，例如：总结项目群今天的讨论..."
+      @input="$emit('update:inputValue', ($event.target as HTMLTextAreaElement).value)"
+      @keydown="handleKeydown"
+    />
+    <div class="ai-right-bottom__actions">
+      <button
+        class="ai-right-bottom__send-btn"
+        type="button"
+        :disabled="!inputValue.trim()"
+        @click="$emit('send')"
       >
-      <button class="ai-right-bottom__send-btn" @click="$emit('send')">
-        <img src="renderModule/assets/image/ai/send.svg" alt="send">
+        <img src="renderModule/assets/image/assistant/send.svg" alt="发送">
+        <span>发送</span>
       </button>
     </div>
   </div>
@@ -34,10 +29,22 @@ export default defineComponent({
   props: {
     inputValue: {
       type: String,
-      default: ''
+      default: '',
+    },
+  },
+  emits: ['update:inputValue', 'send'],
+  setup(_props, { emit }) {
+    const handleKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault()
+        emit('send')
+      }
+    }
+
+    return {
+      handleKeydown,
     }
   },
-  emits: ['update:inputValue', 'send']
 })
 </script>
 
@@ -47,80 +54,58 @@ export default defineComponent({
   border-top: 1px solid #EBEEF5;
   flex-shrink: 0;
 
-  .ai-right-bottom__toolbar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
+  &__textarea {
+    width: 100%;
+    min-height: 72px;
+    max-height: 160px;
+    padding: 12px;
+    border: 1px solid #EBEEF5;
+    border-radius: 6px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: #2D3436;
+    resize: vertical;
+    outline: none;
+    box-sizing: border-box;
+    font-family: inherit;
 
-    .ai-right-bottom__toolbar-btn {
-      height: 32px;
-      padding: 0 12px;
-      background: #F9FAFB;
-      border: 1px solid #EBEEF5;
-      border-radius: 6px;
-      font-size: 12px;
-      color: #636E72;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+    &:focus {
+      border-color: #FF7D45;
+      box-shadow: 0 0 0 2px rgba(255, 125, 69, 0.12);
+    }
 
-      .ai-right-bottom__icon {
-        width: 14px;
-        height: 14px;
-      }
-
-      &:hover {
-        background: #EBEEF5;
-      }
+    &::placeholder {
+      color: #B2BEC3;
     }
   }
 
-  .ai-right-bottom__input-wrap {
+  &__actions {
     display: flex;
-    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 12px;
+  }
+
+  &__send-btn {
+    display: flex;
     align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 16px;
+    border: none;
+    border-radius: 6px;
+    background: linear-gradient(135deg, #FF7D45 0%, #E86835 100%);
+    color: #FFFFFF;
+    font-size: 13px;
+    cursor: pointer;
 
-    .ai-right-bottom__input {
-      flex: 1;
-      height: 40px;
-      min-height: 40px;
-      padding: 12px 16px;
-      border: 1px solid #EBEEF5;
-      border-radius: 6px;
-      font-size: 13px;
-      color: #2D3436;
-
-      &::placeholder {
-        color: #B2BEC3;
-      }
-
-      &:focus {
-        outline: none;
-        border-color: #FF7D45;
-      }
+    img {
+      width: 16px;
+      height: 16px;
     }
 
-    .ai-right-bottom__send-btn {
-      width: 36px;
-      height: 36px;
-      border: none;
-      border-radius: 6px;
-      background: #FF7D45;
-      color: #FFFFFF;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      img {
-        width: 18px;
-        height: 18px;
-      }
-
-      &:hover {
-        background: #E86835;
-      }
+    &:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
     }
   }
 }

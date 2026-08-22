@@ -29,8 +29,14 @@
 
         <div class="chat-info">
           <div class="chat-header">
-            <div class="chat-name">
-              {{ chat.nickName }}
+            <div class="chat-name-wrap">
+              <div class="chat-name">
+                {{ chat.nickName }}
+              </div>
+              <span
+                v-if="isCircleChat(chat)"
+                class="circle-badge"
+              >圈子</span>
             </div>
             <div class="chat-time">
               {{ chat.updatedAtStr }}
@@ -100,12 +106,21 @@ export default defineComponent({
 
     const currentConversationId = computed(() => messageViewStore.currentChatId)
 
+    const isCircleChat = (chat: { conversationId?: string, chatType?: number }) => {
+      if (!chat)
+        return false
+      if (chat.conversationId?.startsWith('circle_'))
+        return true
+      return chat.chatType === 3
+    }
+
     return {
       searchText,
       chatList,
       currentConversationId,
       handleChatClick,
       openAiWindow,
+      isCircleChat,
       CacheType,
     }
   },
@@ -251,6 +266,14 @@ export default defineComponent({
           align-items: center;
           margin-bottom: 4px;
 
+          .chat-name-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            min-width: 0;
+            flex: 1;
+          }
+
           .chat-name {
             font-size: 14px;
             font-weight: 500;
@@ -258,6 +281,19 @@ export default defineComponent({
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            min-width: 0;
+          }
+
+          .circle-badge {
+            flex-shrink: 0;
+            height: 18px;
+            padding: 0 6px;
+            border-radius: 4px;
+            background: #E8F8EF;
+            color: #16A34A;
+            font-size: 11px;
+            font-weight: 600;
+            line-height: 18px;
           }
 
           .chat-time {

@@ -3,40 +3,75 @@
     <div class="message__left">
       <MessageLeftComponent />
     </div>
+
     <div v-show="currentChatId" class="message__right">
-      <ChatHeaderComponent @show-details="handleShowDetails" />
-      <ChatContentComponent />
-      <ChatMenusComponent />
+      <!-- 私聊 / 群聊：消息会话面板 -->
+      <template v-if="panelType === 'chat'">
+        <ChatHeaderComponent @show-details="handleShowDetails" />
+        <ChatContentComponent />
+        <ChatMenusComponent />
+      </template>
+
+      <!-- 圈子：圈子会话面板 -->
+      <template v-else-if="panelType === 'circle'">
+        <CircleRight
+          ref="circleRightRef"
+          :circle-id="currentCircleId"
+          @show-details="handleShowDetails('circle')"
+          @show-post-detail="handleShowPostDetail"
+        />
+      </template>
+
+      <!-- 后续其他会话类型在此扩展，例如：v-else-if="panelType === 'xxx'" -->
     </div>
 
-    <!-- 各种详情组件放在外层，因为使用了fixed定位 -->
-    <!-- 群聊详情 -->
+    <!-- 各种详情组件放在外层，因为使用了 fixed 定位 -->
     <GroupDetailsComponent :visible="currentDetailType === 'group'" @close="hideDetails" />
+    <PrivateDetailsComponent
+      v-if="currentDetailType === 'private'"
+      :visible="currentDetailType === 'private'"
+      @close="hideDetails"
+    />
+    <CircleDetailsComponent
+      v-if="currentDetailType === 'circle'"
+      :visible="currentDetailType === 'circle'"
+      :circle-id="currentCircleId"
+      @close="hideDetails"
+      @quit="handleCircleQuit"
+    />
+    <CirclePostDetail
+      v-if="activePost"
+      :post="activePost"
+      @close="activePost = null"
+      @commented="handlePostChanged"
+      @liked="handlePostChanged"
+    />
 
-    <!-- 私聊详情 -->
-    <PrivateDetailsComponent v-if="currentDetailType === 'private'" :visible="currentDetailType === 'private'"
-      @close="hideDetails" />
-
-    <!-- 合并转发详情 (由 store 控制显示) -->
     <MergedForwardViewer />
-
-    <!-- 群助手弹窗（全局层，由 pinia 控制） -->
     <GroupAssistantOverlay />
   </div>
 </template>
 
 <script lang="ts">
-import { computed, defineComponent, ref } from 'vue'
+import type { ICirclePostItem } from 'commonModule/type/ajax/circle'
+import { computed, defineComponent, ref, watch } from 'vue'
+import CircleDetailsComponent from 'renderModule/windows/circle/page/circle/detail-components/details/index.vue'
+import CirclePostDetail from 'renderModule/windows/circle/page/circle/detail-components/postDetail/index.vue'
+import CircleRight from 'renderModule/windows/circle/page/circle/right-component/index.vue'
+import { parseCircleId } from 'renderModule/windows/circle/store/circle/circle'
+import { useConversationStore } from '../../pinia/conversation/conversation'
 import { useMessageViewStore } from '../../pinia/view/message'
-import GroupDetailsComponent from './detail-components/groupDetails/index.vue'
-import PrivateDetailsComponent from './detail-components/PrivateDetails.vue'
-import MergedForwardViewer from './detail-components/MergedForwardViewer.vue'
 import GroupAssistantOverlay from './detail-components/groupAssistant/index.vue'
+import GroupDetailsComponent from './detail-components/groupDetails/index.vue'
+import MergedForwardViewer from './detail-components/MergedForwardViewer.vue'
+import PrivateDetailsComponent from './detail-components/PrivateDetails.vue'
 import MessageLeftComponent from './left-components/MessageLeft.vue'
 import ChatMenusComponent from './right-component/bottom/ChatMenus.vue'
 import ChatContentComponent from './right-component/content/content.vue'
-
 import ChatHeaderComponent from './right-component/header/header.vue'
+
+type PanelType = 'chat' | 'circle'
+type DetailType = 'private' | 'group' | 'circle' | 'ai'
 
 export default defineComponent({
   name: 'MessageView',
@@ -47,34 +82,94 @@ export default defineComponent({
     ChatMenusComponent,
     GroupDetailsComponent,
     PrivateDetailsComponent,
+    CircleDetailsComponent,
+    CirclePostDetail,
+    CircleRight,
     MergedForwardViewer,
     GroupAssistantOverlay,
   },
   setup() {
-    // 当前显示的详情类型
-    type DetailType = 'private' | 'group' | 'ai'
     const currentDetailType = ref<DetailType | null>(null)
+    const activePost = ref<ICirclePostItem | null>(null)
+    const circleRightRef = ref<{
+      loadPosts: () => Promise<void>
+      postList: ICirclePostItem[]
+    } | null>(null)
     const messageViewStore = useMessageViewStore()
+    const conversationStore = useConversationStore()
 
-    // 统一处理显示详情
+    const currentChatId = computed(() => messageViewStore.currentChatId)
+    const currentCircleId = computed(() => {
+      const id = currentChatId.value
+      if (!id)
+        return ''
+      return parseCircleId(id)
+    })
+
+    /** 按会话类型决定右侧面板，后续可继续扩展 */
+    const panelType = computed<PanelType | null>(() => {
+      const id = currentChatId.value
+      if (!id)
+        return null
+
+      if (id.startsWith('circle_'))
+        return 'circle'
+
+      const info = conversationStore.getConversationInfo(id)
+      if (info?.chatType === 3)
+        return 'circle'
+
+      // chatType 1 私聊 / 2 群聊，统一走聊天面板
+      return 'chat'
+    })
+
     const handleShowDetails = (type: DetailType) => {
       currentDetailType.value = type
     }
 
-    const currentChatId = computed(() => {
-      return messageViewStore.currentChatId
-    })
-
-    // 隐藏详情
     const hideDetails = () => {
       currentDetailType.value = null
     }
 
+    const handleShowPostDetail = (post: ICirclePostItem) => {
+      activePost.value = post
+    }
+
+    const handlePostChanged = async () => {
+      await circleRightRef.value?.loadPosts()
+      if (activePost.value) {
+        const latest = circleRightRef.value?.postList?.find(
+          item => item.postId === activePost.value?.postId,
+        )
+        if (latest)
+          activePost.value = latest
+      }
+    }
+
+    const handleCircleQuit = () => {
+      hideDetails()
+      activePost.value = null
+      if (messageViewStore.currentChatId)
+        messageViewStore.setCurrentChat('')
+    }
+
+    watch(currentChatId, () => {
+      hideDetails()
+      activePost.value = null
+    })
+
     return {
       currentChatId,
+      currentCircleId,
+      panelType,
       currentDetailType,
+      activePost,
+      circleRightRef,
       handleShowDetails,
       hideDetails,
+      handleShowPostDetail,
+      handlePostChanged,
+      handleCircleQuit,
     }
   },
 })
@@ -98,6 +193,5 @@ export default defineComponent({
     flex-direction: column;
     position: relative;
   }
-
 }
 </style>

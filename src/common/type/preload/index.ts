@@ -13,6 +13,7 @@ import type { IWindowModule } from './window'
 import type { ICallModule } from './call'
 import type { IKeyboardModule } from './keyboard'
 import type { ISettingsModule } from './settings'
+import type { IWorkbenchModule } from './workbench'
 
 /**
  * @description: Electron preload接口
@@ -92,4 +93,9 @@ export interface ElectronAPP {
    * @description: 用户设置（主进程 store）
    */
   settings: ISettingsModule
+
+  /**
+   * @description: 工作台内嵌 WebContentsView
+   */
+  workbench: IWorkbenchModule
 }

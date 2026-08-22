@@ -17,6 +17,8 @@ import type {
   IGetSyncFriendVerifiesRes,
   IGetSyncGroupInfoReq,
   IGetSyncGroupInfoRes,
+  IGetSyncCircleInfoReq,
+  IGetSyncCircleInfoRes,
   IGetSyncGroupMembersReq,
   IGetSyncGroupMembersRes,
   IGetSyncGroupRequestsReq,
@@ -54,6 +56,17 @@ export const datasyncGetSyncGroupInfoApi = (data: IGetSyncGroupInfoReq) => {
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/datasync/v1/getSyncGroupInfo`,
+  })
+}
+
+/**
+ * @description: 获取所有需要更新的圈子信息版本
+ */
+export const datasyncGetSyncCircleInfoApi = (data: IGetSyncCircleInfoReq) => {
+  return ajax<IGetSyncCircleInfoRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncCircleInfo`,
   })
 }
 

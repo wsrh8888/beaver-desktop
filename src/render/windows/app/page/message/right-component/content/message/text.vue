@@ -1,16 +1,77 @@
 <template>
   <div class="text-message-wrapper">
-    <div class="message-text selectable" v-html="formattedContent" />
+    <div
+      class="message-text selectable"
+      v-html="formattedContent"
+      @click="handleClick"
+    />
+    <PreviewDialog
+      v-if="previewVisible"
+      v-model="previewVisible"
+      :card-type="previewCardType"
+      :id="previewId"
+      :expire-at="0"
+      :invite-token="previewToken"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { IMessageMsg } from 'commonModule/type/ws/message-types'
+import { CardType } from 'commonModule/type/ajax/chat'
+import type { IMessageMsg } from 'commonModule/type/ws/message-types'
+import Message from 'renderModule/components/ui/message'
+import PreviewDialog from './card/components/previewDialog.vue'
 import { emojiMap } from 'renderModule/windows/app/utils/emoji'
-import { computed, defineComponent, PropType } from 'vue'
+import { computed, defineComponent, type PropType, ref } from 'vue'
+
+function escapeHtml(text: string) {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function parseInviteToken(raw: string): { kind: 'circle' | 'group', token: string } | null {
+  const value = raw.trim()
+  if (!value)
+    return null
+  try {
+    const uri = new URL(value)
+    if (uri.protocol === 'beaver:' && uri.hostname === 'invite') {
+      const parts = uri.pathname.split('/').filter(Boolean)
+      if ((parts[0] === 'circle' || parts[0] === 'group') && parts[1])
+        return { kind: parts[0], token: parts[1] }
+    }
+    const code = uri.searchParams.get('code')
+    if (code) {
+      if (/\/api\/circle\/v1\/circle\/invite_code/i.test(uri.pathname))
+        return { kind: 'circle', token: code }
+      if (/\/api\/group\/v1\/invite_code/i.test(uri.pathname))
+        return { kind: 'group', token: code }
+    }
+  }
+  catch {
+    // ignore
+  }
+  const circle = value.match(/\/api\/circle\/v1\/circle\/invite_code\?[^#]*code=([^&#]+)/i)
+  if (circle)
+    return { kind: 'circle', token: decodeURIComponent(circle[1]) }
+  const group = value.match(/\/api\/group\/v1\/invite_code\?[^#]*code=([^&#]+)/i)
+  if (group)
+    return { kind: 'group', token: decodeURIComponent(group[1]) }
+  const qqStyle = value.match(/\/q\/(c|g)\/([^/?#]+)/i)
+  if (qqStyle)
+    return { kind: qqStyle[1].toLowerCase() === 'c' ? 'circle' : 'group', token: qqStyle[2] }
+  const legacy = value.match(/\/invite\/(circle|group)\/([^/?#]+)/)
+  if (legacy)
+    return { kind: legacy[1] as 'circle' | 'group', token: legacy[2] }
+  return null
+}
 
 export default defineComponent({
   name: 'TextMessage',
+  components: { PreviewDialog },
   props: {
     msg: {
       type: Object as PropType<IMessageMsg>,
@@ -18,25 +79,60 @@ export default defineComponent({
     },
   },
   setup(props) {
-    // 格式化文本消息，将表情符号替换为图片
+    const previewVisible = ref(false)
+    const previewCardType = ref(0)
+    const previewId = ref('')
+    const previewToken = ref('')
+
     const formattedContent = computed(() => {
       const text = props.msg?.textMsg?.content
-      if (!text) {
+      if (!text)
         return ''
-      }
 
-      // 使用正则表达式匹配 [xxx] 格式的表情
-      return text.replace(/\[[^\]]+\]/g, (match) => {
+      const escaped = escapeHtml(text)
+      const withEmojiEscaped = escaped.replace(/\[[^\]]+\]/g, (match) => {
         const emojiUrl = emojiMap(match)
         if (emojiUrl) {
           return `<img src="${emojiUrl}" alt="${match}" class="message-emoji" draggable="false" />`
         }
         return match
       })
+
+      return withEmojiEscaped.replace(
+        /(https?:\/\/[^\s<]+|beaver:\/\/[^\s<]+)/gi,
+        url => `<a href="${url}" class="message-link" data-url="${url}">${url}</a>`,
+      )
     })
+
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement | null
+      if (!target || target.tagName !== 'A')
+        return
+      e.preventDefault()
+      const url = target.getAttribute('data-url') || target.getAttribute('href') || ''
+      const invite = parseInviteToken(url)
+      if (invite) {
+        previewCardType.value = invite.kind === 'circle' ? CardType.CIRCLE : CardType.GROUP
+        previewToken.value = invite.token
+        previewId.value = ''
+        previewVisible.value = true
+        return
+      }
+      if (/^https?:\/\//i.test(url)) {
+        window.open(url, '_blank')
+      }
+      else {
+        Message.info(url)
+      }
+    }
 
     return {
       formattedContent,
+      handleClick,
+      previewVisible,
+      previewCardType,
+      previewId,
+      previewToken,
     }
   },
 })
@@ -48,14 +144,12 @@ export default defineComponent({
   flex-direction: column;
 }
 
-
 .message-text {
   font-size: 13px;
   line-height: 1.5;
   word-break: break-word;
   color: inherit;
   padding: 5px;
-  /* 覆盖全局 user-select: none，允许选中文字后复制 */
   -webkit-user-select: text;
   user-select: text;
 }
@@ -67,5 +161,12 @@ export default defineComponent({
   vertical-align: middle;
   margin: 0 2px;
   user-select: none;
+}
+
+:deep(.message-link) {
+  color: #576B95;
+  text-decoration: underline;
+  cursor: pointer;
+  word-break: break-all;
 }
 </style>

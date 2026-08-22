@@ -2,13 +2,14 @@ import { NotificationModule } from 'commonModule/type/preload/notification'
 
 // 导入各个子模块的通知路由器
 import { appNotificationRouter } from './app/index'
+import { callNotificationRouter } from './call/index'
 import { chatNotificationRouter } from './chat/index'
+import { circleNotificationRouter } from './circle/index'
 import { emojiNotificationRouter } from './emoji/index'
 import { friendNotificationRouter } from './friend/index'
 import { groupNotificationRouter } from './group/index'
 import { notificationNotificationRouter } from './notification/index'
 import { userNotificationRouter } from './user/index'
-import { callNotificationRouter } from './call/index'
 
 /**
  * @description: 通知管理中心 - 统一入口，委托给子模块处理
@@ -21,6 +22,7 @@ class NotificationManager {
     electron.notification.on(NotificationModule.EMOJI, params => emojiNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.DATABASE_FRIEND, params => friendNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.DATABASE_GROUP, params => groupNotificationRouter.handleNotification(params))
+    electron.notification.on(NotificationModule.DATABASE_CIRCLE, params => circleNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.DATABASE_NOTIFICATION, params => notificationNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.DATABASE_USER, params => userNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.CALL, params => callNotificationRouter.handleNotification(params))
@@ -33,6 +35,7 @@ class NotificationManager {
     electron.notification.off(NotificationModule.EMOJI, params => emojiNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.DATABASE_FRIEND, params => friendNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.DATABASE_GROUP, params => groupNotificationRouter.handleNotification(params))
+    electron.notification.off(NotificationModule.DATABASE_CIRCLE, params => circleNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.DATABASE_NOTIFICATION, params => notificationNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.DATABASE_USER, params => userNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.CALL, params => callNotificationRouter.handleNotification(params))

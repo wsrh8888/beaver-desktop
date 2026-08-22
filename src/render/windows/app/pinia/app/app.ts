@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
+import { useCircleStore } from 'renderModule/windows/app/pinia/circle/circle'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useContactStore } from '../contact/contact'
 import { useEmojiStore } from '../emoji/emoji'
@@ -69,6 +70,7 @@ export const useAppStore = defineStore('useAppStore', {
       const friendStore = useFriendStore()
       const conversationStore = useConversationStore()
       const groupStore = useGroupStore()
+      const circleStore = useCircleStore()
       const updateStore = useUpdateStore()
       const contactStore = useContactStore()
       const emojiStore = useEmojiStore()
@@ -83,6 +85,7 @@ export const useAppStore = defineStore('useAppStore', {
           friendStore.init(),
           conversationStore.init(),
           groupStore.init(),
+          circleStore.init(),
           updateStore.init(),
           emojiStore.init(),
           notificationStore.init(),

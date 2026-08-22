@@ -1,5 +1,6 @@
 import {
   AuthCommand,
+  BridgeCommand,
   CacheCommand,
   ClipboardCommand,
   ConfigCommand,
@@ -14,6 +15,7 @@ import {
   UpdateCommand,
   WebSocketCommand,
   WinHook,
+  WorkbenchCommand,
 } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcMainManager from 'mainModule/utils/ipc/ipc-main-manager'
@@ -23,6 +25,7 @@ const logger = new Logger('render-to-main')
 
 // 各业务 Handler
 import authHandler from './auth'
+import bridgeHandler from './bridge'
 import cacheHandler from './cache'
 import clipboardHandler from './clipboard'
 import configHandler from './config'
@@ -37,6 +40,7 @@ import webSocketHandler from './websocket'
 import settingsHandler from './settings'
 import keyboardHandler from './keyboard'
 import windowHandler from './window'
+import workbenchHandler from './workbench'
 
 const loggerName = 'render-to-main-msg'
 
@@ -56,6 +60,8 @@ const commandGroups = [
   { enum: NetworkCommand, handler: networkHandler },
   { enum: WebSocketCommand, handler: webSocketHandler },
   { enum: LoggerCommand, handler: loggerHandler },
+  { enum: WorkbenchCommand, handler: workbenchHandler },
+  { enum: BridgeCommand, handler: bridgeHandler },
 ]
 
 class IpcManager {
