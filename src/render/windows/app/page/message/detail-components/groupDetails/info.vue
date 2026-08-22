@@ -106,7 +106,7 @@
         <div class="group-details-info__settings-title">
           群聊设置
         </div>
-        <div class="group-details-info__settings-item group-details-info__settings-item--click" @click="shareVisible = true">
+        <div class="group-details-info__settings-item group-details-info__settings-item--click" @click="openShare">
           <div class="group-details-info__settings-label">
             分享群聊
           </div>
@@ -160,20 +160,22 @@
       </BeaverButton>
     </div>
 
-    <AddGroupMember
+    <SelectFriend
       v-if="showAddMemberModal"
-      :group-member-ids="groupMembers.map((m: { userId: string }) => m.userId)"
-      @close="showAddMemberModal = false"
+      v-model="showAddMemberModal"
+      title="添加群成员"
+      :disabled-ids="groupMembers.map((m: { userId: string }) => m.userId)"
       @confirm="handleAddMemberConfirm"
     />
 
     <Share
-      v-if="groupInfo"
+      v-if="groupInfo && shareVisible"
       v-model="shareVisible"
       :card-type="CardType.GROUP"
       :id="groupInfo.groupId"
       :name="groupInfo.title || '群聊'"
       :avatar="groupInfo.avatar || ''"
+      :invite-url="shareInviteUrl"
     />
   </div>
 </template>
@@ -181,7 +183,8 @@
 <script lang="ts">
 import { CardType } from 'commonModule/type/ajax/chat'
 import { muteChatApi, pinnedChatApi } from 'renderModule/api/chat'
-import { addGroupMemberApi, deleteGroupApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
+import { addGroupMemberApi, deleteGroupApi, getGroupInfoApi, quitGroupApi, removeGroupMemberApi, updateGroupInfoApi } from 'renderModule/api/group'
+import SelectFriend from 'renderModule/components/business/selectFriend/index.vue'
 import Share from 'renderModule/components/business/share/index.vue'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -189,7 +192,6 @@ import Message from 'renderModule/components/ui/message'
 import MessageBox from 'renderModule/components/ui/messagebox'
 import { removeDissolvedGroupConversation } from 'renderModule/utils/chat/openConversation'
 import { uploadFile } from 'renderModule/utils/upload'
-import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
@@ -199,7 +201,7 @@ import { computed, defineComponent, ref, watch } from 'vue'
 
 export default defineComponent({
   name: 'groupDetailsInfo',
-  components: { BeaverButton, BeaverImage, AddGroupMember, Share },
+  components: { BeaverButton, BeaverImage, SelectFriend, Share },
   emits: ['open', 'close'],
   setup(_props, { emit }) {
     const groupStore = useGroupStore()
@@ -211,6 +213,7 @@ export default defineComponent({
     const showAllMembers = ref(false)
     const showAddMemberModal = ref(false)
     const shareVisible = ref(false)
+    const shareInviteUrl = ref('')
     const avatarInputRef = ref<HTMLInputElement | null>(null)
     const topEnabled = ref(false)
     const muteEnabled = ref(false)
@@ -382,6 +385,25 @@ export default defineComponent({
       emit('close')
     }
 
+    const openShare = async () => {
+      if (!groupId.value) {
+        Message.error('群信息不完整')
+        return
+      }
+      try {
+        const res = await getGroupInfoApi({ groupId: groupId.value })
+        if (res.code !== 0 || !res.result?.inviteUrl) {
+          Message.error(res.msg || '获取邀请链接失败')
+          return
+        }
+        shareInviteUrl.value = res.result.inviteUrl
+        shareVisible.value = true
+      }
+      catch {
+        Message.error('获取邀请链接失败')
+      }
+    }
+
     return {
       CardType,
       groupInfo,
@@ -395,7 +417,9 @@ export default defineComponent({
       currentUserId,
       showAddMemberModal,
       shareVisible,
+      shareInviteUrl,
       avatarInputRef,
+      openShare,
       toggleShowAllMembers,
       triggerAvatarInput,
       onAvatarInputChange,

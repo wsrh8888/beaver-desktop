@@ -97,12 +97,14 @@ export interface ICreateCircleRes {
 }
 
 export interface IJoinCircleReq {
-  circleId: string
+  circleId?: string
   reason?: string
+  inviteCode?: string
 }
 
 export interface IJoinCircleRes {
   status: number
+  circleId?: string
 }
 
 export interface IGetCircleDetailReq {
@@ -119,6 +121,7 @@ export interface IGetCircleDetailRes {
   joinType: number
   role: number
   creatorId?: string
+  inviteUrl?: string
 }
 
 export interface IUpdateCircleReq {
@@ -295,3 +298,19 @@ export interface IDeleteCommentReq {
 }
 
 export interface IDeleteCommentRes {}
+
+export interface IResolveCircleInviteReq {
+  code: string
+}
+
+export interface IResolveCircleInviteRes {
+  code: string
+  circleId: string
+  name: string
+  avatar: string
+  description: string
+  memberCount: number
+  joinType: number
+  valid: boolean
+  alreadyJoined: boolean
+}

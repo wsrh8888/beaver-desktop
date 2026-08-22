@@ -250,13 +250,39 @@ export interface IGroupInviteReq {
 // 加入群组请求
 export interface IGroupJoinReq {
   /**
-   * @description: 目标群组ID
+   * @description: 目标群组ID（有 inviteCode 时可空）
    */
-  groupId: string
+  groupId?: string
   /**
    * @description: 申请消息，可选
    */
   message?: string
+  /**
+   * @description: 邀请短码
+   */
+  inviteCode?: string
+}
+
+export interface IGroupJoinRes {
+  version: number
+  status: number
+  groupId?: string
+}
+
+export interface IResolveGroupInviteReq {
+  code: string
+}
+
+export interface IResolveGroupInviteRes {
+  code: string
+  groupId: string
+  title: string
+  avatar: string
+  notice: string
+  memberCount: number
+  joinType: number
+  valid: boolean
+  alreadyJoined: boolean
 }
 
 // 更新群组设置请求
@@ -471,6 +497,10 @@ export interface IGroupInfoRes {
    * @description: 数据版本号
    */
   version: number
+  /**
+   * @description: 成员可见：稳定邀请链接
+   */
+  inviteUrl?: string
 }
 
 // 获取群成员列表请求

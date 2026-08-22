@@ -5,14 +5,24 @@
       v-html="formattedContent"
       @click="handleClick"
     />
+    <PreviewDialog
+      v-if="previewVisible"
+      v-model="previewVisible"
+      :card-type="previewCardType"
+      :id="previewId"
+      :expire-at="0"
+      :invite-token="previewToken"
+    />
   </div>
 </template>
 
 <script lang="ts">
-import { IMessageMsg } from 'commonModule/type/ws/message-types'
+import { CardType } from 'commonModule/type/ajax/chat'
+import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import Message from 'renderModule/components/ui/message'
+import PreviewDialog from './card/components/previewDialog.vue'
 import { emojiMap } from 'renderModule/windows/app/utils/emoji'
-import { computed, defineComponent, PropType } from 'vue'
+import { computed, defineComponent, type PropType, ref } from 'vue'
 
 function escapeHtml(text: string) {
   return text
@@ -22,46 +32,46 @@ function escapeHtml(text: string) {
     .replace(/"/g, '&quot;')
 }
 
-function parseCircleIdFromShare(raw: string): string | null {
+function parseInviteToken(raw: string): { kind: 'circle' | 'group', token: string } | null {
   const value = raw.trim()
   if (!value)
     return null
   try {
     const uri = new URL(value)
-    if (uri.protocol === 'beaver:' && uri.hostname === 'share') {
+    if (uri.protocol === 'beaver:' && uri.hostname === 'invite') {
       const parts = uri.pathname.split('/').filter(Boolean)
-      if (parts[0] === 'circle' && parts[1])
-        return parts[1]
+      if ((parts[0] === 'circle' || parts[0] === 'group') && parts[1])
+        return { kind: parts[0], token: parts[1] }
+    }
+    const code = uri.searchParams.get('code')
+    if (code) {
+      if (/\/api\/circle\/v1\/circle\/invite_code/i.test(uri.pathname))
+        return { kind: 'circle', token: code }
+      if (/\/api\/group\/v1\/invite_code/i.test(uri.pathname))
+        return { kind: 'group', token: code }
     }
   }
   catch {
     // ignore
   }
-  const match = value.match(/\/share\/circle\/([^/?#]+)/)
-  return match?.[1] || null
-}
-
-function parseGroupIdFromShare(raw: string): string | null {
-  const value = raw.trim()
-  if (!value)
-    return null
-  try {
-    const uri = new URL(value)
-    if (uri.protocol === 'beaver:' && uri.hostname === 'share') {
-      const parts = uri.pathname.split('/').filter(Boolean)
-      if (parts[0] === 'group' && parts[1])
-        return parts[1]
-    }
-  }
-  catch {
-    // ignore
-  }
-  const match = value.match(/\/share\/group\/([^/?#]+)/)
-  return match?.[1] || null
+  const circle = value.match(/\/api\/circle\/v1\/circle\/invite_code\?[^#]*code=([^&#]+)/i)
+  if (circle)
+    return { kind: 'circle', token: decodeURIComponent(circle[1]) }
+  const group = value.match(/\/api\/group\/v1\/invite_code\?[^#]*code=([^&#]+)/i)
+  if (group)
+    return { kind: 'group', token: decodeURIComponent(group[1]) }
+  const qqStyle = value.match(/\/q\/(c|g)\/([^/?#]+)/i)
+  if (qqStyle)
+    return { kind: qqStyle[1].toLowerCase() === 'c' ? 'circle' : 'group', token: qqStyle[2] }
+  const legacy = value.match(/\/invite\/(circle|group)\/([^/?#]+)/)
+  if (legacy)
+    return { kind: legacy[1] as 'circle' | 'group', token: legacy[2] }
+  return null
 }
 
 export default defineComponent({
   name: 'TextMessage',
+  components: { PreviewDialog },
   props: {
     msg: {
       type: Object as PropType<IMessageMsg>,
@@ -69,6 +79,11 @@ export default defineComponent({
     },
   },
   setup(props) {
+    const previewVisible = ref(false)
+    const previewCardType = ref(0)
+    const previewId = ref('')
+    const previewToken = ref('')
+
     const formattedContent = computed(() => {
       const text = props.msg?.textMsg?.content
       if (!text)
@@ -95,34 +110,29 @@ export default defineComponent({
         return
       e.preventDefault()
       const url = target.getAttribute('data-url') || target.getAttribute('href') || ''
-      const circleId = parseCircleIdFromShare(url)
-      if (circleId) {
-        const link = `beaver://share/circle/${circleId}`
-        navigator.clipboard.writeText(link).then(() => {
-          Message.success('已复制圈子邀请链接，可在移动端打开加入')
-        }).catch(() => {
-          Message.info(link)
-        })
-        return
-      }
-      const groupId = parseGroupIdFromShare(url)
-      if (groupId) {
-        const link = `beaver://share/group/${groupId}`
-        navigator.clipboard.writeText(link).then(() => {
-          Message.success('已复制群邀请链接')
-        }).catch(() => {
-          Message.info(link)
-        })
+      const invite = parseInviteToken(url)
+      if (invite) {
+        previewCardType.value = invite.kind === 'circle' ? CardType.CIRCLE : CardType.GROUP
+        previewToken.value = invite.token
+        previewId.value = ''
+        previewVisible.value = true
         return
       }
       if (/^https?:\/\//i.test(url)) {
         window.open(url, '_blank')
+      }
+      else {
+        Message.info(url)
       }
     }
 
     return {
       formattedContent,
       handleClick,
+      previewVisible,
+      previewCardType,
+      previewId,
+      previewToken,
     }
   },
 })

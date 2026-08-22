@@ -37,6 +37,8 @@ import type {
   ISearchCircleRes,
   IUpdateCircleReq,
   IUpdateCircleRes,
+  IResolveCircleInviteReq,
+  IResolveCircleInviteRes,
 } from 'commonModule/type/ajax/circle'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
@@ -190,5 +192,13 @@ export const deleteCommentApi = (data: IDeleteCommentReq) => {
     method: 'GET',
     params: data,
     url: `${baseUrl}/api/circle/v1/comment/delete`,
+  })
+}
+
+export const resolveCircleInviteApi = (data: IResolveCircleInviteReq) => {
+  return ajax<IResolveCircleInviteRes>({
+    method: 'GET',
+    params: data,
+    url: `${baseUrl}/api/circle/v1/circle/invite_code`,
   })
 }

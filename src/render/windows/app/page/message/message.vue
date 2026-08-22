@@ -33,6 +33,7 @@
       @close="hideDetails"
     />
     <CircleDetailsComponent
+      v-if="currentDetailType === 'circle'"
       :visible="currentDetailType === 'circle'"
       :circle-id="currentCircleId"
       @close="hideDetails"

@@ -58,9 +58,9 @@
       </div>
 
       <BottomInputSection
+        ref="bottomInputRef"
         :is-liked="detail.isLiked"
         :reply-placeholder="replyTarget ? `回复 ${replyTarget.userName || ''}` : '说点什么...'"
-        :open-key="openKey"
         @send-comment="handleSendComment"
         @quick-like="handleQuickLike"
         @close-reply="replyTarget = null"
@@ -71,7 +71,7 @@
 
 <script lang="ts">
 import type { ICircleCommentItem, ICirclePostItem, ICirclePostLikeItem, IGetPostDetailRes } from 'commonModule/type/ajax/circle'
-import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, defineComponent, onMounted, onUnmounted, ref } from 'vue'
 import {
   createCommentApi,
   getCommentListApi,
@@ -103,7 +103,6 @@ export default defineComponent({
   setup(props, { emit }) {
     const activeTab = ref('comments')
     const replyTarget = ref<ICircleCommentItem | null>(null)
-    const openKey = ref(0)
     const comments = ref<ICircleCommentItem[]>([])
     const likes = ref<ICirclePostLikeItem[]>([])
     const commentPage = ref(1)
@@ -111,6 +110,7 @@ export default defineComponent({
     const childLimit = 20
     const isLoadingComments = ref(false)
     const mainContentRef = ref<HTMLElement | null>(null)
+    const bottomInputRef = ref<{ openFullInput: () => void } | null>(null)
 
     const detail = ref<IGetPostDetailRes>({
       postId: props.post.postId,
@@ -196,7 +196,7 @@ export default defineComponent({
 
     const handleReply = (target: ICircleCommentItem) => {
       replyTarget.value = target
-      openKey.value += 1
+      bottomInputRef.value?.openFullInput()
     }
 
     const handleQuickLike = async () => {
@@ -273,21 +273,9 @@ export default defineComponent({
         handleLoadMoreComments()
     }
 
-    watch(
-      () => props.post.postId,
-      async () => {
-        activeTab.value = 'comments'
-        replyTarget.value = null
-        commentPage.value = 1
-        comments.value = []
-        likes.value = []
-        await loadAll()
-      },
-      { immediate: true },
-    )
-
-    onMounted(() => {
+    onMounted(async () => {
       mainContentRef.value?.addEventListener('scroll', onScroll, { passive: true })
+      await loadAll()
     })
 
     onUnmounted(() => {
@@ -300,8 +288,8 @@ export default defineComponent({
       likes,
       activeTab,
       replyTarget,
-      openKey,
       mainContentRef,
+      bottomInputRef,
       handleClose,
       handleOverlayClick,
       handleRefresh,

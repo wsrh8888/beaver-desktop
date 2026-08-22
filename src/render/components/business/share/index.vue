@@ -1,11 +1,12 @@
 <template>
   <div class="share">
     <ShareUi
+      v-if="!selectVisible"
       v-model="visible"
       :card-type="cardType"
       :name="name"
       :avatar="avatar"
-      :share-link="shareLink"
+      :share-link="inviteUrl"
       :qr-image-url="qrImageUrl"
       @cancel="handleClose"
       @share="handleShareCard"
@@ -14,11 +15,12 @@
       @share-link="handleShareLink"
     />
 
-    <RecentConversation
-      v-model="recentVisible"
-      :title="recentTitle"
+    <SelectConversation
+      v-if="selectVisible"
+      v-model="selectVisible"
+      title="选择会话"
       :msg="pendingMsg"
-      @close="recentVisible = false"
+      @close="handleSelectClose"
       @sent="handleSent"
     />
   </div>
@@ -27,35 +29,31 @@
 <script lang="ts">
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { CardType, MessageType } from 'commonModule/type/ajax/chat'
-import { computed, defineComponent, type PropType, ref, watch } from 'vue'
-import RecentConversation from 'renderModule/components/business/recentConversation/index.vue'
+import { computed, defineComponent, type PropType, ref } from 'vue'
+import SelectConversation from 'renderModule/components/business/selectConversation/index.vue'
 import ShareUi from 'renderModule/components/ui/share/index.vue'
 import Message from 'renderModule/components/ui/message'
 
-function buildShareLink(cardType: number, id: string) {
-  if (cardType === CardType.GROUP)
-    return `beaver://share/group/${id}`
-  if (cardType === CardType.CIRCLE)
-    return `beaver://share/circle/${id}`
-  return id
-}
-
-function buildInviteQrValue(cardType: number, id: string) {
-  const action = cardType === CardType.GROUP ? 'joinGroup' : 'joinCircle'
-  const payloadKey = cardType === CardType.GROUP ? 'groupId' : 'circleId'
-  return JSON.stringify({
-    action,
-    appName: 'beaver',
-    version: '1.0.0',
-    timestamp: Date.now(),
-    expireAt: 0,
-    payload: { [payloadKey]: id },
-  })
+function parseInviteCode(url: string): string {
+  const value = url.trim()
+  if (!value)
+    return ''
+  try {
+    const uri = new URL(value)
+    const code = uri.searchParams.get('code')
+    if (code && (/\/circle\/invite_code/i.test(uri.pathname) || /\/invite_code/i.test(uri.pathname)))
+      return code
+  }
+  catch {
+    // ignore
+  }
+  const match = value.match(/[?&]code=([^&#]+)/i)
+  return match?.[1] ? decodeURIComponent(match[1]) : ''
 }
 
 export default defineComponent({
   name: 'Share',
-  components: { ShareUi, RecentConversation },
+  components: { ShareUi, SelectConversation },
   props: {
     modelValue: {
       type: Boolean,
@@ -77,10 +75,14 @@ export default defineComponent({
       type: String,
       default: '',
     },
+    inviteUrl: {
+      type: String,
+      default: '',
+    },
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
-    const recentVisible = ref(false)
+    const selectVisible = ref(false)
     const pendingMsg = ref<IMessageMsg | null>(null)
 
     const visible = computed({
@@ -88,19 +90,13 @@ export default defineComponent({
       set: val => emit('update:modelValue', val),
     })
 
-    const shareLink = computed(() => buildShareLink(props.cardType, props.id))
+    const inviteCode = computed(() => parseInviteCode(props.inviteUrl))
 
     const qrImageUrl = computed(() => {
-      const data = encodeURIComponent(buildInviteQrValue(props.cardType, props.id))
+      if (!props.inviteUrl)
+        return ''
+      const data = encodeURIComponent(props.inviteUrl)
       return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${data}`
-    })
-
-    const recentTitle = computed(() => {
-      if (props.cardType === CardType.GROUP)
-        return '发送到会话'
-      if (props.cardType === CardType.CIRCLE)
-        return '发送到会话'
-      return '选择会话'
     })
 
     const cardMsg = computed<IMessageMsg>(() => ({
@@ -108,44 +104,53 @@ export default defineComponent({
       cardMsg: {
         cardType: props.cardType,
         id: props.id,
-        expireAt: 0,
+        inviteToken: inviteCode.value,
       },
     }))
 
     const linkMsg = computed<IMessageMsg>(() => ({
       type: MessageType.TEXT,
       textMsg: {
-        content: shareLink.value,
+        content: props.inviteUrl,
       },
     }))
 
-    watch(() => props.modelValue, (val) => {
-      if (val)
-        recentVisible.value = false
-    })
+    const ensureInvite = () => {
+      if (!props.inviteUrl) {
+        Message.error('暂无可用邀请链接')
+        return false
+      }
+      return true
+    }
 
     const handleClose = () => {
+      selectVisible.value = false
+      pendingMsg.value = null
       emit('update:modelValue', false)
     }
 
-    const openRecent = (msg: IMessageMsg) => {
+    const openSelect = (msg: IMessageMsg) => {
       pendingMsg.value = msg
-      recentVisible.value = true
+      selectVisible.value = true
     }
 
     const handleShareCard = () => {
-      openRecent(cardMsg.value)
-      handleClose()
+      if (!ensureInvite())
+        return
+      openSelect(cardMsg.value)
     }
 
     const handleShareLink = () => {
-      openRecent(linkMsg.value)
-      handleClose()
+      if (!ensureInvite())
+        return
+      openSelect(linkMsg.value)
     }
 
     const handleCopy = async () => {
+      if (!ensureInvite())
+        return
       try {
-        await navigator.clipboard.writeText(shareLink.value)
+        await navigator.clipboard.writeText(props.inviteUrl)
         Message.success('邀请链接已复制')
         handleClose()
       }
@@ -155,6 +160,8 @@ export default defineComponent({
     }
 
     const handleSaveQr = async () => {
+      if (!ensureInvite() || !qrImageUrl.value)
+        return
       try {
         const res = await fetch(qrImageUrl.value)
         const blob = await res.blob()
@@ -162,7 +169,7 @@ export default defineComponent({
         const a = document.createElement('a')
         const prefix = props.cardType === CardType.GROUP ? 'group' : 'circle'
         a.href = url
-        a.download = `${prefix}-qr-${props.id || 'invite'}.png`
+        a.download = `${prefix}-qr-${inviteCode.value || props.id}.png`
         a.click()
         URL.revokeObjectURL(url)
         Message.success('二维码已保存')
@@ -172,22 +179,29 @@ export default defineComponent({
       }
     }
 
+    const handleSelectClose = () => {
+      selectVisible.value = false
+      pendingMsg.value = null
+    }
+
     const handleSent = () => {
-      recentVisible.value = false
+      selectVisible.value = false
+      pendingMsg.value = null
+      emit('update:modelValue', false)
     }
 
     return {
       visible,
-      shareLink,
+      inviteUrl: computed(() => props.inviteUrl),
       qrImageUrl,
-      recentVisible,
-      recentTitle,
+      selectVisible,
       pendingMsg,
       handleClose,
       handleShareCard,
       handleShareLink,
       handleCopy,
       handleSaveQr,
+      handleSelectClose,
       handleSent,
     }
   },

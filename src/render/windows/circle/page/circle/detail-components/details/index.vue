@@ -1,6 +1,6 @@
 <template>
   <div class="circle-details">
-    <div class="circle-details-sidebar" :class="{ active: visible }">
+    <div class="circle-details-sidebar active">
       <div class="circle-details-header">
         <h3>圈子详情</h3>
         <button class="circle-details-close" type="button" @click="$emit('close')">
@@ -61,10 +61,7 @@
             </button>
           </div>
 
-          <div v-if="loadingMembers" class="circle-details-empty">
-            加载中...
-          </div>
-          <div v-else-if="memberList.length > 0" class="circle-details-members-grid">
+          <div v-if="memberList.length > 0" class="circle-details-members-grid">
             <div
               v-for="member in displayedMembers"
               :key="member.userId"
@@ -112,7 +109,7 @@
         </div>
 
         <div class="circle-details-settings">
-          <div class="circle-details-settings-item" @click="shareVisible = true">
+          <div class="circle-details-settings-item" @click="openShare">
             <span>分享圈子</span>
             <img src="renderModule/assets/image/group/expand.svg" alt="">
           </div>
@@ -137,23 +134,24 @@
       </div>
     </div>
 
-    <div class="circle-details-overlay" :class="{ active: visible }" @click="$emit('close')" />
+    <div class="circle-details-overlay active" @click="$emit('close')" />
 
-    <AddGroupMember
+    <SelectFriend
       v-if="showAddMemberModal"
+      v-model="showAddMemberModal"
       title="添加圈成员"
-      :group-member-ids="memberList.map(m => m.userId)"
-      @close="showAddMemberModal = false"
+      :disabled-ids="memberList.map(m => m.userId)"
       @confirm="handleAddMemberConfirm"
     />
 
     <Share
-      v-if="normalizedId"
+      v-if="normalizedId && shareVisible"
       v-model="shareVisible"
       :card-type="CardType.CIRCLE"
       :id="normalizedId"
       :name="name"
       :avatar="avatar"
+      :invite-url="detail?.inviteUrl || ''"
     />
   </div>
 </template>
@@ -162,7 +160,7 @@
 import type { ICircleMemberItem, IGetCircleDetailRes } from 'commonModule/type/ajax/circle'
 import { CardType } from 'commonModule/type/ajax/chat'
 import { CacheType } from 'commonModule/type/cache/cache'
-import { computed, defineComponent, onMounted, ref, watch } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import {
   deleteCircleApi,
   getCircleDetailApi,
@@ -172,24 +170,19 @@ import {
   removeCircleMembersApi,
   updateCircleApi,
 } from 'renderModule/api/circle'
+import SelectFriend from 'renderModule/components/business/selectFriend/index.vue'
 import Share from 'renderModule/components/business/share/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import MessageBox from 'renderModule/components/ui/messagebox'
 import { uploadFile } from 'renderModule/utils/upload'
-import AddGroupMember from 'renderModule/windows/app/components/ui/add-group-member/index.vue'
-import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { parseCircleId, useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
 
 export default defineComponent({
   name: 'CircleDetails',
-  components: { BeaverImage, Share, AddGroupMember },
+  components: { BeaverImage, Share, SelectFriend },
   props: {
-    visible: {
-      type: Boolean,
-      default: false,
-    },
     circleId: {
       type: String,
       default: '',
@@ -199,14 +192,12 @@ export default defineComponent({
   setup(props, { emit }) {
     const circleStore = useCircleStore()
     const userStore = useUserStore()
-    const friendStore = useFriendStore()
     const shareVisible = ref(false)
     const showAddMemberModal = ref(false)
     const showAllMembers = ref(false)
     const avatarInputRef = ref<HTMLInputElement | null>(null)
     const detail = ref<IGetCircleDetailRes | null>(null)
     const memberList = ref<ICircleMemberItem[]>([])
-    const loadingMembers = ref(false)
     const currentUserId = ref('')
 
     const normalizedId = computed(() => parseCircleId(props.circleId || ''))
@@ -246,13 +237,11 @@ export default defineComponent({
       const id = normalizedId.value
       if (!id)
         return
-      loadingMembers.value = true
       const res = await getCircleMembersApi({
         circleId: id,
         page: 1,
         limit: 100,
       })
-      loadingMembers.value = false
       if (res.code !== 0) {
         Message.error(res.msg || '获取成员失败')
         return
@@ -260,24 +249,10 @@ export default defineComponent({
       memberList.value = res.result.list || []
     }
 
-    watch(
-      () => [props.visible, props.circleId] as const,
-      ([visible]) => {
-        if (visible && normalizedId.value) {
-          showAllMembers.value = false
-          loadDetail()
-          loadMembers()
-        }
-        else {
-          showAddMemberModal.value = false
-          shareVisible.value = false
-        }
-      },
-      { immediate: true },
-    )
-
-    onMounted(() => {
-      ensureUserId()
+    onMounted(async () => {
+      await ensureUserId()
+      await loadDetail()
+      await loadMembers()
     })
 
     const triggerAvatarInput = () => {
@@ -318,8 +293,6 @@ export default defineComponent({
         return
       }
       await ensureUserId()
-      if (!friendStore.friendList.length)
-        await friendStore.init()
       showAddMemberModal.value = true
     }
 
@@ -402,6 +375,14 @@ export default defineComponent({
       emit('quit')
     }
 
+    const openShare = () => {
+      if (!detail.value?.inviteUrl) {
+        Message.error('暂无可用邀请链接')
+        return
+      }
+      shareVisible.value = true
+    }
+
     return {
       CacheType,
       CardType,
@@ -410,7 +391,6 @@ export default defineComponent({
       showAllMembers,
       avatarInputRef,
       memberList,
-      loadingMembers,
       currentUserId,
       displayedMembers,
       normalizedId,
@@ -419,6 +399,8 @@ export default defineComponent({
       description,
       isOwner,
       canManage,
+      detail,
+      openShare,
       triggerAvatarInput,
       onAvatarInputChange,
       handleAddMember,

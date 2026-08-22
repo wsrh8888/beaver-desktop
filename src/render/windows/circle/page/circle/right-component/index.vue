@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import type { ICirclePostItem, IGetCircleDetailRes } from 'commonModule/type/ajax/circle'
-import { computed, defineComponent, ref, watch } from 'vue'
+import { computed, defineComponent, onMounted, ref } from 'vue'
 import {
   getCircleDetailApi,
   getPostListApi,
@@ -72,13 +72,11 @@ export default defineComponent({
     const loading = ref(false)
     const showCreatePost = ref(false)
 
-    const normalizedId = computed(() => parseCircleId(props.circleId || ''))
-
     const circleName = computed(() => detail.value?.name || '圈子')
     const canPost = computed(() => (detail.value?.role || 0) > 0)
 
-    const loadDetail = async () => {
-      const id = normalizedId.value
+    const loadDetail = async (circleId?: string) => {
+      const id = parseCircleId(circleId || props.circleId || '')
       if (!id)
         return
       const res = await getCircleDetailApi({ circleId: id })
@@ -90,8 +88,8 @@ export default defineComponent({
       detail.value = res.result
     }
 
-    const loadPosts = async () => {
-      const id = normalizedId.value
+    const loadPosts = async (circleId?: string) => {
+      const id = parseCircleId(circleId || props.circleId || '')
       if (!id)
         return
       loading.value = true
@@ -108,8 +106,8 @@ export default defineComponent({
       postList.value = res.result.list || []
     }
 
-    const loadAll = async () => {
-      const id = normalizedId.value
+    const loadAll = async (circleId?: string) => {
+      const id = parseCircleId(circleId ?? props.circleId ?? '')
       if (!id) {
         detail.value = null
         postList.value = []
@@ -117,16 +115,12 @@ export default defineComponent({
         return
       }
       showCreatePost.value = false
-      await Promise.all([loadDetail(), loadPosts()])
+      await Promise.all([loadDetail(id), loadPosts(id)])
     }
 
-    watch(
-      () => props.circleId,
-      () => {
-        loadAll()
-      },
-      { immediate: true },
-    )
+    onMounted(() => {
+      loadAll()
+    })
 
     const handleShowDetails = () => {
       emit('show-details')

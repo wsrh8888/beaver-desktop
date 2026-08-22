@@ -34,7 +34,7 @@
 <script lang="ts">
 import SvgLikeActive from 'renderModule/assets/image/moment/like-active.svg'
 import SvgLike from 'renderModule/assets/image/moment/like-default.svg'
-import { defineComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
+import { defineComponent, nextTick, onMounted, onUnmounted, ref } from 'vue'
 
 export default defineComponent({
   name: 'BottomInputSection',
@@ -47,13 +47,9 @@ export default defineComponent({
       type: String,
       default: '说点什么...',
     },
-    openKey: {
-      type: Number,
-      default: 0,
-    },
   },
   emits: ['sendComment', 'quickLike', 'closeReply'],
-  setup(props, { emit }) {
+  setup(_props, { emit, expose }) {
     const showFullInput = ref(false)
     const commentText = ref('')
     const textareaRef = ref<HTMLTextAreaElement | null>(null)
@@ -122,16 +118,6 @@ export default defineComponent({
       }
     })
 
-    // 外部触发打开输入框
-    watch(
-      () => props.openKey,
-      (v) => {
-        if (v) {
-          handleShowFullInput()
-        }
-      },
-    )
-
     // 组件卸载时
     onUnmounted(() => {
       removeClickOutsideListener()
@@ -146,6 +132,10 @@ export default defineComponent({
       const newHeight = Math.min(Math.max(textarea.scrollHeight, 60), 300)
       textarea.style.height = `${newHeight}px`
     }
+
+    expose({
+      openFullInput: handleShowFullInput,
+    })
 
     return {
       showFullInput,

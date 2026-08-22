@@ -10,6 +10,9 @@ import type {
   IGroupInfoRes,
   IGroupInviteReq,
   IGroupJoinReq,
+  IGroupJoinRes,
+  IResolveGroupInviteReq,
+  IResolveGroupInviteRes,
   IGroupJoinRequestHandleReq,
   IGroupJoinRequestHandleRes,
   IGroupJoinRequestListReq,
@@ -132,7 +135,7 @@ export const updateMemberRoleApi = (data: IUpdateMemberRoleReq) => {
  * @description: 申请加入群组
  */
 export const joinGroupApi = (data: IGroupJoinReq) => {
-  return ajax<Record<string, never>>({
+  return ajax<IGroupJoinRes>({
     method: 'POST',
     data,
     url: `${baseUrl}/api/group/v1/join`,
@@ -267,5 +270,13 @@ export const resetBotSecretApi = (data: IResetBotSecretReq) => {
     method: 'POST',
     data,
     url: `${baseUrl}/api/group/v1/reset_bot_secret`,
+  })
+}
+
+export const resolveGroupInviteApi = (data: IResolveGroupInviteReq) => {
+  return ajax<IResolveGroupInviteRes>({
+    method: 'GET',
+    params: data,
+    url: `${baseUrl}/api/group/v1/invite_code`,
   })
 }

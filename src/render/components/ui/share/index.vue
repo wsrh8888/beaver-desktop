@@ -16,26 +16,32 @@
         </div>
 
         <div v-if="activeTab === 'card'" class="share-ui-panel">
-          <div class="share-ui-card">
-            <div class="share-ui-card-avatar">
-              <BeaverImage
-                v-if="avatar"
-                :file-name="avatar"
-                alt="avatar"
-                image-class="share-ui-card-avatar-img"
-              />
-              <span v-else class="share-ui-card-avatar-text">{{ name.slice(0, 1) || '?' }}</span>
+          <div class="share-ui-card" :class="isGroup ? 'is-group' : 'is-circle'">
+            <div class="share-ui-card-accent" />
+            <div class="share-ui-card-body">
+              <div class="share-ui-card-avatar">
+                <BeaverImage
+                  v-if="avatar"
+                  :file-name="avatar"
+                  alt="avatar"
+                  image-class="share-ui-card-avatar-img"
+                />
+                <span v-else class="share-ui-card-avatar-text">{{ name.slice(0, 1) || '?' }}</span>
+              </div>
+              <div class="share-ui-card-main">
+                <div class="share-ui-card-badge">
+                  {{ cardLabel }}
+                </div>
+                <div class="share-ui-card-name">
+                  {{ name || '未命名' }}
+                </div>
+                <div class="share-ui-card-hint">
+                  {{ isGroup ? '分享后对方可一键加入群聊' : '分享后对方可一键加入圈子' }}
+                </div>
+              </div>
             </div>
-            <div class="share-ui-card-main">
-              <div class="share-ui-card-badge">
-                {{ cardLabel }}
-              </div>
-              <div class="share-ui-card-name">
-                {{ name || '未命名' }}
-              </div>
-              <div class="share-ui-card-hint">
-                点击分享，将以名片形式发送到会话
-              </div>
+            <div class="share-ui-card-foot">
+              预览效果 · 发送到会话
             </div>
           </div>
         </div>
@@ -166,6 +172,7 @@ export default defineComponent({
       tabs,
       dialogTitle,
       cardLabel,
+      isGroup,
       handleCancel,
     }
   },
@@ -221,28 +228,35 @@ export default defineComponent({
 }
 
 .share-ui-card {
+  overflow: hidden;
+  border-radius: 14px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: #FFFFFF;
+  box-shadow: 0 4px 16px rgba(45, 52, 54, 0.06);
+}
+
+
+.share-ui-card-body {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 16px;
-  border-radius: 12px;
-  border: 1px solid #FFE8DC;
-  background: linear-gradient(135deg, #FFF7F2 0%, #FFFFFF 72%);
+  padding: 18px 16px 14px;
 }
 
 .share-ui-card-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 12px;
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
   overflow: hidden;
-  background: #FFE6D9;
+  background: #FFF1EB;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
   color: #FF7D45;
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 600;
+  box-shadow: inset 0 0 0 1px rgba(255, 125, 69, 0.12);
 }
 
 .share-ui-card-avatar-img {
@@ -265,8 +279,8 @@ export default defineComponent({
   height: 20px;
   align-items: center;
   padding: 0 8px;
-  border-radius: 6px;
-  background: rgba(255, 125, 69, 0.12);
+  border-radius: 5px;
+  background: rgba(255, 125, 69, 0.1);
   color: #E86835;
   font-size: 11px;
   font-weight: 600;
@@ -274,7 +288,7 @@ export default defineComponent({
 }
 
 .share-ui-card-name {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   color: #2D3436;
   overflow: hidden;
@@ -286,6 +300,15 @@ export default defineComponent({
   margin-top: 6px;
   font-size: 12px;
   color: #95A5A6;
+  line-height: 1.4;
+}
+
+.share-ui-card-foot {
+  padding: 10px 16px;
+  border-top: 1px solid #F2F3F5;
+  background: #FAFBFC;
+  font-size: 11px;
+  color: #B2BEC3;
 }
 
 .share-ui-link-box {

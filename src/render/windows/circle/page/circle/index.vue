@@ -19,7 +19,7 @@
     </div>
 
     <CircleDetails
-      :visible="showDetails"
+      v-if="showDetails"
       :circle-id="selectedCircleId"
       @close="showDetails = false"
       @quit="handleQuit"
@@ -27,6 +27,7 @@
     />
     <CirclePostDetail
       v-if="activePost"
+      :key="activePost.postId"
       :post="activePost"
       @close="activePost = null"
       @commented="handlePostChanged"
@@ -65,21 +66,23 @@ export default defineComponent({
     const activePost = ref<ICirclePostItem | null>(null)
     const leftRef = ref<{ loadList: () => Promise<void> } | null>(null)
     const rightRef = ref<{
-      loadAll: () => Promise<void>
+      loadAll: (circleId?: string) => Promise<void>
       loadPosts: () => Promise<void>
       postList: ICirclePostItem[]
     } | null>(null)
 
-    const handleSelect = (circleId: string) => {
+    const handleSelect = async (circleId: string) => {
       selectedCircleId.value = circleId
       showDetails.value = false
       activePost.value = null
+      await rightRef.value?.loadAll(circleId)
     }
 
     const handleCreated = async (circleId: string) => {
       showCreateCircle.value = false
       await leftRef.value?.loadList()
       selectedCircleId.value = circleId
+      await rightRef.value?.loadAll(circleId)
     }
 
     const handleQuit = async () => {
@@ -87,6 +90,7 @@ export default defineComponent({
       activePost.value = null
       selectedCircleId.value = ''
       await leftRef.value?.loadList()
+      await rightRef.value?.loadAll('')
     }
 
     const handleUpdated = async () => {
