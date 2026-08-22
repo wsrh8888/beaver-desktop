@@ -1,7 +1,7 @@
 # 🦫 Beaver IM - 海狸即时通讯桌面端
 
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-[![Version](https://img.shields.io/badge/version-2.0.0-blue.svg)](VERSION)
+[![Version](https://img.shields.io/badge/version-2.1.0-blue.svg)](VERSION)
 [![Electron](https://img.shields.io/badge/Electron-31.x-green.svg)](https://electronjs.org/)
 [![Vue](https://img.shields.io/badge/Vue-3.x-brightgreen.svg)](https://vuejs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.x-blue.svg)](https://www.typescriptlang.org/)
@@ -9,7 +9,7 @@
 
 > 🚀 **现代化桌面即时通讯应用** - 基于 Electron + Vue3 + TypeScript 构建，支持 Windows/macOS/Linux，提供完整的社交聊天体验
 
-**当前版本：[2.0.2](VERSION)**（以仓库根目录 [`VERSION`](VERSION) 文件为准，与 `package.json` 同步）
+**当前版本：[2.1.0](VERSION)**（以仓库根目录 [`VERSION`](VERSION) 文件为准，与 `package.json` 同步）
 
 [English](README_EN.md) | [中文](README.md)
 
