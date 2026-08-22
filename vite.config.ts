@@ -23,6 +23,7 @@ function createPreload(name: string, entry: string) {
       resolve: { alias },
       build: {
         outDir: 'dist-electron/preload',
+        emptyOutDir: true,
         rollupOptions: {
           input: { [name]: entry },
           external: ['electron', 'electron-screenshots'],
@@ -52,6 +53,7 @@ export default defineConfig(({ command: _command }) => {
           vite: {
             build: {
               outDir: 'dist-electron',
+              emptyOutDir: true,
               rollupOptions: {
                 external: ['electron', 'electron-screenshots', 'ws'],
               },
@@ -76,6 +78,7 @@ export default defineConfig(({ command: _command }) => {
     },
     build: {
       outDir: 'dist',
+      emptyOutDir: true,
       rollupOptions: {
         input: {
           app: path.resolve(__dirname, 'app.html'),
