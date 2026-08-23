@@ -70,12 +70,12 @@
         <BeaverImage :file-name="userInfo.avatar" :cache-type="CacheType.USER_AVATAR" />
       </div>
 
-      <div class="about-entry app__no_drag" title="关于海狸 IM" @click="handleAboutClick">
+      <div class="about-entry app__no_drag" title="开源致谢" @click="handleAboutClick">
         <div class="about-entry__icon">
-          <img src="renderModule/assets/image/leftBar/settings/about.svg" alt="关于">
+          <img src="renderModule/assets/image/leftBar/settings/about.svg" alt="开源致谢">
         </div>
         <div class="about-entry__label">
-          关于
+          开源致谢
         </div>
       </div>
     </div>

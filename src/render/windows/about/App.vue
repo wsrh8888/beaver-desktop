@@ -2,7 +2,7 @@
   <div class="about-app">
     <div class="about-header">
       <div class="about-header__title">
-        关于海狸 IM
+        开源致谢
       </div>
       <div class="about-header__controls">
         <button class="about-header__btn" @click="handleMinimize">

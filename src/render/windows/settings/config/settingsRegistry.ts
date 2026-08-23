@@ -78,7 +78,7 @@ export const settingsRegistry: ISettingsSection[] = [
   },
   {
     id: 'about',
-    label: '关于',
+    label: '开源致谢',
     type: 'about',
   },
 ]

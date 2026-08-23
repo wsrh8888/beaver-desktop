@@ -86,7 +86,7 @@ export const userInfoMenuList = [
   },
   {
     key: 'about',
-    label: '关于',
+    label: '开源致谢',
     icon: aboutIcon,
   },
   {
