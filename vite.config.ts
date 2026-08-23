@@ -13,8 +13,11 @@ const alias = {
   preloadModule: path.resolve(__dirname, 'src/preload'),
 }
 
-/** 单个 preload 入口（simple 不支持多入口 + inlineDynamicImports） */
-function createPreload(name: string, entry: string) {
+/**
+ * 单个 preload 入口（simple 不支持多入口 + inlineDynamicImports）。
+ * 多个 preload 共用 outDir 时，只有第一个可 emptyOutDir，否则后构建会把先产出的文件删掉。
+ */
+function createPreload(name: string, entry: string, emptyOutDir = false) {
   return {
     onstart({ reload }: { reload: () => void }) {
       reload()
@@ -23,7 +26,7 @@ function createPreload(name: string, entry: string) {
       resolve: { alias },
       build: {
         outDir: 'dist-electron/preload',
-        emptyOutDir: true,
+        emptyOutDir,
         rollupOptions: {
           input: { [name]: entry },
           external: ['electron', 'electron-screenshots'],
@@ -63,8 +66,8 @@ export default defineConfig(({ command: _command }) => {
             },
           },
         },
-        createPreload('index', path.resolve(__dirname, 'src/preload/electron/index.ts')),
-        createPreload('bridge', path.resolve(__dirname, 'src/preload/bridge/index.ts')),
+        createPreload('index', path.resolve(__dirname, 'src/preload/electron/index.ts'), true),
+        createPreload('bridge', path.resolve(__dirname, 'src/preload/bridge/index.ts'), false),
       ]),
       electronRenderer(),
     ],
