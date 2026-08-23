@@ -96,6 +96,7 @@ export default defineConfig(({ command: _command }) => {
           circle: path.resolve(__dirname, 'circle.html'),
           workbench: path.resolve(__dirname, 'workbench.html'),
           settings: path.resolve(__dirname, 'settings.html'),
+          about: path.resolve(__dirname, 'about.html'),
         },
         output: {
           format: 'es', // 确保输出 ES 模块格式

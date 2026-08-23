@@ -1,7 +1,7 @@
 {
   "name": "beaver",
   "type": "module",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "private": true,
   "description": "beaverIM",
   "author": "Robert",
@@ -15,7 +15,8 @@
     "package-install": "build\\installer\\index.bat",
     "lint": "eslint . --fix",
     "prepare": "husky",
-    "postinstall": "npx electron-rebuild"
+    "postinstall": "npx electron-rebuild",
+    "add-copyright-header": "node build/scripts/add-copyright-header.mjs"
   },
   "copyright": "Copyright ? 2025 Beaver. All Rights Reserved.",
   "build": {

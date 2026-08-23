@@ -1,3 +1,24 @@
+<!--
+  Copyright (c) 2024-2026 Beaver IM Team
+  SPDX-License-Identifier: MIT
+  Project: beaver-desktop
+  https://github.com/wsrh8888/beaver-desktop
+
+  中文：
+  本文件为海狸 IM（Beaver IM）开源项目源代码。
+  版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
+  禁止删除、篡改或替换本文件头部版权与许可声明。
+  使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
+
+  English:
+  This file is part of the Beaver IM open-source project.
+  Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
+  Do not remove, alter, or replace this copyright and license header.
+  Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
+
+  beaver-desktop-header-v2
+-->
+
 <template>
   <div class="nav-sidebar">
     <div class="main-logo">
@@ -68,6 +89,15 @@
 
       <div ref="avatarRef" class="user-avatar-nav app__no_drag" title="个人中心" @click="handleAvatarClick">
         <BeaverImage :file-name="userInfo.avatar" :cache-type="CacheType.USER_AVATAR" />
+      </div>
+
+      <div class="about-entry app__no_drag" title="开源致谢" @click="handleAboutClick">
+        <div class="about-entry__icon">
+          <img src="renderModule/assets/image/leftBar/settings/about.svg" alt="开源致谢">
+        </div>
+        <div class="about-entry__label">
+          开源致谢
+        </div>
       </div>
     </div>
 
@@ -151,6 +181,10 @@ export default {
       updateStore.startUpdate()
     }
 
+    const handleAboutClick = () => {
+      void electron.window.openWindow('about', { unique: true })
+    }
+
     const handleAvatarClick = () => {
       showUserInfo.value = true
     }
@@ -167,6 +201,7 @@ export default {
       badgeCount,
       handleClick,
       handleUpdateClick,
+      handleAboutClick,
       handleAvatarClick,
       showUserInfo,
       avatarRef,
@@ -336,6 +371,47 @@ export default {
   border-radius: 50%;
   background: #FF7D45;
   border: 1.5px solid #FFFFFF;
+}
+
+.about-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  cursor: pointer;
+  margin-top: 4px;
+
+  &__icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2px;
+    transition: background 0.2s;
+
+    img {
+      width: 18px;
+      height: 18px;
+    }
+  }
+
+  &__label {
+    font-size: 10px;
+    line-height: 1.2;
+    color: #636E72;
+  }
+
+  &:hover {
+    .about-entry__icon {
+      background: rgba(255, 125, 69, 0.1);
+    }
+
+    .about-entry__label {
+      color: #FF7D45;
+    }
+  }
 }
 
 .user-avatar-nav {
