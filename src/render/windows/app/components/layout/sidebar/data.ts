@@ -13,6 +13,7 @@ import assistantActive from 'renderModule/assets/image/leftBar/assistant_active.
 import logoutIcon from 'renderModule/assets/image/leftBar/settings/logout.svg'
 import profileIcon from 'renderModule/assets/image/leftBar/settings/profile.svg'
 import settingsIcon from 'renderModule/assets/image/leftBar/settings/settings.svg'
+import aboutIcon from 'renderModule/assets/image/leftBar/settings/about.svg'
 
 export interface ISidebarNavItem {
   id: string
@@ -82,6 +83,11 @@ export const userInfoMenuList = [
     key: 'settings',
     label: '设置',
     icon: settingsIcon,
+  },
+  {
+    key: 'about',
+    label: '关于',
+    icon: aboutIcon,
   },
   {
     key: 'logout',

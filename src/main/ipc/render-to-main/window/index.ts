@@ -18,6 +18,7 @@ import aiApplication from 'mainModule/application/ai'
 import circleApplication from 'mainModule/application/circle'
 import workbenchApplication from 'mainModule/application/workbench'
 import settingsApplication from 'mainModule/application/settings'
+import aboutApplication from 'mainModule/application/about'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import logger from 'mainModule/utils/log'
 
@@ -187,6 +188,10 @@ class WindowHandler {
         case 'settings':
           settingsApplication.createBrowserWindow()
           newWindow = (settingsApplication as any).win
+          break
+        case 'about':
+          aboutApplication.createBrowserWindow()
+          newWindow = (aboutApplication as any).win
           break
       }
 

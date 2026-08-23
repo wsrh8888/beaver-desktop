@@ -166,6 +166,10 @@ export default defineComponent({
           electron.window.openWindow('settings', { unique: true })
           handleClose()
           break
+        case 'about':
+          electron.window.openWindow('about', { unique: true })
+          handleClose()
+          break
         case 'logout':
           handleLogout()
           break

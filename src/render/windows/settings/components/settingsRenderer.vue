@@ -10,11 +10,13 @@ import AboutField from './fields/aboutField.vue'
 import DeviceListField from './fields/deviceListField.vue'
 import KeyboardField from './fields/keyboardField.vue'
 import ToggleField from './fields/toggleField.vue'
+import UpgradeField from './fields/upgradeField.vue'
 
 const fieldComponentMap: Record<SettingsFieldType, Component> = {
   devices: DeviceListField,
   'toggle-group': ToggleField,
   keyboard: KeyboardField,
+  upgrade: UpgradeField,
   about: AboutField,
 }
 
@@ -24,6 +26,7 @@ export default defineComponent({
     DeviceListField,
     ToggleField,
     KeyboardField,
+    UpgradeField,
     AboutField,
   },
   props: {

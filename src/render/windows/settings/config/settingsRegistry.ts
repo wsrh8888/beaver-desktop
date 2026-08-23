@@ -4,7 +4,7 @@ import type {
 } from 'commonModule/type/ajax/user'
 import type { KeyboardActionId } from 'commonModule/type/mainStore'
 
-export type SettingsFieldType = 'devices' | 'toggle-group' | 'keyboard' | 'about'
+export type SettingsFieldType = 'devices' | 'toggle-group' | 'keyboard' | 'upgrade' | 'about'
 
 export type SettingsToggleScope = 'privacy' | 'notification'
 
@@ -72,8 +72,13 @@ export const settingsRegistry: ISettingsSection[] = [
   //   ],
   // },
   {
+    id: 'upgrade',
+    label: '升级',
+    type: 'upgrade',
+  },
+  {
     id: 'about',
-    label: '关于海狸',
+    label: '关于',
     type: 'about',
   },
 ]
