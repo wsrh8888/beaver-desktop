@@ -16,39 +16,34 @@
           />
 
           <div class="conversation-list">
-            <div v-if="loading" class="empty-tip">
-              加载中...
+            <div
+              v-for="item in filteredList"
+              :key="item.conversationId"
+              class="conversation-item"
+              :class="{ selected: selectedId === item.conversationId }"
+              @click="pickConversation(item)"
+            >
+              <div class="conversation-avatar">
+                <BeaverImage
+                  :file-name="item.avatar"
+                  :cache-type="CacheType.USER_AVATAR"
+                  :alt="item.nickName"
+                />
+              </div>
+              <div class="conversation-name">
+                {{ item.nickName }}
+              </div>
+              <div class="conversation-checkbox">
+                <img
+                  v-if="selectedId === item.conversationId"
+                  src="renderModule/assets/image/create-group/check.svg"
+                  alt="选中"
+                >
+              </div>
             </div>
-            <template v-else>
-              <div
-                v-for="item in filteredList"
-                :key="item.conversationId"
-                class="conversation-item"
-                :class="{ selected: selectedId === item.conversationId }"
-                @click="pickConversation(item)"
-              >
-                <div class="conversation-avatar">
-                  <BeaverImage
-                    :file-name="item.avatar"
-                    :cache-type="CacheType.USER_AVATAR"
-                    :alt="item.nickName"
-                  />
-                </div>
-                <div class="conversation-name">
-                  {{ item.nickName }}
-                </div>
-                <div class="conversation-checkbox">
-                  <img
-                    v-if="selectedId === item.conversationId"
-                    src="renderModule/assets/image/create-group/check.svg"
-                    alt="选中"
-                  >
-                </div>
-              </div>
-              <div v-if="filteredList.length === 0" class="empty-tip">
-                暂无会话
-              </div>
-            </template>
+            <div v-if="filteredList.length === 0" class="empty-tip">
+              暂无会话
+            </div>
           </div>
         </div>
 
@@ -92,14 +87,13 @@ import type { IConversationInfoRes } from 'commonModule/type/ajax/chat'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { CacheType } from 'commonModule/type/cache/cache'
 import searchIcon from 'renderModule/assets/image/create-group/search.svg'
-import { getRecentChatListApi } from 'renderModule/api/chat'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverDialog from 'renderModule/components/ui/dialog/dialog.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import BeaverInput from 'renderModule/components/ui/input/Input.vue'
 import Message from 'renderModule/components/ui/message'
 import { ChatCore } from 'renderModule/core/message/index'
-import { computed, defineComponent, type PropType, ref, watch } from 'vue'
+import { computed, defineComponent, onMounted, type PropType, ref } from 'vue'
 
 export default defineComponent({
   name: 'SelectConversation',
@@ -128,7 +122,6 @@ export default defineComponent({
     const searchKeyword = ref('')
     const selectedId = ref('')
     const sending = ref(false)
-    const loading = ref(false)
     const conversations = ref<IConversationInfoRes[]>([])
 
     const visible = computed({
@@ -159,27 +152,21 @@ export default defineComponent({
     }
 
     const loadConversations = async () => {
-      loading.value = true
       try {
-        const res = await getRecentChatListApi({ page: 1, limit: 100 })
-        conversations.value = res.code === 0 ? (res.result.list || []) : []
+        const res = await electron.database.chat.getRecentChatList({
+          page: 1,
+          limit: 100,
+        })
+        conversations.value = res.list || []
       }
       catch {
         conversations.value = []
       }
-      finally {
-        loading.value = false
-      }
     }
 
-    watch(() => props.modelValue, (val) => {
-      if (val) {
-        selectedId.value = ''
-        searchKeyword.value = ''
-        sending.value = false
-        loadConversations()
-      }
-    }, { immediate: true })
+    onMounted(() => {
+      loadConversations()
+    })
 
     const handleClose = () => {
       emit('update:modelValue', false)
@@ -214,7 +201,6 @@ export default defineComponent({
       selectedId,
       selectedItem,
       sending,
-      loading,
       filteredList,
       pickConversation,
       clearSelection,
