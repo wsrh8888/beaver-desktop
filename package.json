@@ -16,8 +16,7 @@
     "lint": "eslint . --fix",
     "prepare": "husky",
     "postinstall": "npx electron-rebuild",
-    "add-copyright-header": "node build/scripts/add-copyright-header.mjs",
-    "add-copyright-header:dry": "node build/scripts/add-copyright-header.mjs --dry-run"
+    "add-copyright-header": "node build/scripts/add-copyright-header.mjs"
   },
   "copyright": "Copyright ? 2025 Beaver. All Rights Reserved.",
   "build": {

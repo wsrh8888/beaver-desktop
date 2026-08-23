@@ -5,9 +5,7 @@
  * https://github.com/wsrh8888/beaver-desktop
  *
  * 批量为 src 下 .ts / .vue / .js 添加或更新文件头版权注释（中英双语）。
- * 用法（仓库根目录）:
- *   node build/scripts/add-copyright-header.mjs
- *   node build/scripts/add-copyright-header.mjs --dry-run
+ * 用法（仓库根目录）: node build/scripts/add-copyright-header.mjs
  */
 
 import fs from 'node:fs'
@@ -18,8 +16,6 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 const repoRoot = path.resolve(__dirname, '../..')
 const srcRoot = path.join(repoRoot, 'src')
-
-const dryRun = process.argv.includes('--dry-run')
 
 const MARKER = 'SPDX-License-Identifier: MIT'
 const HEADER_VERSION = 'beaver-desktop-header-v2'
@@ -185,17 +181,11 @@ function main() {
     }
     changed += 1
     const rel = path.relative(repoRoot, file)
-    if (dryRun) {
-      console.log(`[dry-run] would update: ${rel}`)
-      continue
-    }
     fs.writeFileSync(file, next, 'utf8')
     console.log(`updated: ${rel}`)
   }
 
-  console.log(
-    `\nDone. files=${files.length}, updated=${changed}, skipped=${skipped}, dryRun=${dryRun}`,
-  )
+  console.log(`\nDone. files=${files.length}, updated=${changed}, skipped=${skipped}`)
 }
 
 main()
