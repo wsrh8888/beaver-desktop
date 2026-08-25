@@ -68,12 +68,6 @@ export const coreNavList: ISidebarNavItem[] = [
 /** 应用扩展：独立窗口能力 */
 export const appNavList: ISidebarNavItem[] = [
   {
-    id: 'ai',
-    title: 'AI助手',
-    defaultIcon: assistantSvg,
-    activeIcon: assistantActive,
-  },
-  {
     id: 'circle',
     title: '圈子',
     defaultIcon: circleSvg,

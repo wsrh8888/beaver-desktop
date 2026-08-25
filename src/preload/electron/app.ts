@@ -25,10 +25,11 @@ function parseAdditionalArguments() {
   const args = process.argv.slice(1)
   let params = {
     appRootPath: '',
-    env: 'prod' as 'prod' | 'test',
+    env: 'prod' as 'prod' | 'test' | 'dev',
     token: undefined as string | undefined,
     devicedId: undefined as string | undefined,
     version: '1.0.0.0' as string,
+    baseUrl: undefined as string | undefined,
   }
   args.forEach((arg) => {
     const paramsPrefix = '--custom='
@@ -55,4 +56,5 @@ export const appModule: IAppModule = {
   env: appParsedArgs.env,
   devicedId: appParsedArgs.devicedId,
   version: appParsedArgs.version,
+  baseUrl: appParsedArgs.baseUrl,
 }

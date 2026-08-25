@@ -70,4 +70,9 @@ export interface IAppModule {
    * @description: 应用的版本。
    */
   version: string
+
+  /**
+   * @description: 可选，来自 config.ini 的 API 域名覆盖
+   */
+  baseUrl?: string
 }

@@ -65,6 +65,7 @@ export default class ApplicationBase {
       token: store.get('userInfo')?.token,
       devicedId: process.custom.DEVICE_ID,
       version: process.custom.VERSION,
+      ...(process.custom.BASE_URL ? { baseUrl: process.custom.BASE_URL } : {}),
     }
   }
 }

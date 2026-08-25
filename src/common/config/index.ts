@@ -43,13 +43,21 @@ const config: IConfigs = {
 }
 
 function getCurrentConfig(): IConfig {
+  // 主进程：process.custom；渲染进程：electron.app
   if (typeof process !== 'undefined' && process.custom?.ENV) {
-    const targetEnv = process.custom.ENV || 'test'
-    return config[targetEnv] || config.test
+    let current = config[process.custom.ENV] || config.test
+    if (process.custom.BASE_URL) {
+      current = { ...current, baseUrl: process.custom.BASE_URL }
+    }
+    return current
   }
 
   if (typeof window !== 'undefined' && window.electron?.app?.env) {
-    return config[electron.app.env]
+    let current = config[electron.app.env] || config.test
+    if (electron.app.baseUrl) {
+      current = { ...current, baseUrl: electron.app.baseUrl }
+    }
+    return current
   }
 
   return config.test

@@ -43,6 +43,8 @@ export interface IConfigs {
 
 export interface IElectronApp {
   env: string
+  /** 可选，来自 config.ini 的 API 域名覆盖 */
+  baseUrl?: string
 }
 
 export interface IElectron {

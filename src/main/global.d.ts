@@ -45,6 +45,10 @@ declare namespace NodeJS {
        * @values: 'windows' | 'mac' | 'linux' | 'ios' | 'android'
        */
       PLATFORM: string
+      /**
+       * @description: 可选，来自 config.ini 的 baseUrl 覆盖
+       */
+      BASE_URL?: string
     }
   }
 }

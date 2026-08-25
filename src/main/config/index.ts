@@ -98,6 +98,13 @@ function loadConfigFile(configPath: string) {
       if (config.tools) {
         process.custom.TOOLS = config.tools
       }
+      // 可选：覆盖默认域名，自托管时改这一行即可，无需改源码重编
+      if (config.baseUrl) {
+        const baseUrl = String(config.baseUrl).trim()
+        if (baseUrl) {
+          process.custom.BASE_URL = baseUrl
+        }
+      }
     }
     catch {
     }
