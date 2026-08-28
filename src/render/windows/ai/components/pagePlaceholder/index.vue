@@ -20,51 +20,59 @@
 -->
 
 <template>
-  <div class="ai-app">
-    <AiHeader />
-    <div class="ai-app__body">
-      <AiSidebar v-if="!aiViewStore.sidebarCollapsed" />
-      <main class="ai-app__main">
-        <router-view />
-      </main>
-    </div>
+  <div class="ai-placeholder">
+    <img src="renderModule/assets/image/assistant/avatar.svg" alt="beaver" class="ai-placeholder__icon">
+    <h2 class="ai-placeholder__title">
+      {{ title }}
+    </h2>
+    <p class="ai-placeholder__desc">
+      {{ description }}
+    </p>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import AiHeader from 'renderModule/windows/ai/components/layout/header/header.vue'
-import AiSidebar from 'renderModule/windows/ai/components/layout/sidebar/index.vue'
-import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
 
 export default defineComponent({
-  name: 'AiApp',
-  components: { AiHeader, AiSidebar },
-  setup() {
-    return { aiViewStore: useAiViewStore() }
+  name: 'AiPagePlaceholder',
+  props: {
+    title: { type: String, required: true },
+    description: { type: String, default: '能力建设中，后续会在此接入完整功能。' },
   },
 })
 </script>
 
 <style lang="less" scoped>
-.ai-app {
-  height: 100vh;
+.ai-placeholder {
+  height: 100%;
   display: flex;
   flex-direction: column;
-  background: #F9FAFB;
+  align-items: center;
+  justify-content: center;
+  color: #636E72;
+  background: #FFFFFF;
 
-  &__body {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    overflow: hidden;
+  &__icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 16px;
+    opacity: 0.7;
   }
 
-  &__main {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    background: #FFFFFF;
+  &__title {
+    margin: 0 0 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2D3436;
+    line-height: 1.3;
+  }
+
+  &__desc {
+    margin: 0;
+    font-size: 13px;
+    color: #B2BEC3;
+    line-height: 1.5;
   }
 }
 </style>

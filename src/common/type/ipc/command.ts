@@ -338,3 +338,21 @@ export enum WorkbenchCommand {
 export enum BridgeCommand {
   INVOKE = 'bridge:invoke',
 }
+
+/**
+ * @description: 通用文件系统 Command（与业务解耦）
+ */
+export enum FsCommand {
+  /** 创建目录（recursive） */
+  MKDIR = 'fs:mkdir',
+  /** 路径是否存在 */
+  EXISTS = 'fs:exists',
+  /** 获取系统路径（documents / desktop / home / userData 等） */
+  GET_PATH = 'fs:getPath',
+  /** path.join */
+  JOIN = 'fs:join',
+  /** path.basename */
+  BASENAME = 'fs:basename',
+  /** 系统目录选择器 */
+  SHOW_OPEN_DIRECTORY = 'fs:showOpenDirectory',
+}

@@ -35,6 +35,7 @@ import type { ICallModule } from './call'
 import type { IKeyboardModule } from './keyboard'
 import type { ISettingsModule } from './settings'
 import type { IWorkbenchModule } from './workbench'
+import type { IFsModule } from './fs'
 
 /**
  * @description: Electron preload接口
@@ -119,4 +120,9 @@ export interface ElectronAPP {
    * @description: 工作台内嵌 WebContentsView
    */
   workbench: IWorkbenchModule
+
+  /**
+   * @description: 通用文件系统（与业务解耦）
+   */
+  fs: IFsModule
 }

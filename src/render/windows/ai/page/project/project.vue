@@ -20,51 +20,18 @@
 -->
 
 <template>
-  <div class="ai-app">
-    <AiHeader />
-    <div class="ai-app__body">
-      <AiSidebar v-if="!aiViewStore.sidebarCollapsed" />
-      <main class="ai-app__main">
-        <router-view />
-      </main>
-    </div>
-  </div>
+  <AiPagePlaceholder
+    title="项目"
+    description="按项目组织任务与上下文，后续接入工作空间管理。"
+  />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import AiHeader from 'renderModule/windows/ai/components/layout/header/header.vue'
-import AiSidebar from 'renderModule/windows/ai/components/layout/sidebar/index.vue'
-import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
+import AiPagePlaceholder from 'renderModule/windows/ai/components/pagePlaceholder/index.vue'
 
 export default defineComponent({
-  name: 'AiApp',
-  components: { AiHeader, AiSidebar },
-  setup() {
-    return { aiViewStore: useAiViewStore() }
-  },
+  name: 'AiProjectPage',
+  components: { AiPagePlaceholder },
 })
 </script>
-
-<style lang="less" scoped>
-.ai-app {
-  height: 100vh;
-  display: flex;
-  flex-direction: column;
-  background: #F9FAFB;
-
-  &__body {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    overflow: hidden;
-  }
-
-  &__main {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
-    background: #FFFFFF;
-  }
-}
-</style>

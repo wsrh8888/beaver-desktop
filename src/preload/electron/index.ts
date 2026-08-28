@@ -39,6 +39,7 @@ import { keyboardModule } from './keyboard'
 import { settingsModule } from './settings'
 import { workbenchModule } from './workbench'
 import { callModule } from './call'
+import { fsModule } from './fs'
 
 const electronAPI: ElectronAPP = {
   logger: loggerModule,
@@ -57,6 +58,7 @@ const electronAPI: ElectronAPP = {
   auth: authModule,
   datasync: datasyncModule,
   workbench: workbenchModule,
+  fs: fsModule,
 }
 
 contextBridge.exposeInMainWorld('electron', electronAPI)

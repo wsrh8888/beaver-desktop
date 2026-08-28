@@ -27,6 +27,7 @@ import {
   ConfigCommand,
   DatabaseCommand,
   DataSyncCommand,
+  FsCommand,
   LoggerCommand,
   NetworkCommand,
   NotificationCommand,
@@ -62,6 +63,7 @@ import settingsHandler from './settings'
 import keyboardHandler from './keyboard'
 import windowHandler from './window'
 import workbenchHandler from './workbench'
+import fsHandler from './fs'
 
 const loggerName = 'render-to-main-msg'
 
@@ -83,6 +85,7 @@ const commandGroups = [
   { enum: LoggerCommand, handler: loggerHandler },
   { enum: WorkbenchCommand, handler: workbenchHandler },
   { enum: BridgeCommand, handler: bridgeHandler },
+  { enum: FsCommand, handler: fsHandler },
 ]
 
 class IpcManager {

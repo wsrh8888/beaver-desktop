@@ -30,16 +30,35 @@ export interface IAiMessage {
   fromVoice?: boolean
 }
 
-export interface IAiChat {
+/**
+ * 本机工作空间。
+ * deviceGuid 标识所属电脑；PC 端只展示本机空间。
+ * path 为磁盘绝对路径。
+ */
+export interface IAiSpace {
+  id: string
+  name: string
+  deviceGuid: string
+  path: string
+}
+
+/**
+ * 统一条目：
+ * - spaceId === null → 云端「任务」（多端可见）
+ * - spaceId 有值 → 某空间下的「会话」
+ */
+export interface IAiTask {
   id: string
   title: string
   timestamp: number
+  spaceId: string | null
   skillId?: string
   messages: IAiMessage[]
 }
 
-export interface IAiChatListItem {
+export interface IAiTaskListItem {
   id: string
   title: string
   timestamp: number
+  spaceId: string | null
 }

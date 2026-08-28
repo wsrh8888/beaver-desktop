@@ -20,26 +20,27 @@
 -->
 
 <template>
-  <div class="ai-app">
-    <AiHeader />
-    <div class="ai-app__body">
-      <AiSidebar v-if="!aiViewStore.sidebarCollapsed" />
-      <main class="ai-app__main">
-        <router-view />
-      </main>
+  <div class="ai-chat-header">
+    <h2 class="ai-chat-header__title">
+      {{ title }}
+    </h2>
+    <div class="ai-chat-header__actions">
+      <button class="ai-chat-header__btn" type="button" title="详情面板" @click="aiViewStore.toggleResultPanel()">
+        <img src="renderModule/assets/image/group/expand.svg" alt="panel">
+      </button>
     </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import AiHeader from 'renderModule/windows/ai/components/layout/header/header.vue'
-import AiSidebar from 'renderModule/windows/ai/components/layout/sidebar/index.vue'
 import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
 
 export default defineComponent({
-  name: 'AiApp',
-  components: { AiHeader, AiSidebar },
+  name: 'AiChatHeader',
+  props: {
+    title: { type: String, default: '海狸助手' },
+  },
   setup() {
     return { aiViewStore: useAiViewStore() }
   },
@@ -47,24 +48,48 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
-.ai-app {
-  height: 100vh;
+.ai-chat-header {
+  height: 64px;
+  padding: 0 24px;
+  border-bottom: 1px solid #EBEEF5;
   display: flex;
-  flex-direction: column;
-  background: #F9FAFB;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+  background: #FFFFFF;
 
-  &__body {
-    flex: 1;
-    display: flex;
-    min-height: 0;
-    overflow: hidden;
+  &__title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: #2D3436;
+    line-height: 1.3;
   }
 
-  &__main {
-    flex: 1;
-    min-width: 0;
-    overflow: hidden;
+  &__actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  &__btn {
+    width: 32px;
+    height: 32px;
+    border: 1px solid #EBEEF5;
+    border-radius: 6px;
     background: #FFFFFF;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    img {
+      width: 16px;
+      height: 16px;
+    }
+
+    &:hover {
+      background: #F9FAFB;
+    }
   }
 }
 </style>

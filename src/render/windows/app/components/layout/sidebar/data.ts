@@ -86,6 +86,12 @@ export const appNavList: ISidebarNavItem[] = [
     activeIcon: momentActive,
     badgeCategories: ['moment'],
   },
+  {
+    id: 'ai',
+    title: 'AI',
+    defaultIcon: assistantSvg,
+    activeIcon: assistantActive,
+  },
 ]
 
 export const userInfoMenuList = [
