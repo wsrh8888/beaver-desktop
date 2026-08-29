@@ -91,7 +91,7 @@
 
 <script lang="ts">
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import AiCreateSpaceDialog from 'renderModule/windows/ai/components/createSpaceDialog/index.vue'
+import AiCreateSpaceDialog from '../createSpaceDialog/index.vue'
 import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
 
 export default defineComponent({

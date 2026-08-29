@@ -20,34 +20,40 @@
  */
 
 import { defineStore } from 'pinia'
+import type { AiSettingsSection, IAiModel } from 'renderModule/windows/ai/types/model'
 
-export type AiWorkMode = 'office' | 'code' | 'design'
-
-export const useAiViewStore = defineStore('useAiViewStore', {
+/**
+ * 模型与设置弹窗状态。
+ * 弹窗显隐 + 模型列表 + 当前选中的左侧分类（先只 'model'）。
+ */
+export const useAiModelStore = defineStore('useAiModelStore', {
   state: () => ({
-    workMode: 'office' as AiWorkMode,
-    sidebarCollapsed: false,
-    resultPanelOpen: true,
-    /** 当前选中的产物 tab id；切换会话时由 chat store 重置 */
-    activeArtifactId: null as string | null,
-    /** 每次点「新建任务」递增，用于同路由下重置欢迎页输入 */
-    composeEpoch: 0,
+    models: [] as IAiModel[],
+    settingsVisible: false,
+    activeSection: 'model' as AiSettingsSection,
   }),
   actions: {
-    setWorkMode(mode: AiWorkMode) {
-      this.workMode = mode
+    createId() {
+      return `model_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
     },
-    toggleSidebar() {
-      this.sidebarCollapsed = !this.sidebarCollapsed
+
+    addModel(data: Omit<IAiModel, 'id'>) {
+      this.models.push({ id: this.createId(), ...data })
     },
-    toggleResultPanel() {
-      this.resultPanelOpen = !this.resultPanelOpen
+
+    removeModel(id: string) {
+      const idx = this.models.findIndex(m => m.id === id)
+      if (idx >= 0)
+        this.models.splice(idx, 1)
     },
-    setActiveArtifact(id: string | null) {
-      this.activeArtifactId = id
+
+    openSettings(section: AiSettingsSection = 'model') {
+      this.activeSection = section
+      this.settingsVisible = true
     },
-    bumpComposeEpoch() {
-      this.composeEpoch += 1
+
+    closeSettings() {
+      this.settingsVisible = false
     },
   },
 })

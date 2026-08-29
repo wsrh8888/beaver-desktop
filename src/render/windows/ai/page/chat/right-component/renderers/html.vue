@@ -20,18 +20,32 @@
 -->
 
 <template>
-  <AiPagePlaceholder
-    title="资料库"
-    description="知识库与资料沉淀能力建设中。"
+  <iframe
+    class="ai-artifact-html"
+    :srcdoc="content"
+    sandbox="allow-scripts allow-popups"
+    title="html-preview"
   />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import AiPagePlaceholder from 'renderModule/windows/ai/components/pagePlaceholder/index.vue'
 
+/** html 产物渲染器：iframe srcdoc 整页渲染，沙箱隔离。 */
 export default defineComponent({
-  name: 'AiLibraryPage',
-  components: { AiPagePlaceholder },
+  name: 'AiArtifactHtml',
+  props: {
+    content: { type: String, default: '' },
+  },
 })
 </script>
+
+<style lang="less" scoped>
+.ai-artifact-html {
+  width: 100%;
+  height: 100%;
+  border: none;
+  background: #FFFFFF;
+  display: block;
+}
+</style>

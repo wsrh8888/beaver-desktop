@@ -65,7 +65,7 @@
     <div class="ai-sidebar__lists">
       <div class="ai-sidebar__section">
         <div class="ai-sidebar__section-head" @click="tasksOpen = !tasksOpen">
-          <span>任务</span>
+          <span>会话</span>
           <img
             src="renderModule/assets/image/group/expand.svg"
             alt="expand"
@@ -75,17 +75,17 @@
         </div>
         <div v-show="tasksOpen" class="ai-sidebar__section-body">
           <div
-            v-for="task in aiChatStore.cloudTasks"
-            :key="task.id"
+            v-for="chat in aiChatStore.cloudChats"
+            :key="chat.id"
             class="ai-sidebar__item"
-            :class="{ active: isTaskActive(task.id) }"
-            @click="handleSelectTask(task.id)"
+            :class="{ active: isChatActive(chat.id) }"
+            @click="handleSelectChat(chat.id)"
           >
-            <span class="ai-sidebar__item-title">{{ task.title }}</span>
-            <span class="ai-sidebar__item-time">{{ formatRelative(task.timestamp) }}</span>
+            <span class="ai-sidebar__item-title">{{ chat.title }}</span>
+            <span class="ai-sidebar__item-time">{{ formatRelative(chat.timestamp) }}</span>
           </div>
-          <div v-if="aiChatStore.cloudTasks.length === 0" class="ai-sidebar__empty">
-            暂无云端任务
+          <div v-if="aiChatStore.cloudChats.length === 0" class="ai-sidebar__empty">
+            暂无云端会话
           </div>
         </div>
       </div>
@@ -125,8 +125,8 @@
               v-for="session in sessionsOfSpace(space.id)"
               :key="session.id"
               class="ai-sidebar__item ai-sidebar__item--session"
-              :class="{ active: isTaskActive(session.id) }"
-              @click="handleSelectTask(session.id)"
+              :class="{ active: isChatActive(session.id) }"
+              @click="handleSelectChat(session.id)"
             >
               <span class="ai-sidebar__item-title">{{ session.title }}</span>
               <span class="ai-sidebar__item-time">{{ formatRelative(session.timestamp) }}</span>
@@ -146,7 +146,7 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AiCreateSpaceDialog from 'renderModule/windows/ai/components/createSpaceDialog/index.vue'
+import AiCreateSpaceDialog from './components/createSpaceDialog/index.vue'
 import { aiNavList, type IAiNavItem } from 'renderModule/windows/ai/components/layout/sidebar/data'
 import { useAiChatStore } from 'renderModule/windows/ai/pinia/chat'
 import { useAiSkillStore } from 'renderModule/windows/ai/pinia/skill'
@@ -185,21 +185,21 @@ export default defineComponent({
 
     const isNavActive = (item: IAiNavItem) => route.path === item.route
 
-    const isTaskActive = (id: string) => {
-      return route.name === 'task' && String(route.params.id) === id
+    const isChatActive = (id: string) => {
+      return route.name === 'chat' && String(route.params.id) === id
     }
 
     const handleNewTask = () => {
-      aiChatStore.startNewTask(aiSkillStore.activeSkillId)
+      aiChatStore.startNewChat(aiSkillStore.activeSkillId)
       aiViewStore.bumpComposeEpoch()
       if (route.name === 'newTask')
         return
       router.push({ name: 'newTask' })
     }
 
-    const handleSelectTask = (id: string) => {
-      aiChatStore.openTask(id)
-      router.push({ name: 'task', params: { id } })
+    const handleSelectChat = (id: string) => {
+      aiChatStore.openChat(id)
+      router.push({ name: 'chat', params: { id } })
     }
 
     const handleCreateSpace = () => {
@@ -228,9 +228,9 @@ export default defineComponent({
       formatRelative,
       sessionsOfSpace,
       isNavActive,
-      isTaskActive,
+      isChatActive,
       handleNewTask,
-      handleSelectTask,
+      handleSelectChat,
       handleCreateSpace,
       onCreateConfirm,
     }

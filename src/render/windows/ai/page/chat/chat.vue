@@ -20,30 +20,32 @@
 -->
 
 <template>
-  <div class="ai-task">
-    <div class="ai-task__chat">
+  <div class="ai-chat">
+    <div class="ai-chat__left">
       <AiChatPanel
         v-model="inputMessage"
-        :title="aiChatStore.currentTask?.title || '任务'"
-        :messages="aiChatStore.currentTask?.messages ?? []"
+        :title="aiChatStore.currentChat?.title || '会话'"
+        :messages="aiChatStore.currentChat?.messages ?? []"
         @send="handleSend"
       />
     </div>
-    <AiResultPanel v-if="aiViewStore.resultPanelOpen" />
+    <div v-if="aiViewStore.resultPanelOpen" class="ai-chat__right">
+      <AiResultPanel />
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AiChatPanel from 'renderModule/windows/ai/components/chatPanel/index.vue'
-import AiResultPanel from 'renderModule/windows/ai/components/resultPanel/index.vue'
+import AiChatPanel from './left-components/index.vue'
+import AiResultPanel from './right-component/index.vue'
 import { useAiChatStore } from 'renderModule/windows/ai/pinia/chat'
 import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
 
-/** 已发起任务：对话区 + 结果区（对齐 WorkBuddy 执行态） */
+/** 已发起会话：左侧对话 + 右侧产物（对齐 WorkBuddy 执行态） */
 export default defineComponent({
-  name: 'AiTaskPage',
+  name: 'AiChatPage',
   components: { AiChatPanel, AiResultPanel },
   setup() {
     const route = useRoute()
@@ -52,21 +54,21 @@ export default defineComponent({
     const aiViewStore = useAiViewStore()
     const inputMessage = ref('')
 
-    const syncTask = (id: string) => {
-      const ok = aiChatStore.openTask(id)
+    const syncChat = (id: string) => {
+      const ok = aiChatStore.openChat(id)
       if (!ok)
         router.replace({ name: 'newTask' })
     }
 
     onMounted(() => {
-      syncTask(String(route.params.id || ''))
+      syncChat(String(route.params.id || ''))
     })
 
     watch(
       () => route.params.id,
       (id) => {
         if (id)
-          syncTask(String(id))
+          syncChat(String(id))
       },
     )
 
@@ -89,15 +91,19 @@ export default defineComponent({
 </script>
 
 <style lang="less" scoped>
-.ai-task {
+.ai-chat {
   height: 100%;
   display: flex;
   min-width: 0;
   overflow: hidden;
 
-  &__chat {
+  &__left {
     flex: 1;
     min-width: 0;
+  }
+
+  &__right {
+    flex-shrink: 0;
   }
 }
 </style>

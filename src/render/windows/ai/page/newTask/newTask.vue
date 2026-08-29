@@ -21,36 +21,84 @@
 
 <template>
   <div class="ai-new-task">
-    <AiWelcome
-      v-model="inputMessage"
-      @send="handleSend"
-      @pick-tag="handlePickTag"
-    />
+    <h1 class="ai-new-task__hero">
+      海狸, 我帮你
+    </h1>
+
+    <div class="ai-new-task__modes">
+      <button
+        v-for="mode in modes"
+        :key="mode.key"
+        class="ai-new-task__mode"
+        :class="{ active: aiViewStore.workMode === mode.key }"
+        type="button"
+        @click="aiViewStore.setWorkMode(mode.key)"
+      >
+        <span class="ai-new-task__mode-mark">{{ mode.mark }}</span>
+        {{ mode.label }}
+      </button>
+    </div>
+
+    <div class="ai-new-task__tags">
+      <button
+        v-for="tag in tags"
+        :key="tag"
+        class="ai-new-task__tag"
+        type="button"
+        @click="handlePickTag(tag)"
+      >
+        {{ tag }}
+      </button>
+    </div>
+
+    <div class="ai-new-task__composer">
+      <img
+        src="renderModule/assets/image/assistant/avatar.svg"
+        alt="beaver"
+        class="ai-new-task__mascot"
+      >
+      <AiComposer
+        v-model="inputMessage"
+        @send="handleSend"
+      >
+        <template #meta>
+          <AiSpacePicker />
+        </template>
+      </AiComposer>
+    </div>
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
-import AiWelcome from 'renderModule/windows/ai/components/welcome/index.vue'
+import AiComposer from 'renderModule/windows/ai/components/composer/index.vue'
+import AiSpacePicker from './components/spacePicker/index.vue'
 import { useAiChatStore } from 'renderModule/windows/ai/pinia/chat'
-import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
+import { useAiViewStore, type AiWorkMode } from 'renderModule/windows/ai/pinia/view'
 
 /**
  * ai-new-task：点「新建任务」进入。
- * 不选空间 → 云端「任务」；选本机空间 → 该空间下「会话」。
+ * 不选空间 → 云端会话；选本机空间 → 该空间下会话。
  */
 export default defineComponent({
   name: 'AiNewTaskPage',
-  components: { AiWelcome },
+  components: { AiComposer, AiSpacePicker },
   setup() {
     const router = useRouter()
     const aiChatStore = useAiChatStore()
     const aiViewStore = useAiViewStore()
     const inputMessage = ref('')
 
+    const modes: Array<{ key: AiWorkMode, label: string, mark: string }> = [
+      { key: 'office', label: '日常办公', mark: '办' },
+      { key: 'code', label: '代码开发', mark: '</>' },
+      { key: 'design', label: '设计创意', mark: '设' },
+    ]
+    const tags = ['文档处理', '群聊总结', '数据分析', '个人工作台', '幻灯片']
+
     const resetCompose = () => {
-      aiChatStore.startNewTask()
+      aiChatStore.startNewChat()
       inputMessage.value = ''
     }
 
@@ -61,11 +109,11 @@ export default defineComponent({
       const text = inputMessage.value.trim()
       if (!text)
         return
-      // 发送：无空间→云端任务；有空间→本机空间会话
-      const taskId = aiChatStore.sendTextMessage(text)
+      // 发送：无空间→云端会话；有空间→本机空间会话
+      const chatId = aiChatStore.sendTextMessage(text)
       inputMessage.value = ''
-      if (taskId)
-        router.replace({ name: 'task', params: { id: taskId } })
+      if (chatId)
+        router.replace({ name: 'chat', params: { id: chatId } })
     }
 
     const handlePickTag = (tag: string) => {
@@ -73,7 +121,10 @@ export default defineComponent({
     }
 
     return {
+      aiViewStore,
       inputMessage,
+      modes,
+      tags,
       handleSend,
       handlePickTag,
     }
@@ -86,6 +137,98 @@ export default defineComponent({
   height: 100%;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 32px 24px;
+  box-sizing: border-box;
+  background: #F9FAFB;
   min-width: 0;
+
+  &__hero {
+    margin: 0 0 24px;
+    font-size: 22px;
+    font-weight: 600;
+    color: #2D3436;
+    line-height: 1.3;
+  }
+
+  &__modes {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
+  &__mode {
+    height: 36px;
+    padding: 0 16px;
+    border: 1px solid #EBEEF5;
+    border-radius: 18px;
+    background: #FFFFFF;
+    color: #636E72;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 200ms cubic-bezier(0.33, 1, 0.68, 1);
+
+    &:hover {
+      border-color: #FF7D45;
+      color: #FF7D45;
+    }
+
+    &.active {
+      background: #2D3436;
+      border-color: #2D3436;
+      color: #FFFFFF;
+    }
+  }
+
+  &__mode-mark {
+    font-size: 11px;
+    font-weight: 600;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  }
+
+  &__tags {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 24px;
+    max-width: 720px;
+  }
+
+  &__tag {
+    height: 32px;
+    padding: 0 12px;
+    border: 1px solid #EBEEF5;
+    border-radius: 6px;
+    background: #FFFFFF;
+    color: #636E72;
+    font-size: 12px;
+    cursor: pointer;
+
+    &:hover {
+      border-color: #FF7D45;
+      color: #FF7D45;
+      background: #FFE6D9;
+    }
+  }
+
+  &__composer {
+    position: relative;
+    width: 100%;
+    max-width: 720px;
+  }
+
+  &__mascot {
+    position: absolute;
+    right: 16px;
+    top: -28px;
+    width: 40px;
+    height: 40px;
+    z-index: 1;
+  }
 }
 </style>

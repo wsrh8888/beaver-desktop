@@ -25,9 +25,9 @@ import { createRouter, createWebHashHistory } from 'vue-router'
 /**
  * 路由对应 WorkBuddy 业务：
  * - /new        新建任务页（「海狸, 我帮你」），侧栏导航不高亮
- * - /task/:id   已发起的任务：中间对话 + 右侧结果面板
- * - /assistant  助理（独立入口，与新建任务分离）
- * - 其余         项目 / 技能 / 自动化等独立能力页
+ * - /chat/:id   已发起的会话：左侧对话 + 右侧产物面板
+ *
+ * 其余能力页（助理 / 项目 / 技能 / 自动化 / 资料库 / 更多）后续按需逐步开放。
  */
 const routes: RouteRecordRaw[] = [
   {
@@ -40,39 +40,9 @@ const routes: RouteRecordRaw[] = [
     component: () => import('renderModule/windows/ai/page/newTask/newTask.vue'),
   },
   {
-    path: '/task/:id',
-    name: 'task',
-    component: () => import('renderModule/windows/ai/page/task/task.vue'),
-  },
-  {
-    path: '/assistant',
-    name: 'assistant',
-    component: () => import('renderModule/windows/ai/page/assistant/assistant.vue'),
-  },
-  {
-    path: '/project',
-    name: 'project',
-    component: () => import('renderModule/windows/ai/page/project/project.vue'),
-  },
-  {
-    path: '/skill',
-    name: 'skill',
-    component: () => import('renderModule/windows/ai/page/skill/skill.vue'),
-  },
-  {
-    path: '/automation',
-    name: 'automation',
-    component: () => import('renderModule/windows/ai/page/automation/automation.vue'),
-  },
-  {
-    path: '/library',
-    name: 'library',
-    component: () => import('renderModule/windows/ai/page/library/library.vue'),
-  },
-  {
-    path: '/more',
-    name: 'more',
-    component: () => import('renderModule/windows/ai/page/more/more.vue'),
+    path: '/chat/:id',
+    name: 'chat',
+    component: () => import('renderModule/windows/ai/page/chat/chat.vue'),
   },
 ]
 

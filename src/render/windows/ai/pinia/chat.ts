@@ -20,48 +20,52 @@
  */
 
 import { defineStore } from 'pinia'
-import type { IAiMessage, IAiTask, IAiTaskListItem } from 'renderModule/windows/ai/types/chat'
+import type { IAiArtifact, IAiChat, IAiChatListItem, IAiMessage } from 'renderModule/windows/ai/types/chat'
 import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
+import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
 
 const DRAFT_ID = 'draft'
 
 /**
  * 1. 新建 → /new 草稿（不进侧栏）
  * 2. 发送：
- *    - 未选空间 → 云端「任务」
+ *    - 未选空间 → 云端「会话」
  *    - 选了本机空间 → 该空间下的「会话」
- * 3. 侧栏点条目 → /task/:id
+ * 3. 侧栏点条目 → /chat/:id
+ *
+ * 右侧产物：每个会话带 artifacts[]，按类型（md/html…）渲染；html 仅 1 个。
  */
 export const useAiChatStore = defineStore('useAiChatStore', {
   state: () => ({
-    taskList: [] as IAiTaskListItem[],
-    currentTaskId: DRAFT_ID,
-    tasks: {
+    chatList: [] as IAiChatListItem[],
+    currentChatId: DRAFT_ID,
+    chats: {
       [DRAFT_ID]: {
         id: DRAFT_ID,
-        title: '新任务',
+        title: '新会话',
         timestamp: Date.now(),
         spaceId: null,
         skillId: 'general',
         messages: [],
+        artifacts: [],
       },
-    } as Record<string, IAiTask>,
+    } as Record<string, IAiChat>,
   }),
   getters: {
     isDraft(state): boolean {
-      return state.currentTaskId === DRAFT_ID
+      return state.currentChatId === DRAFT_ID
     },
-    currentTask(state): IAiTask | undefined {
-      return state.tasks[state.currentTaskId]
+    currentChat(state): IAiChat | undefined {
+      return state.chats[state.currentChatId]
     },
-    /** 云端任务（无空间） */
-    cloudTasks(state): IAiTaskListItem[] {
-      return state.taskList.filter(item => item.spaceId === null)
+    /** 云端会话（无空间） */
+    cloudChats(state): IAiChatListItem[] {
+      return state.chatList.filter(item => item.spaceId === null)
     },
     /** 某本机空间下的会话 */
-    sessionsBySpace(state): Record<string, IAiTaskListItem[]> {
-      const map: Record<string, IAiTaskListItem[]> = {}
-      for (const item of state.taskList) {
+    sessionsBySpace(state): Record<string, IAiChatListItem[]> {
+      const map: Record<string, IAiChatListItem[]> = {}
+      for (const item of state.chatList) {
         if (!item.spaceId)
           continue
         if (!map[item.spaceId])
@@ -70,93 +74,102 @@ export const useAiChatStore = defineStore('useAiChatStore', {
       }
       return map
     },
+    /** 当前会话的产物列表（右侧 tab） */
+    currentArtifacts(state): IAiArtifact[] {
+      return state.chats[state.currentChatId]?.artifacts ?? []
+    },
   },
   actions: {
     createId() {
-      return `task_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
+      return `chat_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
     },
 
-    openTask(id: string) {
-      if (!this.tasks[id] || id === DRAFT_ID)
+    openChat(id: string) {
+      if (!this.chats[id] || id === DRAFT_ID)
         return false
-      this.currentTaskId = id
+      this.currentChatId = id
+      const chat = this.chats[id]
+      useAiViewStore().setActiveArtifact(chat.artifacts[0]?.id ?? null)
       return true
     },
 
-    startNewTask(skillId = 'general') {
+    startNewChat(skillId = 'general') {
       const spaceStore = useAiSpaceStore()
-      this.currentTaskId = DRAFT_ID
-      this.tasks[DRAFT_ID] = {
+      this.currentChatId = DRAFT_ID
+      this.chats[DRAFT_ID] = {
         id: DRAFT_ID,
-        title: '新任务',
+        title: '新会话',
         timestamp: Date.now(),
         spaceId: spaceStore.resolveTargetSpaceId(),
         skillId,
         messages: [],
+        artifacts: [],
       }
     },
 
     promoteDraft(title: string, spaceId: string | null) {
-      const draft = this.tasks[DRAFT_ID]
+      const draft = this.chats[DRAFT_ID]
       if (!draft)
         return DRAFT_ID
 
       const newId = this.createId()
       const now = Date.now()
-      const task: IAiTask = {
+      const chat: IAiChat = {
         id: newId,
         title,
         timestamp: now,
         spaceId,
         skillId: draft.skillId || 'general',
         messages: [],
+        artifacts: [],
       }
-      this.tasks[newId] = task
-      this.taskList.unshift({
+      this.chats[newId] = chat
+      this.chatList.unshift({
         id: newId,
         title,
         timestamp: now,
         spaceId,
       })
-      this.currentTaskId = newId
+      this.currentChatId = newId
 
-      this.tasks[DRAFT_ID] = {
+      this.chats[DRAFT_ID] = {
         id: DRAFT_ID,
-        title: '新任务',
+        title: '新会话',
         timestamp: now,
-        spaceId: spaceId,
+        spaceId,
         skillId: draft.skillId || 'general',
         messages: [],
+        artifacts: [],
       }
 
       return newId
     },
 
-    touchTask(id: string) {
-      const item = this.taskList.find(c => c.id === id)
+    touchChat(id: string) {
+      const item = this.chatList.find(c => c.id === id)
       if (item)
         item.timestamp = Date.now()
-      if (this.tasks[id])
-        this.tasks[id].timestamp = Date.now()
+      if (this.chats[id])
+        this.chats[id].timestamp = Date.now()
     },
 
-    appendUserMessage(taskId: string, content: string) {
-      const task = this.tasks[taskId]
-      if (!task || !content.trim())
+    appendUserMessage(chatId: string, content: string) {
+      const chat = this.chats[chatId]
+      if (!chat || !content.trim())
         return
 
-      task.messages.push({
+      chat.messages.push({
         id: this.createId(),
         role: 'user',
         content: content.trim(),
         timestamp: Date.now(),
       })
-      this.touchTask(taskId)
+      this.touchChat(chatId)
     },
 
-    appendAssistantReply(taskId: string, fullText: string) {
-      const task = this.tasks[taskId]
-      if (!task)
+    appendAssistantReply(chatId: string, fullText: string) {
+      const chat = this.chats[chatId]
+      if (!chat)
         return
 
       const msg: IAiMessage = {
@@ -166,7 +179,7 @@ export const useAiChatStore = defineStore('useAiChatStore', {
         timestamp: Date.now(),
         streaming: true,
       }
-      task.messages.push(msg)
+      chat.messages.push(msg)
 
       let index = 0
       const timer = window.setInterval(() => {
@@ -178,7 +191,42 @@ export const useAiChatStore = defineStore('useAiChatStore', {
         }
       }, 20)
 
-      this.touchTask(taskId)
+      this.touchChat(chatId)
+    },
+
+    /**
+     * 添加产物到指定会话。
+     * - html 类型仅允许 1 个：已存在则原地替换（保留位置）。
+     * - 新产物自动成为当前选中 tab。
+     */
+    addArtifact(chatId: string, artifact: IAiArtifact) {
+      const chat = this.chats[chatId]
+      if (!chat)
+        return
+      if (artifact.type === 'html') {
+        const idx = chat.artifacts.findIndex(a => a.type === 'html')
+        if (idx >= 0)
+          chat.artifacts.splice(idx, 1, artifact)
+        else
+          chat.artifacts.push(artifact)
+      }
+      else {
+        chat.artifacts.push(artifact)
+      }
+      useAiViewStore().setActiveArtifact(artifact.id)
+    },
+
+    removeArtifact(chatId: string, artifactId: string) {
+      const chat = this.chats[chatId]
+      if (!chat)
+        return
+      const idx = chat.artifacts.findIndex(a => a.id === artifactId)
+      if (idx < 0)
+        return
+      chat.artifacts.splice(idx, 1)
+      const view = useAiViewStore()
+      if (view.activeArtifactId === artifactId)
+        view.setActiveArtifact(chat.artifacts[0]?.id ?? null)
     },
 
     sendTextMessage(text: string): string | null {
@@ -187,21 +235,48 @@ export const useAiChatStore = defineStore('useAiChatStore', {
         return null
 
       const spaceStore = useAiSpaceStore()
-      let taskId = this.currentTaskId
+      let chatId = this.currentChatId
 
-      if (taskId === DRAFT_ID) {
+      if (chatId === DRAFT_ID) {
         const spaceId = spaceStore.resolveTargetSpaceId()
         const title = content.slice(0, 16)
-        taskId = this.promoteDraft(title, spaceId)
+        chatId = this.promoteDraft(title, spaceId)
       }
 
-      this.appendUserMessage(taskId, content)
+      this.appendUserMessage(chatId, content)
       this.appendAssistantReply(
-        taskId,
-        `我已收到：「${content}」。任务已开始，AI 服务接入后将在此流式回复，并在右侧展示产物。`,
+        chatId,
+        `我已收到：「${content}」。会话已开始，AI 服务接入后将在此流式回复，并在右侧以产物 tab 展示。`,
       )
+      this.appendDemoArtifacts(chatId, content)
 
-      return taskId
+      return chatId
+    },
+
+    /**
+     * 临时演示产物（接入真实 AI 后删除）：
+     * - md 每次新增一个 → 演示「同类型可多 tab」
+     * - html 单例替换    → 演示「html 仅 1 个 tab」
+     */
+    appendDemoArtifacts(chatId: string, content: string) {
+      const chat = this.chats[chatId]
+      if (!chat)
+        return
+      const mdCount = chat.artifacts.filter(a => a.type === 'md').length + 1
+      this.addArtifact(chatId, {
+        id: this.createId(),
+        name: `草稿 ${mdCount}`,
+        type: 'md',
+        content: `# 关于「${content}」\n\n> 占位产物，AI 接入后替换为真实内容。\n\n- 要点一\n- 要点二\n- 要点三\n\n**备注**：本页用于演示右侧面板的多 tab 与类型化渲染。`,
+        timestamp: Date.now(),
+      })
+      this.addArtifact(chatId, {
+        id: this.createId(),
+        name: '网页预览',
+        type: 'html',
+        content: `<!doctype html><html><head><meta charset="utf-8"><style>body{font-family:system-ui,-apple-system,sans-serif;padding:32px;color:#2D3436}h1{color:#FF7D45;margin:0 0 12px}p{line-height:1.6;color:#636E72}</style></head><body><h1>「${content}」预览</h1><p>占位 HTML 产物。同一会话仅允许 1 个 html tab，再次产出会替换本页。</p></body></html>`,
+        timestamp: Date.now(),
+      })
     },
   },
 })

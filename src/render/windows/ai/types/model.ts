@@ -19,16 +19,20 @@
  * beaver-desktop-header-v2
  */
 
-export interface IAiNavItem {
+/**
+ * 模型配置。一个会话选用一个模型；可在设置里增删。
+ */
+export interface IAiModel {
   id: string
-  title: string
-  route: string
-  icon: string
-  tags?: string[]
+  /** 展示名，如「GPT-4o」 */
+  name: string
+  /** 服务商：openai / anthropic / deepseek / ollama / custom ... */
+  provider: string
+  /** API Key（本机存储，后续接入加密） */
+  apiKey: string
+  /** 自定义接口地址，留空走服务商默认 */
+  endpoint: string
 }
 
-/**
- * 侧栏导航项：当前仅「新建任务」+ 任务/空间列表，
- * 其余能力页（助理 / 项目 / 技能 / 自动化 / 资料库 / 更多）后续按需逐步开放。
- */
-export const aiNavList: IAiNavItem[] = []
+/** 设置弹窗左侧导航分类。先只放「模型」，后续逐步加。 */
+export type AiSettingsSection = 'model'

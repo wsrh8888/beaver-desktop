@@ -43,20 +43,39 @@ export interface IAiSpace {
 }
 
 /**
- * 统一条目：
- * - spaceId === null → 云端「任务」（多端可见）
- * - spaceId 有值 → 某空间下的「会话」
+ * 产物类型：右侧面板里每种类型用各自的渲染器呈现。
+ * - md   Markdown 文档（可同时存在多个 tab）
+ * - html 网页（整页渲染，同一会话仅允许 1 个 tab）
  */
-export interface IAiTask {
+export type AiArtifactType = 'md' | 'html'
+
+/**
+ * 产物 = 右侧面板的一个 tab。每个产物有自己的名字与类型，按类型选择渲染器。
+ */
+export interface IAiArtifact {
+  id: string
+  name: string
+  type: AiArtifactType
+  content: string
+  timestamp: number
+}
+
+/**
+ * 统一条目（一个会话）：
+ * - spaceId === null → 云端会话（多端可见）
+ * - spaceId 有值 → 某本机空间下的会话
+ */
+export interface IAiChat {
   id: string
   title: string
   timestamp: number
   spaceId: string | null
   skillId?: string
   messages: IAiMessage[]
+  artifacts: IAiArtifact[]
 }
 
-export interface IAiTaskListItem {
+export interface IAiChatListItem {
   id: string
   title: string
   timestamp: number

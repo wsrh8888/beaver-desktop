@@ -35,7 +35,7 @@
           <img src="renderModule/assets/image/common/add.svg" alt="add">
         </button>
         <div class="ai-composer__right">
-          <button class="ai-composer__model" type="button">
+          <button class="ai-composer__model" type="button" @click="aiModelStore.openSettings()">
             <img src="renderModule/assets/image/ai/robot.svg" alt="model">
             Auto
           </button>
@@ -55,22 +55,25 @@
     </div>
 
     <div v-if="showMeta" class="ai-composer__meta">
-      <AiSpacePicker />
+      <slot name="meta" />
       <button class="ai-composer__meta-btn" type="button">
         <img src="renderModule/assets/image/common/help.svg" alt="permission">
         默认权限
       </button>
     </div>
+
+    <AiModelSettings />
   </div>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import AiSpacePicker from 'renderModule/windows/ai/components/spacePicker/index.vue'
+import AiModelSettings from 'renderModule/windows/ai/components/modelSettings/index.vue'
+import { useAiModelStore } from 'renderModule/windows/ai/pinia/model'
 
 export default defineComponent({
   name: 'AiComposer',
-  components: { AiSpacePicker },
+  components: { AiModelSettings },
   props: {
     modelValue: { type: String, default: '' },
     placeholder: {
@@ -82,6 +85,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'send'],
   setup(_props, { emit }) {
+    const aiModelStore = useAiModelStore()
     const onKeydown = (event: KeyboardEvent) => {
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault()
@@ -89,7 +93,7 @@ export default defineComponent({
       }
     }
 
-    return { onKeydown }
+    return { onKeydown, aiModelStore }
   },
 })
 </script>
