@@ -52,14 +52,10 @@
     </div>
 
     <div class="ai-new-task__composer">
-      <img
-        src="renderModule/assets/image/assistant/avatar.svg"
-        alt="beaver"
-        class="ai-new-task__mascot"
-      >
+
       <AiComposer
         v-model="inputMessage"
-        @send="handleSend"
+        @sent="handleSent"
       >
         <template #meta>
           <AiSpacePicker />
@@ -105,13 +101,8 @@ export default defineComponent({
     resetCompose()
     watch(() => aiViewStore.composeEpoch, resetCompose)
 
-    const handleSend = () => {
-      const text = inputMessage.value.trim()
-      if (!text)
-        return
-      // 发送：无空间→云端会话；有空间→本机空间会话
-      const chatId = aiChatStore.sendTextMessage(text)
-      inputMessage.value = ''
+    /** 新建页特有：首条发出后进入会话页 */
+    const handleSent = (chatId: string) => {
       if (chatId)
         router.replace({ name: 'chat', params: { id: chatId } })
     }
@@ -125,7 +116,7 @@ export default defineComponent({
       inputMessage,
       modes,
       tags,
-      handleSend,
+      handleSent,
       handlePickTag,
     }
   },

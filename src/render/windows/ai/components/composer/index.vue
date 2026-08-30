@@ -23,30 +23,21 @@
   <div class="ai-composer" :class="{ compact }">
     <div class="ai-composer__card">
       <textarea
-        :value="modelValue"
+        v-model="draft"
         class="ai-composer__textarea"
         :placeholder="placeholder"
         rows="3"
-        @input="$emit('update:modelValue', ($event.target as HTMLTextAreaElement).value)"
+        :disabled="sending"
         @keydown="onKeydown"
       />
       <div class="ai-composer__toolbar">
-        <button class="ai-composer__icon-btn" type="button" title="添加附件">
-          <img src="renderModule/assets/image/common/add.svg" alt="add">
-        </button>
         <div class="ai-composer__right">
-          <button class="ai-composer__model" type="button" @click="aiModelStore.openSettings()">
-            <img src="renderModule/assets/image/ai/robot.svg" alt="model">
-            Auto
-          </button>
-          <button class="ai-composer__icon-btn" type="button" title="语音">
-            <img src="renderModule/assets/image/assistant/mic.svg" alt="mic">
-          </button>
+          <AiModelPicker />
           <button
             class="ai-composer__send"
             type="button"
-            :disabled="!modelValue.trim()"
-            @click="$emit('send')"
+            :disabled="sending || !draft.trim()"
+            @click="handleSend"
           >
             <img src="renderModule/assets/image/assistant/send.svg" alt="发送">
           </button>
@@ -61,19 +52,21 @@
         默认权限
       </button>
     </div>
-
-    <AiModelSettings />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-import AiModelSettings from 'renderModule/windows/ai/components/modelSettings/index.vue'
-import { useAiModelStore } from 'renderModule/windows/ai/pinia/model'
+import { defineComponent, ref, watch } from 'vue'
+import AiModelPicker from './components/modelPicker/index.vue'
+import { useAiChatStore } from 'renderModule/windows/ai/pinia/chat'
 
+/**
+ * 输入区业务组件：发送统一走 chatStore.sendTextMessage。
+ * 草稿自持；可选 v-model 供页面预填（如标签）。页面差异逻辑用 @sent。
+ */
 export default defineComponent({
   name: 'AiComposer',
-  components: { AiModelSettings },
+  components: { AiModelPicker },
   props: {
     modelValue: { type: String, default: '' },
     placeholder: {
@@ -83,17 +76,50 @@ export default defineComponent({
     showMeta: { type: Boolean, default: true },
     compact: { type: Boolean, default: false },
   },
-  emits: ['update:modelValue', 'send'],
-  setup(_props, { emit }) {
-    const aiModelStore = useAiModelStore()
-    const onKeydown = (event: KeyboardEvent) => {
-      if (event.key === 'Enter' && !event.shiftKey) {
-        event.preventDefault()
-        emit('send')
+  emits: ['update:modelValue', 'sent'],
+  setup(props, { emit }) {
+    const aiChatStore = useAiChatStore()
+    const sending = ref(false)
+    const draft = ref(props.modelValue)
+
+    watch(
+      () => props.modelValue,
+      (value) => {
+        if (value !== draft.value)
+          draft.value = value
+      },
+    )
+
+    watch(draft, (value) => {
+      if (value !== props.modelValue)
+        emit('update:modelValue', value)
+    })
+
+    const handleSend = async () => {
+      const text = draft.value.trim()
+      if (!text || sending.value)
+        return
+      sending.value = true
+      try {
+        const chatId = await aiChatStore.sendTextMessage(text)
+        draft.value = ''
+        emit('update:modelValue', '')
+        if (chatId)
+          emit('sent', chatId)
+      }
+      finally {
+        sending.value = false
       }
     }
 
-    return { onKeydown, aiModelStore }
+    const onKeydown = (event: KeyboardEvent) => {
+      if (event.key === 'Enter' && !event.shiftKey) {
+        event.preventDefault()
+        handleSend()
+      }
+    }
+
+    return { draft, sending, handleSend, onKeydown }
   },
 })
 </script>
@@ -133,12 +159,16 @@ export default defineComponent({
     &::placeholder {
       color: #B2BEC3;
     }
+
+    &:disabled {
+      opacity: 0.7;
+    }
   }
 
   &__toolbar {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     margin-top: 4px;
   }
 
@@ -146,47 +176,6 @@ export default defineComponent({
     display: flex;
     align-items: center;
     gap: 6px;
-  }
-
-  &__icon-btn {
-    width: 32px;
-    height: 32px;
-    border: none;
-    border-radius: 6px;
-    background: transparent;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    img {
-      width: 16px;
-      height: 16px;
-      opacity: 0.55;
-    }
-
-    &:hover {
-      background: #F9FAFB;
-    }
-  }
-
-  &__model {
-    height: 32px;
-    padding: 0 12px;
-    border: 1px solid #EBEEF5;
-    border-radius: 6px;
-    background: #FFFFFF;
-    color: #636E72;
-    font-size: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-
-    img {
-      width: 14px;
-      height: 14px;
-    }
   }
 
   &__send {

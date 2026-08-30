@@ -21,11 +21,11 @@
 
 <template>
   <BeaverDialog
-    :model-value="modelValue"
+    :model-value="true"
     title="新建工作空间"
     width="420px"
-    @update:model-value="onVisibleChange"
-    @close="handleCancel"
+    @update:model-value="onDialogVisible"
+    @close="handleClose"
   >
     <div class="ai-create-space-dialog">
       <p class="ai-create-space-dialog__desc">
@@ -43,7 +43,7 @@
     </div>
 
     <template #footer>
-      <BeaverButton type="default" @click="handleCancel">
+      <BeaverButton type="default" @click="handleClose">
         取消
       </BeaverButton>
       <BeaverButton
@@ -59,59 +59,53 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, nextTick, ref, watch } from 'vue'
+import { defineComponent, nextTick, onMounted, ref } from 'vue'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverDialog from 'renderModule/components/ui/dialog/dialog.vue'
+import { useAiGlobalStore } from 'renderModule/windows/ai/pinia/global'
+import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
 
 export default defineComponent({
   name: 'AiCreateSpaceDialog',
   components: { BeaverDialog, BeaverButton },
-  props: {
-    modelValue: { type: Boolean, default: false },
-  },
-  emits: ['update:modelValue', 'confirm'],
-  setup(props, { emit }) {
+  setup() {
+    const aiGlobalStore = useAiGlobalStore()
+    const aiSpaceStore = useAiSpaceStore()
     const name = ref('')
     const inputRef = ref<HTMLInputElement | null>(null)
 
-    const close = () => {
-      emit('update:modelValue', false)
+    const handleClose = () => {
+      aiGlobalStore.setVisible('createSpace', false)
     }
 
-    const onVisibleChange = (visible: boolean) => {
-      emit('update:modelValue', visible)
+    const onDialogVisible = (visible: boolean) => {
+      if (!visible)
+        handleClose()
     }
 
-    const handleCancel = () => {
-      close()
-    }
-
-    const handleConfirm = () => {
+    const handleConfirm = async () => {
       const title = name.value.trim()
       if (!title)
         return
-      emit('confirm', title)
-      close()
+      try {
+        await aiSpaceStore.createLocalSpace(title)
+        handleClose()
+      }
+      catch (error: any) {
+        window.alert(error?.message || '创建工作空间失败')
+      }
     }
 
-    watch(
-      () => props.modelValue,
-      async (visible) => {
-        if (!visible) {
-          name.value = ''
-          return
-        }
-        name.value = ''
-        await nextTick()
-        inputRef.value?.focus()
-      },
-    )
+    onMounted(async () => {
+      await nextTick()
+      inputRef.value?.focus()
+    })
 
     return {
       name,
       inputRef,
-      onVisibleChange,
-      handleCancel,
+      handleClose,
+      onDialogVisible,
       handleConfirm,
     }
   },

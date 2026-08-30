@@ -101,14 +101,6 @@
               :class="{ open: spacesOpen }"
             >
           </button>
-          <button
-            class="ai-sidebar__add-space"
-            type="button"
-            title="新建本机空间"
-            @click="handleCreateSpace"
-          >
-            <img src="renderModule/assets/image/common/add.svg" alt="add">
-          </button>
         </div>
 
         <div v-show="spacesOpen" class="ai-sidebar__section-body">
@@ -139,23 +131,29 @@
       </div>
     </div>
 
-    <AiCreateSpaceDialog v-model="createDialogVisible" @confirm="onCreateConfirm" />
+    <button
+      class="ai-sidebar__settings"
+      type="button"
+      @click="aiGlobalStore.setVisible('settings', true)"
+    >
+      <img src="renderModule/assets/image/leftBar/settings/settings.svg" alt="settings">
+      设置
+    </button>
   </aside>
 </template>
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import AiCreateSpaceDialog from './components/createSpaceDialog/index.vue'
 import { aiNavList, type IAiNavItem } from 'renderModule/windows/ai/components/layout/sidebar/data'
 import { useAiChatStore } from 'renderModule/windows/ai/pinia/chat'
+import { useAiGlobalStore } from 'renderModule/windows/ai/pinia/global'
 import { useAiSkillStore } from 'renderModule/windows/ai/pinia/skill'
 import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
 import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
 
 export default defineComponent({
   name: 'AiSidebar',
-  components: { AiCreateSpaceDialog },
   setup() {
     const router = useRouter()
     const route = useRoute()
@@ -163,9 +161,9 @@ export default defineComponent({
     const aiSkillStore = useAiSkillStore()
     const aiSpaceStore = useAiSpaceStore()
     const aiViewStore = useAiViewStore()
+    const aiGlobalStore = useAiGlobalStore()
     const tasksOpen = ref(true)
     const spacesOpen = ref(true)
-    const createDialogVisible = ref(false)
     const version = '2.1.2'
 
     const formatRelative = (timestamp: number) => {
@@ -202,28 +200,15 @@ export default defineComponent({
       router.push({ name: 'chat', params: { id } })
     }
 
-    const handleCreateSpace = () => {
-      createDialogVisible.value = true
-    }
-
-    const onCreateConfirm = async (name: string) => {
-      try {
-        await aiSpaceStore.createLocalSpace(name)
-      }
-      catch (error: any) {
-        window.alert(error?.message || '创建工作空间失败')
-      }
-    }
-
     return {
       router,
       aiChatStore,
       aiSpaceStore,
       aiViewStore,
+      aiGlobalStore,
       aiNavList,
       tasksOpen,
       spacesOpen,
-      createDialogVisible,
       version,
       formatRelative,
       sessionsOfSpace,
@@ -231,8 +216,6 @@ export default defineComponent({
       isChatActive,
       handleNewTask,
       handleSelectChat,
-      handleCreateSpace,
-      onCreateConfirm,
     }
   },
 })
@@ -274,8 +257,7 @@ export default defineComponent({
     gap: 2px;
   }
 
-  &__icon-btn,
-  &__add-space {
+  &__icon-btn {
     width: 32px;
     height: 32px;
     border: none;
@@ -423,6 +405,7 @@ export default defineComponent({
     font-size: 12px;
     color: #636E72;
     user-select: none;
+    cursor: pointer;
   }
 
   &__section-toggle {
@@ -518,6 +501,34 @@ export default defineComponent({
     flex-shrink: 0;
     font-size: 11px;
     color: #B2BEC3;
+  }
+
+  &__settings {
+    flex-shrink: 0;
+    width: 100%;
+    height: 40px;
+    margin-top: 8px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #2D3436;
+    font-size: 13px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    transition: background 200ms cubic-bezier(0.33, 1, 0.68, 1);
+
+    img {
+      width: 16px;
+      height: 16px;
+      opacity: 0.55;
+    }
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.05);
+    }
   }
 }
 </style>

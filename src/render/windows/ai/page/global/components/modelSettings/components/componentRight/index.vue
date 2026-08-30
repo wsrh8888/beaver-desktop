@@ -20,44 +20,37 @@
 -->
 
 <template>
-  <div class="ai-chat-panel">
-    <AiChatHeader :title="title" />
-    <AiChatContent :messages="messages" />
-    <div class="ai-chat-panel__composer">
-      <AiComposer :show-meta="false" compact />
-    </div>
-  </div>
+  <section class="ai-settings-component-right">
+    <AiSettingsModel v-if="section === 'model'" />
+  </section>
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import AiComposer from 'renderModule/windows/ai/components/composer/index.vue'
-import type { IAiMessage } from 'renderModule/windows/ai/types/chat'
-import AiChatContent from './content.vue'
-import AiChatHeader from './header.vue'
+import type { PropType } from 'vue'
+import type { AiSettingsSection } from 'renderModule/windows/ai/types/model'
+import AiSettingsModel from './model/index.vue'
 
+/**
+ * 设置右侧容器：按左侧 section 挂载对应独立页面。
+ */
 export default defineComponent({
-  name: 'AiChatPanel',
-  components: { AiChatHeader, AiChatContent, AiComposer },
+  name: 'AiSettingsComponentRight',
+  components: { AiSettingsModel },
   props: {
-    title: { type: String, default: '海狸助手' },
-    messages: { type: Array as () => IAiMessage[], default: () => [] },
+    section: {
+      type: String as PropType<AiSettingsSection>,
+      required: true,
+    },
   },
 })
 </script>
 
 <style lang="less" scoped>
-.ai-chat-panel {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+.ai-settings-component-right {
+  flex: 1;
   min-width: 0;
-  background: #FFFFFF;
-
-  &__composer {
-    padding: 16px 24px;
-    border-top: 1px solid #EBEEF5;
-    flex-shrink: 0;
-  }
+  min-height: 0;
+  overflow-y: auto;
 }
 </style>

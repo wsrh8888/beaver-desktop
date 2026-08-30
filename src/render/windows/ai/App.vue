@@ -28,20 +28,32 @@
         <router-view />
       </main>
     </div>
+    <AiGlobalPage />
   </div>
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, onMounted } from 'vue'
 import AiHeader from 'renderModule/windows/ai/components/layout/header/header.vue'
 import AiSidebar from 'renderModule/windows/ai/components/layout/sidebar/index.vue'
+import AiGlobalPage from 'renderModule/windows/ai/page/global/index.vue'
+import { useAiAgentStore } from 'renderModule/windows/ai/pinia/agent'
 import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
 
 export default defineComponent({
   name: 'AiApp',
-  components: { AiHeader, AiSidebar },
+  components: { AiHeader, AiSidebar, AiGlobalPage },
   setup() {
-    return { aiViewStore: useAiViewStore() }
+    const aiViewStore = useAiViewStore()
+    const aiAgentStore = useAiAgentStore()
+
+    onMounted(() => {
+      aiAgentStore.ensureAgent().catch(() => {
+        // 创建失败时发消息再重试
+      })
+    })
+
+    return { aiViewStore }
   },
 })
 </script>

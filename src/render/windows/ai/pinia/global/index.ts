@@ -20,40 +20,24 @@
  */
 
 import { defineStore } from 'pinia'
-import type { AiSettingsSection, IAiModel } from 'renderModule/windows/ai/types/model'
+
+/** 可独立开关的全局浮层 */
+export type AiGlobalVisibleKey = 'createSpace' | 'settings'
 
 /**
- * 模型与设置弹窗状态。
- * 弹窗显隐 + 模型列表 + 当前选中的左侧分类（先只 'model'）。
+ * 全局浮层显隐：各弹窗独立开关，统一用 setVisible 改。
  */
-export const useAiModelStore = defineStore('useAiModelStore', {
+export const useAiGlobalStore = defineStore('useAiGlobalStore', {
   state: () => ({
-    models: [] as IAiModel[],
+    createSpaceVisible: false,
     settingsVisible: false,
-    activeSection: 'model' as AiSettingsSection,
   }),
   actions: {
-    createId() {
-      return `model_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-    },
-
-    addModel(data: Omit<IAiModel, 'id'>) {
-      this.models.push({ id: this.createId(), ...data })
-    },
-
-    removeModel(id: string) {
-      const idx = this.models.findIndex(m => m.id === id)
-      if (idx >= 0)
-        this.models.splice(idx, 1)
-    },
-
-    openSettings(section: AiSettingsSection = 'model') {
-      this.activeSection = section
-      this.settingsVisible = true
-    },
-
-    closeSettings() {
-      this.settingsVisible = false
+    setVisible(name: AiGlobalVisibleKey, visible: boolean) {
+      if (name === 'createSpace')
+        this.createSpaceVisible = visible
+      else if (name === 'settings')
+        this.settingsVisible = visible
     },
   },
 })

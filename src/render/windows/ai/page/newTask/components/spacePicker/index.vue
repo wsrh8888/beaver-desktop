@@ -85,23 +85,21 @@
       </div>
     </div>
 
-    <AiCreateSpaceDialog v-model="createDialogVisible" @confirm="onCreateConfirm" />
   </div>
 </template>
 
 <script lang="ts">
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
-import AiCreateSpaceDialog from '../createSpaceDialog/index.vue'
+import { useAiGlobalStore } from 'renderModule/windows/ai/pinia/global'
 import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
 
 export default defineComponent({
   name: 'AiSpacePicker',
-  components: { AiCreateSpaceDialog },
   setup() {
     const aiSpaceStore = useAiSpaceStore()
+    const aiGlobalStore = useAiGlobalStore()
     const open = ref(false)
     const keyword = ref('')
-    const createDialogVisible = ref(false)
     const rootRef = ref<HTMLElement | null>(null)
     const searchRef = ref<HTMLInputElement | null>(null)
 
@@ -144,16 +142,7 @@ export default defineComponent({
 
     const createSpace = () => {
       close()
-      createDialogVisible.value = true
-    }
-
-    const onCreateConfirm = async (name: string) => {
-      try {
-        await aiSpaceStore.createLocalSpace(name)
-      }
-      catch (error: any) {
-        window.alert(error?.message || '创建工作空间失败')
-      }
+      aiGlobalStore.setVisible('createSpace', true)
     }
 
     const openLocalFolder = async () => {
@@ -185,7 +174,6 @@ export default defineComponent({
       aiSpaceStore,
       open,
       keyword,
-      createDialogVisible,
       rootRef,
       searchRef,
       currentLabel,
@@ -194,7 +182,6 @@ export default defineComponent({
       pickNone,
       pickSpace,
       createSpace,
-      onCreateConfirm,
       openLocalFolder,
     }
   },

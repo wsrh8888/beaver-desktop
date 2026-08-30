@@ -23,10 +23,8 @@
   <div class="ai-chat">
     <div class="ai-chat__left">
       <AiChatPanel
-        v-model="inputMessage"
         :title="aiChatStore.currentChat?.title || '会话'"
         :messages="aiChatStore.currentChat?.messages ?? []"
-        @send="handleSend"
       />
     </div>
     <div v-if="aiViewStore.resultPanelOpen" class="ai-chat__right">
@@ -36,7 +34,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onMounted, ref, watch } from 'vue'
+import { defineComponent, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AiChatPanel from './left-components/index.vue'
 import AiResultPanel from './right-component/index.vue'
@@ -52,7 +50,6 @@ export default defineComponent({
     const router = useRouter()
     const aiChatStore = useAiChatStore()
     const aiViewStore = useAiViewStore()
-    const inputMessage = ref('')
 
     const syncChat = (id: string) => {
       const ok = aiChatStore.openChat(id)
@@ -72,19 +69,9 @@ export default defineComponent({
       },
     )
 
-    const handleSend = () => {
-      const text = inputMessage.value.trim()
-      if (!text)
-        return
-      aiChatStore.sendTextMessage(text)
-      inputMessage.value = ''
-    }
-
     return {
       aiChatStore,
       aiViewStore,
-      inputMessage,
-      handleSend,
     }
   },
 })

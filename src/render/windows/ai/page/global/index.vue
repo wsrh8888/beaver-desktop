@@ -20,44 +20,24 @@
 -->
 
 <template>
-  <div class="ai-chat-panel">
-    <AiChatHeader :title="title" />
-    <AiChatContent :messages="messages" />
-    <div class="ai-chat-panel__composer">
-      <AiComposer :show-meta="false" compact />
-    </div>
-  </div>
+  <AiCreateSpaceDialog v-if="aiGlobalStore.createSpaceVisible" />
+  <AiModelSettings v-if="aiGlobalStore.settingsVisible" />
 </template>
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import AiComposer from 'renderModule/windows/ai/components/composer/index.vue'
-import type { IAiMessage } from 'renderModule/windows/ai/types/chat'
-import AiChatContent from './content.vue'
-import AiChatHeader from './header.vue'
+import AiCreateSpaceDialog from './components/createSpaceDialog/index.vue'
+import AiModelSettings from './components/modelSettings/index.vue'
+import { useAiGlobalStore } from 'renderModule/windows/ai/pinia/global'
 
+/**
+ * 全局浮层入口：各弹窗独立 v-if，显隐由子组件 / 调用方自行改对应字段。
+ */
 export default defineComponent({
-  name: 'AiChatPanel',
-  components: { AiChatHeader, AiChatContent, AiComposer },
-  props: {
-    title: { type: String, default: '海狸助手' },
-    messages: { type: Array as () => IAiMessage[], default: () => [] },
+  name: 'AiGlobalPage',
+  components: { AiCreateSpaceDialog, AiModelSettings },
+  setup() {
+    return { aiGlobalStore: useAiGlobalStore() }
   },
 })
 </script>
-
-<style lang="less" scoped>
-.ai-chat-panel {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  background: #FFFFFF;
-
-  &__composer {
-    padding: 16px 24px;
-    border-top: 1px solid #EBEEF5;
-    flex-shrink: 0;
-  }
-}
-</style>

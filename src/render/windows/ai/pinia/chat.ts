@@ -21,6 +21,9 @@
 
 import { defineStore } from 'pinia'
 import type { IAiArtifact, IAiChat, IAiChatListItem, IAiMessage } from 'renderModule/windows/ai/types/chat'
+import { sendAgentMessageStream } from 'renderModule/api/agent'
+import { useAiAgentStore } from 'renderModule/windows/ai/pinia/agent'
+import { useAiModelStore } from 'renderModule/windows/ai/pinia/model'
 import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
 import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
 
@@ -194,6 +197,47 @@ export const useAiChatStore = defineStore('useAiChatStore', {
       this.touchChat(chatId)
     },
 
+    /** 开一条可流式追加的助手消息，返回 messageId */
+    beginAssistantStream(chatId: string): string | null {
+      const chat = this.chats[chatId]
+      if (!chat)
+        return null
+      const msg: IAiMessage = {
+        id: this.createId(),
+        role: 'assistant',
+        content: '',
+        timestamp: Date.now(),
+        streaming: true,
+      }
+      chat.messages.push(msg)
+      this.touchChat(chatId)
+      return msg.id
+    },
+
+    appendAssistantDelta(chatId: string, messageId: string, delta: string) {
+      const chat = this.chats[chatId]
+      if (!chat || !delta)
+        return
+      const msg = chat.messages.find(m => m.id === messageId)
+      if (!msg)
+        return
+      msg.content += delta
+      this.touchChat(chatId)
+    },
+
+    endAssistantStream(chatId: string, messageId: string, fallback?: string) {
+      const chat = this.chats[chatId]
+      if (!chat)
+        return
+      const msg = chat.messages.find(m => m.id === messageId)
+      if (!msg)
+        return
+      if (!msg.content.trim() && fallback)
+        msg.content = fallback
+      msg.streaming = false
+      this.touchChat(chatId)
+    },
+
     /**
      * 添加产物到指定会话。
      * - html 类型仅允许 1 个：已存在则原地替换（保留位置）。
@@ -229,12 +273,14 @@ export const useAiChatStore = defineStore('useAiChatStore', {
         view.setActiveArtifact(chat.artifacts[0]?.id ?? null)
     },
 
-    sendTextMessage(text: string): string | null {
+    async sendTextMessage(text: string): Promise<string | null> {
       const content = text.trim()
       if (!content)
         return null
 
       const spaceStore = useAiSpaceStore()
+      const modelStore = useAiModelStore()
+      const agentStore = useAiAgentStore()
       let chatId = this.currentChatId
 
       if (chatId === DRAFT_ID) {
@@ -244,11 +290,48 @@ export const useAiChatStore = defineStore('useAiChatStore', {
       }
 
       this.appendUserMessage(chatId, content)
-      this.appendAssistantReply(
-        chatId,
-        `我已收到：「${content}」。会话已开始，AI 服务接入后将在此流式回复，并在右侧以产物 tab 展示。`,
-      )
-      this.appendDemoArtifacts(chatId, content)
+      const assistantId = this.beginAssistantStream(chatId)
+      if (!assistantId)
+        return chatId
+
+      try {
+        const agentId = await agentStore.ensureAgent()
+        const selected = modelStore.selected
+        await sendAgentMessageStream(
+          {
+            agentId,
+            content,
+            clientMsgId: `cmsg_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+            modelId: selected.id,
+            modelSource: selected.source,
+          },
+          {
+            onDelta: (data) => {
+              if (data.content)
+                this.appendAssistantDelta(chatId, assistantId, data.content)
+            },
+            onDone: () => {
+              this.endAssistantStream(chatId, assistantId)
+            },
+            onError: (data) => {
+              this.endAssistantStream(
+                chatId,
+                assistantId,
+                data.message || '发送失败，请稍后重试',
+              )
+            },
+          },
+        )
+        // 若流正常结束但未走 done（极端情况），也收尾
+        this.endAssistantStream(chatId, assistantId)
+      }
+      catch (err: any) {
+        this.endAssistantStream(
+          chatId,
+          assistantId,
+          err?.message || '发送失败，请稍后重试',
+        )
+      }
 
       return chatId
     },
