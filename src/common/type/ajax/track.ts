@@ -19,16 +19,11 @@
  * beaver-desktop-header-v2
  */
 
-// 日志数据
-export interface ILogData {
-  level: string
-  bucketId: string
-  data: string
-  timestamp?: number
-}
+// 客户端日志：SLS 风格的自由字段日志，每条即一个扁平 JSON 对象
+export type ILogItem = Record<string, unknown>
 
 export interface ILogEventsReq {
-  logs: ILogData[]
+  logs: ILogItem[]
 }
 
 export interface ILogEventsRes {

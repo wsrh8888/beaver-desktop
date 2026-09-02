@@ -30,7 +30,7 @@ export const logEventsApi = (data: ILogEventsReq) => {
   return axios(
     {
       method: 'POST',
-      url: `${getBaseUrl()}/api/platform/track_public/v1/log`,
+      url: `${getBaseUrl()}/api/platform/track_public/v1/track`,
       data,
     },
   ).then(res => res.data)
