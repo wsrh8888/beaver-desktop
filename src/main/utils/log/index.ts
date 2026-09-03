@@ -20,7 +20,6 @@
  */
 
 import type { ILogger } from 'commonModule/type/logger'
-import { getLogId } from 'commonModule/config'
 import path from 'node:path'
 import { CacheType } from 'commonModule/type/cache/cache'
 import log4js from 'log4js'
@@ -39,18 +38,10 @@ class Log {
       this.consumer = new LogConsumer()
       this.consumer.registerWriter('cloud', {
         write: async (items) => {
-          const bucketId = getLogId()
-          if (!bucketId || !items.length) {
+          if (!items.length) {
             return
           }
-          const res = await logEventsApi({
-            logs: items.map(item => ({
-              level: item.level,
-              bucketId,
-              data: JSON.stringify(item),
-              timestamp: item.timestamp,
-            })),
-          })
+          const res = await logEventsApi({ logs: items })
           if (res.code !== 0) {
             throw new Error(res.msg || '日志上报失败')
           }

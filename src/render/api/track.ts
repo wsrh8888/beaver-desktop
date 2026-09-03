@@ -26,7 +26,7 @@ import { baseUrl } from 'commonModule/config'
 export const logEventsApi = (data: ILogEventsReq) => {
   return ajax({
     method: 'POST',
-    url: `${baseUrl}/api/platform/track_public/v1/log`,
+    url: `${baseUrl}/api/platform/track_public/v1/track`,
     data,
   })
 }
