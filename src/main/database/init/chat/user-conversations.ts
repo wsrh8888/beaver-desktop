@@ -20,6 +20,10 @@
  */
 
 // 初始化用户会话表
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBInit-chat-user-conversations')
+
 export const initChatUserConversationsTable = (sqlite: any) => {
   // 创建表
   sqlite.exec(`
@@ -52,7 +56,7 @@ export const initChatUserConversationsTable = (sqlite: any) => {
     catch (error: any) {
       // 忽略已存在的列错误
       if (!error.message?.includes('duplicate column name')) {
-        console.log(`chat_user_conversations表的${field.split(' ')[0]}字段可能已存在`)
+        logger.warn({ text: '表字段添加失败', data: { table: 'chat_user_conversations', field: field.split(' ')[0], error: error.message } })
       }
     }
   })

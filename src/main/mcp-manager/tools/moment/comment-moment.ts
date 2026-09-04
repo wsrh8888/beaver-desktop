@@ -23,6 +23,9 @@
  * 评论朋友圈动态工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-comment-moment')
 
 export const commentMomentTool = {
   name: 'comment_moment',
@@ -40,7 +43,15 @@ export const commentMomentTool = {
     mentionUsers?: string[]
   }) => {
     // 这里实现评论朋友圈动态的逻辑
-    console.log('评论朋友圈动态:', params)
+    logger.info({
+      text: '评论朋友圈动态',
+      data: {
+        momentId: params.momentId,
+        contentLength: params.content.length,
+        replyTo: params.replyTo,
+        mentionUserCount: params.mentionUsers?.length ?? 0
+      }
+    })
     return {
       success: true,
       momentId: params.momentId,

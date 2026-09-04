@@ -69,8 +69,11 @@ import { defineComponent, ref, onMounted, computed } from 'vue'
 import { usecallStore } from '../../pinia/call'
 import { useUserStore } from '../../pinia/user'
 import { inviteCallMemberApi } from 'renderModule/api/call'
+import Logger from 'renderModule/utils/logger'
 import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
+
+const logger = new Logger('CallInviteModal')
 
 export default defineComponent({
   name: 'InviteModal',
@@ -117,7 +120,7 @@ export default defineComponent({
           })
         }
       } catch (e) {
-        console.error('获取群成员失败', e)
+        logger.error({ text: '获取群成员失败', data: { conversationId: convId, error: (e as Error)?.message } })
       }
     }
 
@@ -140,13 +143,14 @@ export default defineComponent({
         })
 
         selectedIds.value.forEach(uid => {
-          console.error('1111111111111111111111111111111', JSON.stringify(selectedIds.value))
           callStore.upsertMember(uid, { status: 'calling' })
         })
 
+        logger.info({ text: '通话邀请已发出', data: { invitedCount: selectedIds.value.length } })
+
         emit('close')
       } catch (e) {
-        console.error('邀请失败', e)
+        logger.error({ text: '邀请失败', data: { error: (e as Error)?.message } })
       }
     }
 

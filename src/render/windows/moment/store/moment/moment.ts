@@ -21,6 +21,7 @@
 
 import type { IMomentCommentModel, IMomentInfo } from 'commonModule/type/ajax/moment'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import {
   createMomentCommentApi,
   getMomentChildCommentsApi,
@@ -31,6 +32,8 @@ import {
   likeMomentApi,
 } from 'renderModule/api/moment'
 import { useUserStore } from '../user/user'
+
+const logger = new Logger('MomentStore')
 
 /**
  * @description: 朋友圈状态管理
@@ -83,7 +86,7 @@ export const useMomentStore = defineStore('useMomentStore', {
       else {
         this.momentList.push(...response.result.list)
       }
-      console.log(this.momentList)
+      logger.info({ text: '动态列表已更新', data: { total: this.momentList.length } })
     },
 
     /**

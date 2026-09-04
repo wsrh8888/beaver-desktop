@@ -45,7 +45,7 @@ class AppNotificationRouter {
         await appLifecycleNotificationManager.handleLifecycleStatusChange(params.data)
         break
       default:
-        console.warn('未知的应用通知命令:', params.command)
+        logger.warn({ text: '未知的应用通知命令', data: { command: params.command } })
     }
   }
 }

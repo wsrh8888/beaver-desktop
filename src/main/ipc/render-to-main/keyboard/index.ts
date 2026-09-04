@@ -22,8 +22,10 @@
 import type { KeyboardActionId } from 'commonModule/type/mainStore'
 import { KeyboardCommand } from 'commonModule/type/ipc/command'
 import { getScreenshots } from 'mainModule/utils/capture'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 import { BrowserWindow, globalShortcut } from 'electron'
+
+const logger = new Logger('KeyboardHandler')
 
 function toElectronAccelerator(binding: string): string {
   return binding
@@ -66,7 +68,7 @@ class KeyboardHandler {
       logger.warn({
         text: '键盘快捷键注册失败',
         data: { actionId, binding, accelerator },
-      }, 'KeyboardHandler')
+      })
       return
     }
 
@@ -107,7 +109,7 @@ class KeyboardHandler {
         logger.warn({
           text: '未知快捷键动作',
           data: { actionId },
-        }, 'KeyboardHandler')
+        })
     }
   }
 

@@ -47,7 +47,7 @@ class CallNotificationRouter {
         callNotificationManager.processCallEnded(params.data)
         break
       default:
-        console.warn('未知的通话通知命令:', params.command)
+        logger.warn({ text: '未知的通话通知命令', data: { command: params.command } })
     }
   }
 }

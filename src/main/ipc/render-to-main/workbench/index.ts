@@ -22,7 +22,9 @@
 import { WorkbenchCommand } from 'commonModule/type/ipc/command'
 import { BrowserWindow, shell } from 'electron'
 import workbenchWebContentsView from 'mainModule/web-contents-view/workbench/workbench'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('WorkbenchHandler')
 
 class WorkbenchHandler {
   handle(
@@ -53,14 +55,14 @@ class WorkbenchHandler {
       case WorkbenchCommand.OPEN_EXTERNAL: {
         const url = typeof data?.url === 'string' ? data.url.trim() : ''
         if (!url || !/^https?:\/\//i.test(url)) {
-          logger.error({ text: `工作台外开地址不合法: ${url}` }, 'WorkbenchHandler')
+          logger.error({ text: `工作台外开地址不合法: ${url}` })
           break
         }
         void shell.openExternal(url)
         break
       }
       default:
-        logger.error({ text: `工作台处理未知命令: ${command}` }, 'WorkbenchHandler')
+        logger.error({ text: `工作台处理未知命令: ${command}` })
         break
     }
   }

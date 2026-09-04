@@ -37,21 +37,14 @@ class CollectSync {
 
     // 过滤出需要更新的收藏记录ID
     const needUpdateCollectIds = await this.compareAndFilterCollectVersions(collectVersions)
-    console.log('11111111111111111111111111111111')
-    console.log('11111111111111111111111111111111')
-    console.log('11111111111111111111111111111111')
-    console.log('11111111111111111111111111111111')
-    console.log('11111111111111111111111111111111')
-    console.log('11111111111111111111111111111111')
-    console.log(needUpdateCollectIds)
-    console.log(collectVersions)
+    logger.info({ text: '表情收藏版本对比完成', data: { versionCount: collectVersions.length, needUpdateCount: needUpdateCollectIds.length } })
 
     if (needUpdateCollectIds.length > 0) {
       await this.syncEmojiCollectData(needUpdateCollectIds)
     }
     }
     catch (error) {
-      logger.error({ text: '表情收藏数据同步失败1', data: { error: (error as any)?.message } })
+      logger.error({ text: '表情收藏同步失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -77,7 +70,7 @@ class CollectSync {
     return needUpdateIds
     }
     catch (error) {
-      logger.error({ text: '表情收藏数据同步失败2', data: { error: (error as any)?.message } })
+      logger.error({ text: '表情收藏版本对比失败', data: { error: (error as any)?.message } })
     }
   }
 

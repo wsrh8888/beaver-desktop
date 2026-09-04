@@ -25,6 +25,9 @@ import path from 'node:path'
 import { app, Menu, nativeImage, Tray } from 'electron'
 import { __dirname } from 'mainModule/config'
 import { PopupWindow } from './popup'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('TrayHandler')
 
 class TrayHandler {
   private win: BrowserWindow | null = null
@@ -38,9 +41,12 @@ class TrayHandler {
   private flashState: boolean = false
 
   init(win: BrowserWindow) {
-    if (this.tray)
+    if (this.tray) {
+      logger.info({ text: '托盘已存在，跳过初始化' })
       return
+    }
 
+    logger.info({ text: '开始初始化系统托盘' })
     const iconPath = path.join(__dirname, '../resource/logo.png')
     this.normalIcon = nativeImage.createFromPath(iconPath) || nativeImage.createEmpty()
     this.tray = new Tray(this.normalIcon)
@@ -163,6 +169,7 @@ class TrayHandler {
     if (this.isFlashing || !this.tray || !this.normalIcon)
       return
 
+    logger.info({ text: '开始闪烁托盘图标' })
     this.isFlashing = true
     this.flashState = false
     const emptyIcon = nativeImage.createEmpty()
@@ -182,6 +189,7 @@ class TrayHandler {
     if (!this.isFlashing)
       return
 
+    logger.info({ text: '停止闪烁托盘图标' })
     this.isFlashing = false
     if (this.flashTimer) {
       clearInterval(this.flashTimer)
@@ -277,6 +285,7 @@ class TrayHandler {
    * 销毁
    */
   destroy() {
+    logger.info({ text: '开始销毁系统托盘' })
     this.stopFlashing()
     if (this.popupWindow) {
       this.popupWindow.destroy()

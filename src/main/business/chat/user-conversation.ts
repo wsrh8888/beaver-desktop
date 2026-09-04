@@ -81,14 +81,14 @@ class UserConversationBusiness extends BaseBusiness<UserConversationSyncItem> {
         // 使用插入或更新的方式来同步单个用户会话
         await dbServiceChatUserConversation.batchCreate({ userConversations: [userConversation] })
 
-        console.log(`用户会话同步成功: userId=${userId}, conversationId=${conversationId}, version=${version}`)
+        this.logger.info({ text: '用户会话同步成功', data: { userId, conversationId, version } })
       }
       else {
-        console.log(`用户会话已同步: userId=${userId}, conversationId=${conversationId}, version=${version}`)
+        this.logger.info({ text: '用户会话已同步', data: { userId, conversationId, version } })
       }
     }
     catch (error) {
-      console.error('通过版本同步特定用户会话失败:', error)
+      this.logger.error({ text: '通过版本同步特定用户会话失败', data: { userId, conversationId, version, error: (error as Error)?.message } })
     }
   }
 

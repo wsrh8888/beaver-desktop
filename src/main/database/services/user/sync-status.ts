@@ -23,6 +23,7 @@ import type { IDBUserSyncStatus } from 'commonModule/type/database/db/user'
 import { eq, inArray } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { userSyncStatus } from '../../tables/user/sync-status'
+import Logger from 'mainModule/utils/logger'
 import type {
   DBGetUserSyncStatusReq,
   DBGetUserSyncStatusRes,
@@ -40,6 +41,8 @@ import type {
 } from 'commonModule/type/database/server/user/sync-status'
 
 // 用户同步状态服务
+const logger = new Logger('DBServiceUserSyncStatus')
+
 class dBServiceUserSyncStatus extends BaseService {
   /**
    * @description 获取用户同步状态
@@ -104,7 +107,7 @@ class dBServiceUserSyncStatus extends BaseService {
     }
     }
     catch (error) {
-      console.error('批量更新用户同步状态失败:', error)
+      logger.error({ text: '批量更新用户同步状态失败', data: { count: statuses.length, error: (error as Error)?.message } })
     }
   }
 

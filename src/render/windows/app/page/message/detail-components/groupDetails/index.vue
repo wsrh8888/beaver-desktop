@@ -73,8 +73,12 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
 import groupDetailsAssistant from './assistant.vue'
 import groupDetailsInfo from './info.vue'
+
+const logger = new Logger('GroupDetails')
+
 type PageKey = 'info' | 'assistant'
 
 const pageConfig: Record<PageKey, {
@@ -142,7 +146,6 @@ export default defineComponent({
     }
 
     const handleHeaderAction = (side: 'left' | 'right') => {
-      console.error('1111111111111111', side, page.value)
       if (side === 'left' && page.value === pageConfig.assistant.value)
         page.value = pageConfig.info.value
       if (side === 'right' && page.value === pageConfig.info.value)

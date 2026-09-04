@@ -32,6 +32,10 @@ import { useNotificationStore } from '../notification/notification'
 import { useMessageMediaStore } from '../message/message-media'
 import { useUpdateStore } from '../update/index'
 
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('AppStore')
+
 /**
  * @description: 全局应用状态管理
  * 管理应用初始化、连接状态等全局状态
@@ -60,7 +64,7 @@ export const useAppStore = defineStore('useAppStore', {
         return initialStatus.status
       }
       catch (error) {
-        console.error('获取应用初始状态失败:', error)
+        logger.error({ text: '获取应用初始状态失败', data: { error: (error as Error)?.message } })
         // 获取失败时保持默认状态
         return this.lifecycleStatus
       }
@@ -75,10 +79,10 @@ export const useAppStore = defineStore('useAppStore', {
         await this.getInitialLifecycleStatus()
         // 然后加载各模块数据
         await this.loadAllStoreData()
-        console.log('应用初始化完成')
+        logger.info({ text: '应用初始化完成' })
       }
       catch (error) {
-        console.error('应用初始化失败:', error)
+        logger.error({ text: '应用初始化失败', data: { error: (error as Error)?.message } })
       }
     },
 
@@ -99,7 +103,7 @@ export const useAppStore = defineStore('useAppStore', {
       const messageMediaStore = useMessageMediaStore()
 
       try {
-        console.log('[AppStore] 开始加载/刷新各模块数据...')
+        logger.info({ text: '开始加载/刷新各模块数据' })
         const promises = [
           userStore.init(),
           contactStore.init(),
@@ -113,10 +117,10 @@ export const useAppStore = defineStore('useAppStore', {
           messageMediaStore.init(),
         ]
         await Promise.all(promises)
-        console.log('[AppStore] 各模块数据同步加载完成')
+        logger.info({ text: '各模块数据加载完成' })
       }
       catch (error) {
-        console.error('[AppStore] 加载各模块数据失败:', error)
+        logger.error({ text: '加载各模块数据失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },
@@ -125,6 +129,7 @@ export const useAppStore = defineStore('useAppStore', {
      * @description: 更新应用生命周期状态
      */
     updateLifecycleStatus(status: AppLifecycleStatus) {
+      logger.info({ text: '应用生命周期状态变更', data: { status, previous: this.lifecycleStatus } })
       this.lifecycleStatus = status
     },
 

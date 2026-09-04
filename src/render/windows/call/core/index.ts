@@ -96,7 +96,7 @@ export class CallManager {
     const targetState = !(me?.isMuted ?? false)
 
     if (this.room?.state !== 'connected') {
-      console.error('切换静音失败：房间未连接')
+      logger.error({ text: '切换静音失败：房间未连接' })
       return
     }
 

@@ -27,6 +27,9 @@ import { fileURLToPath } from 'node:url'
 import { clipboard, nativeImage } from 'electron'
 import cacheManager from 'mainModule/cache'
 import head from 'mainModule/utils/request/head'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('ClipboardHandler')
 
 type ClipboardData = { fileKey?: string, text?: string }
 
@@ -62,9 +65,7 @@ class ClipboardHandler {
     try {
       const urlOrPath = await cacheManager.get(CacheType.USER_IMAGE, fileKey)
       let img: Electron.NativeImage | null = null
-      console.error('11111111111111111111')
-      console.error(urlOrPath)
-
+      logger.info({ text: '获取图片缓存完成', data: { fileKey, urlOrPath } })
       if (urlOrPath.startsWith('file://')) {
         // 本地：缓存文件路径
         const localPath = fileURLToPath(urlOrPath)
@@ -86,7 +87,7 @@ class ClipboardHandler {
       return false
     }
     catch (e) {
-      console.warn('clipboard copyImage failed', fileKey, (e as Error)?.message)
+      logger.error({ text: '复制图片到剪贴板失败', data: { fileKey, error: (e as Error)?.message } })
       return false
     }
   }

@@ -23,15 +23,17 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataCircleCommand } from 'commonModule/type/ipc/database'
 import circleBusiness from 'mainModule/business/circle/circle'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 
 const loggerName = 'circle-handler'
+const logger = new Logger(loggerName)
 
 class CircleHandler {
   async handle(_event: Electron.IpcMainInvokeEvent, command: DataCircleCommand, _data: any, _header: ICommonHeader): Promise<any> {
-    logger.info({ text: '处理圈子命令', data: { command } }, loggerName)
+    logger.info({ text: '处理圈子命令', data: { command } })
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
+      logger.warn({ text: '未获取到用户ID，圈子命令终止' })
       throw new Error('用户未登录')
     }
 

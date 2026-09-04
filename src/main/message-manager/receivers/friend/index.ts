@@ -21,6 +21,9 @@
 
 import friendVerifyReceiver from './friend-verify-receiver'
 import friendReceiver from './receiver'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('FriendMessageRouter')
 
 /**
  * @description: 好友消息路由器
@@ -38,23 +41,25 @@ class FriendMessageRouter {
     const { data } = wsMessage
 
     if (!data?.type) {
-      console.warn('好友消息缺少 type 字段', wsMessage)
+      logger.warn({ text: '好友消息缺少 type 字段', data: { command: wsMessage?.command } })
       return
     }
 
     switch (data.type) {
       // 好友信息同步
       case 'friend_receive':
+        logger.info({ text: '收到好友信息同步消息' })
         await this.friendReceiver.handleTableUpdates(wsMessage.data.body)
         break
 
       // 好友验证信息同步
       case 'friend_verify_receive':
+        logger.info({ text: '收到好友验证信息同步消息' })
         await this.friendVerifyReceiver.handleTableUpdates(wsMessage.data.body)
         break
 
       default:
-        console.warn('未知的好友消息类型', data.type)
+        logger.warn({ text: '未知的好友消息类型', data: { type: data.type } })
     }
   }
 }

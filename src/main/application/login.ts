@@ -24,6 +24,9 @@ import path from 'node:path'
 import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
 import ApplicationBase from './common/base'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('LoginApplication')
 
 class Login extends ApplicationBase implements Application {
   constructor() {
@@ -31,6 +34,7 @@ class Login extends ApplicationBase implements Application {
   }
 
   public createBrowserWindow(): BrowserWindow {
+    logger.info({ text: '开始创建登录窗口' })
     this.win = new BrowserWindow({
       width: 800,
       height: 500,

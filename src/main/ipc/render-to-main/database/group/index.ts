@@ -23,18 +23,20 @@ import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import { DataGroupCommand } from 'commonModule/type/ipc/database'
 import groupBusiness from 'mainModule/business/group/group'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 
 const loggerName = 'group-handler'
+const logger = new Logger(loggerName)
 
 class GroupHandler {
   /**
    * 处理群组相关的数据库命令
    */
   async handle(_event: Electron.IpcMainInvokeEvent, command: DataGroupCommand, data: any, header: ICommonHeader): Promise<any> {
-    logger.info({ text: '处理群组命令', data: { command, data } }, loggerName)
+    logger.info({ text: '处理群组命令', data: { command, data } })
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
+      logger.warn({ text: '未获取到用户ID，群组命令终止' })
       throw new Error('用户未登录')
     }
 

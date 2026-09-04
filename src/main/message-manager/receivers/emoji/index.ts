@@ -19,8 +19,10 @@
  * beaver-desktop-header-v2
  */
 
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 import collectReceiver from './collect-receiver'
+
+const logger = new Logger('EmojiMessageRouter')
 
 /**
  * 表情消息路由器
@@ -37,7 +39,7 @@ class EmojiMessageRouter {
     const { data } = wsMessage
 
     if (!data?.type) {
-      logger.warn({ text: '表情消息缺少 type 字段', data: { wsMessage } }, 'EmojiMessageRouter')
+      logger.warn({ text: '表情消息缺少 type 字段', data: { wsMessage } })
       return
     }
 
@@ -48,7 +50,7 @@ class EmojiMessageRouter {
         break
 
       default:
-        logger.warn({ text: '未知的表情消息类型', data: { type: data.type } }, 'EmojiMessageRouter')
+        logger.warn({ text: '未知的表情消息类型', data: { type: data.type } })
     }
   }
 }

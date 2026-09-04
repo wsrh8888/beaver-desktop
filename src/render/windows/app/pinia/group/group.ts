@@ -21,7 +21,10 @@
 
 import type { IGroupInfo } from 'commonModule/type/ajax/group'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import { getGroupInfoApi } from 'renderModule/api/group'
+
+const logger = new Logger('GroupStore')
 
 /**
  * @description: 群组信息管理
@@ -92,7 +95,7 @@ export const useGroupStore = defineStore('groupStore', {
         }
         return res
       }).catch((error) => {
-        console.error('Failed to update group info:', error)
+        logger.error({ text: '更新群组信息失败', data: { error: (error as Error)?.message } })
         throw error
       })
     },
@@ -146,7 +149,7 @@ export const useGroupStore = defineStore('groupStore', {
         return result.list
       }
       catch (error) {
-        console.error('批量更新群组信息失败:', error)
+        logger.error({ text: '批量更新群组信息失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },

@@ -26,7 +26,9 @@ import dbServiceDataSync  from 'mainModule/database/services/datasync/datasync'
 import dbServiceGroup  from 'mainModule/database/services/group/group'
 import dBServiceGroupSyncStatus from 'mainModule/database/services/group/group-sync-status'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('GroupSync')
 
 // 群资料同步器（对应服务器group表）
 class GroupSync {
@@ -54,6 +56,11 @@ class GroupSync {
         version: -1, // 使用时间戳而不是版本号
         updatedAt: serverResponse.result.serverTimestamp,
       }).catch(() => { })
+
+      logger.info({
+        text: '群资料同步完成',
+        data: { cursorVersion: lastSyncTime, needUpdateCount: needUpdateGroups.length },
+      })
     }
     catch (error) {
       logger.error({ text: '群资料同步失败', data: { error: (error as any)?.message } })

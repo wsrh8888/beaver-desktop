@@ -23,6 +23,9 @@ import type { RenderCommand } from 'commonModule/type/ipc/command'
 import type { IStoreOptions } from 'commonModule/type/mainStore'
 import { StorageCommand } from 'commonModule/type/ipc/command'
 import { store } from 'mainModule/store'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('StorageHandler')
 
 class StorageHandler {
   /**
@@ -37,7 +40,7 @@ class StorageHandler {
       case StorageCommand.REMOVE:
         return this.handleRemove(data)
       default:
-        console.error(`存储处理未知命令: ${command}`)
+        logger.error({ text: '存储处理未知命令', data: { command } })
         return null
     }
   }

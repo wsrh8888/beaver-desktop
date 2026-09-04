@@ -115,7 +115,7 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
 
       return { list: validList }
     } catch (error) {
-      console.error('根据验证记录ID列表批量查询验证记录失败:', error)
+      this.logger.error({ text: '根据验证记录ID列表批量查询验证记录失败', data: { error: (error as Error)?.message } })
       return { list: [] }
     }
   }
@@ -179,7 +179,7 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
 
       return { list: validList }
     } catch (error) {
-      console.error('获取好友验证列表失败:', error)
+      this.logger.error({ text: '获取好友验证列表失败', data: { error: (error as Error)?.message } })
       return { list: [] }
     }
   }
@@ -243,7 +243,7 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
 
       return { list: validList }
     } catch (error) {
-      console.error('根据版本范围获取验证列表失败:', error)
+      this.logger.error({ text: '根据版本范围获取验证列表失败', data: { error: (error as Error)?.message } })
       return { list: [] }
     }
   }
@@ -295,7 +295,7 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
 
         // 批量创建/更新本地数据库
         await dBServiceFriendVerify.batchCreate({ verifies: friendVerifies })
-        console.log(`好友验证同步成功: count=${friendVerifies.length}`)
+        this.logger.info({ text: '好友验证同步成功', data: { count: friendVerifies.length } })
 
         // 发送通知到render进程，告知好友验证数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_VALID_UPDATE, {
@@ -309,7 +309,7 @@ class FriendVerifyBusiness extends BaseBusiness<FriendVerifySyncItem> {
       }
     }
     catch (error) {
-      console.error('批量同步好友验证数据失败:', error)
+      this.logger.error({ text: '批量同步好友验证数据失败', data: { error: (error as Error)?.message } })
     }
   }
 }

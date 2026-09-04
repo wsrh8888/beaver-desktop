@@ -20,6 +20,9 @@
  */
 
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('MessageMediaStore')
 
 export const useMessageMediaStore = defineStore('useMessageMediaStore', {
   state: () => ({
@@ -43,7 +46,7 @@ export const useMessageMediaStore = defineStore('useMessageMediaStore', {
         this.playedMessageIds = result.messageIds || []
       }
       catch (error) {
-        console.error('[MessageMediaStore] 加载消息媒体状态失败:', error)
+        logger.error({ text: '加载消息媒体状态失败', data: { error: (error as Error)?.message } })
       }
     },
 

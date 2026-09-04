@@ -28,9 +28,12 @@ import { initGroupTables } from './group/index'
 import { initMediaTables } from './media/index'
 import { initNotificationTables } from './notification/index'
 import { initUserTables } from './user/index'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBInit')
 
 export const initTables = (db: any) => {
-  console.log('开始初始化用户表')
+  logger.info({ text: '开始初始化数据表' })
   initUserTables(db)
   initFriendTables(db)
   initGroupTables(db)
@@ -40,5 +43,5 @@ export const initTables = (db: any) => {
   initDatasyncTables(db)
   initNotificationTables(db)
   initMediaTables(db)
-  console.log('数据表初始化完成')
+  logger.info({ text: '数据表初始化完成' })
 }

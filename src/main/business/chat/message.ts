@@ -90,7 +90,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
         }
       }
     } catch (e) {
-      console.error('[MessageBusiness] 获取发送者本地信息失败:', e)
+      this.logger.error({ text: '获取发送者本地信息失败', data: { userId, error: (e as Error)?.message } })
     }
 
     const formattedMessage: IChatHistory = {
@@ -173,11 +173,11 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     // 如果已经不再是发送中（可能被 ACK 确认为成功了），则直接退出
     const currentMsg = await dBServiceMessage.getById(messageId)
     if (!currentMsg || currentMsg.sendStatus !== SendStatus.SENDING) {
-      console.log(`[MessageBusiness] 消息 ${messageId} 已处理或不再是发送中状态，取消超时处理`)
+      this.logger.info({ text: '消息已处理或不再是发送中状态，取消超时处理', data: { messageId, conversationId } })
       return
     }
 
-    console.warn(`[MessageBusiness] 消息发送超时: ${messageId}`)
+    this.logger.warn({ text: '消息发送超时', data: { messageId, conversationId } })
 
     // 2. 更新数据库状态为失败
     await dBServiceMessage.batchUpdateSendStatus({
@@ -204,7 +204,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
 
       // 调用服务层获取消息数据（纯数据库查询）
       const messages = await dBServiceMessage.getChatHistory({ conversationId, seq, limit })
-      console.log('[MessageBusiness] getChatHistory 本地DB查询结果:', conversationId, '条数:', messages.length)
+      this.logger.info({ text: '本地DB查询聊天历史完成', data: { conversationId, messageCount: messages.length } })
 
       // 判断是否还有更多数据（返回 limit+1 条，如果超过 limit 条说明有更多数据）
       const hasMore = messages.length > limit
@@ -230,7 +230,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
           })
         }
         catch (error) {
-          console.error('Failed to get sender details in chat history:', error)
+          this.logger.error({ text: '获取聊天历史发送者信息失败', data: { conversationId, senderCount: senderIds.length, error: (error as Error)?.message } })
         }
       }
 
@@ -261,7 +261,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       }
     }
     catch (error) {
-      console.error('Failed to get chat history:', error)
+      this.logger.error({ text: '获取聊天历史失败', data: { conversationId: params.conversationId, error: (error as Error)?.message } })
       return {
         count: 0,
         list: [],
@@ -312,7 +312,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       return { list } as any
     }
     catch (error) {
-      console.error('Failed to get messages by seq range:', error)
+      this.logger.error({ text: '按序列号范围获取消息失败', data: { conversationId: params.conversationId, error: (error as Error)?.message } })
       return { list: [] } as any
     }
   }
@@ -326,7 +326,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       return { success: true }
     }
     catch (error) {
-      console.error('Failed to batch delete messages:', error)
+      this.logger.error({ text: '批量删除消息失败', data: { messageIds: params.messageIds, error: (error as Error)?.message } })
       return { success: false }
     }
   }
@@ -379,7 +379,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
       )
     }
     catch (error) {
-      console.error('[MessageBusiness] 补拉发送者信息失败:', error)
+      this.logger.error({ text: '补拉发送者信息失败', data: { missingIds, error: (error as Error)?.message } })
     }
   }
 
@@ -404,14 +404,14 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
         // 处理同步到的消息数据
         await this.handleSyncedMessages(response.result.messages)
 
-        console.log(`消息同步成功: conversationId=${conversationId}, range=[${minVersion}, ${maxVersion}], count=${response.result.messages.length}`)
+        this.logger.info({ text: '消息同步成功', data: { conversationId, minVersion, maxVersion, count: response.result.messages.length } })
       }
       else {
-        console.log(`消息已同步: conversationId=${conversationId}, range=[${minVersion}, ${maxVersion}]`)
+        this.logger.info({ text: '消息已同步', data: { conversationId, minVersion, maxVersion } })
       }
     }
     catch (error) {
-      console.error('通过版本区间同步消息失败:', error)
+      this.logger.error({ text: '通过版本区间同步消息失败', data: { conversationId, minVersion, maxVersion, error: (error as Error)?.message } })
     }
   }
 
@@ -419,7 +419,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     if (messages.length === 0)
       return
 
-    console.log('同步到消息数据:', messages.length, '条')
+    this.logger.info({ text: '开始处理同步到的消息数据', data: { messageCount: messages.length } })
 
     // 格式化消息数据，转换为数据库格式
     const formattedMessages = messages.map(msg => ({
@@ -441,7 +441,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
     // 批量保存到本地数据库
     await dBServiceMessage.batchCreate({ messages: formattedMessages })
 
-    console.log('消息数据保存成功:', formattedMessages.length, '条')
+    this.logger.info({ text: '消息数据保存成功', data: { messageCount: formattedMessages.length } })
   }
 
 

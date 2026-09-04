@@ -21,7 +21,10 @@
 
 import type { INotificationPayload } from 'commonModule/type/preload/notification'
 import { NotificationModule, NotificationSearchToVerifyCommand } from 'commonModule/type/preload/notification'
+import Logger from 'renderModule/utils/logger'
 import { useVerifyStore } from '../pinia/verify'
+
+const logger = new Logger('SearchToVerifyEventManager')
 
 class SearchToVerifyEventManager {
   constructor() {
@@ -36,7 +39,7 @@ class SearchToVerifyEventManager {
   }
 
   handle(params: INotificationPayload<NotificationModule.SEARCH_TO_VERIFY>) {
-    console.log('verify 收到通知', params)
+    logger.info({ text: '收到搜索验证通知', data: { command: params.command, type: params.data?.type } })
     switch (params.command) {
       case NotificationSearchToVerifyCommand.SEARCH_TO_VERIFY: {
         const verifyStore = useVerifyStore()

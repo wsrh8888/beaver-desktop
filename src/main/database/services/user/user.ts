@@ -24,6 +24,7 @@ import type { IDBUser } from 'commonModule/type/database/db/user'
 import { sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { users } from '../../tables/user/user'
+import Logger from 'mainModule/utils/logger'
 import type {
   DBCreateUserReq,
   DBUpsertUserReq,
@@ -39,6 +40,8 @@ import type {
 } from 'commonModule/type/database/server/user/user'
 
 // 用户服务
+const logger = new Logger('DBServiceUser')
+
 class User extends BaseService {
   /**
    * @description 创建用户
@@ -84,7 +87,7 @@ class User extends BaseService {
     }
     }
     catch (error) {
-      console.error('批量创建用户失败:', error)
+      logger.error({ text: '批量创建用户失败', data: { count: req.usersData.length, error: (error as Error)?.message } })
     }
   }
 
@@ -127,7 +130,7 @@ class User extends BaseService {
       }
     }
     catch (error) {
-      console.error('根据ID获取用户信息失败:', error)
+      logger.error({ text: '根据ID获取用户信息失败', data: { userId: req.header?.userId, error: (error as Error)?.message } })
       return { userInfo: null }
     }
   }
@@ -153,7 +156,7 @@ class User extends BaseService {
       return { userInfo: userData[0] }
     }
     catch (error) {
-      console.error('获取用户基本信息失败:', error)
+      logger.error({ text: '获取用户基本信息失败', data: { userId: req.userId, error: (error as Error)?.message } })
       return { userInfo: null }
     }
   }
@@ -185,7 +188,7 @@ class User extends BaseService {
       }))
     }
     catch (error) {
-      console.error('批量获取用户基本信息失败:', error)
+      logger.error({ text: '批量获取用户基本信息失败', data: { userIdCount: req.userIds.length, error: (error as Error)?.message } })
       return []
     }
   }
@@ -228,7 +231,7 @@ class User extends BaseService {
       }))
     }
     catch (error) {
-      console.error('获取所有用户失败:', error)
+      logger.error({ text: '获取所有用户失败', data: { error: (error as Error)?.message } })
       return []
     }
   }

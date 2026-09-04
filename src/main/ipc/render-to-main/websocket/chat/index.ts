@@ -23,6 +23,9 @@ import { store } from 'mainModule/store'
 import type { IChatMessageSendBody } from 'commonModule/type/ws/message-types'
 import { WebsocketCommand } from 'commonModule/type/ipc/websocket'
 import messageBusiness from 'mainModule/business/chat/message'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('WebsocketChatHandler')
 
 class ChatHandler {
   /**
@@ -43,7 +46,7 @@ class ChatHandler {
       }
     }
     catch (error) {
-      console.error('处理聊天消息失败', error)
+      logger.error({ text: '处理聊天消息失败', data: { command, error: (error as Error)?.message } })
       return { code: -1, msg: (error as Error).message }
     }
   }

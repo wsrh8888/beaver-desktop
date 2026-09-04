@@ -21,6 +21,9 @@
 
 import type { IGroupMember } from 'commonModule/type/ajax/group'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('GroupMemberStore')
 
 /**
  * @description: 群成员信息管理
@@ -85,7 +88,7 @@ export const useGroupMemberStore = defineStore('groupMemberStore', {
         }
       }
       catch (error) {
-        console.error('Failed to init group members:', error)
+        logger.error({ text: '初始化群成员失败', data: { groupId, error: (error as Error)?.message } })
       }
     },
 
@@ -134,7 +137,7 @@ export const useGroupMemberStore = defineStore('groupMemberStore', {
         return groupIds
       }
       catch (error) {
-        console.error('批量更新群成员信息失败:', error)
+        logger.error({ text: '批量更新群成员信息失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },

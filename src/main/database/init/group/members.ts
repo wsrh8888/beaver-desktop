@@ -20,6 +20,10 @@
  */
 
 // 初始化群成员表
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBInit-group-members')
+
 export const initGroupMembersTable = (sqlite: any) => {
   // 创建群成员表 (与服务器端 group_models.GroupMemberModel 保持一致)
   sqlite.exec(`
@@ -48,7 +52,7 @@ export const initGroupMembersTable = (sqlite: any) => {
     catch (error: any) {
       // 忽略已存在的列错误
       if (!error.message?.includes('duplicate column name')) {
-        console.log(`group_members表的${field.split(' ')[0]}字段可能已存在`)
+        logger.warn({ text: '表字段添加失败', data: { table: 'group_members', field: field.split(' ')[0], error: error.message } })
       }
     }
   })

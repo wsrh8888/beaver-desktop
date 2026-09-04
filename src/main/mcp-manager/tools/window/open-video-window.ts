@@ -23,6 +23,9 @@
  * 打开视频播放器窗口工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-open-video-window')
 
 export const openVideoWindowTool = {
   name: 'open_video_window',
@@ -44,7 +47,7 @@ export const openVideoWindowTool = {
     allowFullscreen?: boolean
   }) => {
     // 这里实现打开视频窗口的逻辑
-    console.log('打开视频窗口:', params)
+    logger.info({ text: '打开视频窗口', data: { videoUrl: params.videoUrl, videoId: params.videoId } })
     return {
       success: true,
       windowType: 'video',

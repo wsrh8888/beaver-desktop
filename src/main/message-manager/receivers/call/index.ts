@@ -21,7 +21,9 @@
 
 import { NotificationModule, NotificationCallCommand } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('CallMessageRouter')
 
 /**
  * @description: 通话消息处理器 - 处理来自WebSocket的通话信令
@@ -40,7 +42,7 @@ class CallMessageRouter {
     logger.info({
       text: '收到通话信令内容',
       data: content,
-    }, 'CallMessageRouter')
+    })
 
     const { data } = content
     if (!data) return
@@ -66,7 +68,7 @@ class CallMessageRouter {
         this.handleRejected(payload)
         break
       default:
-        logger.warn({ text: '未知的 RTC 信令类型', data: { type: payload.type, origin: data.type } }, 'CallMessageRouter')
+        logger.warn({ text: '未知的 RTC 信令类型', data: { type: payload.type, origin: data.type } })
     }
   }
 
@@ -93,7 +95,7 @@ class CallMessageRouter {
       status: data.status || 1
     })
 
-    logger.info({ text: '已通知 app 窗口更新通话列表', data }, 'CallMessageRouter')
+    logger.info({ text: '已通知 app 窗口更新通话列表', data })
   }
 
   /**
@@ -109,7 +111,7 @@ class CallMessageRouter {
     // 转发给通话窗口
     sendMainNotification('call', NotificationModule.CALL, NotificationCallCommand.CALL_ACCEPTED, payload)
     sendMainNotification('call-incoming', NotificationModule.CALL, NotificationCallCommand.CALL_ACCEPTED, payload)
-    logger.info({ text: '对方已接听', data }, 'CallMessageRouter')
+    logger.info({ text: '对方已接听', data })
   }
 
   /**
@@ -133,7 +135,7 @@ class CallMessageRouter {
       }
     })
 
-    logger.info({ text: '通话已挂断/取消', data }, 'CallMessageRouter')
+    logger.info({ text: '通话已挂断/取消', data })
   }
 
   /**
@@ -149,7 +151,7 @@ class CallMessageRouter {
     // 转发给通话窗口
     sendMainNotification('call', NotificationModule.CALL, NotificationCallCommand.CALL_REJECTED, payload)
     sendMainNotification('call-incoming', NotificationModule.CALL, NotificationCallCommand.CALL_REJECTED, payload)
-    logger.info({ text: '对方已拒绝', data }, 'CallMessageRouter')
+    logger.info({ text: '对方已拒绝', data })
   }
 }
 

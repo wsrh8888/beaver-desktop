@@ -21,7 +21,9 @@
 
 import { mcpManager } from 'mainModule/mcp-manager/index.js'
 import { registerToolApi } from 'mainModule/api/mcp.js'
-import logger from 'mainModule/utils/log/index.js'
+import Logger from 'mainModule/utils/logger/index.js'
+
+const logger = new Logger('MCPToolListReceiver')
 
 /**
  * @description: MCP工具列表接收器 - 处理工具列表注册请求
@@ -35,7 +37,7 @@ class ToolListReceiver {
     const { requestId, clientId } = tableUpdatesBody
 
     logger.info({
-      text: `注册MCP工具列表`,
+      text: '开始注册MCP工具列表',
       data: { requestId, clientId }
     })
 
@@ -46,13 +48,13 @@ class ToolListReceiver {
     try {
       await registerToolApi({ tools })
       logger.info({
-        text: `工具列表已注册到云端`,
+        text: '工具列表已注册到云端',
         data: { requestId, clientId, toolCount: tools.length }
       })
     } catch (error) {
       logger.error({
-        text: `注册工具列表到云端失败`,
-        error
+        text: '注册工具列表到云端失败',
+        data: { requestId, clientId, message: (error as Error)?.message, stack: (error as Error)?.stack }
       })
     }
   }

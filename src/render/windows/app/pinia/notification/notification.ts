@@ -20,7 +20,10 @@
  */
 
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import { markReadByEventApi, markReadByCategoryApi, deleteNotificationApi } from 'renderModule/api/notification'
+
+const logger = new Logger('NotificationStore')
 
 export interface INotificationSummary {
   total?: number
@@ -53,7 +56,10 @@ export const useNotificationStore = defineStore('useNotificationStore', {
         const summary = await window.electron.database.notification.getUnreadSummary({
           categories,
         })
-        console.log('init-summary', summary)
+        logger.info({
+          text: '通知未读汇总加载完成',
+          data: { total: summary.total ?? 0, byCat: summary.byCat }
+        })
         this.setUnreadSummary(summary)
       }
       catch {
@@ -89,7 +95,7 @@ export const useNotificationStore = defineStore('useNotificationStore', {
           }
         }
       } catch (error) {
-        console.error('标记单个通知已读失败:', error)
+        logger.error({ text: '标记单个通知已读失败', data: { eventId, category, error: (error as Error)?.message } })
       }
     },
 
@@ -110,7 +116,7 @@ export const useNotificationStore = defineStore('useNotificationStore', {
         // 更新本地store，将该分类的未读数量设置为0
         this.setCategoryUnread(category, 0)
       } catch (error) {
-        console.error('标记分类已查看失败:', error)
+        logger.error({ text: '标记分类已查看失败', data: { category, error: (error as Error)?.message } })
         // 即使失败也更新本地store，提升用户体验
         this.setCategoryUnread(category, 0)
       }
@@ -132,7 +138,7 @@ export const useNotificationStore = defineStore('useNotificationStore', {
           // this.refreshUnreadSummary()
         }
       } catch (error) {
-        console.error('删除通知失败:', error)
+        logger.error({ text: '删除通知失败', data: { eventId, category, error: (error as Error)?.message } })
       }
     },
 
@@ -143,9 +149,9 @@ export const useNotificationStore = defineStore('useNotificationStore', {
       try {
         // 重新获取未读汇总数据
         await this.init()
-        console.log('通知收件箱已刷新')
+        logger.info({ text: '通知收件箱已刷新' })
       } catch (error) {
-        console.error('刷新通知收件箱失败:', error)
+        logger.error({ text: '刷新通知收件箱失败', data: { error: (error as Error)?.message } })
       }
     },
 
@@ -157,9 +163,9 @@ export const useNotificationStore = defineStore('useNotificationStore', {
         // 这里可以调用具体的API来标记这些事件为已读
         // 暂时触发未读数量刷新
         await this.refreshInbox()
-        console.log(`已标记 ${eventIds.length} 个事件为已读`)
+        logger.info({ text: '已标记事件为已读', data: { eventCount: eventIds.length } })
       } catch (error) {
-        console.error('标记事件已读失败:', error)
+        logger.error({ text: '标记事件已读失败', data: { eventCount: eventIds.length, error: (error as Error)?.message } })
       }
     },
 

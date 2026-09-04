@@ -102,7 +102,7 @@ class EmojiBusiness extends BaseBusiness<EmojiSyncItem> {
         }
       }
     } catch (error) {
-      console.error('批量同步表情数据失败:', error)
+      this.logger.error({ text: '批量同步表情数据失败', data: { error: (error as Error)?.message } })
     }
   }
 }

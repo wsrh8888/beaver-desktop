@@ -19,7 +19,9 @@
  * beaver-desktop-header-v2
  */
 
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPMessageRouter')
 import toolExecutionReceiver from './tool-execution-receiver'
 import toolListReceiver from './tool-list-receiver'
 
@@ -39,7 +41,7 @@ class MCPMessageRouter {
     const { data } = wsMessage
 
     if (!data?.type) {
-      logger.warn({ text: 'MCP消息缺少 type 字段', data: { wsMessage } }, 'MCPMessageRouter')
+      logger.warn({ text: 'MCP消息缺少 type 字段', data: { wsMessage } })
       return
     }
 
@@ -55,7 +57,7 @@ class MCPMessageRouter {
         break
 
       default:
-        logger.warn({ text: '未知的MCP消息类型', data: { type: data.type } }, 'MCPMessageRouter')
+        logger.warn({ text: '未知的MCP消息类型', data: { type: data.type } })
     }
   }
 }

@@ -23,6 +23,9 @@ import type { BrowserWindow } from 'electron'
 import path from 'node:path'
 import { __dirname } from 'mainModule/config'
 import { store } from 'mainModule/store'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('ApplicationBase')
 
 export default class ApplicationBase {
   protected win!: BrowserWindow
@@ -37,6 +40,7 @@ export default class ApplicationBase {
       ? `${process.env.VITE_DEV_SERVER_URL}/${this.name}.html`
       : path.join(__dirname, `../dist/${this.name}.html`)
 
+    logger.info({ text: '开始加载渲染页面', data: { name: this.name } })
     this.win.loadURL(url)
   }
 

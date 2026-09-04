@@ -25,7 +25,9 @@ import { FsCommand } from 'commonModule/type/ipc/command'
 import type { FsSystemPathName } from 'commonModule/type/preload/fs'
 import { getRootPath } from 'mainModule/config'
 import { app, BrowserWindow, dialog } from 'electron'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('FsHandler')
 
 class FsHandler {
   async handle(
@@ -47,7 +49,7 @@ class FsHandler {
       case FsCommand.SHOW_OPEN_DIRECTORY:
         return this.showOpenDirectory(event, data)
       default:
-        logger.error({ text: `文件系统处理未知命令: ${command}` }, 'FsHandler')
+        logger.error({ text: '收到未知的文件系统命令', data: { command } })
         return null
     }
   }
@@ -61,7 +63,7 @@ class FsHandler {
       return { success: true, path: dirPath }
     }
     catch (error: any) {
-      logger.error({ text: '创建目录失败', data: { dirPath, error: error?.message } }, 'FsHandler')
+      logger.error({ text: '创建目录失败', data: { dirPath, error: error?.message } })
       return { success: false, error: error?.message || '创建目录失败' }
     }
   }

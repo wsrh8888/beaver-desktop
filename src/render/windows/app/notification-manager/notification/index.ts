@@ -47,7 +47,7 @@ class NotificationNotificationRouter {
         await inboxNotificationManager.processInboxUpdate({ source: 'business' })
         break
       default:
-        console.warn('未知的通知通知命令:', params.command)
+        logger.warn({ text: '未知的通知命令', data: { command: params.command } })
     }
   }
 }

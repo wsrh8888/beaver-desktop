@@ -19,7 +19,9 @@
  * beaver-desktop-header-v2
  */
 
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('NotificationMessageRouter')
 import eventReceiver from './event-receiver'
 import inboxReceiver from './inbox-receiver'
 import readCursorReceiver from './read-cursor-receiver'
@@ -41,7 +43,7 @@ class NotificationMessageRouter {
     const { data } = wsMessage
 
     if (!data?.type) {
-      logger.warn({ text: '通知消息缺少 type 字段', data: { wsMessage } }, 'NotificationMessageRouter')
+      logger.warn({ text: '通知消息缺少 type 字段', data: { wsMessage } })
       return
     }
 
@@ -59,7 +61,7 @@ class NotificationMessageRouter {
         break
 
       default:
-        logger.warn({ text: '未知的通知消息类型', data: { type: data.type } }, 'NotificationMessageRouter')
+        logger.warn({ text: '未知的通知消息类型', data: { type: data.type } })
     }
   }
 }

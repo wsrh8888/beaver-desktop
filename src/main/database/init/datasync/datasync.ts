@@ -20,6 +20,10 @@
  */
 
 // 初始化数据同步表
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBInit-datasync')
+
 export const initDatasyncTable = (sqlite: any) => {
   // 创建同步游标表
   sqlite.exec(`
@@ -35,7 +39,7 @@ export const initDatasyncTable = (sqlite: any) => {
   try {
     sqlite.run(`CREATE UNIQUE INDEX IF NOT EXISTS unique_module ON datasync(module)`)
   }
-  catch {
-    console.log('unique_module索引可能已存在')
+  catch (error: any) {
+    logger.warn({ text: '索引创建失败，可能已存在', data: { table: 'datasync', index: 'unique_module', error: error?.message } })
   }
 }

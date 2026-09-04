@@ -22,9 +22,10 @@
 import { DataUserCommand } from 'commonModule/type/ipc/database'
 import dBServiceUser  from 'mainModule/database/services/user/user'
 
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 
 const loggerName = 'database-user-handler'
+const logger = new Logger(loggerName)
 
 class UserHandler {
   /**
@@ -48,7 +49,10 @@ class UserHandler {
       }
     }
     catch (error) {
-      logger.error({ text: '用户数据库命令处理失败', data: { command, error } }, loggerName)
+      logger.error({
+        text: '用户数据库命令处理失败',
+        data: { command, message: (error as Error)?.message, stack: (error as Error)?.stack },
+      })
       throw error
     }
   }

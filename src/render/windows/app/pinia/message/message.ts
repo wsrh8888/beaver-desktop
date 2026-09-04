@@ -108,7 +108,7 @@ export const useMessageStore = defineStore('useMessageStore', {
 
       // 如果已有完整的缓存（分页状态 + 消息数据），说明已经初始化过了
       if (existingPagination && existingMessages && existingMessages.length > 0) {
-        console.log('已经缓存过了， 使用缓存')
+        logger.info({ text: '消息已缓存，复用缓存数据', data: { conversationId } })
         return // 使用缓存，不重新加载
       }
 
@@ -128,9 +128,9 @@ export const useMessageStore = defineStore('useMessageStore', {
         conversationId,
         limit: 30,
       })
-      console.error('cxcxcxcsdf', result, {
-        conversationId,
-        limit: 30,
+      logger.info({
+        text: '获取聊天记录完成',
+        data: { conversationId, count: result.list?.length || 0 },
       })
 
       if (result.list && result.list.length > 0) {
@@ -202,7 +202,7 @@ export const useMessageStore = defineStore('useMessageStore', {
      * 使用 seq 进行排序，保证消息顺序的绝对正确性
      */
     addMessage(conversationId: string, message: IChatHistory) {
-      console.log('增加了消息', conversationId, message)
+      logger.info({ text: '新增消息', data: { conversationId, messageId: message.messageId, seq: message.seq } })
       const history = this.chatHistory.get(conversationId) || []
 
       // 优先通过 messageId 去重（用于发送消息的本地创建和服务器确认）
@@ -211,7 +211,7 @@ export const useMessageStore = defineStore('useMessageStore', {
         // 找到相同messageId的消息，更新它（通常是发送确认时更新seq和状态）
         const oldMessage = history[existingIndex]
         history[existingIndex] = { ...oldMessage, ...message }
-        console.log(`[MessageStore] 通过messageId更新消息: ${message.messageId}`)
+        logger.info({ text: '通过 messageId 更新消息', data: { messageId: message.messageId } })
         return
       }
 
@@ -277,7 +277,7 @@ export const useMessageStore = defineStore('useMessageStore', {
         }
       }
       catch (error) {
-        console.error('拉取消息数据失败:', error)
+        logger.error({ text: '拉取消息数据失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },
@@ -310,7 +310,7 @@ export const useMessageStore = defineStore('useMessageStore', {
         await (window as any).electron.database.chat.deleteMessages({ messageIds })
       }
       catch (error) {
-        console.error('Failed to delete messages from local database:', error)
+        logger.error({ text: '删除本地消息失败', data: { error: (error as Error)?.message } })
       }
     },
 

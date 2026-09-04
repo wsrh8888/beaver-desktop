@@ -23,6 +23,9 @@ import Koa from 'koa'
 import bodyParser from 'koa-bodyparser'
 import cors from '@koa/cors'
 import router from './routes/index'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('LocalServer')
 
 /**
  * 本地 HTTP 服务
@@ -58,17 +61,17 @@ class LocalServer {
    * 启动服务
    */
   async start(): Promise<void> {
+    const port = 38794
     try {
-
-      this.server = this.app.listen(38794, '127.0.0.1', () => {
-        console.log('Local server started on port 58794')
+      this.server = this.app.listen(port, '127.0.0.1', () => {
+        logger.info({ text: '本地 HTTP 服务启动成功', data: { port, host: '127.0.0.1' } })
       })
 
       this.server.on('error', (err: any) => {
+        logger.error({ text: '本地 HTTP 服务运行时错误', data: { message: err?.message } })
       })
-
     } catch (error: any) {
-      console.error('Local server start error:', error)
+      logger.error({ text: '本地 HTTP 服务启动失败', data: { message: error?.message, port } })
       throw error
     }
   }
@@ -78,7 +81,9 @@ class LocalServer {
    */
   stop(): void {
     if (this.server) {
+      const port = (this.server as any)?.address()?.port
       this.server.close(() => {
+        logger.info({ text: '本地 HTTP 服务已停止', data: { port } })
       })
       this.server = null
     }

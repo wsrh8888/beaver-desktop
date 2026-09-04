@@ -76,7 +76,7 @@ class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
     })).filter(item => item.groupId)
 
     if (membersToSync.length === 0) {
-      console.log('群成员同步完成: noValidGroupIds=true')
+      this.logger.info({ text: '群成员批量同步跳过：无有效群组ID' })
       return
     }
 
@@ -99,7 +99,7 @@ class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
           await dBServiceGroupMember.upsert(memberData)
         }
 
-        console.log(`群成员数据同步成功: count=${response.result.groupMembers.length}`)
+        this.logger.info({ text: '群成员数据同步成功', data: { count: response.result.groupMembers.length } })
 
         // 发送通知到render进程，告知群成员数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_MEMBER_UPDATE, {
@@ -111,11 +111,11 @@ class GroupMemberBusiness extends BaseBusiness<GroupMemberSyncItem> {
         })
       }
       else {
-        console.log('群成员数据同步完成: noUpdates=true')
+        this.logger.info({ text: '群成员数据同步完成：无更新数据' })
       }
     }
     catch (error) {
-      console.error('同步群成员数据失败:', error)
+      this.logger.error({ text: '同步群成员数据失败', data: { error: (error as Error)?.message, stack: (error as Error)?.stack } })
     }
   }
 }

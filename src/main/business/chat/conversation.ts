@@ -300,7 +300,7 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       }
     }
     catch (error) {
-      console.error('获取聚合后的最近聊天列表失败:', error)
+      this.logger.error({ text: '获取聚合后的最近聊天列表失败', data: { error: (error as Error)?.message } })
       throw error
     }
   }
@@ -462,7 +462,7 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
     return mergedConversation
     }
     catch (error) {
-      console.error('获取单个会话信息失败:', error)
+      this.logger.error({ text: '获取单个会话信息失败', data: { error: (error as Error)?.message } })
       throw error
     }
   }
@@ -525,14 +525,14 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         // 更新本地数据库
         await dBServiceChatConversation.upsert(conversationData)
 
-        console.log(`会话同步成功: conversationId=${conversationId}, versionRange=[${minVersion}, ${maxVersion}]`)
+        this.logger.info({ text: '会话同步成功', data: { conversationId, minVersion, maxVersion } })
       }
       else {
-        console.log(`会话未找到: conversationId=${conversationId}`)
+        this.logger.warn({ text: '会话未找到', data: { conversationId, minVersion, maxVersion } })
       }
     }
     catch (error) {
-      console.error('通过版本区间同步会话失败:', error)
+      this.logger.error({ text: '通过版本区间同步会话失败', data: { conversationId, minVersion, maxVersion, error: (error as Error)?.message } })
     }
   }
 

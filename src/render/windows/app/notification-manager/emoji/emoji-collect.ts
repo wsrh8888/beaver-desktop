@@ -48,7 +48,7 @@ class DatabaseEmojiCollectEventManager {
         })
       }
       else {
-        console.warn('表情收藏信息更新缺少必要参数', { data })
+        logger.warn({ text: '表情收藏信息更新缺少必要参数', data: { data } })
       }
     }
     catch (error) {

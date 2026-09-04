@@ -29,6 +29,9 @@ import { getCacheLocalFileName, moveDownloadToCache } from 'mainModule/utils/fil
 import * as path from 'node:path'
 import { getCachePath } from 'mainModule/config'
 import { downloadFile } from 'mainModule/utils/file/download'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MediaManager')
 import dBServicemediaCache from '../database/services/media/media'
 import { createDir, deleteFile, fileExists, getFileSize } from '../utils/file'
 import { cacheConfig, cacheTypeToFilePath, getDateFolder } from './config'
@@ -58,6 +61,7 @@ class MediaManager {
 
   init(userId?: string) {
     this.userId = userId
+    logger.info({ text: '媒体缓存服务初始化', data: { hasUserId: Boolean(userId) } })
     this.processConfigAndCreateDirs(cacheConfig, this.cacheRoot, userId)
   }
 
@@ -82,6 +86,7 @@ class MediaManager {
     let filePath = cacheTypeToFilePath[type]
     if (filePath.includes('[userId]')) {
       if (!this.userId) {
+        logger.error({ text: '缓存目录解析失败：userId 未设置', data: { type } })
         throw new Error('userId is not set')
       }
       filePath = filePath.replace('[userId]', this.userId)
@@ -136,8 +141,10 @@ class MediaManager {
       return savedPath
     }
     catch (error) {
-      console.warn(`Cache download failed for ${fileUrl}`)
-      console.error((error as Error)?.message)
+      logger.error({
+        text: '媒体缓存下载失败',
+        data: { fileUrl, error: (error as Error)?.message },
+      })
       return fileUrl
     }
     finally {
@@ -165,12 +172,18 @@ class MediaManager {
     }
 
     this.cacheFile[fileUrl] = fileUrl
-    this.add(type, fileUrl).catch(() => {})
+    this.add(type, fileUrl).catch((error) => {
+      logger.error({
+        text: '媒体缓存异步下载失败',
+        data: { fileUrl, error: (error as Error)?.message },
+      })
+    })
 
     return fileUrl
   }
 
   async remove(fileUrl: string): Promise<void> {
+    logger.info({ text: '开始移除媒体缓存', data: { fileUrl } })
     const cacheInfo = await dBServicemediaCache.getMediaInfo({ url: fileUrl })
     if (this.cacheFile[fileUrl]) {
       delete this.cacheFile[fileUrl]
@@ -179,6 +192,7 @@ class MediaManager {
       await deleteFile(cacheInfo.path)
       await dBServicemediaCache.deleteMedia({ url: fileUrl })
     }
+    logger.info({ text: '媒体缓存移除完成', data: { fileUrl, removed: Boolean(cacheInfo) } })
   }
 }
 

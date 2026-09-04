@@ -20,6 +20,10 @@
  */
 
 // 初始化聊天会话表
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBInit-chat-conversations')
+
 export const initChatConversationsTable = (sqlite: any) => {
   // 创建表 - 使用drizzle-orm的run方法
   sqlite.exec(`
@@ -48,7 +52,7 @@ export const initChatConversationsTable = (sqlite: any) => {
     catch (error: any) {
       // 忽略已存在的列错误
       if (!error.message?.includes('duplicate column name')) {
-        console.log(`chat_conversation_metas表的${field.split(' ')[0]}字段可能已存在`)
+        logger.warn({ text: '表字段添加失败', data: { table: 'chat_conversation_metas', field: field.split(' ')[0], error: error.message } })
       }
     }
   })

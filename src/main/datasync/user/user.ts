@@ -29,7 +29,9 @@ import dBServiceUser  from 'mainModule/database/services/user/user'
 
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('UserSyncModule')
 
 // 用户数据同步模块（两阶段增量同步）
 class UserSyncModule {
@@ -40,6 +42,7 @@ class UserSyncModule {
     logger.info({ text: '开始同步用户数据' })
     const userId = store.get('userInfo')?.userId
     if (!userId) {
+      logger.warn({ text: '未获取到用户ID，跳过用户数据同步' })
       return
     }
 
@@ -81,10 +84,18 @@ class UserSyncModule {
       }
 
       this.syncStatus = SyncStatus.COMPLETED
+      logger.info({
+        text: '用户数据同步完成',
+        data: {
+          cursorVersion: lastSyncTime,
+          changedCount: changedUserVersions.length,
+          needUpdateCount: needUpdateUsers.length,
+        },
+      })
     }
     catch (error) {
       this.syncStatus = SyncStatus.FAILED
-      logger.error({ text: '用户同步失败', data: { error: (error as any)?.message } }, 'UserSyncModule')
+      logger.error({ text: '用户同步失败', data: { error: (error as any)?.message } })
     }
   }
 

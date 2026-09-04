@@ -26,6 +26,9 @@ import { cacheTypeToFilePath } from 'mainModule/cache/config'
 import { getCachePath } from 'mainModule/config'
 import { createDir } from '../utils/file'
 import { initTables } from './tables'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBManager')
 
 // 使用 createRequire 来避免 __filename 问题
 const require = createRequire(import.meta.url)
@@ -36,8 +39,11 @@ class DBManager {
   private _db: ReturnType<typeof drizzle> | null = null
 
   async init(userId: string) {
-    if (this._db)
+    if (this._db) {
+      logger.info({ text: '数据库已初始化，跳过重复初始化' })
       return this._db
+    }
+    logger.info({ text: '开始初始化数据库', data: { userId } })
     const filePath = cacheTypeToFilePath[CacheType.USER_DB]
     const databasePath = path.join(getCachePath(), filePath.replace('[userId]', userId), 'database.db')
 
@@ -53,6 +59,7 @@ class DBManager {
 
     // 初始化表结构
     initTables(this._db)
+    logger.info({ text: '数据库初始化完成', data: { databasePath } })
 
     return this._db
   }
@@ -73,10 +80,10 @@ class DBManager {
       try {
         this._db.$client.close()
         this._db = null
-        console.log('Database connection closed successfully')
+        logger.info({ text: '数据库连接已关闭' })
       }
       catch (error) {
-        console.error('Error closing database connection:', error)
+        logger.error({ text: '关闭数据库连接失败', data: { error: (error as Error)?.message } })
         throw error
       }
     }

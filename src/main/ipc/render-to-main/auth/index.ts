@@ -26,9 +26,12 @@ import LoginApplication from 'mainModule/application/login'
 import cacheManager from 'mainModule/cache'
 import dbManager from 'mainModule/database/db'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Log from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 import wsManager from 'mainModule/ws-manager'
 import settings from 'mainModule/ipc/render-to-main/settings'
+
+const logger = new Logger('AuthHandler')
 
 class AuthHandler {
   /**
@@ -43,7 +46,7 @@ class AuthHandler {
         await this.handleLogout()
         break
       default:
-        console.error(`认证处理未知命令: ${command}`)
+        logger.warn({ text: '收到未知的认证命令', data: { command } })
     }
   }
 
@@ -52,7 +55,7 @@ class AuthHandler {
    */
   async handleLogin() {
     try {
-      logger.info({ text: '开始登录流程' }, 'AuthHandler')
+      logger.info({ text: '开始登录流程' })
 
       // 初始化文件缓存
       cacheManager.init()
@@ -60,14 +63,15 @@ class AuthHandler {
 
       const userInfo = store.get('userInfo')
       logger.info({
-        text: '获取userInfo',
+        text: '获取本地存储的用户信息',
+        data: { hasUserInfo: !!userInfo, userId: userInfo?.userId },
       })
       // 3. 初始化用户缓存
       if (userInfo?.userId) {
         await cacheManager.init(userInfo.userId)
 
         // 初始化用户日志
-        logger.init(userInfo.userId)
+        Log.init(userInfo.userId)
 
         logger.info({
           text: '开始初始化数据库',
@@ -77,7 +81,10 @@ class AuthHandler {
         // 初始化设置模块
         await settings.handle(void 0 as any, SettingsCommand.SETTINGS_INIT, {})
 
-        logger.info({ text: '用户缓存初始化完成' }, 'AuthHandler')
+        logger.info({ text: '用户缓存初始化完成' })
+      }
+      else {
+        logger.warn({ text: '本地未存储用户ID，跳过用户缓存与数据库初始化' })
       }
 
       // 4. 打开app主窗口
@@ -87,13 +94,12 @@ class AuthHandler {
       // 5. 在后台建立ws连接 (不阻塞UI显示)
       wsManager.connect()
 
-      logger.info({ text: '开始后台数据同步' }, 'AuthHandler')
+      logger.info({ text: '开始后台数据同步' })
 
-      logger.info({ text: '登录流程完成，窗口已显示' }, 'AuthHandler')
+      logger.info({ text: '登录流程完成，窗口已显示' })
     }
     catch (error) {
-      console.error(error)
-      logger.error({ text: '登录流程失败', data: error }, 'AuthHandler')
+      logger.error({ text: '登录流程失败', data: { message: (error as Error)?.message, stack: (error as Error)?.stack } })
       throw error
     }
   }
@@ -103,13 +109,13 @@ class AuthHandler {
    */
   async handleLogout() {
     try {
-      logger.info({ text: '开始登出流程' }, 'AuthHandler')
+      logger.info({ text: '开始登出流程' })
 
       store.clearAll()
-      logger.info({ text: 'Store数据已清空' }, 'AuthHandler')
+      logger.info({ text: 'Store数据已清空' })
 
       // 2. 切换回公共日志
-      logger.init()
+      Log.init()
 
       // 3. 打开login窗口
       LoginApplication.createBrowserWindow()
@@ -118,16 +124,16 @@ class AuthHandler {
 
       // 4. 关闭ws连接
       wsManager.disconnect()
-      logger.info({ text: 'WebSocket连接已关闭' }, 'AuthHandler')
+      logger.info({ text: 'WebSocket连接已关闭' })
 
       // 5. 关闭数据库连接
       dbManager.close()
-      logger.info({ text: '数据库连接已关闭' }, 'AuthHandler')
+      logger.info({ text: '数据库连接已关闭' })
 
-      logger.info({ text: '登出流程完成' }, 'AuthHandler')
+      logger.info({ text: '登出流程完成' })
     }
     catch (error) {
-      logger.error({ text: '登出流程失败', data: error }, 'AuthHandler')
+      logger.error({ text: '登出流程失败', data: { message: (error as Error)?.message, stack: (error as Error)?.stack } })
       throw error
     }
   }
@@ -144,7 +150,7 @@ class AuthHandler {
         closedCount++
       }
     })
-    logger.info({ text: `已关闭 ${closedCount} 个应用窗口` }, 'AuthHandler')
+    logger.info({ text: '已关闭应用窗口', data: { closedCount, total: windows.length } })
   }
 
   /**
@@ -159,7 +165,7 @@ class AuthHandler {
         closedCount++
       }
     })
-    logger.info({ text: `已关闭 ${closedCount} 个登录窗口` }, 'AuthHandler')
+    logger.info({ text: '已关闭登录窗口', data: { closedCount, total: windows.length } })
   }
 }
 

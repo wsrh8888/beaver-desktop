@@ -24,10 +24,13 @@
  */
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { deleteMessageApi, recallMessageApi } from 'renderModule/api/chat'
+import Logger from 'renderModule/utils/logger'
 import Message from 'renderModule/components/ui/message'
 import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { copyToClipboard as copyTextToClipboard } from 'renderModule/windows/app/page/message/right-component/content/utils/copy'
+
+const logger = new Logger('BaseMessageHandler')
 
 export interface IMessageHandler {
   handleCommand(commandId: string, message: any): Promise<void>
@@ -101,7 +104,7 @@ export abstract class BaseMessageHandler implements IMessageHandler {
       window.URL.revokeObjectURL(downloadUrl)
     }
     catch (error) {
-      console.error('文件下载失败:', error)
+      logger.error({ text: '文件下载失败', data: { filename, error: (error as Error)?.message } })
       throw error
     }
   }

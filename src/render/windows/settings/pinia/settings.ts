@@ -24,8 +24,11 @@ import type {
   IUserSettingsPrivacy,
 } from 'commonModule/type/ajax/user'
 import type { IUserSettings, KeyboardActionId } from 'commonModule/type/mainStore'
+import Logger from 'renderModule/utils/logger'
 import { updateUserSettingsApi } from 'renderModule/api/user'
 import { defineStore } from 'pinia'
+
+const logger = new Logger('SettingsStore')
 
 export const useSettingsStore = defineStore('useSettingsStore', {
   state: () => ({
@@ -86,7 +89,7 @@ export const useSettingsStore = defineStore('useSettingsStore', {
       this.settings.keyboard[actionId] = binding
       const res = await updateUserSettingsApi({ keyboard: { [actionId]: binding } })
       if (res.code !== 0) {
-        console.error('快捷键接口保存失败', res.msg)
+        logger.error({ text: '快捷键接口保存失败', data: { actionId, binding, code: res.code, msg: res.msg } })
         this.settings.keyboard[actionId] = prev
         return false
       }
@@ -96,7 +99,7 @@ export const useSettingsStore = defineStore('useSettingsStore', {
         return true
       }
       catch (error) {
-        console.error('快捷键保存失败', error)
+        logger.error({ text: '快捷键保存失败', data: { actionId, binding, error: (error as Error)?.message } })
         this.settings.keyboard[actionId] = prev
         return false
       }

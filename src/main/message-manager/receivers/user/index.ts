@@ -20,6 +20,9 @@
  */
 
 import userReceiver from './user'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('UserMessageRouter')
 
 /**
  * @description: 用户消息路由器
@@ -36,18 +39,19 @@ class UserMessageRouter {
     const { data } = wsMessage
 
     if (!data?.type) {
-      console.warn('用户消息缺少 type 字段', wsMessage)
+      logger.warn({ text: '用户消息缺少 type 字段', data: { command: wsMessage?.command } })
       return
     }
 
     switch (data.type) {
       // 用户资料同步
       case 'user_receive':
+        logger.info({ text: '收到用户资料同步消息' })
         await this.userReceiver.handleTableUpdates(data.body)
         break
 
       default:
-        console.warn('未知的用户消息类型', data.type)
+        logger.warn({ text: '未知的用户消息类型', data: { type: data.type } })
     }
   }
 }

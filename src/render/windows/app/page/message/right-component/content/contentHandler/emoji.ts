@@ -20,7 +20,10 @@
  */
 
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+import Logger from 'renderModule/utils/logger'
 import { BaseMessageHandler } from './base'
+
+const logger = new Logger('EmojiMessageHandler')
 
 /**
  * 表情消息处理器
@@ -44,7 +47,7 @@ class EmojiHandler extends BaseMessageHandler {
         this.enterMultiSelect(message)
         return Promise.resolve()
       default:
-        console.log('未知的表情消息命令:', commandId)
+        logger.warn({ text: '未知的表情消息命令', data: { commandId } })
         return Promise.resolve()
     }
   }
@@ -63,16 +66,16 @@ class EmojiHandler extends BaseMessageHandler {
       const packageId = message.msg.emojiMsg?.packageId
 
       if (!emojiId) {
-        console.error('无法获取表情ID')
+        logger.error({ text: '无法获取表情ID', data: { messageId: message?.id } })
         return
       }
 
       // 这里应该调用收藏表情的API
-      console.log('添加到表情收藏:', { emojiId, packageId })
+      logger.info({ text: '添加到表情收藏', data: { emojiId, packageId } })
       // TODO: 实现收藏表情的逻辑
     }
     catch (error) {
-      console.error('添加到表情收藏失败:', error)
+      logger.error({ text: '添加到表情收藏失败', data: { error: (error as Error)?.message } })
       // TODO: 可以添加错误提示
     }
   }
@@ -84,10 +87,10 @@ class EmojiHandler extends BaseMessageHandler {
       const textToCopy = `[表情:${emojiId}]`
 
       await this.copyToClipboard(textToCopy)
-      console.log('表情信息已复制到剪贴板')
+      logger.info({ text: '表情信息已复制到剪贴板', data: { emojiId } })
     }
     catch (error) {
-      console.error('复制表情信息失败:', error)
+      logger.error({ text: '复制表情信息失败', data: { error: (error as Error)?.message } })
       // TODO: 可以添加错误提示
     }
   }

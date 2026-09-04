@@ -81,7 +81,7 @@ export const usecallStore = defineStore('usecallStore', {
 
       const isNew = !member
       if (isNew) {
-        console.error('2222222222222', userId, this.members)
+        logger.info({ text: '通话成员不存在，创建新成员', data: { userId } })
         await userStore.init()
         member = {
           userId,

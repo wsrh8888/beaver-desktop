@@ -39,40 +39,37 @@ class FriendSyncModule {
   async checkAndSync() {
     logger.info({ text: '开始同步好友数据' })
     const userId = store.get('userInfo')?.userId
-    if (!userId)
+    if (!userId) {
+      logger.warn({ text: '未获取到用户信息，跳过好友同步' })
       return
+    }
 
     try {
       // 获取本地同步时间戳
       const localCursor = await dbServiceDataSync.get({ module: 'friends' })
-      console.error('1')
       const lastSyncTime = localCursor?.version || 0
-      console.error('2')
       // 获取服务器上变更的好友版本信息
       const serverResponse = await datasyncGetSyncFriendsApi({ since: lastSyncTime })
-      console.error('3')
+      logger.info({
+        text: '获取服务器好友变更版本完成',
+        data: { lastSyncTime, friendVersionCount: serverResponse.result.friendVersions?.length || 0 },
+      })
       // 对比本地数据，过滤出需要更新的数据
       const needUpdateFriendshipIds = await this.compareAndFilterFriendVersions(serverResponse.result.friendVersions || [])
-      console.error('4')
+      logger.info({ text: '好友版本对比完成', data: { needUpdateCount: needUpdateFriendshipIds.length } })
         if (needUpdateFriendshipIds.length > 0) {
-          console.error('5')
         // 有需要更新的好友数据
         await this.syncFriendData(needUpdateFriendshipIds)
-        console.error('6')
         // 从变更的数据中找到最大的版本号
         const maxVersion = Math.max(...(serverResponse.result.friendVersions || []).map(item => item.version))
-        console.error('7')
         await this.updateFriendsCursor(maxVersion, serverResponse.result.serverTimestamp)
-        console.error('8')
       }
       else {
         // 没有需要更新的数据，直接更新时间戳
-        console.error('9')
         await this.updateFriendsCursor(null, serverResponse.result.serverTimestamp)
-        console.error('10')
       }
-      console.error('11')
       this.syncStatus = SyncStatus.COMPLETED
+      logger.info({ text: '好友数据同步完成', data: { needUpdateCount: needUpdateFriendshipIds.length } })
     }
     catch (error) {
       this.syncStatus = SyncStatus.FAILED
@@ -158,8 +155,9 @@ class FriendSyncModule {
       }
     }
 
-    // 发送通知到render进程，告知好友数据已同步
+      // 发送通知到render进程，告知好友数据已同步
     if (syncedFriends.length > 0) {
+      logger.info({ text: '好友数据同步完成并通知渲染进程', data: { syncedCount: syncedFriends.length } })
       sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_UPDATE, {
         updatedFriends: syncedFriends,
       })

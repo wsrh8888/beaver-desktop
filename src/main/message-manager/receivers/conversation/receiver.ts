@@ -22,7 +22,7 @@
 import dBServiceChatConversation  from 'mainModule/database/services/chat/conversation'
 import dbServiceChatUserConversation  from 'mainModule/database/services/chat/user-conversation'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 
 /**
  * 会话操作数据接口
@@ -40,6 +40,7 @@ interface ConversationOperationData {
  */
 class ConversationReceiver {
   protected readonly receiverName = 'ConversationReceiver'
+  protected readonly logger = new Logger(this.receiverName)
 
   constructor() {
     // 会话操作需要快速响应
@@ -77,9 +78,9 @@ class ConversationReceiver {
           break
         default:
           logger.warn({
-            text: `未知的会话操作类型: ${operation}`,
+            text: '收到未知的会话操作类型',
             data: { operation, count: operationMessages.length },
-          }, this.receiverName)
+          })
       }
     }
   }
@@ -119,7 +120,7 @@ class ConversationReceiver {
         logger.info({
           text: '会话创建成功',
           data: { conversationId: message.conversationId, userId: currentUserId },
-        }, this.receiverName)
+        })
       }
       catch (error) {
         logger.error({
@@ -128,7 +129,7 @@ class ConversationReceiver {
             conversationId: message.conversationId,
             error: (error as Error).message,
           },
-        }, this.receiverName)
+        })
       }
     }
   }
@@ -150,7 +151,7 @@ class ConversationReceiver {
         logger.info({
           text: '会话更新成功',
           data: { conversationId: message.conversationId },
-        }, this.receiverName)
+        })
       }
       catch (error) {
         logger.error({
@@ -159,7 +160,7 @@ class ConversationReceiver {
             conversationId: message.conversationId,
             error: (error as Error).message,
           },
-        }, this.receiverName)
+        })
       }
     }
   }
@@ -187,7 +188,7 @@ class ConversationReceiver {
         logger.info({
           text: '会话删除成功',
           data: { conversationId: message.conversationId, userId: currentUserId },
-        }, this.receiverName)
+        })
       }
       catch (error) {
         logger.error({
@@ -196,7 +197,7 @@ class ConversationReceiver {
             conversationId: message.conversationId,
             error: (error as Error).message,
           },
-        }, this.receiverName)
+        })
       }
     }
   }
@@ -226,7 +227,7 @@ class ConversationReceiver {
         logger.info({
           text: '会话已读更新成功',
           data: { conversationId: message.conversationId, readSeq, userId: currentUserId },
-        }, this.receiverName)
+        })
       }
       catch (error) {
         logger.error({
@@ -235,7 +236,7 @@ class ConversationReceiver {
             conversationId: message.conversationId,
             error: (error as Error).message,
           },
-        }, this.receiverName)
+        })
       }
     }
   }

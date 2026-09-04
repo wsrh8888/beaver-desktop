@@ -24,7 +24,9 @@ import { NotificationCommand } from 'commonModule/type/ipc/command'
 import trayHandler from 'mainModule/application/tray'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import notificationManager from 'mainModule/notification'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('NotificationHandler')
 
 class NotificationHandler {
   /**
@@ -36,7 +38,7 @@ class NotificationHandler {
         command,
         data,
       }
-    }, 'NotificationHandler')
+    })
 
     switch (command) {
       case NotificationCommand.Send:
@@ -52,7 +54,7 @@ class NotificationHandler {
         trayHandler.deleteMenuItem(data)
         break
       default:
-        console.error(`notification处理未知命令: ${command}`)
+        logger.warn({ text: '收到未知的notification命令', data: { command } })
     }
   }
 }

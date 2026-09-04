@@ -21,8 +21,11 @@
 
 import { CacheType } from 'commonModule/type/cache/cache'
 import { markMessageMediaApi } from 'renderModule/api/chat'
+import Logger from 'renderModule/utils/logger'
 import { useMessageMediaStore } from 'renderModule/windows/app/pinia/message/message-media'
 import { ref } from 'vue'
+
+const logger = new Logger('AudioPlayer')
 
 let currentAudio: HTMLAudioElement | null = null
 
@@ -47,7 +50,7 @@ async function markVoicePlayed(messageId: string) {
     await markMessageMediaApi({ messageIds: [messageId] })
   }
   catch (error) {
-    console.error('[AudioPlayer] 标记语音已播放失败:', error)
+    logger.error({ text: '标记语音已播放失败', data: { messageId, error: (error as Error)?.message } })
   }
 }
 

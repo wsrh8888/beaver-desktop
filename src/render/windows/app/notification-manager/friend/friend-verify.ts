@@ -48,7 +48,7 @@ class DatabaseFriendVerifyEventManager {
         })
       }
       else {
-        console.warn('好友验证信息更新缺少必要参数', { data })
+        logger.warn({ text: '好友验证信息更新缺少必要参数', data: { data } })
       }
     }
     catch (error) {

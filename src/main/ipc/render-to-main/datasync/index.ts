@@ -22,11 +22,15 @@
 import { DataSyncCommand } from 'commonModule/type/ipc/command'
 import { dataSyncManager } from 'mainModule/datasync/manager'
 import wsManager from 'mainModule/ws-manager'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DataSyncHandler')
+
 // 数据同步处理器
 class DataSyncHandler {
   // 处理IPC命令
   async handle(_event: Electron.IpcMainInvokeEvent, command: DataSyncCommand, _data: any = {}): Promise<any> {
-    console.log('11111111111111111111111111', command, _data)
+    logger.info({ text: '收到数据同步IPC命令', data: { command } })
     switch (command) {
       case DataSyncCommand.MANUAL_SYNC:
         await dataSyncManager.autoSync()

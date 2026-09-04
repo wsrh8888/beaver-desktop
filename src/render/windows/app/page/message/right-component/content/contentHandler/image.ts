@@ -21,8 +21,11 @@
 
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { addEmojiApi, updateFavoriteEmojiApi } from 'renderModule/api/emoji'
+import Logger from 'renderModule/utils/logger'
 import Message from 'renderModule/components/ui/message'
 import { BaseMessageHandler } from './base'
+
+const logger = new Logger('ImageMessageHandler')
 
 /**
  * 图片消息处理器
@@ -41,7 +44,7 @@ class ImageHandler extends BaseMessageHandler {
   ]
 
   handleCommand(commandId: string, message: any): Promise<void> {
-    console.error('11111111111111', commandId)
+    logger.info({ text: '图片消息命令', data: { commandId, messageId: message?.id } })
     switch (commandId) {
       case 'copy':
         return this.handleCopy(message)
@@ -53,7 +56,7 @@ class ImageHandler extends BaseMessageHandler {
         this.enterMultiSelect(message)
         return Promise.resolve()
       default:
-        console.log('未知的图片消息命令:', commandId)
+        logger.warn({ text: '未知的图片消息命令', data: { commandId } })
         return Promise.resolve()
     }
   }
@@ -83,18 +86,17 @@ class ImageHandler extends BaseMessageHandler {
 
   private async handleAddToEmoji(message: any): Promise<void> {
     try {
-      console.error('xxxxxxxxxxxxxxx', message)
       // 判断消息类型
       if (message.msg.type === 6) { // EmojiMsgType - 表情消息
         await this.handleAddEmojiToFavorite(message)
       } else if (message.msg.type === 2) { // ImageMsgType - 图片消息
         await this.handleAddImageToEmoji(message)
       } else {
-        console.error('不支持的消息类型:', message.msgType)
+        logger.warn({ text: '不支持添加到表情的消息类型', data: { messageType: message.msg?.type } })
       }
     }
     catch (error) {
-      console.error('添加到表情失败:', error)
+      logger.error({ text: '添加到表情失败', data: { error: (error as Error)?.message } })
       // TODO: 可以添加错误提示
     }
   }
@@ -105,7 +107,7 @@ class ImageHandler extends BaseMessageHandler {
     const packageId = message.msg.emojiMsg?.packageId
 
     if (!emojiId) {
-      console.error('无法获取表情ID')
+      logger.error({ text: '无法获取表情ID', data: { messageId: message?.id } })
       return
     }
 
@@ -117,14 +119,14 @@ class ImageHandler extends BaseMessageHandler {
       })
 
       if (result.code === 0) {
-        console.log('表情已成功添加到收藏')
+        logger.info({ text: '表情已成功添加到收藏', data: { emojiId, packageId } })
         // TODO: 可以添加成功提示
       } else {
-        console.error('收藏表情失败:', result.msg)
+        logger.error({ text: '收藏表情失败', data: { emojiId, code: result.code, msg: result.msg } })
         // TODO: 可以添加错误提示
       }
     } catch (error) {
-      console.error('收藏表情请求失败:', error)
+      logger.error({ text: '收藏表情请求失败', data: { emojiId, error: (error as Error)?.message } })
       // TODO: 可以添加错误提示
     }
   }
@@ -133,7 +135,7 @@ class ImageHandler extends BaseMessageHandler {
   private async handleAddImageToEmoji(message: any): Promise<void> {
     const mediaUrl = message.msg.imageMsg?.fileUrl
     if (!mediaUrl) {
-      console.error('无法获取图片URL')
+      logger.error({ text: '无法获取图片URL', data: { messageId: message?.id } })
       return
     }
 
@@ -150,7 +152,7 @@ class ImageHandler extends BaseMessageHandler {
     })
 
     if (result.code === 0) {
-      console.log('图片已成功添加到表情')
+      logger.info({ text: '图片已成功添加到表情', data: { title } })
       // TODO: 可以自动收藏刚创建的表情
     }
   }

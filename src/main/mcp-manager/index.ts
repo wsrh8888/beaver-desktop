@@ -30,6 +30,9 @@ import { momentTools } from './tools/moment/index.js'
 import { localMCPServer } from './server/index.js'
 import type { MCPTool as IMCPTool } from 'commonModule/type/ajax/mcp'
 import { registerToolApi } from 'mainModule/api/mcp.js'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPManager')
 
 /**
  * MCP工具接口（扩展API类型，添加handler）
@@ -60,11 +63,21 @@ class MCPManager {
    * 初始化MCP系统
    */
   async init() {
-    // 启动本地MCP服务器
-    await localMCPServer.start(9518)
+    try {
+      logger.info({ text: '开始初始化 MCP 系统', data: { toolCount: this.tools.length } })
 
-    // 注册工具到云端
-    await this.registerToolsToCloud()
+      // 启动本地MCP服务器
+      await localMCPServer.start(9518)
+      logger.info({ text: '本地 MCP 服务器启动成功', data: { port: 9518 } })
+
+      // 注册工具到云端
+      await this.registerToolsToCloud()
+      logger.info({ text: 'MCP 工具注册到云端完成', data: { toolCount: this.tools.length } })
+    }
+    catch (error) {
+      logger.error({ text: 'MCP 系统初始化失败', data: { error: (error as Error)?.message } })
+      throw error
+    }
   }
 
   /**
@@ -72,6 +85,7 @@ class MCPManager {
    */
   private async registerToolsToCloud() {
     const clientId = process.custom.DEVICE_ID
+    logger.info({ text: '开始注册 MCP 工具到云端', data: { toolCount: this.tools.length } })
 
     const toolRequests = this.tools.map(tool => ({
       clientId,
@@ -99,10 +113,13 @@ class MCPManager {
     const tool = this.tools.find(t => t.name === toolName)
 
     if (!tool) {
+      logger.warn({ text: '未找到指定的 MCP 工具', data: { toolName } })
       throw new Error(`Tool '${toolName}' not found`)
     }
 
+    logger.info({ text: '开始执行 MCP 工具', data: { toolName } })
     const result = await tool.handler(params)
+    logger.info({ text: 'MCP 工具执行完成', data: { toolName } })
 
     return {
       content: [

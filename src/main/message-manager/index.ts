@@ -22,7 +22,9 @@
 import { NotificationAppLifecycleCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { dataSyncManager } from 'mainModule/datasync/manager.ts'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MessageManager')
 import WsManager from 'mainModule/ws-manager/index'
 import messageBusiness from 'mainModule/business/chat/message'
 import chatMessageRouter from './receivers/chat/inedx'
@@ -68,14 +70,14 @@ class MessageManager {
       timestamp: Date.now(),
     })
 
-    logger.info({ text: 'WebSocket 开始连接' }, 'MessageManager')
+    logger.info({ text: 'WebSocket 开始连接' })
   }
 
   /**
    * @description: WebSocket 连接成功回调
    */
   private async onWsConnect() {
-    logger.info({ text: 'WebSocket 连接成功，开始数据同步' }, 'MessageManager')
+    logger.info({ text: 'WebSocket 连接成功，开始数据同步' })
 
     try {
       this.isDataSyncing = true
@@ -89,14 +91,14 @@ class MessageManager {
       // 处理队列中的所有消息
       this.processMessageQueue()
 
-      logger.info({ text: 'WebSocket 连接成功，消息管理器已准备就绪' }, 'MessageManager')
+      logger.info({ text: 'WebSocket 连接成功，消息管理器已准备就绪' })
     }
     catch (error) {
       this.isDataSyncing = false
 
       // 通知前端：同步失败
 
-      logger.error({ text: '数据同步失败', data: { error: (error as any)?.message } }, 'MessageManager')
+      logger.error({ text: '数据同步失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -110,7 +112,7 @@ class MessageManager {
       timestamp: Date.now(),
     })
 
-    logger.info({ text: 'WebSocket 重连失败' }, 'MessageManager')
+    logger.info({ text: 'WebSocket 重连失败' })
   }
 
   /**
@@ -123,7 +125,7 @@ class MessageManager {
       timestamp: Date.now(),
     })
 
-    logger.info({ text: 'WebSocket 断开连接，开始重连' }, 'MessageManager')
+    logger.info({ text: 'WebSocket 断开连接，开始重连' })
   }
 
   /**
@@ -141,7 +143,7 @@ class MessageManager {
       data: error instanceof Error
         ? { message: error.message, name: error.name, code: (error as NodeJS.ErrnoException).code }
         : { message: String(error) },
-    }, 'MessageManager')
+    })
   }
 
   /**
@@ -163,13 +165,13 @@ class MessageManager {
    * @description: 处理消息队列中的所有消息
    */
   private processMessageQueue() {
-    logger.info({ text: `开始处理队列中的 ${this.messageQueue.length} 条消息` }, 'MessageManager')
+    logger.info({ text: `开始处理队列中的 ${this.messageQueue.length} 条消息` })
 
     while (this.messageQueue.length > 0) {
       const message = this.messageQueue.shift()
       try {
         this.processMessage(message, 'queue')
-        logger.info({ text: '队列消息处理完成', data: { command: message.command } }, 'MessageManager')
+        logger.info({ text: '队列消息处理完成', data: { command: message.command } })
       }
       catch (error) {
         logger.error({
@@ -178,11 +180,11 @@ class MessageManager {
             command: message.command,
             error: (error as any)?.message,
           },
-        }, 'MessageManager')
+        })
       }
     }
 
-    logger.info({ text: '队列消息处理完成' }, 'MessageManager')
+    logger.info({ text: '队列消息处理完成' })
   }
 
   /**
@@ -224,7 +226,7 @@ class MessageManager {
         }
         break
       default:
-        logger.warn({ text: '未处理的消息类型', data: { command: wsMessage.command } }, 'MessageManager')
+        logger.warn({ text: '未处理的消息类型', data: { command: wsMessage.command } })
     }
   }
 }

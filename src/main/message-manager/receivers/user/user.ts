@@ -20,6 +20,9 @@
  */
 
 import userBusiness from 'mainModule/business/user/user'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('UserReceiver')
 
 /**
  * @description: 用户资料接收器 - 处理 users 表的操作
@@ -34,12 +37,13 @@ class UserReceiver {
 
     // 检查是否是 users 表的更新
     if (tableUpdatesBody.table !== 'users') {
-      console.warn('UserReceiver 收到非 users 表的更新', tableUpdatesBody)
+      logger.warn({ text: 'UserReceiver 收到非 users 表的更新', data: { table: tableUpdatesBody?.table } })
       return
     }
 
     // 处理用户资料更新
     if (tableUpdatesBody?.version && tableUpdatesBody?.targetId) {
+      logger.info({ text: '处理用户资料更新', data: { targetId: tableUpdatesBody.targetId, version: tableUpdatesBody.version } })
       await userBusiness.handleTableUpdates(tableUpdatesBody.targetId, tableUpdatesBody.version)
     }
   }

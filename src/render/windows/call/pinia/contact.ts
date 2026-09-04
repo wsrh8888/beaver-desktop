@@ -21,7 +21,9 @@
 
 import type { IUserInfo } from 'commonModule/type/store/userInfo'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 
+const logger = new Logger('CallContactStore')
 
 export const useContactStore = defineStore('useContactStore', {
   state: (): {
@@ -103,7 +105,7 @@ export const useContactStore = defineStore('useContactStore', {
         return result
       }
       catch (error) {
-        console.error('批量更新联系人信息失败:', error)
+        logger.error({ text: '批量更新联系人信息失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },

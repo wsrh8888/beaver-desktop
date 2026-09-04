@@ -41,7 +41,9 @@ import workbenchApplication from 'mainModule/application/workbench'
 import settingsApplication from 'mainModule/application/settings'
 import aboutApplication from 'mainModule/application/about'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('WindowHandler')
 
 class WindowHandler {
   /**
@@ -53,7 +55,7 @@ class WindowHandler {
         command,
         data,
       }
-    }, 'WindowHandler')
+    })
 
     const name = data?.name || ''
     const options = data?.options || {}
@@ -73,7 +75,7 @@ class WindowHandler {
       case WinHook.CAPTURE_SCREEN:
         return this.handleCaptureScreen()
       default:
-        console.error(`窗口处理未知命令: ${command}`)
+        logger.error({ text: '窗口处理未知命令', data: { command } })
     }
   }
 
@@ -88,12 +90,12 @@ class WindowHandler {
         window.hide()
       }
       else {
-        console.log('关闭窗口', window)
+        logger.info({ text: '关闭窗口', data: { windowId: window.id } })
         window.close()
       }
     }
     else {
-      logger.error({ text: `[render][${event.sender.id}] 无法获取窗口实例` })
+      logger.error({ text: '无法获取窗口实例', data: { action: 'close', senderId: event.sender.id } })
     }
   }
 
@@ -101,13 +103,13 @@ class WindowHandler {
    * 最小化窗口
    */
   private handleMinimize(event: Electron.IpcMainEvent | Electron.IpcMainInvokeEvent, _name: string, _options: IWindowOpenOptions) {
-    logger.info({ text: `[render][${event.sender.id}] 最小化窗口` })
+    logger.info({ text: '最小化窗口', data: { senderId: event.sender.id } })
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
       window.minimize()
     }
     else {
-      logger.error({ text: `[render][${event.sender.id}] 无法获取窗口实例` })
+      logger.error({ text: '无法获取窗口实例', data: { action: 'minimize', senderId: event.sender.id } })
     }
   }
 
@@ -118,16 +120,16 @@ class WindowHandler {
     const window = BrowserWindow.fromWebContents(event.sender)
     if (window) {
       if (window.isMaximized()) {
-        logger.info({ text: `[render][${event.sender.id}] 恢复窗口` })
+        logger.info({ text: '恢复窗口', data: { senderId: event.sender.id } })
         window.restore()
       }
       else {
-        logger.info({ text: `[render][${event.sender.id}] 最大化窗口` })
+        logger.info({ text: '最大化窗口', data: { senderId: event.sender.id } })
         window.maximize()
       }
     }
     else {
-      logger.error({ text: `[render][${event.sender.id}] 无法获取窗口实例` })
+      logger.error({ text: '无法获取窗口实例', data: { action: 'toggleMaximize', senderId: event.sender.id } })
     }
   }
 
@@ -151,7 +153,7 @@ class WindowHandler {
       return Promise.resolve()
     }
     else {
-      console.log('打开新窗口', name, window, options)
+      logger.info({ text: '打开新窗口', data: { name, unique, hasWindow: !!window, params } })
       let newWindow!: BrowserWindow
 
       switch (name) {

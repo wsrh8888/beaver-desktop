@@ -20,6 +20,10 @@
  */
 
 // 初始化群组同步状态表
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBInit-group-sync-status')
+
 export const initGroupSyncStatusTable = (sqlite: any) => {
   // 创建群组同步状态表（客户端本地维护）
   sqlite.exec(`
@@ -37,7 +41,7 @@ export const initGroupSyncStatusTable = (sqlite: any) => {
   try {
     sqlite.run(`CREATE UNIQUE INDEX IF NOT EXISTS unique_group_module ON group_sync_status(group_id, module)`)
   }
-  catch {
-    console.log('unique_group_module索引可能已存在')
+  catch (error: any) {
+    logger.warn({ text: '索引创建失败，可能已存在', data: { table: 'group_sync_status', index: 'unique_group_module', error: error?.message } })
   }
 }

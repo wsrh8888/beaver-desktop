@@ -21,6 +21,9 @@
 
 import { getCurrentConfig } from 'commonModule/config'
 import { ConfigCommand } from 'commonModule/type/ipc/command'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('ConfigHandler')
 
 class ConfigHandler {
   /**
@@ -32,7 +35,7 @@ class ConfigHandler {
         event.returnValue = getCurrentConfig()
         break
       default:
-        console.error(`日志处理未知命令: ${command}`)
+        logger.error({ text: '配置处理未知命令', data: { command } })
     }
   }
 }

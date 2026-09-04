@@ -21,7 +21,10 @@
 
 import type { IGetLatestVersionRes } from 'commonModule/type/ajax/update'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import { getLatestVersionApi } from 'renderModule/api/update'
+
+const logger = new Logger('UpdateStore')
 
 /**
  * @description: 更新状态管理
@@ -42,7 +45,7 @@ export const useUpdateStore = defineStore('update', {
         await this.checkUpdate()
       }
       catch (error) {
-        console.warn('初始化更新检查失败:', error)
+        logger.warn({ text: '初始化更新检查失败', data: { error: (error as Error)?.message } })
       }
     },
 
@@ -62,7 +65,7 @@ export const useUpdateStore = defineStore('update', {
         }
       }
       catch (error) {
-        console.error('检查更新异常:', error)
+        logger.error({ text: '检查更新异常', data: { error: (error as Error)?.message } })
       }
     },
 
@@ -70,7 +73,7 @@ export const useUpdateStore = defineStore('update', {
      * @description: 开始更新（打开更新窗口）
      */
     async startUpdate() {
-      console.log('开始更新')
+      logger.info({ text: '开始更新，打开更新窗口', data: { hasUpdate: this.updateInfo?.hasUpdate } })
       // 通过IPC通知主进程打开更新窗口
       await electron.window?.openWindow('updater', {
         params: {

@@ -20,6 +20,9 @@
  */
 
 import circleReceiver from './circle'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('CircleMessageRouter')
 
 /**
  * @description: 圈子消息路由器
@@ -31,16 +34,17 @@ class CircleMessageRouter {
     const { data } = wsMessage
 
     if (!data?.type) {
-      console.warn('圈子消息缺少 type 字段', wsMessage)
+      logger.warn({ text: '圈子消息缺少 type 字段', data: { command: wsMessage?.command } })
       return
     }
 
     switch (data.type) {
       case 'circle_receive':
+        logger.info({ text: '收到圈子同步消息' })
         await this.circleReceiver.handleTableUpdates(wsMessage.data.body)
         break
       default:
-        console.warn('未知的圈子消息类型', data.type)
+        logger.warn({ text: '未知的圈子消息类型', data: { type: data.type } })
     }
   }
 }

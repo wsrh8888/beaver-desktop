@@ -32,9 +32,13 @@ class DatabaseChatConversationEventManager {
     const { conversationIds, updates, timestamp } = data
 
     logger.info({
-      text: `收到会话表更新通知，${conversationIds?.length || 0} 个会话`,
-      data: { conversationIds, updates, timestamp },
+      text: '收到会话表更新通知',
+      data: { conversationCount: conversationIds?.length || 0, conversationIds, updates, timestamp },
     })
+
+    if (!conversationIds?.length) {
+      logger.warn({ text: '会话表更新通知缺少会话ID', data: { updates, timestamp } })
+    }
 
     try {
       const conversationStore = useConversationStore()
@@ -45,8 +49,8 @@ class DatabaseChatConversationEventManager {
       }
 
       logger.info({
-        text: `成功更新 ${conversationIds?.length || 0} 个会话`,
-        data: { conversationIds },
+        text: '会话表更新处理完成',
+        data: { conversationCount: conversationIds?.length || 0, conversationIds },
       })
     }
     catch (error) {

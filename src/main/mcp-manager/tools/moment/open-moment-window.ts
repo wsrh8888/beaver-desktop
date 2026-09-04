@@ -23,6 +23,9 @@
  * 打开朋友圈窗口工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-open-moment-window')
 
 export const openMomentWindowTool = {
   name: 'open_moment_window',
@@ -42,7 +45,16 @@ export const openMomentWindowTool = {
     enableInteraction?: boolean
   }) => {
     // 这里实现打开朋友圈窗口的逻辑
-    console.log('打开朋友圈窗口:', params)
+    logger.info({
+      text: '打开朋友圈窗口',
+      data: {
+        initialTab: params.initialTab,
+        userId: params.userId,
+        windowTitle: params.windowTitle,
+        enablePosting: params.enablePosting,
+        enableInteraction: params.enableInteraction
+      }
+    })
     return {
       success: true,
       windowType: 'moment',

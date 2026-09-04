@@ -21,6 +21,9 @@
 
 import { app, screen } from 'electron'
 import si from 'systeminformation'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('SystemUtils')
 
 // 类型别名
 type GraphicsData = si.Systeminformation.GraphicsData
@@ -41,7 +44,7 @@ type UsbData = si.Systeminformation.UsbData
 
 // 通用错误处理函数
 const handleError = (error: any, defaultValue: any) => {
-  console.error('Error:', error)
+  logger.error({ text: '获取系统信息失败', data: { error: error?.message } })
   return defaultValue
 }
 

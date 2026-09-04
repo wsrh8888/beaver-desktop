@@ -23,6 +23,9 @@
  * 打开音频播放器窗口工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-open-audio-window')
 
 export const openAudioWindowTool = {
   name: 'open_audio_window',
@@ -44,7 +47,7 @@ export const openAudioWindowTool = {
     loopMode?: 'none' | 'single' | 'all'
   }) => {
     // 这里实现打开音频窗口的逻辑
-    console.log('打开音频窗口:', params)
+    logger.info({ text: '打开音频窗口', data: { audioUrl: params.audioUrl, audioId: params.audioId } })
     return {
       success: true,
       windowType: 'audio',

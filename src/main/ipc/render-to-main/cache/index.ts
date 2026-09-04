@@ -22,7 +22,9 @@
 import { CacheCommand } from 'commonModule/type/ipc/command'
 import cacheManager from 'mainModule/cache'
 // import { FileCacheManager } from 'mainModule/cache/manager'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('CacheHandler')
 import { shell } from 'electron'
 
 /**
@@ -48,12 +50,12 @@ class CacheHandler {
           return localPath
         }
         default:
-          logger.error({ text: `缓存处理未知命令: ${command}` }, 'CacheHandler')
+          logger.error({ text: `缓存处理未知命令: ${command}` })
           return null
       }
     }
     catch (error) {
-      logger.error({ text: '缓存处理异常', data: (error as any)?.message || error }, 'CacheHandler')
+      logger.error({ text: '缓存处理异常', data: (error as any)?.message || error })
       throw error
     }
   }

@@ -22,6 +22,9 @@
 import groupReceiver from './group'
 import groupJoinRequestReceiver from './group-join-request-receiver'
 import groupMemberReceiver from './group-member-receiver'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('GroupMessageRouter')
 
 /**
  * @description: 群组消息路由器
@@ -40,28 +43,31 @@ class GroupMessageRouter {
     const { data } = wsMessage
 
     if (!data?.type) {
-      console.warn('群组消息缺少 type 字段', wsMessage)
+      logger.warn({ text: '群组消息缺少 type 字段', data: { command: wsMessage?.command } })
       return
     }
 
     switch (data.type) {
       // 群组信息同步
       case 'group_receive':
+        logger.info({ text: '收到群组信息同步消息' })
         await this.groupReceiver.handleTableUpdates(wsMessage.data.body)
         break
 
       // 群成员添加请求
       case 'group_join_request_receive':
+        logger.info({ text: '收到群成员添加请求消息' })
         await this.groupJoinRequestReceiver.handleTableUpdates(wsMessage.data.body)
         break
 
       // 群成员变动
       case 'group_member_receive':
+        logger.info({ text: '收到群成员变动消息' })
         await this.groupMemberReceiver.handleTableUpdates(wsMessage.data.body)
         break
 
       default:
-        console.warn('未知的群组消息类型', data.type)
+        logger.warn({ text: '未知的群组消息类型', data: { type: data.type } })
     }
   }
 }

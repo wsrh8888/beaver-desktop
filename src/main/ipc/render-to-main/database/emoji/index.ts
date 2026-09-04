@@ -25,6 +25,9 @@ import { DataEmojiCommand } from 'commonModule/type/ipc/database'
 import favoriteEmojiBusiness from 'mainModule/business/emoji/favorite-emoji'
 import favoritePackageBusiness from 'mainModule/business/emoji/favorite-package'
 import emojiPackageBusiness from 'mainModule/business/emoji/package'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('EmojiHandler')
 
 class EmojiHandler {
   ensureLogin(header: ICommonHeader) {
@@ -50,7 +53,7 @@ class EmojiHandler {
       case DataEmojiCommand.GET_EMOJI_PACKAGE_EMOJIS:
         return await emojiPackageBusiness.getEmojiPackageEmojis(data as IGetEmojiPackageEmojisReq)
       default:
-        console.error('未处理的表情命令:', command)
+        logger.error({ text: '未处理的表情命令', data: { command } })
         throw new Error(`未处理的表情命令: EmojiHandler`)
     }
   }

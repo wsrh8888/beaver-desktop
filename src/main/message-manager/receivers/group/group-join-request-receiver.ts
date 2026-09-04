@@ -20,6 +20,9 @@
  */
 
 import groupJoinRequestBusiness from 'mainModule/business/group/group-join-request'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('GroupJoinRequestReceiver')
 
 /**
  * @description: 群加入请求接收器 - 处理 group_join_requests 表的操作
@@ -35,7 +38,7 @@ class GroupJoinRequestReceiver {
 
     // 检查是否是 group_join_requests 表的更新
     if (tableUpdatesBody.table !== 'group_join_requests') {
-      console.warn('GroupJoinRequestReceiver 收到非 group_join_requests 表的更新', tableUpdatesBody)
+      logger.warn({ text: 'GroupJoinRequestReceiver 收到非 group_join_requests 表的更新', data: { table: tableUpdatesBody?.table } })
       return
     }
 

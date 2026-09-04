@@ -19,11 +19,18 @@
  * beaver-desktop-header-v2
  */
 
-import type loggerModule from 'mainModule/utils/log'
 import { LoggerCommand } from 'commonModule/type/ipc/command'
 import logger from 'mainModule/utils/log'
 
+/**
+ * 渲染进程日志的落盘端。
+ * 注意：这里必须直接使用 Log 单例，不能用 Logger 类 —— Logger 类把 source 固定为 'main'，
+ * 而日志需要标记来源为 'render'，否则无法区分主进程/渲染进程日志。
+ */
 class LoggerHandler {
+  /** 支持的日志级别，用于拦截非法 level 避免 logger[level] 为 undefined 导致崩溃 */
+  private static readonly SUPPORTED_LEVELS = ['info', 'warn', 'error']
+
   /**
    * 统一的日志处理入口
    */
@@ -33,7 +40,7 @@ class LoggerHandler {
         this.handleLog(data)
         break
       default:
-        console.error(`日志处理未知命令: ${command}`)
+        logger.warn({ text: '收到未知的日志命令', data: { command } }, 'LoggerHandler', 'main')
     }
   }
 
@@ -42,7 +49,13 @@ class LoggerHandler {
    */
   private handleLog(data: any) {
     const { level, message, moduleName } = data
-    logger[level as keyof typeof loggerModule](message, moduleName, 'render')
+
+    if (!LoggerHandler.SUPPORTED_LEVELS.includes(level)) {
+      logger.warn({ text: '收到不支持的日志级别', data: { level, moduleName } }, 'LoggerHandler', 'main')
+      return
+    }
+
+    logger[level](message, moduleName, 'render')
   }
 }
 

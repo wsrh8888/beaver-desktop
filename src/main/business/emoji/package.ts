@@ -75,11 +75,11 @@ class EmojiPackageBusiness extends BaseBusiness<PackageSyncItem> {
 
   async getEmojiPackageEmojis(params: IGetEmojiPackageEmojisReq): Promise<IGetEmojiPackageEmojisRes> {
     const { packageId } = params
-    console.log('getEmojiPackageEmojis called with packageId:', packageId)
+    this.logger.info({ text: '查询表情包表情列表', data: { packageId } })
 
     // 获取表情包关联数据
     const packageEmojis = await dBServiceEmojiPackageEmoji.getEmojisByPackageId({ packageId })
-    console.log('packageEmojis found:', packageEmojis.length, packageEmojis)
+    this.logger.info({ text: '获取表情包关联数据完成', data: { packageId, packageEmojiCount: packageEmojis.length } })
 
     if (packageEmojis.length === 0) {
       return { list: [], total: 0 }
@@ -87,11 +87,10 @@ class EmojiPackageBusiness extends BaseBusiness<PackageSyncItem> {
 
     // 提取表情ID列表
     const emojiIds = packageEmojis.map(item => item.emojiId)
-    console.log('emojiIds to query:', emojiIds)
 
     // 获取表情详情
     const emojiMap = await dBServiceEmoji.getEmojisByIds({ ids: emojiIds })
-    console.log('emojiMap size:', emojiMap.size, 'keys:', Array.from(emojiMap.keys()))
+    this.logger.info({ text: '获取表情详情完成', data: { packageId, emojiIdCount: emojiIds.length, foundCount: emojiMap.size } })
 
     // 组装返回数据，按关联表的排序返回
     const list = packageEmojis
@@ -100,7 +99,7 @@ class EmojiPackageBusiness extends BaseBusiness<PackageSyncItem> {
 
         // 如果表情详情不存在，创建基本信息（用于调试）
         if (!emoji) {
-          console.warn(`表情 ${packageEmoji.emojiId} 详情不存在`)
+          this.logger.warn({ text: '表情详情不存在', data: { packageId, emojiId: packageEmoji.emojiId } })
           return {
             emojiId: packageEmoji.emojiId,
             name: `表情 ${packageEmoji.emojiId.slice(0, 8)}...`, // 临时名称
@@ -179,7 +178,7 @@ class EmojiPackageBusiness extends BaseBusiness<PackageSyncItem> {
         })
       }
     } catch (error) {
-      console.error('批量同步表情包失败:', error)
+      this.logger.error({ text: '批量同步表情包失败', data: { packageIdCount: packageIds.length, error: (error as Error)?.message } })
     }
   }
 }

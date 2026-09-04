@@ -21,9 +21,12 @@
 
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { CacheType } from 'commonModule/type/cache/cache'
+import Logger from 'renderModule/utils/logger'
 import Message from 'renderModule/components/ui/message'
 import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { BaseMessageHandler } from './base'
+
+const logger = new Logger('FileMessageHandler')
 
 /**
  * 文件消息处理器
@@ -39,7 +42,7 @@ class FileHandler extends BaseMessageHandler {
         this.enterMultiSelect(message)
         return Promise.resolve()
       default:
-        console.log('未知的文件消息命令:', commandId)
+        logger.warn({ text: '未知的文件消息命令', data: { commandId } })
         return Promise.resolve()
     }
   }

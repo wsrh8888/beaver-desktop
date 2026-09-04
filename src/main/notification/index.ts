@@ -21,7 +21,9 @@
 
 import type { SystemNotificationOptions } from 'commonModule/type/preload/notification'
 import { BrowserWindow, Notification } from 'electron'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('NotificationManager')
 /**
  * @description: 系统通知管理器
  */
@@ -34,7 +36,7 @@ class NotificationManager {
     try {
       // 检查通知权限
       if (!Notification.isSupported()) {
-        logger.warn({ text: '当前系统不支持通知' }, 'NotificationManager')
+        logger.warn({ text: '当前系统不支持通知' })
         return
       }
 
@@ -51,7 +53,7 @@ class NotificationManager {
       logger.error({
         text: '显示系统通知失败',
         data: { error: (error as Error).message },
-      }, 'NotificationManager')
+      })
     }
   }
 

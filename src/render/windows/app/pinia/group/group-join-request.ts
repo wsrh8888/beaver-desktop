@@ -21,8 +21,11 @@
 
 import type { IGroupJoinRequestListRes } from 'commonModule/type/ajax/group'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import { handleGroupJoinRequestApi } from 'renderModule/api/group'
 import { useContactStore } from '../contact/contact'
+
+const logger = new Logger('GroupJoinRequestStore')
 
 /**
  * @description: 群申请信息管理
@@ -100,7 +103,7 @@ export const useGroupJoinRequestStore = defineStore('groupJoinRequestStore', {
         return res
       }
       catch (error) {
-        console.error('加载群申请列表失败:', error)
+        logger.error({ text: '加载群申请列表失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },
@@ -125,7 +128,7 @@ export const useGroupJoinRequestStore = defineStore('groupJoinRequestStore', {
         return true
       }
       catch (error) {
-        console.error('处理群申请失败:', error)
+        logger.error({ text: '处理群申请失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },
@@ -159,7 +162,7 @@ export const useGroupJoinRequestStore = defineStore('groupJoinRequestStore', {
         return res
       }
       catch (error) {
-        console.error('加载更多群申请失败:', error)
+        logger.error({ text: '加载更多群申请失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },

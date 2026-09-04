@@ -48,7 +48,7 @@ class DatabaseGroupEventManager {
         })
       }
       else {
-        console.warn('群组信息更新缺少必要参数', { data })
+        logger.warn({ text: '群组信息更新缺少必要参数', data: { data } })
       }
     }
     catch (error) {

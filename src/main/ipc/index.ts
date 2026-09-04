@@ -20,12 +20,17 @@
  */
 
 import RenderToMainHandler from './render-to-main'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('IpcManager')
 
 class IpcManager {
   constructor() {}
 
   init() {
+    logger.info({ text: '开始初始化 IPC 监听' })
     RenderToMainHandler.init()
+    logger.info({ text: 'IPC 监听初始化完成' })
   }
 }
 

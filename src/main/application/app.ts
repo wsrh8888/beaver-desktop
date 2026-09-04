@@ -25,6 +25,9 @@ import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
 import ApplicationBase from './common/base'
 import trayHandler from './tray'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('AppApplication')
 
 class App extends ApplicationBase implements Application {
   declare mainWin: BrowserWindow
@@ -34,6 +37,7 @@ class App extends ApplicationBase implements Application {
   }
 
   public createBrowserWindow(): BrowserWindow {
+    logger.info({ text: '开始创建应用主窗口' })
     this.win = new BrowserWindow({
       width: 1024,
       height: 726,
@@ -57,6 +61,7 @@ class App extends ApplicationBase implements Application {
     trayHandler.init(this.win)
     this.init()
     this.initEvents()
+    logger.info({ text: '应用主窗口创建完成' })
     return this.win
   }
 }

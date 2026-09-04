@@ -21,6 +21,9 @@
 
 import type { IncomingMessage, ServerResponse } from 'http'
 import type { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPSSEMessageHandler')
 
 /**
  * SSE消息处理器
@@ -48,7 +51,7 @@ class SSEMessageHandler {
 
       await transport.handlePostMessage(req, res, (req as any).body)
     } catch (error) {
-      console.error('SSE message handling error:', error)
+      logger.error({ text: 'SSE消息处理失败', data: { sessionId, error: (error as Error)?.message } })
       if (!res.headersSent) {
         res.statusCode = 500
         res.setHeader('Content-Type', 'application/json')

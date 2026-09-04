@@ -42,12 +42,15 @@ class GroupMemberSync {
       // 获取服务器上变更的群成员版本信息
       const serverResponse = await datasyncGetSyncGroupMembersApi({ since: lastSyncTime })
 
-      console.error('xxxxxxxxxxxxxxxxxxxxxxxxxxx', JSON.stringify(serverResponse.result))
+      logger.info({
+        text: '获取服务器群成员变更版本完成',
+        data: { lastSyncTime, groupVersionCount: serverResponse.result.groupVersions?.length || 0 },
+      })
 
       // 对比本地数据，过滤出需要更新的群组
       const needUpdateGroups = await this.compareAndFilterMemberVersions(serverResponse.result.groupVersions)
 
-      console.error('wefrwefwefwefwe', JSON.stringify(serverResponse.result))
+      logger.info({ text: '群成员版本对比完成', data: { needUpdateGroupCount: needUpdateGroups.length } })
 
       if (needUpdateGroups.length > 0) {
         // 有需要更新的群成员
@@ -106,8 +109,10 @@ class GroupMemberSync {
     const response = await groupMemberSyncApi({ groups: groupsWithVersions })
     const members = response.result.groupMembers
 
-    console.error('cxcxcxcsd11111111111111111111f', groupsWithVersions)
-    console.error('cxcxcxcsd11111111111111111111f', members)
+    logger.info({
+      text: '获取服务器群成员数据完成',
+      data: { groupCount: groupsWithVersions.length, memberCount: members.length },
+    })
 
     if (members.length > 0) {
       await dBServiceGroupMember.batchCreate({ members: members })

@@ -20,8 +20,11 @@
  */
 
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+import Logger from 'renderModule/utils/logger'
 import { AudioPlayer } from 'renderModule/core/media/audio'
 import { BaseMessageHandler } from './base'
+
+const logger = new Logger('AudioMessageHandler')
 
 /**
  * 音频消息处理器
@@ -42,7 +45,7 @@ class AudioHandler extends BaseMessageHandler {
         this.enterMultiSelect(message)
         return Promise.resolve()
       default:
-        console.log('未知的音频消息命令:', commandId)
+        logger.warn({ text: '未知的音频消息命令', data: { commandId } })
         return Promise.resolve()
     }
   }

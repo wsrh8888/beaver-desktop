@@ -21,10 +21,13 @@
 
 import type { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import { getFriendInfoApi } from 'renderModule/api/friend'
 import { useContactStore } from '../contact/contact'
 
 import { useUserStore } from '../user/user'
+
+const logger = new Logger('FriendStore')
 
 /**
  * @description: 好友信息管理
@@ -44,7 +47,6 @@ export const useFriendStore = defineStore('friendStore', {
       return this.friendList.map((friend) => {
         const contactStore = useContactStore()
         const contactInfo = contactStore.getContact(friend.userId)
-        console.log('555555555555555555555555', contactInfo)
         if (contactInfo) {
           return {
             ...friend,
@@ -89,9 +91,8 @@ export const useFriendStore = defineStore('friendStore', {
     getFriendByConversationId: (state) => {
       return (conversationId: string): IFriendInfo | undefined => {
         const friend = state.friendList.find(friend => friend.conversationId === conversationId)
-        console.log('3333333333333333', state.friendList)
         if (!friend) {
-          console.error('好友信息未找到，conversationId:', conversationId)
+          logger.warn({ text: '好友信息未找到', data: { conversationId } })
           return undefined
         }
 
@@ -204,7 +205,7 @@ export const useFriendStore = defineStore('friendStore', {
         return result.list
       }
       catch (error) {
-        console.error('根据用户ID列表更新好友信息失败:', error)
+        logger.error({ text: '根据用户ID列表更新好友信息失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },

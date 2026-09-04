@@ -76,7 +76,7 @@ class UserBusiness extends BaseBusiness<UserSyncItem> {
     }))
 
     if (userVersions.length === 0) {
-      console.log('用户同步完成: noValidUserIds=true')
+      this.logger.info({ text: '用户批量同步跳过：无有效用户ID' })
       return
     }
 
@@ -105,7 +105,7 @@ class UserBusiness extends BaseBusiness<UserSyncItem> {
           await dBServiceUser.upsert(userData)
         }
 
-        console.log(`用户数据同步成功: count=${response.result.users.length}`)
+        this.logger.info({ text: '用户数据同步成功', data: { count: response.result.users.length } })
 
         // 发送通知到render进程，告知用户数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_USER, NotificationUserCommand.USER_UPDATE, {
@@ -117,11 +117,11 @@ class UserBusiness extends BaseBusiness<UserSyncItem> {
         })
       }
       else {
-        console.log('用户数据同步完成: noUpdates=true')
+        this.logger.info({ text: '用户数据同步完成：无更新数据' })
       }
     }
     catch (error) {
-      console.error('同步用户数据失败:', error)
+      this.logger.error({ text: '同步用户数据失败', data: { error: (error as Error)?.message, stack: (error as Error)?.stack } })
     }
   }
 }

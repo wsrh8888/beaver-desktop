@@ -26,7 +26,9 @@ import { datasyncGetSyncCircleInfoApi } from 'mainModule/api/datasync'
 import dbServiceCircle from 'mainModule/database/services/circle/circle'
 import dbServiceDataSync from 'mainModule/database/services/datasync/datasync'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('CircleSync')
 
 class CircleSync {
   async checkAndSync() {
@@ -59,6 +61,16 @@ class CircleSync {
           ? Math.floor(serverResponse.result.serverTimestamp / 1000)
           : Math.floor(Date.now() / 1000),
       }).catch(() => {})
+
+      logger.info({
+        text: '圈子资料同步完成',
+        data: {
+          cursorVersion: lastVersion,
+          changedCount: circleVersions.length,
+          needUpdateCount: needUpdateCircles.length,
+          maxVersion,
+        },
+      })
     }
     catch (error) {
       logger.error({ text: '圈子资料同步失败', data: { error: (error as any)?.message } })

@@ -23,6 +23,9 @@
  * 发布朋友圈动态工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-create-moment')
 
 export const createMomentTool = {
   name: 'create_moment',
@@ -53,7 +56,17 @@ export const createMomentTool = {
   }) => {
     // 这里实现发布朋友圈动态的逻辑
     // 直接调用MomentBusiness的API，不需要打开UI
-    console.log('发布朋友圈动态:', params)
+    logger.info({
+      text: '发布朋友圈动态',
+      data: {
+        contentLength: params.content.length,
+        imageCount: params.images?.length ?? 0,
+        visibility: params.visibility,
+        location: params.location,
+        remindUserCount: params.remindUsers?.length ?? 0,
+        link: params.link
+      }
+    })
     return {
       success: true,
       momentId: 'moment_' + Date.now(),

@@ -23,6 +23,9 @@
  * 浏览朋友圈动态工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-view-moments')
 
 export const viewMomentsTool = {
   name: 'view_moments',
@@ -42,7 +45,16 @@ export const viewMomentsTool = {
     includeComments?: boolean
   }) => {
     // 这里实现浏览朋友圈动态的逻辑
-    console.log('浏览朋友圈动态:', params)
+    logger.info({
+      text: '浏览朋友圈动态',
+      data: {
+        userId: params.userId,
+        page: params.page,
+        limit: params.limit,
+        sortBy: params.sortBy,
+        includeComments: params.includeComments
+      }
+    })
     return {
       success: true,
       moments: [], // 这里会返回动态列表

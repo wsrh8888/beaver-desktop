@@ -21,7 +21,7 @@
 
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
 import { store } from 'mainModule/store'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 import chatHandler from './chat'
 import circleHandler from './circle'
 import emojiHandler from './emoji'
@@ -31,13 +31,14 @@ import notificationHandler from './notification'
 import userHandler from './user'
 
 const loggerName = 'database-handler'
+const logger = new Logger(loggerName)
 
 class DatabaseHandler {
   /**
    * 处理数据库相关的IPC命令
    */
   async handle(_event: Electron.IpcMainInvokeEvent, command: DatabaseCommand, data: any = {}): Promise<unknown> {
-    logger.info({ text: '处理数据库命令', data: { command, data } }, loggerName)
+    logger.info({ text: '处理数据库命令', data: { command, data } })
     const userInfo = store.get('userInfo')
     const header = {
       userId: userInfo?.userId || '',
@@ -59,12 +60,20 @@ class DatabaseHandler {
         case DatabaseCommand.NOTIFICATION:
           return await notificationHandler.handle(_event, data?.command, data?.data, header)
         default:
-          logger.error({ text: `未处理的数据库命令: ${command}` }, loggerName)
+          logger.error({ text: '收到未处理的数据库命令', data: { command } })
           return null
       }
     }
     catch (error) {
-      logger.error({ text: '数据库命令处理失败 DatabaseHandler', data: { command, error, data: data?.command } }, loggerName)
+      logger.error({
+        text: '数据库命令处理失败',
+        data: {
+          command,
+          subCommand: data?.command,
+          message: (error as Error)?.message,
+          stack: (error as Error)?.stack,
+        },
+      })
       throw error
     }
   }

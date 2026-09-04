@@ -24,6 +24,9 @@ import express from 'express'
 import cors from 'cors'
 import sseTransportManager from './sse/transport.js'
 import healthHandler from './health-handler.js'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPServer')
 
 /**
  * 本地MCP服务器
@@ -70,10 +73,10 @@ class LocalMCPServer {
     app.get('/health', healthHandler.handleHealthCheck)
 
     this.httpServer = app.listen(port, () => {
-      console.log(`MCP server listening on port ${port}`)
+      logger.info({ text: 'MCP服务器开始监听', data: { port } })
     })
 
-    console.log('MCP server started successfully')
+    logger.info({ text: 'MCP服务器启动成功', data: { port } })
   }
 
 

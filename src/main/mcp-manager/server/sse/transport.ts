@@ -22,6 +22,9 @@
 import { SSEServerTransport } from '@modelcontextprotocol/sdk/server/sse.js'
 import type { IncomingMessage, ServerResponse } from 'http'
 import sseMessageHandler from './message-handler.js'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPSSETransport')
 
 /**
  * SSE传输管理器
@@ -35,8 +38,7 @@ class SSETransportManager {
    */
   async handleSSEConnection(req: IncomingMessage, res: ServerResponse): Promise<SSEServerTransport> {
     try {
-      console.log('SSE connection request established')
-      console.log('Query parameters:', (req as any).query)
+      logger.info({ text: '收到SSE连接请求', data: { url: req.url, query: (req as any).query } })
 
       // 创建SSE传输
       const transport = new SSEServerTransport('/messages', res)
@@ -45,14 +47,15 @@ class SSETransportManager {
       // 清理连接断开时的transport
       res.on('close', () => {
         this.transports.delete(transport.sessionId)
+        logger.info({ text: 'SSE连接已断开', data: { sessionId: transport.sessionId, remainingCount: this.transports.size } })
       })
 
-      console.log(`SSE connection established with session ID: ${transport.sessionId}`)
+      logger.info({ text: 'SSE连接已建立', data: { sessionId: transport.sessionId } })
 
       // 返回transport供服务器连接使用
       return transport
     } catch (error) {
-      console.error('SSE connection error:', error)
+      logger.error({ text: 'SSE连接失败', data: { error: (error as Error)?.message } })
       if (!res.headersSent) {
         res.statusCode = 500
         res.setHeader('Content-Type', 'application/json')

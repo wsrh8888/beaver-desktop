@@ -21,6 +21,9 @@
 
 import type { IUserInfo } from 'commonModule/type/store/userInfo'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ContactStore')
 
 /**
  * @description: 联系人信息管理（数据总称，存储所有用户的完整信息）
@@ -69,7 +72,7 @@ export const useContactStore = defineStore('useContactStore', {
           })
         })
 
-        console.log('联系人数据初始化完成，总数:', this.user.size)
+        logger.info({ text: '联系人数据初始化完成', data: { total: this.user.size } })
         const contactSnapshot: Record<string, IUserInfo> = {}
         this.user.forEach((val, key) => {
           contactSnapshot[key] = { ...val }
@@ -78,7 +81,7 @@ export const useContactStore = defineStore('useContactStore', {
         await electron.storage.setAsync('allUser', contactSnapshot, { persist: true })
       }
       catch (error) {
-        console.error('联系人数据初始化失败:', error)
+        logger.error({ text: '联系人数据初始化失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },
@@ -120,7 +123,7 @@ export const useContactStore = defineStore('useContactStore', {
       try {
         // 通过electron.database获取用户信息
         const result = await electron.database.user.getUsersBasicInfo({ userIds })
-        console.error('222222222222222', result)
+        logger.info({ text: '批量获取用户信息完成', data: { requestCount: userIds.length, receivedCount: result.users?.length ?? 0 } })
 
         // 更新contact store
         result.users.forEach((user) => {
@@ -139,7 +142,7 @@ export const useContactStore = defineStore('useContactStore', {
         return result
       }
       catch (error) {
-        console.error('批量更新联系人信息失败:', error)
+        logger.error({ text: '批量更新联系人信息失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },

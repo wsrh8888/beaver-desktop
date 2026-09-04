@@ -20,7 +20,10 @@
  */
 
 import { uploadFileApi } from 'renderModule/api/file'
+import Logger from 'renderModule/utils/logger'
 import { getFileNameFromUrl, getAudioInfo, getFileType, getImageAttribute, getVideoInfo, getVideoThumbnail } from 'renderModule/utils/file/index'
+
+const logger = new Logger('UploadUtils')
 
 // 上传文件类型
 export type UploadFileType = 'image' | 'video' | 'audio' | 'file'
@@ -175,7 +178,7 @@ export const uploadFile = async (file: File): Promise<UploadResult> => {
       thumbnailUrl = thumbnailUploadResult.fileUrl
     }
     catch (error) {
-      console.error('生成视频封面失败:', error)
+      logger.error({ text: '生成视频封面失败', data: { error: (error as Error)?.message } })
     }
   }
 

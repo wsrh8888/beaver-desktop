@@ -21,6 +21,9 @@
 
 import groupBusiness from 'mainModule/business/group/group'
 import groupMemberBusiness from 'mainModule/business/group/group-member'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('GroupMemberReceiver')
 
 /**
  * @description: 群成员接收器 - 处理 groups 和 group_members 表的操作
@@ -35,7 +38,7 @@ class GroupMemberReceiver {
 
     // 只处理多表格式
     if (!tables || !Array.isArray(tables)) {
-      console.warn('GroupMemberReceiver 只支持多表格式消息', tableUpdatesBody)
+      logger.warn({ text: 'GroupMemberReceiver 只支持多表格式消息', data: { table: tableUpdatesBody?.table } })
       return
     }
 

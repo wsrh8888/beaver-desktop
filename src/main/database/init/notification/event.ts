@@ -20,6 +20,10 @@
  */
 
 // 初始化通知事件表
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBInit-notification-events')
+
 export const initNotificationEventsTable = (sqlite: any) => {
   sqlite.exec(`
     CREATE TABLE IF NOT EXISTS notification_events (
@@ -56,7 +60,7 @@ export const initNotificationEventsTable = (sqlite: any) => {
     }
     catch (error: any) {
       if (!error.message?.includes('duplicate column name'))
-        console.log(`notification_events表的${column.split(' ')[0]}字段可能已存在`)
+        logger.warn({ text: '表字段添加失败', data: { table: 'notification_events', field: column.split(' ')[0], error: error.message } })
     }
   })
 }

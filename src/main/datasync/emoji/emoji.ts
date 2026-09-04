@@ -39,22 +39,24 @@ class EmojiSyncModule {
   async checkAndSync() {
     logger.info({ text: '开始同步表情基础数据' })
     const userId = store.get('userInfo')?.userId
-    if (!userId)
+    if (!userId) {
+      logger.warn({ text: '未获取到用户信息，跳过表情基础数据同步' })
       return
+    }
 
     try {
       // 获取本地同步时间戳
       const localCursor = await dbServiceDataSync.get({ module: 'emojis' })
       const lastSyncTime = localCursor?.version || 0
-      console.log('lastSyncTime', lastSyncTime)
       // 获取服务器上变更的表情版本信息
       const serverResponse = await datasyncGetSyncEmojisApi({ since: lastSyncTime })
-      console.log('serverResponse', serverResponse)
+      logger.info({
+        text: '获取服务器表情变更版本完成',
+        data: { lastSyncTime, emojiVersionCount: serverResponse.result.emojiVersions?.length || 0 },
+      })
       // 对比本地数据，过滤出需要更新的数据
       const needUpdateEmojiIds = await this.compareAndFilterEmojiVersions(serverResponse.result.emojiVersions || [])
-      console.log('454444444444444444444')
-      console.log('454444444444444444444')
-      console.log(needUpdateEmojiIds)
+      logger.info({ text: '表情版本对比完成', data: { needUpdateCount: needUpdateEmojiIds.length } })
       if (needUpdateEmojiIds.length > 0) {
         // 有需要更新的表情数据
         await this.syncEmojiData(needUpdateEmojiIds)
@@ -94,12 +96,7 @@ class EmojiSyncModule {
     // 查询本地已存在的记录
     const existingEmojisMap = await dBServiceEmoji.getEmojisByIds({ ids: emojiIds })
 
-    console.log('existingEmojisMap', existingEmojisMap)
-    console.log('emojiVersions', emojiVersions)
-    console.log('emojiIds', emojiIds)
-    console.log('existingEmojisMap', existingEmojisMap)
-    console.log('emojiVersions', emojiVersions)
-    console.log('emojiIds', emojiIds)
+    logger.info({ text: '查询本地表情记录完成', data: { emojiIdCount: emojiIds.length, existingCount: existingEmojisMap.size } })
     // 过滤出需要更新的emojiIds（本地不存在或版本号更旧的数据）
     const needUpdateEmojiIds = emojiIds.filter((id) => {
       const existingEmoji = existingEmojisMap.get(id)
@@ -112,7 +109,7 @@ class EmojiSyncModule {
     return needUpdateEmojiIds || []
     }
     catch (error) {
-      logger.error({ text: '表情基础数据同步失败2', data: { error: (error as any)?.message } })
+      logger.error({ text: '表情版本对比失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -164,7 +161,7 @@ class EmojiSyncModule {
     }
     }
     catch (error) {
-      logger.error({ text: '表情基础数据同步失败4', data: { error: (error as any)?.message } })
+      logger.error({ text: '表情数据落库失败', data: { error: (error as any)?.message } })
     }
   }
 
@@ -178,7 +175,7 @@ class EmojiSyncModule {
     })
     }
     catch (error) {
-      logger.error({ text: '表情基础数据同步失败3', data: { error: (error as any)?.message } })
+      logger.error({ text: '表情同步游标更新失败', data: { error: (error as any)?.message } })
     }
   }
 

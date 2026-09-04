@@ -23,6 +23,9 @@
  * 点赞朋友圈动态工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-like-moment')
 
 export const likeMomentTool = {
   name: 'like_moment',
@@ -36,7 +39,13 @@ export const likeMomentTool = {
     emoji?: string
   }) => {
     // 这里实现点赞朋友圈动态的逻辑
-    console.log('点赞朋友圈动态:', params)
+    logger.info({
+      text: '点赞朋友圈动态',
+      data: {
+        momentId: params.momentId,
+        emoji: params.emoji
+      }
+    })
     return {
       success: true,
       momentId: params.momentId,

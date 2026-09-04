@@ -23,6 +23,9 @@ import type { IStoreDataMap } from 'commonModule/type/mainStore'
 import type { IStorageModule } from 'commonModule/type/preload/storage'
 import type { IUserInfo } from 'commonModule/type/store/userInfo'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('MomentUserStore')
 
 /**
  * @description: 当前用户信息管理
@@ -68,7 +71,6 @@ export const useUserStore = defineStore('useUserStore', {
       const allUserSnapshot = await electron.storage.getAsync('allUser')
       if (allUserSnapshot && typeof allUserSnapshot === 'object') {
         Object.values(allUserSnapshot as Record<string, any>).forEach((u) => {
-          console.error('122222222222222')
           if (u?.userId) {
             this.users.set(u.userId, {
               userId: u.userId,
@@ -84,6 +86,7 @@ export const useUserStore = defineStore('useUserStore', {
         })
       }
       this.version++
+      logger.info({ text: '朋友圈用户数据初始化完成', data: { userCount: this.users.size, hasCurrentUser: !!this.currentUserId } })
     },
   },
 })

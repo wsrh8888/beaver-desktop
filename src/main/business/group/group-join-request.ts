@@ -76,7 +76,7 @@ class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncItem> {
     })).filter(item => item.groupId)
 
     if (requestsToSync.length === 0) {
-      console.log('群加入请求同步完成: noValidGroupIds=true')
+      this.logger.info({ text: '群加入请求批量同步跳过：无有效群组ID' })
       return
     }
 
@@ -102,7 +102,7 @@ class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncItem> {
           await dBServiceGroupJoinRequest.upsert(requestData)
         }
 
-        console.log(`群加入请求数据同步成功: count=${response.result.groupJoinRequests.length}`)
+        this.logger.info({ text: '群加入请求数据同步成功', data: { count: response.result.groupJoinRequests.length } })
 
         // 发送通知到render进程，告知群加入请求数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_VALID_UPDATE, {
@@ -115,11 +115,11 @@ class GroupJoinRequestBusiness extends BaseBusiness<GroupJoinRequestSyncItem> {
         })
       }
       else {
-        console.log('群加入请求数据同步完成: noUpdates=true')
+        this.logger.info({ text: '群加入请求数据同步完成：无更新数据' })
       }
     }
     catch (error) {
-      console.error('同步群加入请求数据失败:', error)
+      this.logger.error({ text: '同步群加入请求数据失败', data: { error: (error as Error)?.message, stack: (error as Error)?.stack } })
     }
   }
 }

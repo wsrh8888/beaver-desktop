@@ -20,7 +20,9 @@
  */
 
 import type { NetworkCommand } from 'commonModule/type/ipc/command'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('NetworkHandler')
 
 class NetworkHandler {
   /**
@@ -33,7 +35,7 @@ class NetworkHandler {
     //   //   console.error(`网络处理未知命令: ${command}`)
     //   //   return null
     // }
-    logger.info({ text: '网络处理命令', data: { command, event } })
+    logger.info({ text: '收到网络处理命令', data: { command } })
     return null
   }
 }

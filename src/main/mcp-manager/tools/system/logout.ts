@@ -23,6 +23,9 @@
  * 退出登录工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-logout')
 
 export const logoutTool = {
   name: 'logout',
@@ -42,7 +45,7 @@ export const logoutTool = {
 
       // 这里实现退出登录的逻辑
       // 例如：清除用户会话、token等
-      console.log('用户执行退出登录操作')
+      logger.info({ text: '用户执行退出登录操作' })
 
       // 模拟退出登录过程
       // 在实际应用中，这里应该调用真正的退出登录API
@@ -53,7 +56,7 @@ export const logoutTool = {
         timestamp: new Date().toISOString()
       }
     } catch (error) {
-      console.error('退出登录失败:', error)
+      logger.error({ text: '退出登录失败', data: { error: (error as Error)?.message } })
       return {
         success: false,
         message: '退出登录失败',

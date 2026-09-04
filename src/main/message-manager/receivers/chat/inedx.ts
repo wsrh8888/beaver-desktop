@@ -19,7 +19,9 @@
  * beaver-desktop-header-v2
  */
 
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('ChatMessageRouter')
 import conversationReceiver from './conversation-receiver'
 import messageMediaReceiver from './message-media-receiver'
 import messageReceiver from './message-receiver'
@@ -43,7 +45,7 @@ class ChatMessageRouter {
     const { data } = wsMessage
 
     if (!data?.type) {
-      logger.warn({ text: '聊天消息缺少 type 字段', data: { wsMessage } }, 'ChatMessageRouter')
+      logger.warn({ text: '聊天消息缺少 type 字段', data: { wsMessage } })
       return
     }
 
@@ -68,7 +70,7 @@ class ChatMessageRouter {
         break
 
       default:
-        logger.warn({ text: '未知的聊天消息类型', data: { type: data.type } }, 'ChatMessageRouter')
+        logger.warn({ text: '未知的聊天消息类型', data: { type: data.type } })
     }
   }
 }

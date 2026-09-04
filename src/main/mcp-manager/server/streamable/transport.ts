@@ -21,6 +21,9 @@
 
 import { StreamableHTTPServerTransport } from '@modelcontextprotocol/sdk/server/streamableHttp.js'
 import type { IncomingMessage, ServerResponse } from 'http'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPStreamableTransport')
 
 /**
  * StreamableHTTP传输管理器
@@ -41,7 +44,7 @@ class StreamableTransportManager {
 
       await this.transport.handleRequest(req as any, res as any, body)
     } catch (error) {
-      console.error('StreamableHTTP request handling error:', error)
+      logger.error({ text: 'StreamableHTTP请求处理失败', data: { url: req.url, error: (error as Error)?.message } })
       if (!res.headersSent) {
         res.statusCode = 500
         res.setHeader('Content-Type', 'application/json')

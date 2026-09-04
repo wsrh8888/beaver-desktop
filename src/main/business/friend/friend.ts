@@ -175,7 +175,7 @@ class FriendBusiness extends BaseBusiness<FriendSyncItem> {
           await dBServiceFriend.upsert(friendData)
         }
 
-        console.log(`好友数据精确同步成功: ids=${friendIds.join(',')}, count=${response.result.friends.length}`)
+        this.logger.info({ text: '好友数据精确同步成功', data: { friendIds, count: response.result.friends.length } })
 
         // 发送通知到render进程，告知好友数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_FRIEND, NotificationFriendCommand.FRIEND_UPDATE, {
@@ -189,7 +189,7 @@ class FriendBusiness extends BaseBusiness<FriendSyncItem> {
       }
     }
     catch (error) {
-      console.error('精确同步好友数据失败:', error)
+      this.logger.error({ text: '精确同步好友数据失败', data: { error: (error as Error)?.message } })
     }
   }
 
@@ -328,7 +328,7 @@ class FriendBusiness extends BaseBusiness<FriendSyncItem> {
       return { list: friendList }
     }
     catch (error) {
-      console.error('根据版本范围获取好友列表失败:', error)
+      this.logger.error({ text: '根据版本范围获取好友列表失败', data: { error: (error as Error)?.message } })
       return { list: [] }
     }
   }

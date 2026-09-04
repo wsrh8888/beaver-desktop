@@ -67,7 +67,7 @@ class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem> {
   protected async processBatchRequests(items: PackageEmojiSyncItem[]): Promise<void> {
     // 聚合所有需要同步的relationIds
     const relationIds = [...new Set(items.flatMap(item => item.relationIds))]
-    console.log('package-emoji 开始数据同步', items)
+    this.logger.info({ text: '开始表情包表情关联数据同步', data: { itemCount: items.length, relationIdCount: relationIds.length } })
 
     if (relationIds.length === 0) {
       return
@@ -104,7 +104,7 @@ class EmojiPackageEmojiBusiness extends BaseBusiness<PackageEmojiSyncItem> {
         })
       }
     } catch (error) {
-      console.error('批量同步表情包表情关联失败:', error)
+      this.logger.error({ text: '批量同步表情包表情关联失败', data: { relationIdCount: relationIds.length, error: (error as Error)?.message } })
     }
   }
 }

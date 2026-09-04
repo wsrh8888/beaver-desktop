@@ -20,11 +20,12 @@
  */
 
 import { WebSocketCommand } from 'commonModule/type/ipc/command'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 import wsManager from 'mainModule/ws-manager'
 import chatHandler from './chat'
 
 const loggerName = 'websocket-handler'
+const logger = new Logger(loggerName)
 
 class WebSocketHandler {
   /**
@@ -34,11 +35,12 @@ class WebSocketHandler {
     try {
       switch (command) {
         case WebSocketCommand.DISCONNECT:
+          logger.info({ text: 'IPC收到断开连接请求' })
           wsManager.disconnect()
           return true
 
         case WebSocketCommand.RECONNECT:
-          logger.info({ text: 'IPC收到重连请求' }, loggerName)
+          logger.info({ text: 'IPC收到重连请求' })
           // 重新连接WebSocket
           wsManager.disconnect()
           await wsManager.connect()
@@ -49,7 +51,10 @@ class WebSocketHandler {
       }
     }
     catch (error) {
-      logger.error({ text: 'WebSocket命令处理失败', data: { command, error } }, loggerName)
+      logger.error({
+        text: 'WebSocket命令处理失败',
+        data: { command, message: (error as Error)?.message, stack: (error as Error)?.stack },
+      })
       throw error
     }
   }

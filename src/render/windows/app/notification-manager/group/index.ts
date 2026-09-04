@@ -53,7 +53,7 @@ class GroupNotificationRouter {
         await groupJoinRequestNotificationManager.processGroupJoinRequestUpdate(params.data)
         break
       default:
-        console.warn('未知的群组通知命令:', params.command)
+        logger.warn({ text: '未知的群组通知命令', data: { command: params.command } })
     }
   }
 }

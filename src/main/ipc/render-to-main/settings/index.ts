@@ -24,6 +24,9 @@ import { SettingsCommand } from 'commonModule/type/ipc/command'
 import { store } from 'mainModule/store'
 import { getUserSettingsApi } from 'mainModule/api/user'
 import keyboardHandler from 'mainModule/ipc/render-to-main/keyboard'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('SettingsHandler')
 
 class SettingsHandler {
   async init() {
@@ -62,7 +65,7 @@ class SettingsHandler {
         this.saveToStore(data.settings)
         return data.settings
       default:
-        console.error(`设置处理未知命令: ${command}`)
+        logger.error({ text: '设置处理未知命令', data: { command } })
     }
   }
 }

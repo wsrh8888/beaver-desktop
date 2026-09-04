@@ -22,6 +22,7 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 
 import type { IMessageHandler } from './base'
+import Logger from 'renderModule/utils/logger'
 import { MessageContentType } from 'renderModule/windows/app/page/message/right-component/content/utils/data'
 import { audioFileHandler } from './audio'
 import { emojiHandler } from './emoji'
@@ -30,6 +31,8 @@ import { imageHandler } from './image'
 import { textHandler } from './text'
 import { videoHandler } from './video'
 import { voiceHandler } from './voice'
+
+const logger = new Logger('MessageHandlerFactory')
 
 // 导出工厂方法
 export function getMenuItems(messageType: MessageContentType, hasTextSelected: boolean = false, isSender: boolean = false) {
@@ -66,7 +69,7 @@ export class MessageHandlerFactory {
         // 这些类型暂时使用基础处理器或文本处理器的逻辑（如删除、撤回等基础功能）
         return textHandler
       default:
-        console.warn(`未知的消息类型 ${messageType}，使用文本处理器`)
+        logger.warn({ text: '未知的消息类型，使用文本处理器', data: { messageType } })
         return textHandler
     }
   }

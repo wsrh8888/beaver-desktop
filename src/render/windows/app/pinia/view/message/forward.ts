@@ -21,7 +21,10 @@
 
 import type { IGetForwardDetailsRes } from 'commonModule/type/ajax/chat'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import { getForwardDetailsApi } from 'renderModule/api/chat'
+
+const logger = new Logger('ForwardViewStore')
 
 /**
  * @description: 转发消息查看视图状态
@@ -44,7 +47,7 @@ export const useForwardViewStore = defineStore('useForwardViewStore', {
           const res = await getForwardDetailsApi({ recordId: id })
           this.forwardData.set(id, res.result)
         } catch (error) {
-          console.error('加载合并转发详情失败:', error)
+          logger.error({ text: '加载合并转发详情失败', data: { recordId: id, error: (error as Error)?.message } })
         }
       }
     },

@@ -30,7 +30,7 @@ const logger = new Logger('datasync-emoji-package')
 class PackageSync {
   // 同步表情包基础数据（emoji_package 表）
   async sync(packageVersions: any[]): Promise<string[]> {
-    console.log('packageVersions11111111111111111', packageVersions)
+    logger.info({ text: '开始同步表情包基础数据', data: { packageVersionCount: packageVersions?.length || 0 } })
     try {
     if (!packageVersions || packageVersions.length === 0) {
       return []
@@ -38,7 +38,7 @@ class PackageSync {
 
     // 过滤出需要更新的表情包ID
     const needUpdatePackageIds = await this.compareAndFilterPackageVersions(packageVersions)
-    console.log('needUpdatePackageIds', needUpdatePackageIds)
+    logger.info({ text: '表情包版本对比完成', data: { needUpdateCount: needUpdatePackageIds.length } })
     if (needUpdatePackageIds.length > 0) {
       await this.syncEmojiPackageData(needUpdatePackageIds)
       return needUpdatePackageIds // 返回更新的表情包ID

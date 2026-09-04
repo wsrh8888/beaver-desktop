@@ -21,9 +21,11 @@
 
 import type { IValidInfo } from 'commonModule/type/ajax/friend'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import { getValidListApi } from 'renderModule/api/friend'
 import { useContactStore } from '../contact/contact'
 
+const logger = new Logger('FriendVerifyStore')
 /**
  * @description: 好友信息管理
  */
@@ -103,7 +105,7 @@ export const useFriendVerifyStore = defineStore('friendVerifyStore', {
         return result.list
       }
       catch (error) {
-        console.error('根据用户ID列表更新好友验证信息失败:', error)
+        logger.error({ text: '根据用户ID列表更新好友验证信息失败', data: { error: (error as Error)?.message } })
         throw error
       }
     },

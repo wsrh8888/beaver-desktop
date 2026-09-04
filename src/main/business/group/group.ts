@@ -316,7 +316,7 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     })).filter(item => item.groupId) // 只同步有groupId的项
 
     if (groupsToSync.length === 0) {
-      console.log('群组同步完成: noValidGroupIds=true')
+      this.logger.info({ text: '群组批量同步跳过：无有效群组ID' })
       return
     }
 
@@ -343,7 +343,7 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
           await dbServiceGroup.upsert(groupData)
         }
 
-        console.log(`群组数据同步成功: count=${response.result.groups.length}`)
+        this.logger.info({ text: '群组数据同步成功', data: { count: response.result.groups.length } })
 
         // 发送通知到render进程，告知群组数据已更新
         sendMainNotification('*', NotificationModule.DATABASE_GROUP, NotificationGroupCommand.GROUP_UPDATE, {
@@ -355,11 +355,11 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
         })
       }
       else {
-        console.log('群组数据同步完成: noUpdates=true')
+        this.logger.info({ text: '群组数据同步完成：无更新数据' })
       }
     }
     catch (error) {
-      console.error('同步群组数据失败:', error)
+      this.logger.error({ text: '同步群组数据失败', data: { error: (error as Error)?.message, stack: (error as Error)?.stack } })
     }
   }
 }

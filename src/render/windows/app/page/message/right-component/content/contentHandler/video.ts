@@ -20,10 +20,13 @@
  */
 
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
+import Logger from 'renderModule/utils/logger'
 import Message from 'renderModule/components/ui/message'
 import { VideoPlayer } from 'renderModule/core/media/video'
 import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { BaseMessageHandler } from './base'
+
+const logger = new Logger('VideoMessageHandler')
 
 /**
  * 视频消息处理器
@@ -39,7 +42,7 @@ class VideoHandler extends BaseMessageHandler {
         this.enterMultiSelect(message)
         return Promise.resolve()
       default:
-        console.log('未知的视频消息命令:', commandId)
+        logger.warn({ text: '未知的视频消息命令', data: { commandId } })
         return Promise.resolve()
     }
   }

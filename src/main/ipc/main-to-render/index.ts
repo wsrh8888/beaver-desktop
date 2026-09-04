@@ -21,7 +21,9 @@
 
 import type { NotificationCommandMap, NotificationModule } from 'commonModule/type/preload/notification'
 import { BrowserWindow } from 'electron'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('sendMainNotification')
 
 /**
  * 主进程到渲染进程的通知模块
@@ -45,7 +47,7 @@ export function sendMainNotification<M extends NotificationModule>(
   logger.info({
     text: '主进程发送通知到渲染进程',
     data: { targetName, module, command, payload },
-  }, 'sendMainNotification')
+  })
 
   if (targetName === '*' || !targetName) {
     // 广播到所有渲染进程
@@ -73,7 +75,7 @@ export function sendMainNotification<M extends NotificationModule>(
       })
     }
     else {
-      logger.warn({ text: '未找到目标窗口', data: { targetName } }, 'sendMainNotification')
+      logger.warn({ text: '未找到目标窗口', data: { targetName } })
     }
   }
 }

@@ -45,7 +45,9 @@ if (process.defaultApp) {
   app.setAsDefaultProtocolClient('beaver')
 }
 
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('Main')
 import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
 import trayHandler from './application/tray'
 import cacheManager from './cache'
@@ -63,6 +65,7 @@ class Main {
   constructor() {
     // 单例检查 - 如果已经有实例运行，直接返回
     if (!this.checkSingleInstance()) {
+      logger.info({ text: '已有实例运行，当前实例退出' })
       return
     }
 
@@ -76,7 +79,9 @@ class Main {
   initMainProcess() {
     logger.info({ text: '开始初始化' })
     this.setupEventListeners()
+    logger.info({ text: '主进程事件监听器已注册' })
     cacheManager.init()
+    logger.info({ text: '缓存模块初始化完成' })
     this.beforeAppReady()
     this.onAppReady()
     logger.info({ text: '初始化完成' })
@@ -84,32 +89,34 @@ class Main {
 
   async onAppReady() {
     await app.whenReady()
+    logger.info({ text: '应用已就绪' })
 
     // 启动本地 HTTP 服务（用于第三方网页检测登录状态）
-   
     if (store.get('userInfo')?.token) {
-      // 初始化登录状态
+      logger.info({ text: '检测到登录态，初始化登录状态' })
       authHandler.handleLogin()
     }
     else {
+      logger.info({ text: '未检测到登录态，初始化登出状态' })
       authHandler.handleLogout()
     }
     // IPC已在beforeAppReady中初始化，这里不需要重复初始化
     // ipcBase.init()
 
-     try {
+    try {
       await localServer.start()
+      logger.info({ text: '本地服务启动成功' })
     } catch (error: any) {
-      logger.error({ text: `本地服务启动失败: ${error.message}` })
+      logger.error({ text: '本地服务启动失败', data: { message: error?.message } })
     }
 
-    
     mcpManager.init()
+    logger.info({ text: 'MCP 管理器初始化完成' })
   }
 
   setupEventListeners() {
-
     app.on('window-all-closed', () => {
+      logger.info({ text: '所有窗口已关闭', data: { platform: process.platform } })
       if (process.platform !== 'darwin') {
         app.quit()
       }
@@ -118,11 +125,13 @@ class Main {
       window.on('closed', () => {
         // 如果关闭的是app窗口，则销毁托盘
         if ((window as any).__appName === 'app') {
+          logger.info({ text: 'app 窗口关闭，销毁托盘' })
           trayHandler.destroy()
         }
       })
     })
     app.on('will-quit', () => {
+      logger.info({ text: '应用即将退出，注销全局快捷键' })
       globalShortcut.unregisterAll()
     })
   }
@@ -130,6 +139,7 @@ class Main {
   checkSingleInstance() {
     // 如果设置了 APP_PROFILE，认为是测试多开模式，跳过单例检查
     if (process.env.APP_PROFILE) {
+      logger.info({ text: '检测到 APP_PROFILE，跳过单例检查（多开测试模式）' })
       return true
     }
 
@@ -138,6 +148,7 @@ class Main {
 
     if (!gotTheLock) {
       // 如果已经有实例在运行，直接退出
+      logger.info({ text: '未获取到单例锁，当前实例退出' })
       app.quit()
       return false
     }
@@ -148,14 +159,15 @@ class Main {
   initUa() {
     const customIdentifier = generateUserAgentIdentifier()
     app.userAgentFallback = `${app.userAgentFallback || ''} ${customIdentifier}`.trim()
+    logger.info({ text: '用户代理标识已设置', data: { identifier: customIdentifier } })
   }
 
 
   beforeAppReady() {
     messageManager.init()
+    logger.info({ text: '消息管理器初始化完成' })
     ipcManager.init()
-
-    logger.info({ text: 'beforeReady' })
+    logger.info({ text: 'IPC 管理器初始化完成' })
   }
 
   static init() {

@@ -49,7 +49,7 @@ const ensureTokenLoaded = async (): Promise<void> => {
     cachedToken = userInfo?.token || ''
   }
   catch (error) {
-    console.warn('获取token失败:', error)
+    logger.warn({ text: '获取token失败', data: { error: (error as Error)?.message } })
   }
 }
 

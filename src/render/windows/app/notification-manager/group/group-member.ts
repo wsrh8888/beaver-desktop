@@ -54,7 +54,7 @@ class DatabaseGroupMemberEventManager {
         })
       }
       else {
-        console.warn('群成员信息更新缺少必要参数', { data })
+        logger.warn({ text: '群成员信息更新缺少必要参数', data: { data } })
       }
     }
     catch (error) {

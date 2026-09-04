@@ -19,7 +19,7 @@
  * beaver-desktop-header-v2
  */
 
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
 
 /**
  * 业务批处理配置接口
@@ -59,6 +59,11 @@ export abstract class BaseBusiness<T extends QueueItem = QueueItem> {
 
   /** 业务名称（用于日志） */
   protected abstract readonly businessName: string
+
+  /** 日志实例：businessName 由子类提供，基类字段初始化时还取不到，故用 getter 延迟获取 */
+  protected get logger() {
+    return new Logger(this.businessName)
+  }
 
   constructor(batchConfig: BusinessBatchConfig = {}) {
     this.batchConfig = {
@@ -115,14 +120,16 @@ export abstract class BaseBusiness<T extends QueueItem = QueueItem> {
     const items = [...this.pendingQueue]
     this.pendingQueue = []
 
+    this.logger.info({ text: '开始批量处理队列', data: { count: items.length } })
+
     try {
       await this.processBatchRequests(items)
     }
     catch (error) {
-      logger.error({
-        text: `${this.businessName} - 批量处理失败`,
+      this.logger.error({
+        text: '批量处理失败',
         data: { count: items.length, error: (error as Error).message },
-      }, this.businessName)
+      })
     }
   }
 

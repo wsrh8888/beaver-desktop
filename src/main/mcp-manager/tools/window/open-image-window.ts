@@ -23,6 +23,9 @@
  * 打开图片查看器窗口工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('MCPTool-open-image-window')
 
 export const openImageWindowTool = {
   name: 'open_image_window',
@@ -42,7 +45,7 @@ export const openImageWindowTool = {
     allowShare?: boolean
   }) => {
     // 这里实现打开图片窗口的逻辑
-    console.log('打开图片窗口:', params)
+    logger.info({ text: '打开图片窗口', data: { imageUrl: params.imageUrl, imageId: params.imageId } })
     return {
       success: true,
       windowType: 'image',

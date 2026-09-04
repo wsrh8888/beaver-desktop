@@ -20,6 +20,10 @@
  */
 
 // 初始化聊天同步状态表
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DBInit-chat-sync-status')
+
 export const initSyncStatusTable = (sqlite: any) => {
   // 创建聊天同步状态表（客户端本地维护）
   sqlite.exec(`
@@ -38,7 +42,7 @@ export const initSyncStatusTable = (sqlite: any) => {
   try {
     sqlite.run(`CREATE UNIQUE INDEX IF NOT EXISTS unique_conversation_module ON chat_sync_status(conversation_id, module)`)
   }
-  catch {
-    console.log('unique_conversation_module索引可能已存在')
+  catch (error: any) {
+    logger.warn({ text: '索引创建失败，可能已存在', data: { table: 'chat_sync_status', index: 'unique_conversation_module', error: error?.message } })
   }
 }

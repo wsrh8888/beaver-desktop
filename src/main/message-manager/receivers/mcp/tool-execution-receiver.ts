@@ -20,7 +20,9 @@
  */
 
 import { mcpManager } from 'mainModule/mcp-manager/index.js'
-import logger from 'mainModule/utils/log/index.js'
+import Logger from 'mainModule/utils/logger/index.js'
+
+const logger = new Logger('MCPToolExecutionReceiver')
 
 /**
  * @description: MCP工具执行接收器 - 处理云端转发过来的工具执行请求
@@ -34,12 +36,24 @@ class ToolExecutionReceiver {
     const { toolName, params, requestId, clientId } = tableUpdatesBody
 
     logger.info({
-      text: `执行MCP工具`,
+      text: '开始执行MCP工具',
       data: { toolName, requestId, clientId }
     })
 
     // 执行工具
-    await mcpManager.executeTool(toolName, params)
+    try {
+      await mcpManager.executeTool(toolName, params)
+      logger.info({
+        text: 'MCP工具执行完成',
+        data: { toolName, requestId, clientId }
+      })
+    } catch (error) {
+      logger.error({
+        text: 'MCP工具执行失败',
+        data: { toolName, requestId, clientId, message: (error as Error)?.message, stack: (error as Error)?.stack }
+      })
+      throw error
+    }
   }
 }
 

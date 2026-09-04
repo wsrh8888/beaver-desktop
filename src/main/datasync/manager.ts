@@ -21,7 +21,9 @@
 
 import { NotificationAppLifecycleCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import logger from 'mainModule/utils/log'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('DataSyncManager')
 import { chatDatasync } from './chat'
 import { circleDatasync } from './circle'
 import { emojiDatasync } from './emoji'
@@ -45,7 +47,7 @@ class DataSyncManager {
 
   // 自动同步
   async autoSync() {
-    logger.info({ text: '开始自动同步' }, 'DataSyncManager')
+    logger.info({ text: '开始自动同步' })
 
     try {
       this.isSyncing = true
@@ -67,10 +69,11 @@ class DataSyncManager {
         status: 'ready',
       })
 
-      logger.info({ text: '数据同步完成' }, 'DataSyncManager')
+      logger.info({ text: '数据同步完成' })
     }
-    catch {
+    catch (error) {
       this.isSyncing = false
+      logger.error({ text: '数据同步失败', data: { error: (error as Error)?.message } })
       sendMainNotification('*', NotificationModule.APP_LIFECYCLE, NotificationAppLifecycleCommand.STATUS_CHANGE, {
         status: 'sync_error',
       })

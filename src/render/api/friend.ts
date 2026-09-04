@@ -57,8 +57,6 @@ export const getFriendListApi = (data: IFriendListReq) => {
  * @description: 获取好友信息
  */
 export const getFriendInfoApi = (data: IFriendInfoReq) => {
-  console.log(data, '==-=')
-
   return ajax<IFriendInfo>({
     params: data,
     method: 'GET',

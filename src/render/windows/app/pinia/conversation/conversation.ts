@@ -23,6 +23,7 @@ import type { IConversationInfoRes } from 'commonModule/type/ajax/chat'
 import type { IConversationItem } from 'commonModule/type/pinia/conversation'
 import { formatConversationTime } from 'commonModule/utils/time/time'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import { getRecentChatInfoApi } from 'renderModule/api/chat'
 import { updateReadSeqApi } from 'renderModule/api/chat'
 import { useCircleStore } from '../circle/circle'
@@ -30,6 +31,8 @@ import { useContactStore } from '../contact/contact'
 import { useGroupStore } from '../group/group'
 import { useMessageStore } from '../message/message'
 import { useUserStore } from '../user/user'
+
+const logger = new Logger('ConversationStore')
 
 /**
  * @description: 会话管理
@@ -330,7 +333,7 @@ export const useConversationStore = defineStore('useConversationStore', {
      * @description: 标记会话为已读（本地立即更新 + API同步）
      */
     async markConversationAsRead(conversationId: string) {
-      console.error('55555555555555555555555', conversationId)
+      logger.info({ text: '标记会话为已读', data: { conversationId } })
       electron.notification.deleteTrayItem(conversationId)
 
       // 1. 立即在本地清零未读数（乐观更新）
@@ -340,7 +343,7 @@ export const useConversationStore = defineStore('useConversationStore', {
         // 将未读数设为0
         this.conversations[conversationIndex].unreadCount = 0
 
-        console.log(`[ConversationStore] 本地清零未读数: conversationId=${conversationId}`)
+        logger.info({ text: '本地清零未读数', data: { conversationId } })
       }
 
       // 2. 同步更新托盘
@@ -383,11 +386,11 @@ export const useConversationStore = defineStore('useConversationStore', {
           }
           this.lastReadSeqUpdate.set(conversationId, maxSeq)
 
-          console.log(`[ConversationStore] 同步已读数到服务器: conversationId=${conversationId}, readSeq=${maxSeq}`)
+          logger.info({ text: '同步已读数到服务器', data: { conversationId, readSeq: maxSeq } })
         }
       }
       catch (error) {
-        console.error('[ConversationStore] 同步已读数失败:', error)
+        logger.error({ text: '同步已读数失败', data: { conversationId, error: (error as Error)?.message } })
       }
     },
 
@@ -447,7 +450,7 @@ export const useConversationStore = defineStore('useConversationStore', {
         }
       }
       catch (error) {
-        console.warn('从主进程获取会话信息失败:', error)
+        logger.warn({ text: '从主进程获取会话信息失败', data: { conversationId, error: (error as Error)?.message } })
       }
 
       // 3. 主进程也没有，从服务端获取
@@ -464,7 +467,7 @@ export const useConversationStore = defineStore('useConversationStore', {
         }
       }
       catch (error) {
-        console.error('从服务端获取会话信息失败:', error)
+        logger.error({ text: '从服务端获取会话信息失败', data: { conversationId, error: (error as Error)?.message } })
         throw error
       }
 
@@ -488,7 +491,7 @@ export const useConversationStore = defineStore('useConversationStore', {
             const localResult = await electron.database.chat.getConversationInfo({
               conversationId,
             })
-            console.error('批量更新会话了', localResult)
+            logger.info({ text: '批量更新会话获取本地信息', data: { conversationId, found: !!localResult } })
             if (localResult) {
               // 2. 更新本地store中的会话信息
               this.upsertConversation(localResult)
@@ -526,14 +529,14 @@ export const useConversationStore = defineStore('useConversationStore', {
         const failedResults = results.filter(r => !r.success)
 
         if (failedResults.length > 0) {
-          console.warn(`批量更新会话信息完成，成功: ${successCount}，失败: ${failedResults.length}`, failedResults)
+          logger.warn({ text: '批量更新会话信息完成（部分失败）', data: { successCount, failedCount: failedResults.length, failed: failedResults } })
         }
         else {
-          console.log(`批量更新会话信息完成，成功更新 ${successCount} 个会话`)
+          logger.info({ text: '批量更新会话信息完成', data: { successCount } })
         }
       }
       catch (error) {
-        console.error('批量更新会话信息失败:', error)
+        logger.error({ text: '批量更新会话信息失败', data: { conversationCount: conversationIds.length, error: (error as Error)?.message } })
         throw error
       }
     },

@@ -24,6 +24,9 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import axios from 'axios'
 import extract from 'extract-zip'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('FileDownload')
 
 export interface DownloadedFileInfo {
   path: string
@@ -82,9 +85,9 @@ export const extractZip = async (
 ): Promise<void> => {
   try {
     await extract(zipPath, { dir: extractTo })
-    console.log(`Extraction complete to ${extractTo}`)
+    logger.info({ text: '解压完成', data: { zipPath, extractTo } })
   }
   catch (err) {
-    console.error('Error during extraction:', err)
+    logger.error({ text: '解压失败', data: { zipPath, extractTo, error: (err as Error)?.message } })
   }
 }
