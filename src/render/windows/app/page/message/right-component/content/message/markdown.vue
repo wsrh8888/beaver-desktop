@@ -29,6 +29,9 @@
 import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { marked } from 'marked'
 import { computed, defineComponent, PropType } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('MarkdownMessage')
 
 export default defineComponent({
   name: 'MarkdownMessage',
@@ -55,7 +58,7 @@ export default defineComponent({
       try {
         return marked(content)
       } catch (error) {
-        console.error('Markdown 渲染失败:', error)
+        logger.error({ text: 'Markdown 渲染失败', data: { error } })
         return content
       }
     })

@@ -72,6 +72,9 @@ import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, onMounted } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('FriendDetailContent')
 
 export default {
   name: 'FriendDetailContent',
@@ -102,7 +105,7 @@ export default {
     const handleSendMessage = () => {
       if (friendInfo.value?.userId) {
         // 设置当前聊天会话ID
-        console.error('friendInfo.value.conversationId', friendInfo)
+        logger.info({ text: '准备发送消息的好友信息', data: { friendInfo } })
 
         // 跳转到聊天页面
         routerHelper.push('/message')

@@ -101,10 +101,13 @@ import {
   likePostApi,
 } from 'renderModule/api/circle'
 import Message from 'renderModule/components/ui/message'
+import Logger from 'renderModule/utils/logger'
 import MomentContentCard from 'renderModule/windows/moment/components/common/MomentContentCard.vue'
 import BottomInputSection from './bottomInputSection.vue'
 import CommentSection from './commentSection.vue'
 import LikeSection from './likeSection.vue'
+
+const logger = new Logger('CirclePostDetail')
 
 export default defineComponent({
   name: 'CirclePostDetail',
@@ -155,48 +158,78 @@ export default defineComponent({
     })
 
     const loadDetail = async () => {
-      const res = await getPostDetailApi({ postId: props.post.postId })
-      if (res.code !== 0 || !res.result) {
-        Message.error(res.msg || '获取帖子详情失败')
-        return
+      const postId = props.post.postId
+
+      try {
+        const res = await getPostDetailApi({ postId })
+        if (res.code !== 0 || !res.result) {
+          logger.error({ text: '获取帖子详情失败', data: { postId, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '获取帖子详情失败')
+          return
+        }
+        detail.value = {
+          ...res.result,
+          files: res.result.files || [],
+          comments: comments.value,
+          likes: likes.value,
+        }
+        logger.info({ text: '获取帖子详情成功', data: { postId } })
       }
-      detail.value = {
-        ...res.result,
-        files: res.result.files || [],
-        comments: comments.value,
-        likes: likes.value,
+      catch (error) {
+        logger.error({ text: '获取帖子详情异常', data: { postId, error } })
+        Message.error('获取帖子详情异常')
       }
     }
 
     const loadComments = async (page = 1, append = false) => {
-      const res = await getCommentListApi({
-        postId: props.post.postId,
-        page,
-        limit: commentLimit,
-      })
-      if (res.code !== 0) {
-        Message.error(res.msg || '获取评论失败')
-        return
+      const postId = props.post.postId
+
+      try {
+        const res = await getCommentListApi({
+          postId,
+          page,
+          limit: commentLimit,
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '获取评论列表失败', data: { postId, page, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '获取评论失败')
+          return
+        }
+        const list = res.result.list || []
+        comments.value = append ? [...comments.value, ...list] : list
+        if (typeof res.result.count === 'number')
+          detail.value.commentCount = res.result.count
+        logger.info({ text: '获取评论列表成功', data: { postId, page, count: list.length } })
       }
-      const list = res.result.list || []
-      comments.value = append ? [...comments.value, ...list] : list
-      if (typeof res.result.count === 'number')
-        detail.value.commentCount = res.result.count
+      catch (error) {
+        logger.error({ text: '获取评论列表异常', data: { postId, page, error } })
+        Message.error('获取评论异常')
+      }
     }
 
     const loadLikes = async (page = 1, limit = 50) => {
-      const res = await getPostLikesApi({
-        postId: props.post.postId,
-        page,
-        limit,
-      })
-      if (res.code !== 0) {
-        Message.error(res.msg || '获取点赞失败')
-        return
+      const postId = props.post.postId
+
+      try {
+        const res = await getPostLikesApi({
+          postId,
+          page,
+          limit,
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '获取点赞列表失败', data: { postId, page, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '获取点赞失败')
+          return
+        }
+        likes.value = res.result.list || []
+        if (typeof res.result.count === 'number')
+          detail.value.likeCount = res.result.count
+        logger.info({ text: '获取点赞列表成功', data: { postId, page, count: likes.value.length } })
       }
-      likes.value = res.result.list || []
-      if (typeof res.result.count === 'number')
-        detail.value.likeCount = res.result.count
+      catch (error) {
+        logger.error({ text: '获取点赞列表异常', data: { postId, page, error } })
+        Message.error('获取点赞异常')
+      }
     }
 
     const loadAll = async () => {
@@ -221,38 +254,60 @@ export default defineComponent({
     }
 
     const handleQuickLike = async () => {
+      const postId = props.post.postId
       const next = !detail.value.isLiked
-      const res = await likePostApi({ postId: props.post.postId, status: next })
-      if (res.code !== 0) {
-        Message.error(res.msg || '操作失败')
-        return
+      logger.info({ text: '切换帖子点赞状态', data: { postId, next } })
+
+      try {
+        const res = await likePostApi({ postId, status: next })
+        if (res.code !== 0) {
+          logger.error({ text: '点赞操作失败', data: { postId, status: next, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '操作失败')
+          return
+        }
+        detail.value.isLiked = next
+        detail.value.likeCount = Math.max(0, (detail.value.likeCount || 0) + (next ? 1 : -1))
+        await Promise.all([loadDetail(), loadLikes(1, 50)])
+        emit('liked')
       }
-      detail.value.isLiked = next
-      detail.value.likeCount = Math.max(0, (detail.value.likeCount || 0) + (next ? 1 : -1))
-      await Promise.all([loadDetail(), loadLikes(1, 50)])
-      emit('liked')
+      catch (error) {
+        logger.error({ text: '点赞操作异常', data: { postId, status: next, error } })
+        Message.error('操作失败')
+      }
     }
 
     const handleSendComment = async (commentText: string) => {
+      const postId = props.post.postId
       const parentId = replyTarget.value
         ? (replyTarget.value.parentId || replyTarget.value.commentId)
         : ''
       const replyToCommentId = replyTarget.value?.commentId || ''
-      const res = await createCommentApi({
-        postId: props.post.postId,
-        content: commentText,
-        parentId: parentId || undefined,
-        replyToCommentId: replyToCommentId || undefined,
-      })
-      if (res.code !== 0) {
-        Message.error(res.msg || '评论失败')
-        return
+
+      logger.info({ text: '开始发表评论', data: { postId, parentId, replyToCommentId, length: commentText.length } })
+
+      try {
+        const res = await createCommentApi({
+          postId,
+          content: commentText,
+          parentId: parentId || undefined,
+          replyToCommentId: replyToCommentId || undefined,
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '发表评论失败', data: { postId, parentId, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '评论失败')
+          return
+        }
+        logger.info({ text: '发表评论成功', data: { postId } })
+        replyTarget.value = null
+        commentPage.value = 1
+        await loadComments(1, false)
+        detail.value.commentCount = (detail.value.commentCount || 0) + 1
+        emit('commented')
       }
-      replyTarget.value = null
-      commentPage.value = 1
-      await loadComments(1, false)
-      detail.value.commentCount = (detail.value.commentCount || 0) + 1
-      emit('commented')
+      catch (error) {
+        logger.error({ text: '发表评论异常', data: { postId, parentId, error } })
+        Message.error('评论失败')
+      }
     }
 
     const handleLoadMoreComments = async () => {
@@ -260,27 +315,45 @@ export default defineComponent({
         return
       isLoadingComments.value = true
       commentPage.value += 1
-      await loadComments(commentPage.value, true)
-      isLoadingComments.value = false
+      try {
+        await loadComments(commentPage.value, true)
+      }
+      finally {
+        isLoadingComments.value = false
+      }
     }
 
     const handleLoadMoreChildren = async (root: ICircleCommentItem) => {
-      const res = await getCommentListApi({
-        postId: props.post.postId,
-        parentId: root.commentId,
-        page: 1,
-        limit: childLimit,
-      })
-      if (res.code !== 0)
-        return
-      const children = res.result.list || []
-      const idx = comments.value.findIndex(item => item.commentId === root.commentId)
-      if (idx >= 0) {
-        comments.value[idx] = {
-          ...comments.value[idx],
-          children,
-          childCount: res.result.count || children.length,
+      const postId = props.post.postId
+      const parentId = root.commentId
+
+      try {
+        const res = await getCommentListApi({
+          postId,
+          parentId,
+          page: 1,
+          limit: childLimit,
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '获取子评论失败', data: { postId, parentId, code: res.code, msg: res.msg } })
+          return
         }
+        const children = res.result.list || []
+        const idx = comments.value.findIndex(item => item.commentId === root.commentId)
+        if (idx >= 0) {
+          comments.value[idx] = {
+            ...comments.value[idx],
+            children,
+            childCount: res.result.count || children.length,
+          }
+        }
+        else {
+          logger.warn({ text: '未找到对应的父评论', data: { postId, parentId } })
+        }
+        logger.info({ text: '获取子评论成功', data: { postId, parentId, count: children.length } })
+      }
+      catch (error) {
+        logger.error({ text: '获取子评论异常', data: { postId, parentId, error } })
       }
     }
 

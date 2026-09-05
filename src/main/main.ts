@@ -48,6 +48,22 @@ if (process.defaultApp) {
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('Main')
+
+// 全局未捕获异常处理，确保主进程任何意外异常都能落盘便于排查
+process.on('uncaughtException', (error: Error) => {
+  logger.error({
+    text: '主进程未捕获异常',
+    data: { message: error?.message, stack: error?.stack },
+  })
+})
+
+// 全局未处理的 Promise 拒绝，避免异步异常被静默吞掉
+process.on('unhandledRejection', (reason: unknown) => {
+  logger.error({
+    text: '主进程未处理的 Promise 拒绝',
+    data: { reason: reason instanceof Error ? reason.message : String(reason) },
+  })
+})
 import { generateUserAgentIdentifier } from 'mainModule/utils/ua'
 import trayHandler from './application/tray'
 import cacheManager from './cache'

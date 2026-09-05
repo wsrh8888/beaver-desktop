@@ -58,9 +58,12 @@ import { searchGroupApi } from 'renderModule/api/group'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverInput from 'renderModule/components/ui/input/Input.vue'
 import TabsComponent from 'renderModule/components/ui/tabs/Tabs.vue'
+import Logger from 'renderModule/utils/logger'
 import { defineComponent, ref } from 'vue'
 import { getSearchFriendApi } from '../../../api/friend'
 import SearchResults from './components/SearchResults.vue'
+
+const logger = new Logger('SearchView')
 
 export default defineComponent({
   name: 'SearchView',
@@ -87,34 +90,57 @@ export default defineComponent({
       return 'userId'
     }
     const searchFriend = async () => {
-      const response = await getSearchFriendApi({ keyword: searchValue.value.trim(), type: getSearchType() })
-      if (response.code === 0) {
-        searchResults.value = [{
-          id: response.result.userId,
-          title: response.result.nickName,
-          avatar: response.result.avatar,
-          conversationId: response.result.conversationId,
-          type: 'friend',
-          source: getSearchType(),
-        }]
+      const keyword = searchValue.value.trim()
+      const type = getSearchType()
+      logger.info({ text: '搜索好友', data: { keyword, type } })
+
+      try {
+        const response = await getSearchFriendApi({ keyword, type })
+        if (response.code === 0) {
+          logger.info({ text: '搜索好友成功', data: { keyword, userId: response.result.userId } })
+          searchResults.value = [{
+            id: response.result.userId,
+            title: response.result.nickName,
+            avatar: response.result.avatar,
+            conversationId: response.result.conversationId,
+            type: 'friend',
+            source: getSearchType(),
+          }]
+        }
+        else {
+          logger.warn({ text: '搜索好友失败', data: { keyword, code: response.code, msg: response.msg } })
+          searchResults.value = []
+        }
       }
-      else {
+      catch (error) {
+        logger.error({ text: '搜索好友异常', data: { keyword, type, error } })
         searchResults.value = []
       }
     }
     const searchGroup = async () => {
-      const response = await searchGroupApi({ keyword: searchValue.value.trim() })
-      if (response.code === 0) {
-        searchResults.value = response.result.list.map(group => ({
-          id: group.groupId,
-          title: group.name,
-          avatar: group.avatar || '',
-          conversationId: group.conversationId || '',
-          type: 'group',
-          source: '',
-        }))
+      const keyword = searchValue.value.trim()
+      logger.info({ text: '搜索群聊', data: { keyword } })
+
+      try {
+        const response = await searchGroupApi({ keyword })
+        if (response.code === 0) {
+          logger.info({ text: '搜索群聊成功', data: { keyword, count: response.result.list.length } })
+          searchResults.value = response.result.list.map(group => ({
+            id: group.groupId,
+            title: group.name,
+            avatar: group.avatar || '',
+            conversationId: group.conversationId || '',
+            type: 'group',
+            source: '',
+          }))
+        }
+        else {
+          logger.warn({ text: '搜索群聊失败', data: { keyword, code: response.code, msg: response.msg } })
+          searchResults.value = []
+        }
       }
-      else {
+      catch (error) {
+        logger.error({ text: '搜索群聊异常', data: { keyword, error } })
         searchResults.value = []
       }
     }
@@ -126,10 +152,10 @@ export default defineComponent({
         return
       }
       if (activeTab.value === 'friend') {
-        searchFriend()
+        await searchFriend()
       }
       else if (activeTab.value === 'group') {
-        searchGroup()
+        await searchGroup()
       }
     }
 

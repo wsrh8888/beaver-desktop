@@ -97,6 +97,9 @@ import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { selectAndUploadFile } from 'renderModule/utils/upload'
 import { useMomentStore } from '../../store/moment/moment'
 import { computed, defineComponent, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('MomentCreate')
 
 interface MediaFile {
   fileKey: string
@@ -170,7 +173,7 @@ export default defineComponent({
         mediaFiles.value.push(...newFiles)
       }
       catch (error) {
-        console.error('文件上传失败:', error)
+        logger.error({ text: '文件上传失败', data: { error } })
         // 可以在这里添加错误提示
       }
     }
@@ -195,7 +198,7 @@ export default defineComponent({
         })
       }
       catch (error) {
-        console.error('打开图片查看器失败:', error)
+        logger.error({ text: '打开图片查看器失败', data: { error } })
       }
     }
 

@@ -81,7 +81,17 @@ export class CallManager {
   async hangup() {
     const callStore = usecallStore()
     const { roomId } = callStore.roomInfo
-    await hangupCallApi({ roomId })
+
+    logger.info({ text: '开始挂断通话', data: { roomId } })
+
+    try {
+      await hangupCallApi({ roomId })
+      logger.info({ text: '挂断通话成功', data: { roomId } })
+    }
+    catch (error) {
+      logger.error({ text: '挂断通话接口调用失败', data: { roomId, error } })
+    }
+
     // 3. 关闭窗口
     electron.window.closeWindow('call')
   }

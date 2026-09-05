@@ -65,7 +65,10 @@ import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message/index'
 import { computed, defineComponent, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
 import { applyAddFriendApi } from '../../../api/friend'
+
+const logger = new Logger('VerifyAddFriend')
 
 export default defineComponent({
   name: 'AddFriendComponent',
@@ -95,17 +98,25 @@ export default defineComponent({
 
     // 处理发送
     const handleSend = async () => {
-      const result = await applyAddFriendApi({
-        friendId: props.targetValue.id,
-        verify: verifyMessage.value.trim(),
-        source: props.targetValue.source, // 来源可以根据实际情况调整
-      })
-      if (result.code === 0) {
-        Message.success('好友申请已发送，等待对方验证')
-        emit('close')
+      try {
+        const result = await applyAddFriendApi({
+          friendId: props.targetValue.id,
+          verify: verifyMessage.value.trim(),
+          source: props.targetValue.source, // 来源可以根据实际情况调整
+        })
+        if (result.code === 0) {
+          logger.info({ text: '发送好友申请成功', data: { friendId: props.targetValue.id } })
+          Message.success('好友申请已发送，等待对方验证')
+          emit('close')
+        }
+        else {
+          logger.error({ text: '发送好友申请失败', data: { friendId: props.targetValue.id, code: result.code, msg: result.msg } })
+          Message.error(result.msg || '发送好友申请失败，请重试')
+        }
       }
-      else {
-        Message.error(result.msg || '发送好友申请失败，请重试')
+      catch (error) {
+        logger.error({ text: '发送好友申请异常', data: { friendId: props.targetValue.id, error: (error as Error)?.message } })
+        Message.error('发送好友申请失败，请重试')
       }
     }
 

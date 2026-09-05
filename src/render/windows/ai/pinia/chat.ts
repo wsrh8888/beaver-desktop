@@ -22,12 +22,15 @@
 import { defineStore } from 'pinia'
 import type { IAiArtifact, IAiChat, IAiChatListItem, IAiMessage } from 'renderModule/windows/ai/types/chat'
 import { sendAgentMessageStream } from 'renderModule/api/agent'
+import Logger from 'renderModule/utils/logger'
 import { useAiAgentStore } from 'renderModule/windows/ai/pinia/agent'
 import { useAiModelStore } from 'renderModule/windows/ai/pinia/model'
 import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
 import { useAiViewStore } from 'renderModule/windows/ai/pinia/view'
 
 const DRAFT_ID = 'draft'
+
+const logger = new Logger('AiChatStore')
 
 /**
  * 1. 新建 → /new 草稿（不进侧栏）
@@ -92,6 +95,7 @@ export const useAiChatStore = defineStore('useAiChatStore', {
         return false
       this.currentChatId = id
       const chat = this.chats[id]
+      logger.info({ text: '打开会话', data: { chatId: id, spaceId: chat.spaceId, skillId: chat.skillId } })
       useAiViewStore().setActiveArtifact(chat.artifacts[0]?.id ?? null)
       return true
     },
@@ -282,21 +286,36 @@ export const useAiChatStore = defineStore('useAiChatStore', {
       const modelStore = useAiModelStore()
       const agentStore = useAiAgentStore()
       let chatId = this.currentChatId
+      const isDraft = chatId === DRAFT_ID
 
       if (chatId === DRAFT_ID) {
         const spaceId = spaceStore.resolveTargetSpaceId()
         const title = content.slice(0, 16)
         chatId = this.promoteDraft(title, spaceId)
+        logger.info({ text: '草稿提升为新会话', data: { chatId, spaceId, title } })
       }
 
       this.appendUserMessage(chatId, content)
       const assistantId = this.beginAssistantStream(chatId)
-      if (!assistantId)
+      if (!assistantId) {
+        logger.error({ text: '创建助手消息失败', data: { chatId } })
         return chatId
+      }
 
       try {
         const agentId = await agentStore.ensureAgent()
         const selected = modelStore.selected
+        logger.info({
+          text: '发送 AI 消息（流式）',
+          data: {
+            chatId,
+            isDraft,
+            agentId,
+            modelId: selected.id,
+            modelSource: selected.source,
+            contentLength: content.length,
+          },
+        })
         await sendAgentMessageStream(
           {
             agentId,
@@ -312,6 +331,7 @@ export const useAiChatStore = defineStore('useAiChatStore', {
             },
             onDone: () => {
               this.endAssistantStream(chatId, assistantId)
+              logger.info({ text: 'AI 消息流结束', data: { chatId, assistantId } })
             },
             onError: (data) => {
               this.endAssistantStream(
@@ -319,6 +339,7 @@ export const useAiChatStore = defineStore('useAiChatStore', {
                 assistantId,
                 data.message || '发送失败，请稍后重试',
               )
+              logger.error({ text: 'AI 消息流错误', data: { chatId, assistantId, message: data.message } })
             },
           },
         )
@@ -331,6 +352,7 @@ export const useAiChatStore = defineStore('useAiChatStore', {
           assistantId,
           err?.message || '发送失败，请稍后重试',
         )
+        logger.error({ text: '发送 AI 消息异常', data: { chatId, assistantId, error: err?.message } })
       }
 
       return chatId

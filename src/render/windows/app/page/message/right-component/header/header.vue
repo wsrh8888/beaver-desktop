@@ -54,6 +54,9 @@ import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { startCallApi } from 'renderModule/api/call'
 import { computed, defineComponent, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ChatHeader')
 
 export default defineComponent({
   components: {
@@ -74,7 +77,7 @@ export default defineComponent({
     watch(() => messageViewStore.currentChatId, async (newConversationId) => {
       // 判断当前会话类型
       if (newConversationId) {
-        console.error('会话变了', newConversationId)
+        logger.info({ text: '会话切换', data: { conversationId: newConversationId } })
         conversationStore.initConversationById(newConversationId)
       }
     })
@@ -124,7 +127,7 @@ export default defineComponent({
       if (res.code === 0) {
         const { ...roomInfo } = res.result
 
-        console.error('targetUserId', targetUserId)
+        logger.info({ text: '发起通话目标', data: { targetUserId, chatType } })
 
         // 成功获取房间信息后，打开 Call 窗口 (名单从接口拿)
         electron?.window.openWindow('call', {
@@ -142,7 +145,7 @@ export default defineComponent({
           }
         })
       } else {
-        console.error('发起通话失败:', res.msg)
+        logger.error({ text: '发起通话失败', data: { msg: res.msg } })
       }
     }
 

@@ -124,7 +124,6 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
       if (_response.code === 0) {
         logger.info({
           text: 'ajax接口正常',
-          analyse: '[ajax]接口正常',
           spendTime: `${spendTime}ms`,
           uuid: httpId,
           response: JSON.stringify(response),
@@ -134,7 +133,6 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
       else {
         logger.error({
           text: 'ajax状态码异常',
-          analyse: '[ajax]状态码异常',
           spendTime: `${spendTime}ms`,
           uuid: httpId,
           response: JSON.stringify(response),
@@ -148,7 +146,6 @@ function ajax<T>(config: AxiosRequestConfig): Promise<IResponseSuccessData<T>> {
       const spendTime = new Date().getTime() - currentTime
       logger.error({
         text: 'ajax接口异常',
-        analyse: '[ajax]接口异常',
         spendTime: `${spendTime}ms`,
         uuid: httpId,
         response: JSON.stringify({

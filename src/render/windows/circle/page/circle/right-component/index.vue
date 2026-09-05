@@ -70,9 +70,12 @@ import {
   likePostApi,
 } from 'renderModule/api/circle'
 import Message from 'renderModule/components/ui/message'
+import Logger from 'renderModule/utils/logger'
 import CirclePostModal from 'renderModule/windows/circle/components/createPost/index.vue'
 import CirclePostItem from 'renderModule/windows/circle/page/circle/right-component/components/postItem/index.vue'
 import { parseCircleId } from 'renderModule/windows/circle/store/circle/circle'
+
+const logger = new Logger('CircleFeed')
 
 export default defineComponent({
   name: 'CircleRight',
@@ -100,13 +103,23 @@ export default defineComponent({
       const id = parseCircleId(circleId || props.circleId || '')
       if (!id)
         return
-      const res = await getCircleDetailApi({ circleId: id })
-      if (res.code !== 0) {
-        Message.error(res.msg || '获取圈子详情失败')
-        detail.value = null
-        return
+
+      try {
+        const res = await getCircleDetailApi({ circleId: id })
+        if (res.code !== 0) {
+          logger.error({ text: '获取圈子详情失败', data: { circleId: id, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '获取圈子详情失败')
+          detail.value = null
+          return
+        }
+        detail.value = res.result
+        logger.info({ text: '获取圈子详情成功', data: { circleId: id, name: res.result?.name } })
       }
-      detail.value = res.result
+      catch (error) {
+        logger.error({ text: '获取圈子详情异常', data: { circleId: id, error } })
+        Message.error('获取圈子详情异常')
+        detail.value = null
+      }
     }
 
     const loadPosts = async (circleId?: string) => {
@@ -114,17 +127,29 @@ export default defineComponent({
       if (!id)
         return
       loading.value = true
-      const res = await getPostListApi({
-        circleId: id,
-        page: 1,
-        limit: 50,
-      })
-      loading.value = false
-      if (res.code !== 0) {
-        Message.error(res.msg || '获取帖子失败')
-        return
+      logger.info({ text: '开始加载帖子列表', data: { circleId: id, page: 1, limit: 50 } })
+
+      try {
+        const res = await getPostListApi({
+          circleId: id,
+          page: 1,
+          limit: 50,
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '获取帖子列表失败', data: { circleId: id, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '获取帖子失败')
+          return
+        }
+        postList.value = res.result.list || []
+        logger.info({ text: '获取帖子列表成功', data: { circleId: id, count: postList.value.length } })
       }
-      postList.value = res.result.list || []
+      catch (error) {
+        logger.error({ text: '获取帖子列表异常', data: { circleId: id, error } })
+        Message.error('获取帖子失败')
+      }
+      finally {
+        loading.value = false
+      }
     }
 
     const loadAll = async (circleId?: string) => {
@@ -149,16 +174,27 @@ export default defineComponent({
 
     const toggleLike = async (postId: string) => {
       const target = postList.value.find(item => item.postId === postId)
-      if (!target)
-        return
-      const nextStatus = !target.isLiked
-      const res = await likePostApi({ postId, status: nextStatus })
-      if (res.code !== 0) {
-        Message.error(res.msg || '操作失败')
+      if (!target) {
+        logger.warn({ text: '点赞失败：未找到帖子', data: { postId } })
         return
       }
-      target.isLiked = nextStatus
-      target.likeCount = Math.max(0, target.likeCount + (nextStatus ? 1 : -1))
+      const nextStatus = !target.isLiked
+      logger.info({ text: '切换帖子点赞状态', data: { postId, nextStatus } })
+
+      try {
+        const res = await likePostApi({ postId, status: nextStatus })
+        if (res.code !== 0) {
+          logger.error({ text: '点赞操作失败', data: { postId, status: nextStatus, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '操作失败')
+          return
+        }
+        target.isLiked = nextStatus
+        target.likeCount = Math.max(0, target.likeCount + (nextStatus ? 1 : -1))
+      }
+      catch (error) {
+        logger.error({ text: '点赞操作异常', data: { postId, status: nextStatus, error } })
+        Message.error('操作失败')
+      }
     }
 
     const openPostDetail = (post: ICirclePostItem) => {

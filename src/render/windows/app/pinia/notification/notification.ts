@@ -62,8 +62,9 @@ export const useNotificationStore = defineStore('useNotificationStore', {
         })
         this.setUnreadSummary(summary)
       }
-      catch {
+      catch (error) {
         // 本地未同步或查询失败时保持为0
+        logger.error({ text: '加载通知未读汇总失败', data: { error: (error as Error)?.message } })
       }
     },
     setUnreadSummary(summary: INotificationSummary) {

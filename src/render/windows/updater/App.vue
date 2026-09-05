@@ -159,6 +159,9 @@
 import { NotificationModule } from 'commonModule/type/preload/notification'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import { defineComponent, onMounted, onUnmounted, ref, computed } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('UpdaterApp')
 
 export default defineComponent({
   name: 'UpdaterApp',
@@ -248,7 +251,7 @@ export default defineComponent({
       try {
         // 检查缓存数据库中是否有这个文件的记录
         const result = await electron?.cache.get('PUBLIC_UPDATE', updateInfo.value.fileUrl)
-        console.error('检查本地更新文件:', result)
+        logger.info({ text: '检查本地更新文件', data: { result } })
         // 如果返回的是本地路径（而不是在线URL），说明文件已存在
         if (result && result.includes('file://')) {
           updateStatus.value = 'completed'
@@ -260,7 +263,7 @@ export default defineComponent({
         }
       }
       catch (error) {
-        console.error('检查本地更新文件失败:', error)
+        logger.error({ text: '检查本地更新文件失败', data: { error } })
         updateStatus.value = 'idle'
       }
     }

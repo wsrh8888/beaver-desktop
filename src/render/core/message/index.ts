@@ -21,6 +21,9 @@
 
 import { v4 as uuidV4 } from 'uuid'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ChatCore')
 
 /**
  * @description: 核心消息发送模块 - 独立于 Store 状态，可供系统任意渲染层调用
@@ -39,24 +42,43 @@ export class ChatCore {
     msg: IMessageMsg,
     chatType: 'private' | 'group'
   ): Promise<any> {
+    const messageId = uuidV4()
+
     // 1. 基础验证
     if (!conversationId) {
+      logger.error({ text: '消息发送失败: 缺失 conversationId', data: { messageId, chatType } })
       throw new Error('消息发送失败: 缺失 conversationId')
     }
     if (!msg || typeof msg !== 'object') {
+      logger.error({ text: '消息发送失败: 消息内容格式错误', data: { conversationId, messageId, chatType } })
       throw new Error('消息发送失败: 消息内容格式错误')
     }
-    const messageId = uuidV4()
 
     // 2. 深度克隆消息内容，防止 Vue 响应式代理引发的并发或主进程通信问题
     const msgClone = JSON.parse(JSON.stringify(msg))
 
-    // 3. 投递并返回主进程构造的完整消息对象
-    return await window.electron.websocket.chat.sendMessage({
-      conversationId,
-      messageId: messageId,
-      msg: msgClone,
-      chatType
+    logger.info({
+      text: '发送消息',
+      data: { conversationId, messageId, chatType, msgType: msg.type },
     })
+
+    // 3. 投递并返回主进程构造的完整消息对象
+    try {
+      const result = await window.electron.websocket.chat.sendMessage({
+        conversationId,
+        messageId,
+        msg: msgClone,
+        chatType,
+      })
+      logger.info({ text: '消息发送成功', data: { conversationId, messageId, chatType } })
+      return result
+    }
+    catch (error) {
+      logger.error({
+        text: '消息发送异常',
+        data: { conversationId, messageId, chatType, error: (error as Error)?.message },
+      })
+      throw error
+    }
   }
 }

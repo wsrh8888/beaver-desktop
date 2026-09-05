@@ -77,7 +77,10 @@ import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { useCircleStore } from 'renderModule/windows/app/pinia/circle/circle'
 import { computed, defineComponent, onMounted, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
 import { useRouter } from 'vue-router'
+
+const logger = new Logger('CardPreviewDialog')
 
 export default defineComponent({
   name: 'PreviewDialog',
@@ -245,8 +248,8 @@ export default defineComponent({
           }
         }
       }
-      catch {
-        // ignore
+      catch (error) {
+        logger.error({ text: '加载名片预览失败', data: { id: props.id, error: (error as Error)?.message } })
       }
     }
 
@@ -361,11 +364,13 @@ export default defineComponent({
             }
           }
           else {
+            logger.error({ text: '加入圈子失败', data: { id: props.id, code: res.code, msg: res.msg } })
             Message.error(res.msg || '加入失败')
           }
         }
       }
-      catch {
+      catch (error) {
+        logger.error({ text: '加入圈子异常', data: { id: props.id, error: (error as Error)?.message } })
         Message.error('加入失败')
       }
       finally {

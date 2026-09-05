@@ -76,6 +76,7 @@ import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { computed, defineComponent, onMounted, PropType, ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
 import PreviewDialog from './components/previewDialog.vue'
 
 function typeLabelOf(cardType?: number) {
@@ -97,6 +98,8 @@ function typeKeyOf(cardType?: number) {
     return 'circle'
   return 'default'
 }
+
+const logger = new Logger('CardMessage')
 
 export default defineComponent({
   name: 'CardMessage',
@@ -155,9 +158,12 @@ export default defineComponent({
             displayDesc.value = res.result.description
               || `${res.result.memberCount || 0} 位成员`
           }
+          else if (res.code !== 0) {
+            logger.warn({ text: '获取圈子名片详情失败', data: { circleId: c.id, code: res.code, msg: res.msg } })
+          }
         }
-        catch {
-          // keep fallback
+        catch (error) {
+          logger.error({ text: '获取圈子名片详情异常', data: { circleId: c.id, error: (error as Error)?.message } })
         }
       }
 

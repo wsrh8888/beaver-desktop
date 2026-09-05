@@ -40,6 +40,9 @@
 
 <script lang="ts">
 import { onBeforeUnmount, onMounted, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('PopupMenu')
 
 export interface MenuItem {
   key: string
@@ -69,7 +72,7 @@ export default {
     }
 
     const handleClickOutside = (event: MouseEvent) => {
-      console.log('handleClickOutside', props.visible)
+      logger.info({ text: '点击外部区域', data: { visible: props.visible } })
       if (!props.visible)
         return
 

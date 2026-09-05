@@ -60,6 +60,9 @@ import type { KeyboardActionId } from 'commonModule/type/mainStore'
 import Message from 'renderModule/components/ui/message'
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref, type PropType } from 'vue'
 import { useSettingsStore } from '../../pinia/settings'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('KeyboardField')
 
 function formatKeyboardEvent(event: KeyboardEvent): string | null {
   if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
@@ -113,7 +116,7 @@ export default defineComponent({
       recordingId.value = null
       const ok = await settingsStore.updateKeyboard(actionId, binding)
       if (!ok) {
-        console.error('快捷键保存失败', ok)
+        logger.error({ text: '快捷键保存失败', data: { actionId, ok } })
         Message.error('快捷键保存失败')
       }
     }

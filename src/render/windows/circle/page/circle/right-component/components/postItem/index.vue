@@ -111,6 +111,9 @@ import { computed, defineComponent } from 'vue'
 import likeIcon from 'renderModule/assets/image/moment/like-default.svg'
 import likeActiveIcon from 'renderModule/assets/image/moment/like-active.svg'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('CirclePostItem')
 
 export default defineComponent({
   name: 'CirclePostItem',
@@ -156,7 +159,7 @@ export default defineComponent({
         })
       }
       catch (error) {
-        console.error('打开图片查看器失败:', error)
+        logger.error({ text: '打开图片查看器失败', data: { error } })
       }
     }
 

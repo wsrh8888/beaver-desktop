@@ -88,6 +88,7 @@ import eyeOffIcon from 'renderModule/assets/image/login/eye-off.svg'
 import eyeIcon from 'renderModule/assets/image/login/eye.svg'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import Message from 'renderModule/components/ui/message'
+import Logger from 'renderModule/utils/logger'
 import { useRouterHelper } from 'renderModule/utils/router'
 import { validateField } from 'renderModule/windows/login/utils/validation'
 import { computed, defineComponent, ref } from 'vue'
@@ -95,7 +96,7 @@ import BrandSection from '../../components/BrandSection.vue'
 import WindowControls from '../../components/WindowControls.vue'
 import { LOGIN_CONFIG } from '../../config'
 
-// import eyeIcon from 'renderM';
+const logger = new Logger('LoginView')
 
 export default defineComponent({
   name: 'LoginView',
@@ -145,9 +146,12 @@ export default defineComponent({
       validateFormField('password')
 
       if (!isFormValid.value) {
+        logger.warn({ text: '登录表单校验未通过', data: { errors: errors.value } })
         Message.error('请填写正确的邮箱和密码')
         return
       }
+
+      logger.info({ text: '开始登录', data: { email: form.value.email, rememberMe: rememberMe.value } })
 
       try {
         const res = await emailPasswordLoginApi({
@@ -160,13 +164,16 @@ export default defineComponent({
             userId: res.result.userId,
             token: res.result.token,
           }, { persist: true })
+          logger.info({ text: '登录成功', data: { userId: res.result.userId } })
           electron.auth.login()
         }
         else {
+          logger.error({ text: '登录失败', data: { code: res.code, msg: res.msg } })
           Message.error(res.msg || '登录失败')
         }
       }
-      catch {
+      catch (error) {
+        logger.error({ text: '登录请求异常', data: { email: form.value.email, error } })
         Message.error('登录失败')
       }
     }

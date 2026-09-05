@@ -22,6 +22,9 @@
 import type { INotificationPayload } from 'commonModule/type/preload/notification'
 import { NotificationModule, NotificationMediaViewerCommand } from 'commonModule/type/preload/notification'
 import { useMomentStore } from '../store/moment/moment'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('MomentNotificationManager')
 
 class MomentEventManager {
   constructor() {
@@ -36,7 +39,7 @@ class MomentEventManager {
   }
 
   handleNotification(params: INotificationPayload<NotificationModule.MEDIA_VIEWER>) {
-    console.log('moment 收到通知', params)
+    logger.info({ text: 'moment 收到通知', data: { params } })
     switch (params.command) {
       case NotificationMediaViewerCommand.UPDATE_MOMENT: {
         const momentStore = useMomentStore()

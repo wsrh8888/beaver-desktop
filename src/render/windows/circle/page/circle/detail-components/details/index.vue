@@ -196,9 +196,12 @@ import Share from 'renderModule/components/business/share/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import MessageBox from 'renderModule/components/ui/messagebox'
+import Logger from 'renderModule/utils/logger'
 import { uploadFile } from 'renderModule/utils/upload'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { parseCircleId, useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
+
+const logger = new Logger('CircleDetails')
 
 export default defineComponent({
   name: 'CircleDetails',
@@ -246,28 +249,46 @@ export default defineComponent({
       const id = normalizedId.value
       if (!id)
         return
-      const res = await getCircleDetailApi({ circleId: id })
-      if (res.code !== 0) {
-        Message.error(res.msg || '获取圈子详情失败')
-        return
+
+      try {
+        const res = await getCircleDetailApi({ circleId: id })
+        if (res.code !== 0) {
+          logger.error({ text: '获取圈子详情失败', data: { circleId: id, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '获取圈子详情失败')
+          return
+        }
+        detail.value = res.result
+        logger.info({ text: '获取圈子详情成功', data: { circleId: id, name: res.result?.name } })
       }
-      detail.value = res.result
+      catch (error) {
+        logger.error({ text: '获取圈子详情异常', data: { circleId: id, error } })
+        Message.error('获取圈子详情异常')
+      }
     }
 
     const loadMembers = async () => {
       const id = normalizedId.value
       if (!id)
         return
-      const res = await getCircleMembersApi({
-        circleId: id,
-        page: 1,
-        limit: 100,
-      })
-      if (res.code !== 0) {
-        Message.error(res.msg || '获取成员失败')
-        return
+
+      try {
+        const res = await getCircleMembersApi({
+          circleId: id,
+          page: 1,
+          limit: 100,
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '获取圈子成员失败', data: { circleId: id, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '获取成员失败')
+          return
+        }
+        memberList.value = res.result.list || []
+        logger.info({ text: '获取圈子成员成功', data: { circleId: id, count: memberList.value.length } })
       }
-      memberList.value = res.result.list || []
+      catch (error) {
+        logger.error({ text: '获取圈子成员异常', data: { circleId: id, error } })
+        Message.error('获取成员异常')
+      }
     }
 
     onMounted(async () => {
@@ -284,28 +305,42 @@ export default defineComponent({
 
     const onAvatarInputChange = async (e: Event) => {
       const file = (e.target as HTMLInputElement).files?.[0]
-      if (!file || !normalizedId.value)
+      const circleId = normalizedId.value
+      if (!file || !circleId)
         return
-      const uploadResult = await uploadFile(file)
-      if (!uploadResult?.fileUrl) {
-        Message.error('头像上传失败，请重试')
-        return
-      }
-      const res = await updateCircleApi({
-        circleId: normalizedId.value,
-        avatar: uploadResult.fileUrl,
-      })
-      if (res.code !== 0) {
-        Message.error(res.msg || '更新头像失败')
-      }
-      else {
+
+      logger.info({ text: '开始更新圈子头像', data: { circleId, fileName: file.name, size: file.size } })
+
+      try {
+        const uploadResult = await uploadFile(file)
+        if (!uploadResult?.fileUrl) {
+          logger.error({ text: '圈子头像上传失败', data: { circleId, fileName: file.name } })
+          Message.error('头像上传失败，请重试')
+          return
+        }
+        const res = await updateCircleApi({
+          circleId,
+          avatar: uploadResult.fileUrl,
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '更新圈子头像失败', data: { circleId, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '更新头像失败')
+          return
+        }
+        logger.info({ text: '更新圈子头像成功', data: { circleId } })
         Message.success('头像已更新')
         await loadDetail()
         await circleStore.loadMyCircles()
         emit('updated')
       }
-      if (avatarInputRef.value)
-        avatarInputRef.value.value = ''
+      catch (error) {
+        logger.error({ text: '更新圈子头像异常', data: { circleId, error } })
+        Message.error('更新头像异常')
+      }
+      finally {
+        if (avatarInputRef.value)
+          avatarInputRef.value.value = ''
+      }
     }
 
     const handleAddMember = async () => {
@@ -320,19 +355,31 @@ export default defineComponent({
     const handleAddMemberConfirm = async (userIds: string[]) => {
       if (!normalizedId.value || userIds.length === 0)
         return
-      const res = await inviteCircleMembersApi({
-        circleId: normalizedId.value,
-        userIds,
-      })
-      if (res.code !== 0) {
-        Message.error(res.msg || '添加成员失败')
-        return
+
+      const circleId = normalizedId.value
+      logger.info({ text: '开始邀请成员加入圈子', data: { circleId, count: userIds.length } })
+
+      try {
+        const res = await inviteCircleMembersApi({
+          circleId,
+          userIds,
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '邀请成员加入圈子失败', data: { circleId, userIds, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '添加成员失败')
+          return
+        }
+        logger.info({ text: '邀请成员加入圈子成功', data: { circleId, count: userIds.length } })
+        Message.success('添加成员成功')
+        showAddMemberModal.value = false
+        await loadMembers()
+        await loadDetail()
+        emit('updated')
       }
-      Message.success('添加成员成功')
-      showAddMemberModal.value = false
-      await loadMembers()
-      await loadDetail()
-      emit('updated')
+      catch (error) {
+        logger.error({ text: '邀请成员加入圈子异常', data: { circleId, userIds, error } })
+        Message.error('添加成员异常')
+      }
     }
 
     const canRemoveMember = (member: ICircleMemberItem) => {
@@ -354,46 +401,82 @@ export default defineComponent({
     const handleRemoveMember = async (userId: string) => {
       if (!normalizedId.value)
         return
-      const res = await removeCircleMembersApi({
-        circleId: normalizedId.value,
-        userIds: [userId],
-      })
-      if (res.code !== 0) {
-        Message.error(res.msg || '移除成员失败')
-        return
+
+      const circleId = normalizedId.value
+      logger.info({ text: '开始移除圈子成员', data: { circleId, userId } })
+
+      try {
+        const res = await removeCircleMembersApi({
+          circleId,
+          userIds: [userId],
+        })
+        if (res.code !== 0) {
+          logger.error({ text: '移除圈子成员失败', data: { circleId, userId, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '移除成员失败')
+          return
+        }
+        logger.info({ text: '移除圈子成员成功', data: { circleId, userId } })
+        Message.success('移除成员成功')
+        await loadMembers()
+        await loadDetail()
+        emit('updated')
       }
-      Message.success('移除成员成功')
-      await loadMembers()
-      await loadDetail()
-      emit('updated')
+      catch (error) {
+        logger.error({ text: '移除圈子成员异常', data: { circleId, userId, error } })
+        Message.error('移除成员异常')
+      }
     }
 
     const handleQuit = async () => {
       if (!normalizedId.value)
         return
       await MessageBox.confirm('确定要退出该圈子吗？', '确认操作')
-      const res = await quitCircleApi({ circleId: normalizedId.value })
-      if (res.code !== 0) {
-        Message.error(res.msg || '退出圈子失败')
-        return
+
+      const circleId = normalizedId.value
+      logger.info({ text: '开始退出圈子', data: { circleId } })
+
+      try {
+        const res = await quitCircleApi({ circleId })
+        if (res.code !== 0) {
+          logger.error({ text: '退出圈子失败', data: { circleId, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '退出圈子失败')
+          return
+        }
+        logger.info({ text: '退出圈子成功', data: { circleId } })
+        Message.success('已退出圈子')
+        await circleStore.loadMyCircles()
+        emit('quit')
       }
-      Message.success('已退出圈子')
-      await circleStore.loadMyCircles()
-      emit('quit')
+      catch (error) {
+        logger.error({ text: '退出圈子异常', data: { circleId, error } })
+        Message.error('退出圈子异常')
+      }
     }
 
     const handleDelete = async () => {
       if (!normalizedId.value)
         return
       await MessageBox.confirm('确定要解散该圈子吗？此操作不可恢复！', '确认操作')
-      const res = await deleteCircleApi({ circleId: normalizedId.value })
-      if (res.code !== 0) {
-        Message.error(res.msg || '解散圈子失败')
-        return
+
+      const circleId = normalizedId.value
+      logger.info({ text: '开始解散圈子', data: { circleId } })
+
+      try {
+        const res = await deleteCircleApi({ circleId })
+        if (res.code !== 0) {
+          logger.error({ text: '解散圈子失败', data: { circleId, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '解散圈子失败')
+          return
+        }
+        logger.info({ text: '解散圈子成功', data: { circleId } })
+        Message.success('圈子已解散')
+        await circleStore.loadMyCircles()
+        emit('quit')
       }
-      Message.success('圈子已解散')
-      await circleStore.loadMyCircles()
-      emit('quit')
+      catch (error) {
+        logger.error({ text: '解散圈子异常', data: { circleId, error } })
+        Message.error('解散圈子异常')
+      }
     }
 
     const openShare = () => {

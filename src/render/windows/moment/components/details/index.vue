@@ -112,6 +112,9 @@ import MomentContentCard from '../common/MomentContentCard.vue'
 import BottomInputSection from './bottomInputSection.vue'
 import CommentSection from './commentSection.vue'
 import LikeSection from './likeSection.vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('MomentDetail')
 
 export default defineComponent({
   name: 'MomentDetail',
@@ -235,7 +238,7 @@ export default defineComponent({
     // 处理媒体文件点击
     const handleMediaClick = (file: any, files: any[]) => {
       // TODO: 打开媒体查看器
-      console.log('查看媒体文件:', file, files)
+      logger.info({ text: '查看媒体文件', data: { file, files } })
     }
 
     // 获取文件名

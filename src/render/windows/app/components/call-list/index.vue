@@ -84,6 +84,9 @@
 import { defineComponent, ref } from 'vue'
 import { useCallListStore, type ICallItem } from '../../pinia/call-list'
 import { hangupCallApi } from 'renderModule/api/call'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('CallListPanel')
 
 export default defineComponent({
   name: 'CallListPanel',
@@ -140,7 +143,7 @@ export default defineComponent({
       try {
         await hangupCallApi({ roomId: call.roomId })
       } catch (e) {
-        console.error('拒绝来电失败:', e)
+        logger.error({ text: '拒绝来电失败', data: { error: e } })
       }
       callListStore.removeCall(call.roomId)
     }

@@ -83,7 +83,10 @@
 <script lang="ts">
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 import { listAgentModelsApi, listOfficialModelsApi } from 'renderModule/api/agent'
+import Logger from 'renderModule/utils/logger'
 import { useAiModelStore } from 'renderModule/windows/ai/pinia/model'
+
+const logger = new Logger('AiModelPicker')
 import type { AiModelSource, IAiCustomModel, IAiOfficialModel } from 'renderModule/windows/ai/types/model'
 import { AI_MODEL_AUTO_ID } from 'renderModule/windows/ai/types/model'
 
@@ -181,8 +184,8 @@ export default defineComponent({
           aiModelStore.setCustomModels(list)
         }
       }
-      catch {
-        // 拉取失败时保持现状
+      catch (err) {
+        logger.error({ text: '加载模型列表失败', data: { error: (err as Error)?.message } })
       }
     }
 

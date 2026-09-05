@@ -73,11 +73,17 @@ export const useGroupStore = defineStore('groupStore', {
      * @description: 初始化群组列表
      */
     async init() {
-      const result = await electron.database.group.getGroupList({
-        page: 1,
-        limit: 100,
-      })
-      this._groupList = result?.list || []
+      try {
+        const result = await electron.database.group.getGroupList({
+          page: 1,
+          limit: 100,
+        })
+        this._groupList = result?.list || []
+        logger.info({ text: '群组列表加载完成', data: { count: this._groupList.length } })
+      }
+      catch (error) {
+        logger.error({ text: '加载群组列表失败', data: { error: (error as Error)?.message } })
+      }
     },
 
     /**

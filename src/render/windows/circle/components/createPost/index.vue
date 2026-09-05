@@ -90,6 +90,9 @@ import { createPostApi } from 'renderModule/api/circle'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { selectAndUploadFile } from 'renderModule/utils/upload'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('CirclePostModal')
 
 interface MediaFile {
   fileKey: string
@@ -134,7 +137,7 @@ export default defineComponent({
         mediaFiles.value.push(...newFiles)
       }
       catch (error) {
-        console.error('文件上传失败:', error)
+        logger.error({ text: '文件上传失败', data: { error } })
         Message.error('图片上传失败')
       }
     }
@@ -156,7 +159,7 @@ export default defineComponent({
         })
       }
       catch (error) {
-        console.error('打开图片查看器失败:', error)
+        logger.error({ text: '打开图片查看器失败', data: { error } })
       }
     }
 

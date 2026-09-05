@@ -68,7 +68,10 @@ import { defineComponent, onMounted, ref } from 'vue'
 import { getMyCircleListApi } from 'renderModule/api/circle'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
+import Logger from 'renderModule/utils/logger'
 import { useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
+
+const logger = new Logger('CircleLeftPanel')
 
 export default defineComponent({
   name: 'CircleLeft',
@@ -87,14 +90,26 @@ export default defineComponent({
 
     const loadList = async () => {
       loading.value = true
-      const res = await getMyCircleListApi({ page: 1, limit: 100 })
-      loading.value = false
-      if (res.code !== 0) {
-        Message.error(res.msg || '获取圈子列表失败')
-        return
+      logger.info({ text: '开始加载圈子列表', data: { page: 1, limit: 100 } })
+
+      try {
+        const res = await getMyCircleListApi({ page: 1, limit: 100 })
+        if (res.code !== 0) {
+          logger.error({ text: '获取圈子列表失败', data: { code: res.code, msg: res.msg } })
+          Message.error(res.msg || '获取圈子列表失败')
+          return
+        }
+        list.value = res.result.list || []
+        circleStore.myCircles = list.value
+        logger.info({ text: '获取圈子列表成功', data: { count: list.value.length } })
       }
-      list.value = res.result.list || []
-      circleStore.myCircles = list.value
+      catch (error) {
+        logger.error({ text: '获取圈子列表异常', data: { error } })
+        Message.error('获取圈子列表异常')
+      }
+      finally {
+        loading.value = false
+      }
     }
 
     onMounted(() => {

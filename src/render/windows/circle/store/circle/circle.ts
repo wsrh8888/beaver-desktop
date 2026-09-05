@@ -22,6 +22,9 @@
 import type { ICircleListItem } from 'commonModule/type/ajax/circle'
 import { defineStore } from 'pinia'
 import { getMyCircleListApi } from 'renderModule/api/circle'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('CircleWindowStore')
 
 function parseCircleId(conversationId: string) {
   if (!conversationId.startsWith('circle_'))
@@ -40,10 +43,20 @@ export const useCircleStore = defineStore('useCircleWindowStore', {
   actions: {
     parseCircleId,
     async loadMyCircles() {
-      const res = await getMyCircleListApi({ page: 1, limit: 100 })
-      if (res.code !== 0)
-        return
-      this.myCircles = res.result.list || []
+      logger.info({ text: '开始加载我的圈子列表', data: { page: 1, limit: 100 } })
+
+      try {
+        const res = await getMyCircleListApi({ page: 1, limit: 100 })
+        if (res.code !== 0) {
+          logger.error({ text: '加载我的圈子列表失败', data: { code: res.code, msg: res.msg } })
+          return
+        }
+        this.myCircles = res.result.list || []
+        logger.info({ text: '加载我的圈子列表成功', data: { count: this.myCircles.length } })
+      }
+      catch (error) {
+        logger.error({ text: '加载我的圈子列表异常', data: { error } })
+      }
     },
   },
 })

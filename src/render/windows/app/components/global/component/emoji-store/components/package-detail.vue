@@ -75,6 +75,9 @@ import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { getEmojiPackageDetailApi, updateFavoriteEmojiPackageApi } from 'renderModule/api/emoji'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('EmojiPackageDetail')
 
 export default defineComponent({
   name: 'EmojiPackageDetail',
@@ -119,7 +122,7 @@ export default defineComponent({
           emojis.value = response.result.emojis || []
         }
       } catch (error) {
-        console.error('加载表情包详情失败:', error)
+        logger.error({ text: '加载表情包详情失败', data: { error } })
       }
     }
 
@@ -138,7 +141,7 @@ export default defineComponent({
         // 重新初始化emoji store以更新数据
         await emojiStore.init()
       } catch (error) {
-        console.error('收藏表情包失败:', error)
+        logger.error({ text: '收藏表情包失败', data: { error } })
       }
     }
     // 返回

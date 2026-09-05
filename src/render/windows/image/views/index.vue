@@ -61,6 +61,9 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ImageViewerView')
 
 export default defineComponent({
   name: 'ImageViewer',
@@ -119,7 +122,7 @@ export default defineComponent({
 
     const handleImageError = () => {
       isLoading.value = false
-      console.error('图片加载失败')
+      logger.error({ text: '图片加载失败' })
     }
 
     // 键盘事件

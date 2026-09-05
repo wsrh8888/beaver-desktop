@@ -58,7 +58,10 @@
 <script lang="ts">
 import { defineComponent, ref, watch } from 'vue'
 import AiModelPicker from './components/modelPicker/index.vue'
+import Logger from 'renderModule/utils/logger'
 import { useAiChatStore } from 'renderModule/windows/ai/pinia/chat'
+
+const logger = new Logger('AiComposer')
 
 /**
  * 输入区业务组件：发送统一走 chatStore.sendTextMessage。
@@ -100,12 +103,16 @@ export default defineComponent({
       if (!text || sending.value)
         return
       sending.value = true
+      logger.info({ text: '用户发起发送', data: { contentLength: text.length } })
       try {
         const chatId = await aiChatStore.sendTextMessage(text)
         draft.value = ''
         emit('update:modelValue', '')
         if (chatId)
           emit('sent', chatId)
+      }
+      catch (err) {
+        logger.error({ text: '发送流程未预期异常', data: { error: (err as Error)?.message } })
       }
       finally {
         sending.value = false

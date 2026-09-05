@@ -58,6 +58,9 @@ import { useIncomingStore } from '../../pinia/incoming'
 import { getCallTokenApi, hangupCallApi } from 'renderModule/api/call'
 import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('CallIncomingMain')
 
 export default defineComponent({
   name: 'IncomingMain',
@@ -86,7 +89,7 @@ export default defineComponent({
           }
         }
       } catch (error) {
-        console.error('获取来电者信息失败:', error)
+        logger.error({ text: '获取来电者信息失败', data: { error } })
       }
     }
 
@@ -120,7 +123,7 @@ export default defineComponent({
         try {
           await hangupCallApi({ roomId: activeCallRoomId })
         } catch (e) {
-          console.warn('挂断旧通话失败', e)
+          logger.warn({ text: '挂断旧通话失败', data: { error: e } })
         }
       }
 
@@ -141,7 +144,7 @@ export default defineComponent({
           (window as any).electron?.window.closeWindow()
         }
       } catch (error) {
-        console.error('接听流程异常:', error)
+        logger.error({ text: '接听流程异常', data: { error } })
       }
     }
 

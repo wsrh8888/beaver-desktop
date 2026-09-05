@@ -57,6 +57,9 @@ import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { computed, defineComponent, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('BatchForwardDialog')
 
 export default defineComponent({
   name: 'BatchForwardDialog',
@@ -122,15 +125,18 @@ export default defineComponent({
         })
 
         if (res.code === 0) {
+          logger.info({ text: '批量转发成功', data: { count: props.messageIds.length, targetId: selectedId.value, mode: props.mode, forwardType } })
           Message.success(props.mode === 'each' ? `已逐条转发 ${props.messageIds.length} 条消息` : '已合并转发')
           emit('done')
           handleClose()
         }
         else {
+          logger.error({ text: '批量转发失败', data: { count: props.messageIds.length, targetId: selectedId.value, mode: props.mode, forwardType, code: res.code, msg: res.msg } })
           Message.error(res.msg || '转发失败')
         }
       }
-      catch {
+      catch (error) {
+        logger.error({ text: '批量转发异常', data: { count: props.messageIds.length, targetId: selectedId.value, error: (error as Error)?.message } })
         Message.error('转发操作异常')
       }
       finally {

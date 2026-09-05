@@ -109,6 +109,7 @@ import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
 import ForwardDialog from './components/ForwardDialog.vue'
 import { getMenuItems, MessageHandlerFactory } from './contentHandler'
 import AudioFileMessage from './message/audio.vue'
@@ -127,6 +128,8 @@ import VideoMessage from './message/video.vue'
 import VoiceMessage from './message/voice.vue'
 import { getSelectedText, hasTextSelected } from './utils/copy'
 import { MessageContentType } from './utils/data'
+
+const logger = new Logger('ChatContent')
 
 export default defineComponent({
   name: 'ChatContent',
@@ -171,7 +174,7 @@ export default defineComponent({
     // 判断messageViewStore.currentChatId的值是否发生变化
     watch(() => messageViewStore.currentChatId, async (newConversationId) => {
       if (newConversationId) {
-        console.log('会话切换:', newConversationId)
+        logger.info({ text: '会话切换', data: { conversationId: newConversationId } })
 
         // 初始化消息
         await messageStore.init(newConversationId)
@@ -236,14 +239,14 @@ export default defineComponent({
     // 处理菜单项点击
     const handleMenuCommand = async (item: ContextMenuItem, message?: any) => {
       if (!message) {
-        console.error('消息对象不存在')
+        logger.error({ text: '消息对象不存在' })
         return
       }
 
       // 获取消息类型
       const messageType = message.msg.type
       if (typeof messageType !== 'number' || !(messageType in MessageContentType)) {
-        console.error('无效的消息类型:', messageType)
+        logger.error({ text: '无效的消息类型', data: { messageType } })
         return
       }
 
@@ -278,7 +281,7 @@ export default defineComponent({
       if (isNearTop && currentId) {
         const pagination = messageStore.getMessagePagination(currentId)
         if (pagination.hasMore && !pagination.isLoadingMore) {
-          console.log('触发加载更多历史消息')
+          logger.info({ text: '触发加载更多历史消息' })
 
           // 记录加载前的滚动高度，用于保持滚动位置
           const prevScrollHeight = scrollHeight

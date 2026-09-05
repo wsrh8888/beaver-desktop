@@ -61,6 +61,9 @@ import Message from 'renderModule/components/ui/message'
 import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { computed, defineComponent, PropType } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('AudioFileMessage')
 
 export default defineComponent({
   name: 'AudioFileMessage',
@@ -103,7 +106,7 @@ export default defineComponent({
         await AudioPlayer.play(mediaUrl, fileName.value)
       }
       catch (error) {
-        console.error('打开音频播放器失败:', error)
+        logger.error({ text: '打开音频播放器失败', data: { error } })
       }
     }
 

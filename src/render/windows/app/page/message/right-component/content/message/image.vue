@@ -34,6 +34,9 @@ import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
 import { computed, defineComponent, PropType } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ImageMessage')
 
 export default defineComponent({
   name: 'ImageMessage',
@@ -89,7 +92,7 @@ export default defineComponent({
         })
       }
       catch (error) {
-        console.error('打开图片查看器失败:', error)
+        logger.error({ text: '打开图片查看器失败', data: { error } })
       }
     }
 

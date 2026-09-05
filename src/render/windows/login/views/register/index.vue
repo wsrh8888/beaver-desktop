@@ -180,12 +180,15 @@ import { emailRegisterApi, getEmailCodeApi } from 'renderModule/api/auth'
 import eyeOffIcon from 'renderModule/assets/image/register/eye-off.svg'
 import eyeIcon from 'renderModule/assets/image/register/eye.svg'
 import Message from 'renderModule/components/ui/message'
+import Logger from 'renderModule/utils/logger'
 import { useRouterHelper } from 'renderModule/utils/router'
 import { defineComponent, ref } from 'vue'
 import BrandSection from '../../components/BrandSection.vue'
 import WindowControls from '../../components/WindowControls.vue'
 import { LOGIN_CONFIG } from '../../config'
 import { validateField } from '../../utils/validation'
+
+const logger = new Logger('RegisterView')
 
 export default defineComponent({
   name: 'RegisterView',
@@ -259,8 +262,12 @@ export default defineComponent({
 
     const handleGetCode = async () => {
       validateFormField('email')
-      if (errors.value.email)
+      if (errors.value.email) {
+        logger.warn({ text: '获取验证码前邮箱校验未通过', data: { errors: errors.value } })
         return
+      }
+
+      logger.info({ text: '请求发送注册验证码', data: { email: form.value.email } })
 
       try {
         const res = await getEmailCodeApi({
@@ -269,6 +276,7 @@ export default defineComponent({
         })
 
         if (res.code === 0) {
+          logger.info({ text: '注册验证码已发送', data: { email: form.value.email } })
           Message.success('验证码已发送')
           countdown.value = 60
           const timer = setInterval(() => {
@@ -279,10 +287,12 @@ export default defineComponent({
           }, 1000)
         }
         else {
+          logger.error({ text: '获取注册验证码失败', data: { email: form.value.email, code: res.code, msg: res.msg } })
           Message.error(res.msg || '获取验证码失败')
         }
       }
-      catch {
+      catch (error) {
+        logger.error({ text: '获取注册验证码异常', data: { email: form.value.email, error } })
         Message.error('获取验证码失败，请稍后重试')
       }
     }
@@ -302,12 +312,17 @@ export default defineComponent({
     const handleRegister = async () => {
       validatePassword()
       validateConfirmPassword()
-      if (errors.value.password || errors.value.confirmPassword)
+      if (errors.value.password || errors.value.confirmPassword) {
+        logger.warn({ text: '注册表单校验未通过', data: { errors: errors.value } })
         return
+      }
       if (!isAgreed.value) {
+        logger.warn({ text: '注册未勾选用户协议' })
         Message.warning('请阅读并同意用户协议和隐私政策')
         return
       }
+
+      logger.info({ text: '开始注册', data: { email: form.value.email } })
 
       try {
         const registerData = {
@@ -318,14 +333,17 @@ export default defineComponent({
 
         const res = await emailRegisterApi(registerData)
         if (res.code === 0) {
+          logger.info({ text: '注册成功', data: { email: form.value.email } })
           showSuccess.value = true
           push('/login')
         }
         else {
+          logger.error({ text: '注册失败', data: { email: form.value.email, code: res.code, msg: res.msg } })
           Message.error(res.msg || '注册失败')
         }
       }
-      catch {
+      catch (error) {
+        logger.error({ text: '注册请求异常', data: { email: form.value.email, error } })
         Message.error('注册失败，请稍后重试')
       }
     }

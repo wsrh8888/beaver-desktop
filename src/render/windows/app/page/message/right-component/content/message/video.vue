@@ -46,6 +46,9 @@ import playerSvg from 'renderModule/assets/image/chat/play.svg'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { calculateImageSize } from 'renderModule/utils/image/index'
 import { computed, defineComponent, PropType } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('VideoMessage')
 
 export default defineComponent({
   name: 'VideoMessage',
@@ -85,7 +88,7 @@ export default defineComponent({
     const handleVideoPlay = async () => {
       const mediaUrl = props.msg.videoMsg?.fileUrl
       if (!mediaUrl) {
-        console.error('视频文件URL不能为空', props.msg)
+        logger.error({ text: '视频文件URL不能为空', data: { msg: props.msg } })
         return
       }
 
@@ -93,7 +96,7 @@ export default defineComponent({
         await VideoPlayer.open(mediaUrl)
       }
       catch (error) {
-        console.error('打开视频播放器失败:', error)
+        logger.error({ text: '打开视频播放器失败', data: { error } })
       }
     }
 

@@ -51,6 +51,9 @@ import { useMessageStore } from 'renderModule/windows/app/pinia/message/message'
 import { deleteMessagesApi } from 'renderModule/api/chat'
 import Message from 'renderModule/components/ui/message'
 import BatchForwardDialog from '../BatchForwardDialog.vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('MultiActions')
 
 export default defineComponent({
   name: 'MultiActions',
@@ -100,7 +103,7 @@ export default defineComponent({
           Message.error(res.msg || '删除失败')
         }
       } catch (error) {
-        console.error('批量删除失败:', error)
+        logger.error({ text: '批量删除失败', data: { error } })
         Message.error('删除操作异常')
       }
     }

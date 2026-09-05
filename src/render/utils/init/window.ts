@@ -46,3 +46,14 @@ window.onerror = (message, source, lineno, colno, error) => {
     },
   })
 }
+
+// 全局未处理的 Promise 拒绝，确保异步异常也能落盘排查
+window.onunhandledrejection = (event: PromiseRejectionEvent) => {
+  const reason = event.reason
+  logger.error({
+    text: '未处理的 Promise 拒绝',
+    data: {
+      reason: reason instanceof Error ? reason.message : String(reason),
+    },
+  })
+}

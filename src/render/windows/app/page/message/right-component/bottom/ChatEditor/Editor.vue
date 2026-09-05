@@ -42,6 +42,9 @@ import { MessageType } from 'commonModule/type/ajax/chat'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { parseEditorDOM } from 'renderModule/utils/message/index'
 import { CacheType } from 'commonModule/type/cache/cache'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ChatEditor')
 
 function formatKeyEvent(event: KeyboardEvent): string | null {
   if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
@@ -256,7 +259,7 @@ export default defineComponent({
             }
           }
         } catch (err) {
-          console.error('粘贴处理失败:', err)
+          logger.error({ text: '粘贴处理失败', data: { error: err } })
         }
       }
     }

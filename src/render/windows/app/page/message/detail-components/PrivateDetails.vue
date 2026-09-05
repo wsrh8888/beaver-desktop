@@ -133,6 +133,9 @@ import { useConversationStore } from 'renderModule/windows/app/pinia/conversatio
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('PrivateDetails')
 
 export default defineComponent({
   name: 'PrivateDetails',
@@ -175,7 +178,7 @@ export default defineComponent({
           await conversationStore.initConversationById(newConversationId)
         }
         catch (error) {
-          console.error('初始化会话失败:', error)
+          logger.error({ text: '初始化会话失败', data: { error } })
         }
       }
     }, { immediate: true })
@@ -222,26 +225,26 @@ export default defineComponent({
             conversationId: messageViewStore.currentChatId,
             isMuted: muteEnabled.value,
           })
-          console.log('免打扰设置已更新')
+          logger.info({ text: '免打扰设置已更新' })
         }
         else if (setting === 'top') {
           await pinnedChatApi({
             conversationId: messageViewStore.currentChatId,
             isPinned: topEnabled.value,
           })
-          console.log('置顶设置已更新')
+          logger.info({ text: '置顶设置已更新' })
         }
         else if (setting === 'hide') {
           await hideChatApi({
             conversationId: messageViewStore.currentChatId,
             isHidden: true,
           })
-          console.log('会话已隐藏')
+          logger.info({ text: '会话已隐藏' })
           closeDetails()
         }
       }
       catch (error) {
-        console.error('更新会话设置失败:', error)
+        logger.error({ text: '更新会话设置失败', data: { error } })
         // 失败时恢复原来的状态
         if (setting === 'mute') {
           muteEnabled.value = currentConversationInfo.value?.isMuted || false

@@ -44,6 +44,9 @@ import Message from 'renderModule/components/ui/message'
 import PreviewDialog from './card/components/previewDialog.vue'
 import { emojiMap } from 'renderModule/windows/app/utils/emoji'
 import { computed, defineComponent, type PropType, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('TextMessage')
 
 function escapeHtml(text: string) {
   return text
@@ -72,8 +75,8 @@ function parseInviteToken(raw: string): { kind: 'circle' | 'group', token: strin
         return { kind: 'group', token: code }
     }
   }
-  catch {
-    // ignore
+  catch (error) {
+    logger.warn({ text: '解析邀请链接失败', data: { error: (error as Error)?.message } })
   }
   const circle = value.match(/\/api\/circle\/v1\/circle\/invite_code\?[^#]*code=([^&#]+)/i)
   if (circle)

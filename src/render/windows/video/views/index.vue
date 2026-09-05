@@ -45,6 +45,9 @@
 <script lang="ts">
 import { NotificationMediaViewerCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('VideoPlayerView')
 
 export default defineComponent({
   name: 'VideoPlayer',
@@ -65,16 +68,19 @@ export default defineComponent({
 
     const handleLoadedMetadata = () => {
       if (videoRef.value) {
-        console.log('视频加载完成', {
-          duration: videoRef.value.duration,
-          width: videoRef.value.videoWidth,
-          height: videoRef.value.videoHeight,
+        logger.info({
+          text: '视频加载完成',
+          data: {
+            duration: videoRef.value.duration,
+            width: videoRef.value.videoWidth,
+            height: videoRef.value.videoHeight,
+          },
         })
       }
     }
 
     const handleVideoError = (e: Event) => {
-      console.error('视频加载失败', e)
+      logger.error({ text: '视频加载失败', data: { error: e } })
     }
 
     // 监听notification更新
@@ -82,7 +88,7 @@ export default defineComponent({
       if (payload.command === NotificationMediaViewerCommand.UPDATE_VIDEO && payload.data) {
         videoUrl.value = payload.data.url || ''
         videoTitle.value = payload.data.title || ''
-        console.log('收到视频更新通知:', payload.data)
+        logger.info({ text: '收到视频更新通知', data: { payload: payload.data } })
       }
     }
 

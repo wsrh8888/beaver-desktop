@@ -51,6 +51,9 @@ import downloadSvg from 'renderModule/assets/image/chat/download.svg'
 import Message from 'renderModule/components/ui/message'
 import { getFileNameFromUrl } from 'renderModule/utils/file/index'
 import { computed, defineComponent, PropType } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('FileMessage')
 
 export default defineComponent({
   name: 'FileMessage',
@@ -112,7 +115,8 @@ export default defineComponent({
         window.URL.revokeObjectURL(downloadUrl)
         Message.success('已开始下载')
       }
-      catch {
+      catch (error) {
+        logger.error({ text: '文件下载失败', data: { fileName: filename, fileUrl: fileUrl.value, error: (error as Error)?.message } })
         Message.error('下载失败')
       }
     }

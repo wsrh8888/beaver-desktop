@@ -22,6 +22,9 @@
 import conversationBusiness from 'mainModule/business/chat/conversation'
 import messageBusiness from 'mainModule/business/chat/message'
 import userConversationBusiness from 'mainModule/business/chat/user-conversation'
+import Logger from 'mainModule/utils/logger'
+
+const logger = new Logger('ChatMessageReceiver')
 
 /**
  * @description: 消息接收器 - 处理messages表的操作
@@ -43,7 +46,15 @@ class MessageReceiver {
           // 第三层循环：遍历data数组中的每个版本数据
           for (const dataItem of update.data) {
             if (update.conversationId && dataItem?.seq) {
-              await messageBusiness.syncMessagesByVersion(update.conversationId, dataItem.seq)
+              try {
+                await messageBusiness.syncMessagesByVersion(update.conversationId, dataItem.seq)
+              }
+              catch (error) {
+                logger.error({
+                  text: '同步消息失败',
+                  data: { conversationId: update.conversationId, seq: dataItem.seq, error: (error as Error)?.message },
+                })
+              }
             }
           }
           break
@@ -52,7 +63,15 @@ class MessageReceiver {
           // 第三层循环：遍历data数组中的每个版本数据
           for (const dataItem of update.data) {
             if (update.conversationId && dataItem?.version) {
-              await conversationBusiness.syncConversationByVersion(update.conversationId, dataItem.version)
+              try {
+                await conversationBusiness.syncConversationByVersion(update.conversationId, dataItem.version)
+              }
+              catch (error) {
+                logger.error({
+                  text: '同步会话失败',
+                  data: { conversationId: update.conversationId, version: dataItem.version, error: (error as Error)?.message },
+                })
+              }
             }
           }
           break
@@ -61,7 +80,20 @@ class MessageReceiver {
           // 对于聚合消息中的用户会话更新，也使用队列处理
           for (const dataItem of update.data) {
             if (update.userId && update.conversationId && dataItem?.version) {
-              await userConversationBusiness.handleTableUpdates(update.userId, update.conversationId, dataItem.version)
+              try {
+                await userConversationBusiness.handleTableUpdates(update.userId, update.conversationId, dataItem.version)
+              }
+              catch (error) {
+                logger.error({
+                  text: '同步用户会话失败',
+                  data: {
+                    userId: update.userId,
+                    conversationId: update.conversationId,
+                    version: dataItem.version,
+                    error: (error as Error)?.message,
+                  },
+                })
+              }
             }
           }
           break

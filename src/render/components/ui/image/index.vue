@@ -37,6 +37,9 @@
 import type { PropType } from 'vue'
 import { CacheType } from 'commonModule/type/cache/cache'
 import { ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('BeaverImage')
 
 export default {
   name: 'BeaverImage',
@@ -97,7 +100,7 @@ export default {
     }
 
     const handleError = (event: Event) => {
-      console.error('图片加载失败:', event)
+      logger.error({ text: '图片加载失败', data: { event } })
       emit('error', event)
     }
 

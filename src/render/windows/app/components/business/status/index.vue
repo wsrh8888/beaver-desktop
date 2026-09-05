@@ -60,7 +60,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useAppStore } from '../../../pinia/app/app'
+import Logger from 'renderModule/utils/logger'
 
+const logger = new Logger('AppStatus')
 const appStore = useAppStore()
 
 // 组件内部的状态转换逻辑
@@ -101,7 +103,7 @@ const handleRetry = async () => {
       // 连接错误或断开连接：重新连接WebSocket
       appStore.updateLifecycleStatus('connecting')
       await window.electron.websocket.reconnect()
-      console.log('重新连接WebSocket')
+      logger.info({ text: '重新连接WebSocket' })
     }
     else if (currentStatus === 'sync_error') {
       // 同步错误：重新执行数据同步
@@ -110,7 +112,7 @@ const handleRetry = async () => {
     }
   }
   catch (error) {
-    console.error('重试失败:', error)
+    logger.error({ text: '重试失败', data: { error } })
   }
 }
 </script>

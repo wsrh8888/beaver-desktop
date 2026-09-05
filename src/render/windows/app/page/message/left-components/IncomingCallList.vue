@@ -35,6 +35,9 @@ import { defineComponent, computed } from 'vue'
 import { useCallListStore, ICallItem } from 'renderModule/windows/app/pinia/call-list'
 import { useActiveCallStore } from 'renderModule/windows/app/pinia/active-call'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('IncomingCallList')
 
 export default defineComponent({
   name: 'IncomingCallList',
@@ -61,7 +64,7 @@ export default defineComponent({
 
     // 点击列表项 - 打开确认窗口或回到通话窗口
     const handleItemClick = (call: ICallItem) => {
-      console.error('handleItemClick', call)
+      logger.info({ text: '点击通话列表项', data: { call } })
       // 打开 call-incoming 确认窗口
       const { isInCall, currentRoomId } = activeCallStore
 

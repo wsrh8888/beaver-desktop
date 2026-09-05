@@ -20,7 +20,10 @@
  */
 
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 import type { IAiSpace } from 'renderModule/windows/ai/types/chat'
+
+const logger = new Logger('AiSpaceStore')
 
 /** 本机设备标识（后续可换成真实机器 GUID） */
 const LOCAL_DEVICE_GUID = 'device-local'
@@ -104,21 +107,29 @@ export const useAiSpaceStore = defineStore('useAiSpaceStore', {
      */
     async createLocalSpace(name: string) {
       const title = assertValidSpaceName(name)
-      const appRoot = await window.electron.fs.getPath('root')
-      const root = await window.electron.fs.join(appRoot, WORKSPACE_ROOT_NAME)
-      const rootResult = await window.electron.fs.mkdir(root)
-      if (!rootResult.success)
-        throw new Error(rootResult.error || '创建工作空间根目录失败')
+      try {
+        const appRoot = await window.electron.fs.getPath('root')
+        const root = await window.electron.fs.join(appRoot, WORKSPACE_ROOT_NAME)
+        const rootResult = await window.electron.fs.mkdir(root)
+        if (!rootResult.success)
+          throw new Error(rootResult.error || '创建工作空间根目录失败')
 
-      const dirPath = await window.electron.fs.join(root, title)
-      if (await window.electron.fs.exists(dirPath))
-        throw new Error('同名工作空间已存在')
+        const dirPath = await window.electron.fs.join(root, title)
+        if (await window.electron.fs.exists(dirPath))
+          throw new Error('同名工作空间已存在')
 
-      const result = await window.electron.fs.mkdir(dirPath)
-      if (!result.success)
-        throw new Error(result.error || '创建工作空间目录失败')
+        const result = await window.electron.fs.mkdir(dirPath)
+        if (!result.success)
+          throw new Error(result.error || '创建工作空间目录失败')
 
-      return this.registerSpace(title, dirPath)
+        const spaceId = this.registerSpace(title, dirPath)
+        logger.info({ text: '创建工作空间成功', data: { spaceId, name: title, dirPath } })
+        return spaceId
+      }
+      catch (err) {
+        logger.error({ text: '创建工作空间失败', data: { name: title, error: (err as Error)?.message } })
+        throw err
+      }
     },
 
     /** 打开本地文件夹并登记为工作空间 */
@@ -128,7 +139,9 @@ export const useAiSpaceStore = defineStore('useAiSpaceStore', {
       })
       if (!picked)
         return null
-      return this.registerSpace(picked.name || '本地文件夹', picked.path)
+      const spaceId = this.registerSpace(picked.name || '本地文件夹', picked.path)
+      logger.info({ text: '打开本地文件夹为工作空间', data: { spaceId, name: picked.name, path: picked.path } })
+      return spaceId
     },
 
     /** 发送时的目标：null=云端任务，否则为本机空间 id */

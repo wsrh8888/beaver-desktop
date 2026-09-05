@@ -56,6 +56,9 @@ import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { computed, defineComponent, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ForwardDialog')
 
 export default defineComponent({
   name: 'ForwardDialog',
@@ -108,14 +111,17 @@ export default defineComponent({
           forwardMode: 1, // 逐条转发
         })
         if (res.code === 0) {
+          logger.info({ text: '消息转发成功', data: { messageId: props.messageId, targetId: selectedId.value, forwardType } })
           Message.success('已转发')
           handleClose()
         }
         else {
+          logger.error({ text: '消息转发失败', data: { messageId: props.messageId, targetId: selectedId.value, forwardType, code: res.code, msg: res.msg } })
           Message.error('转发失败')
         }
       }
-      catch {
+      catch (error) {
+        logger.error({ text: '消息转发异常', data: { messageId: props.messageId, targetId: selectedId.value, error: (error as Error)?.message } })
         Message.error('转发失败')
       }
     }

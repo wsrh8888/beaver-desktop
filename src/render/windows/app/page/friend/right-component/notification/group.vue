@@ -49,6 +49,9 @@ import { useGroupJoinRequestStore } from 'renderModule/windows/app/pinia/group/g
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import NotificationItem from './item.vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('GroupNotificationContent')
 
 export default defineComponent({
   name: 'GroupNotificationContent',
@@ -66,7 +69,7 @@ export default defineComponent({
       await groupJoinRequestStore.init()
 
       loadNotifications()
-      console.log('群申请列表:', groupJoinRequestList.value)
+      logger.info({ text: '群申请列表', data: { list: groupJoinRequestList.value } })
     })
 
     const loadNotifications = async () => {
@@ -157,7 +160,7 @@ export default defineComponent({
         }
       }
       catch (error) {
-        console.error('处理群申请失败:', error)
+        logger.error({ text: '处理群申请失败', data: { error } })
         // 可以在这里显示错误提示
       }
     }

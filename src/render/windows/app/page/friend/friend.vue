@@ -43,6 +43,9 @@ import { defineComponent, onMounted } from 'vue'
 import CreateGroupComponent from './detail-component/create-group.vue'
 import FriendLeftComponent from './left-component/FriendLeft.vue'
 import FriendRightComponent from './right-component/index.vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('FriendPage')
 
 export default defineComponent({
   components: {
@@ -60,7 +63,7 @@ export default defineComponent({
 
     // 群聊创建成功回调
     const onGroupCreated = (groupInfo: any) => {
-      console.log('群聊创建成功:', groupInfo)
+      logger.info({ text: '群聊创建成功', data: { groupInfo } })
       // 这里可以添加刷新群聊列表等逻辑
       friendViewStore.showDialog(null)
     }

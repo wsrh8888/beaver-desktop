@@ -117,6 +117,9 @@ import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { computed, onMounted, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('CreateGroup')
 
 export default {
   name: 'CreateGroup',
@@ -196,11 +199,11 @@ export default {
           handleClose()
         }
         else {
-          console.error('创建群聊失败:', res.msg)
+          logger.error({ text: '创建群聊失败', data: { msg: res.msg } })
         }
       }
       catch (error) {
-        console.error('创建群聊失败:', error)
+        logger.error({ text: '创建群聊失败', data: { error } })
       }
     }
 

@@ -27,8 +27,11 @@ import type {
 } from 'renderModule/windows/ai/types/model'
 import { AI_MODEL_AUTO_ID } from 'renderModule/windows/ai/types/model'
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger'
 
 const DEFAULT_SELECTED: IAiSelectedModel = { source: 'official', id: AI_MODEL_AUTO_ID }
+
+const logger = new Logger('AiModelStore')
 
 /**
  * 官方模型（含虚拟 Auto）+ 用户自定义模型。
@@ -78,8 +81,10 @@ export const useAiModelStore = defineStore('useAiModelStore', {
       const exists = source === 'official'
         ? this.officialModels.some(m => m.id === id)
         : this.customModels.some(m => m.id === id)
-      if (!exists)
+      if (!exists) {
+        logger.warn({ text: '选择不存在的模型', data: { source, id } })
         return
+      }
       this.selected = { source, id }
     },
 
@@ -97,8 +102,11 @@ export const useAiModelStore = defineStore('useAiModelStore', {
         this.selected = { source: 'official', id: this.officialModels[0].id }
         return
       }
-      if (this.customModels.length > 0)
+      if (this.customModels.length > 0) {
         this.selected = { source: 'custom', id: this.customModels[0].id }
+        return
+      }
+      logger.warn({ text: '无可选模型，发送可能失败', data: { official: this.officialModels.length, custom: this.customModels.length } })
     },
   },
 })

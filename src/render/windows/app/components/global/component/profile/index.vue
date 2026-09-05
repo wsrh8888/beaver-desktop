@@ -138,6 +138,9 @@ import Message from 'renderModule/components/ui/message'
 import { uploadFile } from 'renderModule/utils/upload'
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { defineComponent, ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ProfileComponent')
 
 export default defineComponent({
   name: 'ProfileComponent',
@@ -207,7 +210,7 @@ export default defineComponent({
         }
       }
       catch (error) {
-        console.error('头像上传失败:', error)
+        logger.error({ text: '头像上传失败', data: { error } })
         Message.error('头像上传失败，请重试')
       }
       finally {
@@ -247,7 +250,7 @@ export default defineComponent({
         }
       }
       catch (error) {
-        console.error('保存失败:', error)
+        logger.error({ text: '保存失败', data: { error } })
         Message.error('保存失败，请重试')
       }
       finally {

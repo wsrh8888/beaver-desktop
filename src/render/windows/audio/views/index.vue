@@ -94,6 +94,9 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('AudioPlayerView')
 
 export default defineComponent({
   name: 'AudioPlayer',
@@ -137,7 +140,7 @@ export default defineComponent({
     }
 
     const handleAudioError = (e: Event) => {
-      console.error('音频加载失败', e)
+      logger.error({ text: '音频加载失败', data: { error: e } })
     }
 
     const togglePlay = () => {
@@ -214,7 +217,7 @@ export default defineComponent({
     watch(() => isPlaying.value, (playing) => {
       if (audioRef.value) {
         if (playing) {
-          audioRef.value.play().catch(console.error)
+          audioRef.value.play().catch((err: any) => logger.error({ text: '音频播放失败', data: { error: err } }))
         }
         else {
           audioRef.value.pause()

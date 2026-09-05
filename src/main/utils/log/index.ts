@@ -76,13 +76,14 @@ class Log {
   formatLog(level: string, msg: ILogger, moduleName = '', source = 'main') {
     const userInfo = store.get('userInfo')
     return {
-      level,
+      Level: level,
       message: `${JSON.stringify(msg)}`,
       module: moduleName,
       source,
-      userId: userInfo?.userId || '',
-      deviceId: process.custom.DEVICE_ID,
+      user_id: userInfo?.userId || '',
+      device_id: process.custom.DEVICE_ID,
       platform: process.custom.PLATFORM,
+      project_name: "beaver-desktop",
       version: process.custom.VERSION,
       timestamp: Date.now(),
     }

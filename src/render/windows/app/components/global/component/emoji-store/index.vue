@@ -74,6 +74,9 @@ import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { getEmojiPackagesApi, updateFavoriteEmojiPackageApi } from 'renderModule/api/emoji'
 import EmojiPackageItem from './components/package-item.vue'
 import EmojiPackageDetail from './components/package-detail.vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('EmojiStoreComponent')
 
 export default defineComponent({
   name: 'EmojiStoreComponent',
@@ -118,7 +121,7 @@ export default defineComponent({
           currentPage.value = page
         }
       } catch (error) {
-        console.error('加载表情包列表失败:', error)
+        logger.error({ text: '加载表情包列表失败', data: { error } })
       } finally {
         loading.value = false
       }
@@ -160,7 +163,7 @@ export default defineComponent({
         // 重新初始化emoji store以更新数据
         await emojiStore.init()
       } catch (error) {
-        console.error('收藏表情包失败:', error)
+        logger.error({ text: '收藏表情包失败', data: { error } })
       }
     }
 

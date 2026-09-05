@@ -21,11 +21,16 @@
 
 import { createPinia } from 'pinia'
 import { createApp } from 'vue'
+import Logger from 'renderModule/utils/logger'
 import App from './App.vue'
 import router from './router'
 import 'renderModule/utils/init/window'
 import 'renderModule/assets/style/index.less'
 import './utils/rem/rem'
+
+const logger = new Logger('LoginWindow')
+
+logger.info({ text: '登录窗口渲染进程启动' })
 
 const app = createApp(App)
 const pinia = createPinia()

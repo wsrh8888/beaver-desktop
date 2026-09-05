@@ -21,8 +21,11 @@
 
 import { defineStore } from 'pinia'
 import { createAgentApi } from 'renderModule/api/agent'
+import Logger from 'renderModule/utils/logger'
 
 const AGENT_ID_KEY = 'ai_agent_id'
+
+const logger = new Logger('AiAgentStore')
 
 /**
  * 当前用户默认 Agent 会话 id（createAgent 后缓存，发消息必带）。
@@ -41,11 +44,12 @@ export const useAiAgentStore = defineStore('useAiAgentStore', {
         const cached = await electron.storage.getAsync(AGENT_ID_KEY)
         if (typeof cached === 'string' && cached) {
           this.agentId = cached
+          logger.info({ text: '复用已缓存的 Agent', data: { agentId: this.agentId } })
           return this.agentId
         }
       }
-      catch {
-        // ignore
+      catch (err) {
+        logger.warn({ text: '读取缓存 Agent 失败', data: { error: (err as Error)?.message } })
       }
 
       if (this.ensuring) {
@@ -55,10 +59,13 @@ export const useAiAgentStore = defineStore('useAiAgentStore', {
           if (this.agentId)
             return this.agentId
         }
+        logger.error({ text: '等待并发创建 Agent 超时', data: {} })
+        throw new Error('等待并发创建 Agent 超时')
       }
 
       this.ensuring = true
       try {
+        logger.info({ text: '创建默认 Agent', data: { name: '默认助手' } })
         const res = await createAgentApi({ name: '默认助手' })
         if (res.code !== 0 || !res.result?.agent?.agentId)
           throw new Error(res.msg || 'createAgent failed')
@@ -66,10 +73,15 @@ export const useAiAgentStore = defineStore('useAiAgentStore', {
         try {
           await electron.storage.setAsync(AGENT_ID_KEY, this.agentId)
         }
-        catch {
-          // ignore
+        catch (err) {
+          logger.warn({ text: '缓存 Agent 失败', data: { agentId: this.agentId, error: (err as Error)?.message } })
         }
+        logger.info({ text: '创建 Agent 成功', data: { agentId: this.agentId } })
         return this.agentId
+      }
+      catch (err) {
+        logger.error({ text: '创建 Agent 失败', data: { error: (err as Error)?.message } })
+        throw err
       }
       finally {
         this.ensuring = false

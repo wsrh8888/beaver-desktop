@@ -37,48 +37,84 @@ export const useSettingsStore = defineStore('useSettingsStore', {
 
   actions: {
     async init() {
-      this.settings = await electron.settings.get()
+      try {
+        this.settings = await electron.settings.get()
+        logger.info({ text: '加载用户设置成功', data: { hasSettings: !!this.settings } })
+      }
+      catch (error) {
+        logger.error({ text: '加载用户设置失败', data: { error } })
+      }
     },
 
     async save() {
       if (!this.settings) {
+        logger.warn({ text: '保存设置被跳过：设置尚未初始化' })
         return
       }
-      this.settings = await electron.settings.update({
-        privacy: { ...this.settings.privacy },
-        notification: { ...this.settings.notification },
-        keyboard: { ...this.settings.keyboard },
-      })
+
+      try {
+        this.settings = await electron.settings.update({
+          privacy: { ...this.settings.privacy },
+          notification: { ...this.settings.notification },
+          keyboard: { ...this.settings.keyboard },
+        })
+      }
+      catch (error) {
+        logger.error({ text: '保存用户设置到本地失败', data: { error } })
+        throw error
+      }
     },
 
     async updatePrivacy(key: keyof IUserSettingsPrivacy, value: boolean): Promise<boolean> {
       if (!this.settings) {
+        logger.warn({ text: '更新隐私设置被跳过：设置尚未初始化' })
         return false
       }
       const prev = this.settings.privacy[key]
       this.settings.privacy[key] = value
-      const res = await updateUserSettingsApi({ privacy: { [key]: value } })
-      if (res.code !== 0) {
+
+      try {
+        const res = await updateUserSettingsApi({ privacy: { [key]: value } })
+        if (res.code !== 0) {
+          logger.error({ text: '更新隐私设置失败', data: { key, value, code: res.code, msg: res.msg } })
+          this.settings.privacy[key] = prev
+          return false
+        }
+        await this.save()
+        logger.info({ text: '更新隐私设置成功', data: { key, value } })
+        return true
+      }
+      catch (error) {
+        logger.error({ text: '更新隐私设置异常', data: { key, value, error } })
         this.settings.privacy[key] = prev
         return false
       }
-      await this.save()
-      return true
     },
 
     async updateNotification(key: keyof IUserSettingsNotification, value: boolean): Promise<boolean> {
       if (!this.settings) {
+        logger.warn({ text: '更新通知设置被跳过：设置尚未初始化' })
         return false
       }
       const prev = this.settings.notification[key]
       this.settings.notification[key] = value
-      const res = await updateUserSettingsApi({ notification: { [key]: value } })
-      if (res.code !== 0) {
+
+      try {
+        const res = await updateUserSettingsApi({ notification: { [key]: value } })
+        if (res.code !== 0) {
+          logger.error({ text: '更新通知设置失败', data: { key, value, code: res.code, msg: res.msg } })
+          this.settings.notification[key] = prev
+          return false
+        }
+        await this.save()
+        logger.info({ text: '更新通知设置成功', data: { key, value } })
+        return true
+      }
+      catch (error) {
+        logger.error({ text: '更新通知设置异常', data: { key, value, error } })
         this.settings.notification[key] = prev
         return false
       }
-      await this.save()
-      return true
     },
 
     async updateKeyboard(actionId: KeyboardActionId, binding: string): Promise<boolean> {

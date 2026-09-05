@@ -82,8 +82,11 @@ import { computed, defineComponent, ref } from 'vue'
 import { createCircleApi } from 'renderModule/api/circle'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
+import Logger from 'renderModule/utils/logger'
 import { uploadFile } from 'renderModule/utils/upload'
 import { useCircleStore } from 'renderModule/windows/circle/store/circle/circle'
+
+const logger = new Logger('CreateCircleModal')
 
 export default defineComponent({
   name: 'CircleCreateModal',
@@ -111,39 +114,64 @@ export default defineComponent({
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file)
         return
-      const uploadResult = await uploadFile(file)
-      if (uploadResult?.fileUrl) {
-        avatar.value = uploadResult.fileUrl
+
+      try {
+        const uploadResult = await uploadFile(file)
+        if (uploadResult?.fileUrl) {
+          avatar.value = uploadResult.fileUrl
+          logger.info({ text: '圈子头像上传成功', data: { fileName: file.name } })
+        }
+        else {
+          logger.error({ text: '圈子头像上传失败', data: { fileName: file.name, size: file.size } })
+          Message.error('头像上传失败，请重试')
+        }
       }
-      else {
+      catch (error) {
+        logger.error({ text: '圈子头像上传异常', data: { fileName: file.name, error } })
         Message.error('头像上传失败，请重试')
       }
-      if (avatarInputRef.value)
-        avatarInputRef.value.value = ''
+      finally {
+        if (avatarInputRef.value)
+          avatarInputRef.value.value = ''
+      }
     }
 
     const handleSubmit = async () => {
       if (!canSubmit.value || submitting.value)
         return
+
       submitting.value = true
-      const res = await createCircleApi({
+      const payload = {
         name: name.value.trim(),
         description: description.value.trim(),
         avatar: avatar.value,
         joinType: 0,
-      })
-      submitting.value = false
-      if (res.code !== 0) {
-        Message.error(res.msg || '创建圈子失败')
-        return
       }
-      await circleStore.loadMyCircles()
-      const circleId = res.result.circleId
-      name.value = ''
-      description.value = ''
-      avatar.value = ''
-      emit('success', circleId)
-      emit('close')
+      logger.info({ text: '开始创建圈子', data: { name: payload.name } })
+
+      try {
+        const res = await createCircleApi(payload)
+        if (res.code !== 0) {
+          logger.error({ text: '创建圈子失败', data: { name: payload.name, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '创建圈子失败')
+          return
+        }
+        await circleStore.loadMyCircles()
+        const circleId = res.result.circleId
+        logger.info({ text: '创建圈子成功', data: { circleId, name: payload.name } })
+        name.value = ''
+        description.value = ''
+        avatar.value = ''
+        emit('success', circleId)
+        emit('close')
+      }
+      catch (error) {
+        logger.error({ text: '创建圈子异常', data: { name: payload.name, error } })
+        Message.error('创建圈子异常')
+      }
+      finally {
+        submitting.value = false
+      }
     }
 
     return {

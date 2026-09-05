@@ -65,7 +65,11 @@ import { joinGroupApi } from 'renderModule/api/group'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message/index'
+import Logger from 'renderModule/utils/logger'
 import { computed, defineComponent, ref } from 'vue'
+
+const logger = new Logger('VerifyAddGroup')
+
 
 export default defineComponent({
   name: 'AddGroupComponent',
@@ -95,16 +99,24 @@ export default defineComponent({
 
     // 处理发送申请
     const handleSend = async () => {
-      const result = await joinGroupApi({
-        groupId: props.targetValue.id,
-        message: verifyMessage.value.trim(),
-      })
-      if (result.code === 0) {
-        Message.success('入群申请已发送，等待管理员审核')
-        emit('close')
+      try {
+        const result = await joinGroupApi({
+          groupId: props.targetValue.id,
+          message: verifyMessage.value.trim(),
+        })
+        if (result.code === 0) {
+          logger.info({ text: '发送入群申请成功', data: { groupId: props.targetValue.id } })
+          Message.success('入群申请已发送，等待管理员审核')
+          emit('close')
+        }
+        else {
+          logger.error({ text: '发送入群申请失败', data: { groupId: props.targetValue.id, code: result.code, msg: result.msg } })
+          Message.error(result.msg || '发送入群申请失败，请重试')
+        }
       }
-      else {
-        Message.error(result.msg || '发送入群申请失败，请重试')
+      catch (error) {
+        logger.error({ text: '发送入群申请异常', data: { groupId: props.targetValue.id, error: (error as Error)?.message } })
+        Message.error('发送入群申请失败，请重试')
       }
     }
 

@@ -219,6 +219,9 @@ import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-
 import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
 import { computed, defineComponent, ref, watch } from 'vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('GroupDetailsInfo')
 
 export default defineComponent({
   name: 'groupDetailsInfo',
@@ -420,7 +423,8 @@ export default defineComponent({
         shareInviteUrl.value = res.result.inviteUrl
         shareVisible.value = true
       }
-      catch {
+      catch (error) {
+        logger.error({ text: '获取群邀请链接失败', data: { groupId: groupId.value, error: (error as Error)?.message } })
         Message.error('获取邀请链接失败')
       }
     }

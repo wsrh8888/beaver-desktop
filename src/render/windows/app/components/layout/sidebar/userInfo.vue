@@ -75,6 +75,9 @@ import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
 import { useGlobalStore } from 'renderModule/windows/app/pinia/view/global'
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { userInfoMenuList } from './data'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('UserInfoPopup')
 
 export default defineComponent({
   name: 'UserInfoPopup',
@@ -201,7 +204,7 @@ export default defineComponent({
       try {
         await MessageBox.confirm('确定要退出登录吗？', '提示')
         // 用户点击了确定
-        console.log('退出登录')
+        logger.info({ text: '退出登录' })
         // 调用退出登录的 IPC 方法
         window.electron.auth.logout()
         handleClose()

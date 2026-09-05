@@ -31,6 +31,9 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { toolList } from '../data'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('ChatToolbar')
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message/index'
 import { ChatCore } from 'renderModule/core/message/index'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
@@ -98,7 +101,7 @@ export default defineComponent({
           await ChatCore.sendMessage(conversationId, msg, chatType)
         }
       } catch (error) {
-        console.error('文件上传失败:', error)
+        logger.error({ text: '文件上传失败', data: { error } })
       }
     }
 
@@ -123,7 +126,7 @@ export default defineComponent({
         }
         await ChatCore.sendMessage(conversationId, msg, chatType)
       } catch (error) {
-        console.error('截屏失败:', error)
+        logger.error({ text: '截屏失败', data: { error } })
       }
     }
 

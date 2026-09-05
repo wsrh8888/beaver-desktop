@@ -201,11 +201,14 @@ import { getEmailCodeApi, resetPasswordApi } from 'renderModule/api/auth'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverInput from 'renderModule/components/ui/input/Input.vue'
 import Message from 'renderModule/components/ui/message'
+import Logger from 'renderModule/utils/logger'
 import { useRouterHelper } from 'renderModule/utils/router'
 import { validateField } from 'renderModule/windows/login/utils/validation'
 import { computed, onUnmounted, ref } from 'vue'
 import BrandSection from '../../components/BrandSection.vue'
 import WindowControls from '../../components/WindowControls.vue'
+
+const logger = new Logger('ForgotPasswordView')
 
 export default {
   name: 'ForgotPasswordView',
@@ -304,25 +307,38 @@ export default {
     // 发送验证码
     const handleSendCode = async () => {
       validateEmail()
-      if (errors.value.email)
+      if (errors.value.email) {
+        logger.warn({ text: '发送验证码前邮箱校验未通过', data: { errors: errors.value } })
         return
+      }
 
       loading.value = true
-      const res = await getEmailCodeApi({
-        email: form.value.email,
-        type: 'reset_password',
-      })
+      logger.info({ text: '请求发送重置密码验证码', data: { email: form.value.email } })
 
-      if (res.code === 0) {
-        Message.success('验证码已发送到您的邮箱')
-        currentStep.value = 2
-        startCountdown()
-      }
-      else {
-        Message.error(res.msg || '发送验证码失败')
-      }
+      try {
+        const res = await getEmailCodeApi({
+          email: form.value.email,
+          type: 'reset_password',
+        })
 
-      loading.value = false
+        if (res.code === 0) {
+          logger.info({ text: '重置密码验证码已发送', data: { email: form.value.email } })
+          Message.success('验证码已发送到您的邮箱')
+          currentStep.value = 2
+          startCountdown()
+        }
+        else {
+          logger.error({ text: '发送重置密码验证码失败', data: { email: form.value.email, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '发送验证码失败')
+        }
+      }
+      catch (error) {
+        logger.error({ text: '发送重置密码验证码异常', data: { email: form.value.email, error } })
+        Message.error('发送验证码失败，请稍后重试')
+      }
+      finally {
+        loading.value = false
+      }
     }
 
     // 重新发送验证码
@@ -343,27 +359,40 @@ export default {
       validatePassword()
       validateConfirmPassword()
 
-      if (!isPasswordFormValid.value)
+      if (!isPasswordFormValid.value) {
+        logger.warn({ text: '重置密码表单校验未通过', data: { errors: errors.value } })
         return
+      }
 
       loading.value = true
-      const res = await resetPasswordApi({
-        email: form.value.email,
-        code: form.value.code,
-        password: MD5(form.value.newPassword).toString(),
-      })
+      logger.info({ text: '请求重置密码', data: { email: form.value.email } })
 
-      if (res.code === 0) {
-        Message.success('密码重置成功，请使用新密码登录')
-        setTimeout(() => {
-          routerHelper.push('/login')
-        }, 2000)
-      }
-      else {
-        Message.error(res.msg || '密码重置失败')
-      }
+      try {
+        const res = await resetPasswordApi({
+          email: form.value.email,
+          code: form.value.code,
+          password: MD5(form.value.newPassword).toString(),
+        })
 
-      loading.value = false
+        if (res.code === 0) {
+          logger.info({ text: '密码重置成功', data: { email: form.value.email } })
+          Message.success('密码重置成功，请使用新密码登录')
+          setTimeout(() => {
+            routerHelper.push('/login')
+          }, 2000)
+        }
+        else {
+          logger.error({ text: '密码重置失败', data: { email: form.value.email, code: res.code, msg: res.msg } })
+          Message.error(res.msg || '密码重置失败')
+        }
+      }
+      catch (error) {
+        logger.error({ text: '重置密码请求异常', data: { email: form.value.email, error } })
+        Message.error('密码重置失败，请稍后重试')
+      }
+      finally {
+        loading.value = false
+      }
     }
 
     // 返回登录

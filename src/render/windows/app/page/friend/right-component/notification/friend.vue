@@ -46,6 +46,9 @@ import { valiFrienddAPi } from 'renderModule/api/friend'
 import { useFriendVerifyStore } from 'renderModule/windows/app/pinia/friend/friend_verify'
 import { computed, defineComponent, onMounted } from 'vue'
 import NotificationItem from './item.vue'
+import Logger from 'renderModule/utils/logger'
+
+const logger = new Logger('FriendNotificationContent')
 
 export default defineComponent({
   name: 'FriendNotificationContent',
@@ -74,7 +77,7 @@ export default defineComponent({
 
     onMounted(async () => {
       await friendVerifyStore.init()
-      console.error(friendVerifyList.value, '111')
+      logger.info({ text: '好友验证列表', data: { list: friendVerifyList.value } })
     })
 
     const getHeaderText = (flag: string) => {
@@ -116,10 +119,10 @@ export default defineComponent({
         if (verifyItem) {
           verifyItem.status = status
         }
-        console.log(friendVerifyStore.friendVerifyList, '111')
-        console.log(item, '222')
+        logger.info({ text: '好友验证列表已更新', data: { list: friendVerifyStore.friendVerifyList } })
+        logger.info({ text: '处理好友申请项', data: { item } })
       } catch (error) {
-        console.error('处理好友申请失败:', error)
+        logger.error({ text: '处理好友申请失败', data: { error } })
         // 可以在这里显示错误提示给用户
       }
     }

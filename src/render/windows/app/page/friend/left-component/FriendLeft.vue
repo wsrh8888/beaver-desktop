@@ -146,8 +146,11 @@ import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useNotificationStore } from 'renderModule/windows/app/pinia/notification/notification'
 import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
 import { computed, ref } from 'vue'
+import Logger from 'renderModule/utils/logger'
 import { notificationList, POPUP_MENU_CONFIG, TABS_CONFIG } from '../data'
 import PopupMenu from './PopupMenu.vue'
+
+const logger = new Logger('FriendLeft')
 
 export default {
   components: {
@@ -188,7 +191,7 @@ export default {
       friendViewStore.setSelectedConversationWithType('', value as 'friend-notification' | 'group-notification')
     }
     const changePopupMenu = (visible: boolean) => {
-      console.log('changePopupMenu', visible)
+      logger.info({ text: '切换弹窗菜单显隐', data: { visible } })
       showPopupMenu.value = visible
     }
 
@@ -200,7 +203,7 @@ export default {
           await electron.window.openWindow('search')
         }
         catch (error) {
-          console.error('handlePopupItemClick error', error)
+          logger.error({ text: '处理弹窗菜单项点击失败', data: { error } })
         }
       }
       else if (item.action === 'create-group') {
