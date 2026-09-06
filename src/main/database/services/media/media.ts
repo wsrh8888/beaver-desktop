@@ -22,9 +22,10 @@
 import { and, eq } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { media } from '../../tables/media/media'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('media')
+
+import type {
 
   DBUpsertMediaReq,
   DBGetMediaInfoReq,

@@ -22,10 +22,10 @@
 import { eq, inArray } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { emojiPackageEmoji } from 'mainModule/database/tables/emoji/package_emoji'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('package-emoji')
 
+import type {
   DBCreatePackageEmojiReq,
   DBBatchCreatePackageEmojisReq,
   DBGetEmojisByPackageIdReq,

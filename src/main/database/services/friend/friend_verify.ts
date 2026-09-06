@@ -23,9 +23,10 @@ import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { friendVerifies } from '../../tables/friend/friend_verify'
 import { users } from '../../tables/user/user'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('friend_verify')
+
+import type {
 
   DBCreateFriendVerifyReq,
   DBCreateFriendVerifyRes,

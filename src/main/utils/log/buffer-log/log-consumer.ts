@@ -21,8 +21,6 @@
 
 import { debounce, random } from 'lodash-es'
 import BatchQueue from './batch-queue'
-import Logger from 'mainModule/utils/logger';
-const logger = new Logger('log-consumer')
 
 
 const kTimeValve = 5 * 1000
@@ -47,7 +45,6 @@ class LogConsumer {
   private _defaultWriterTag = ''
 
   registerWriter(tag: string, writer: WriterInfo['writer'], isDefault = false) {
-    logger.info({ text: 'registerWriter 开始' })
     const info: WriterInfo = { writer, queue: new BatchQueue() }
     this._writerMap.set(tag, info)
     this._timeoutMap.set(
@@ -62,7 +59,6 @@ class LogConsumer {
   }
 
   consume(log: any, tag?: string) {
-    logger.info({ text: 'consume 开始' })
     const writerTag = tag || this._defaultWriterTag
     const info = this._writerMap.get(writerTag)
     if (!info) {
@@ -73,7 +69,6 @@ class LogConsumer {
   }
 
   async stop(timeout = 3000) {
-    logger.info({ text: 'stop 开始' })
     if (!this.isWritting()) {
       for (const info of this._writerMap.values()) {
         this._writeAsAbility(info)
@@ -87,12 +82,10 @@ class LogConsumer {
   }
 
   isWritting() {
-    logger.info({ text: 'isWritting 开始' })
     return this._writting
   }
 
   private _check(info: WriterInfo, timeoutDbc?: ReturnType<typeof debounce>) {
-    logger.info({ text: '_check 开始' })
     if (!this._canWrite()) {
       return false
     }
@@ -108,20 +101,17 @@ class LogConsumer {
   }
 
   private _checkAll() {
-    logger.info({ text: '_checkAll 开始' })
     for (const [key, value] of this._writerMap.entries()) {
       this._check(value, this._timeoutMap.get(key))
     }
   }
 
   private async _timeout(info: WriterInfo) {
-    logger.info({ text: '_timeout 开始' })
     await this._writePromise
     return this._writeAsAbility(info)
   }
 
   private _writeAsAbility(info: WriterInfo) {
-    logger.info({ text: '_writeAsAbility 开始' })
     const len = info.queue.length()
     if (len > 0) {
       const count = len > kMaxCount ? kMaxCount : len
@@ -131,7 +121,6 @@ class LogConsumer {
   }
 
   private async _write(info: WriterInfo, count: number) {
-    logger.info({ text: '_write 开始' })
     if (!this._canWrite()) {
       return
     }
@@ -142,12 +131,10 @@ class LogConsumer {
   }
 
   private async _writeUntilSuccess(info: WriterInfo, count: number, deep: number) {
-    logger.info({ text: '_writeUntilSuccess 开始' })
     try {
       await info.writer.write(info.queue.multiFront(count))
     }
     catch {
-      logger.error({ text: '_writeUntilSuccess 失败' })
       if (info.queue.length() < kMaxQueue && deep < kMaxDeep) {
         await new Promise(resolve => setTimeout(resolve, random(2000, 3000)))
         return this._writeUntilSuccess(info, count, deep + 1)
@@ -156,7 +143,6 @@ class LogConsumer {
   }
 
   private _canWrite() {
-    logger.info({ text: '_canWrite 开始' })
     return !this.isWritting() && !this._stop
   }
 }

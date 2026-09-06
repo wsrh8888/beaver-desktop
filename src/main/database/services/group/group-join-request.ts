@@ -22,9 +22,10 @@
 import { and, eq, gte, inArray, lte, or, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { groupJoinRequests } from 'mainModule/database/tables/group/join-requests'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('group-join-request')
+
+import type {
 
   DBCreateGroupJoinRequestReq,
   DBBatchCreateGroupJoinRequestsReq,

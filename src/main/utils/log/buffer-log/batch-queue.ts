@@ -19,8 +19,6 @@
  * beaver-desktop-header-v2
  */
 
-import Logger from 'mainModule/utils/logger';
-const logger = new Logger('batch-queue')
 
 class BatchQueue {
   private _q: any[]
@@ -30,12 +28,10 @@ class BatchQueue {
   }
 
   enqueue(...elements: any[]) {
-    logger.info({ text: 'enqueue 开始' })
     this._q.push(...elements)
   }
 
   multiDequeue(count = 1) {
-    logger.info({ text: 'multiDequeue 开始' })
     if (this.length() < count) {
       return []
     }
@@ -43,17 +39,14 @@ class BatchQueue {
   }
 
   multiFront(count = 1) {
-    logger.info({ text: 'multiFront 开始' })
     return this._q.slice(0, count)
   }
 
   empty() {
-    logger.info({ text: 'empty 开始' })
     return this.length() === 0
   }
 
   length() {
-    logger.info({ text: 'length 开始' })
     return this._q.length
   }
 }

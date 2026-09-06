@@ -24,9 +24,10 @@ import { and, eq, gte, inArray, lte, or } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { friends } from 'mainModule/database/tables/friend/friend'
 import { users } from 'mainModule/database/tables/user/user'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('friend')
+
+import type {
 
   DBCreateFriendReq,
   DBUpsertFriendReq,

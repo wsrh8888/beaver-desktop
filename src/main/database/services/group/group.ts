@@ -23,10 +23,10 @@ import type { IDBGroup } from 'commonModule/type/database/db/group'
 import { eq, inArray } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { groups } from 'mainModule/database/tables/group/groups'
-
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('group')
+
+import type {
 
   DBCreateGroupReq,
   DBUpsertGroupReq,

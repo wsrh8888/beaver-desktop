@@ -23,9 +23,10 @@ import type { IDBNotificationInbox } from 'commonModule/type/database/db/notific
 import { and, desc, eq, gt, inArray, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { notificationInboxes } from 'mainModule/database/tables/notification/inbox'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('inbox')
+
+import type {
 
   DBBatchAddToInboxReq,
   DBGetUserInboxReq,

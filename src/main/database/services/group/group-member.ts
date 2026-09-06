@@ -24,10 +24,11 @@ import type { IDBGroupMember } from 'commonModule/type/database/db/group'
 import { and, eq, gte, inArray, lte } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { groups } from 'mainModule/database/tables/group/groups'
-import { groupMembers } from 'mainModule/database/tables/group/members'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('group-member')
+
+import { groupMembers } from 'mainModule/database/tables/group/members'
+import type {
 
   DBAddGroupMemberReq,
   DBBatchAddGroupMembersReq,

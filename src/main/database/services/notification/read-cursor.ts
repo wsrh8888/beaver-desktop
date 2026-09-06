@@ -23,9 +23,10 @@ import type { IDBNotificationReadCursor } from 'commonModule/type/database/db/no
 import { and, eq, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { notificationReads } from 'mainModule/database/tables/notification/read'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('read-cursor')
+
+import type {
 
   DBUpsertCursorReq,
   DBGetCursorReq,

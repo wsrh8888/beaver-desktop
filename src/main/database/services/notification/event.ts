@@ -22,10 +22,11 @@
 import type { IDBNotificationEvent } from 'commonModule/type/database/db/notification'
 import { gt, inArray, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
-import { notificationEvents } from 'mainModule/database/tables/notification/event'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('event')
+
+import { notificationEvents } from 'mainModule/database/tables/notification/event'
+import type {
 
   DBBatchCreateNotificationEventsReq,
   DBGetEventsAfterVersionReq,

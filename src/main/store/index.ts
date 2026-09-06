@@ -23,8 +23,6 @@ import type { IStore, IStoreDataMap, IStoreKey, IStoreOptions, IStoreValue } fro
 import path from 'node:path'
 import ElectronStore from 'electron-store'
 import { getRootPath } from 'mainModule/config'
-import Logger from 'mainModule/utils/logger';
-const logger = new Logger('index')
 
 
 /**
@@ -64,7 +62,6 @@ class Store implements IStore {
       }
     }
     catch (error) {
-      logger.error({ text: 'constructor 失败', data: { error: (error as Error)?.message } })
       console.error(error)
     }
   }
@@ -78,7 +75,6 @@ class Store implements IStore {
       return _value
     }
     catch (error) {
-      logger.error({ text: 'constructor 失败', data: { error: (error as Error)?.message } })
       console.error(`Failed to get store value for key "${key}":`, error)
       return null
     }
@@ -103,7 +99,6 @@ class Store implements IStore {
       }
     }
     catch (error) {
-      logger.error({ text: 'constructor 失败', data: { error: (error as Error)?.message } })
       console.error('Failed to set store value:', error)
     }
   }
@@ -118,7 +113,6 @@ class Store implements IStore {
       }
     }
     catch (error) {
-      logger.error({ text: 'constructor 失败', data: { error: (error as Error)?.message } })
       console.error('Failed to delete store value:', error)
     }
   }
@@ -126,7 +120,6 @@ class Store implements IStore {
 
 // 导出初始化方法和实例获取方法
 export const initStore = () => {
-    logger.info({ text: 'initStore 开始' })
   Store.getInstance()
 }
 

@@ -22,9 +22,10 @@
 import { eq, inArray } from 'drizzle-orm'
 import { chatConversations } from 'mainModule/database/tables/chat/conversation'
 import { BaseService } from '../base'
-import type {
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('conversation')
+
+import type {
 
   DBCreateConversationReq,
   DBUpsertConversationReq,

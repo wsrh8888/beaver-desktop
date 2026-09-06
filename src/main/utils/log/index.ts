@@ -29,20 +29,16 @@ import { getCachePath } from 'mainModule/config'
 import { store } from 'mainModule/store'
 import moment from 'moment'
 import LogConsumer from './buffer-log/log-consumer'
-import Logger from 'mainModule/utils/logger';
-const logger = new Logger('index')
 
 
 class Log {
   private consumer: LogConsumer | null = null
 
   private getConsumer() {
-    logger.info({ text: 'getConsumer 开始' })
     if (this.consumer == null) {
       this.consumer = new LogConsumer()
       this.consumer.registerWriter('cloud', {
         write: async (items) => {
-    logger.info({ text: 'write 开始' })
           if (!items.length) {
             return
           }
@@ -57,7 +53,6 @@ class Log {
   }
 
   init(userId?: string) {
-    logger.info({ text: 'init 开始' })
     const dateStr = moment().format('YYYY-MM-DD')
 
     const logPath = userId
@@ -80,7 +75,6 @@ class Log {
   }
 
   formatLog(level: string, msg: ILogger, moduleName = '', source = 'main') {
-    logger.info({ text: 'formatLog 开始' })
     const userInfo = store.get('userInfo')
     return {
       Level: level,
@@ -97,17 +91,14 @@ class Log {
   }
 
   transformName(source: string, name = '') {
-    logger.info({ text: 'transformName 开始' })
     return `[${source}${name ? `-${name}` : ''}] `
   }
 
   private pushCloud(level: string, msg: ILogger, moduleName = '', source = 'main') {
-    logger.info({ text: 'pushCloud 开始' })
     this.getConsumer().consume(this.formatLog(level, msg, moduleName, source))
   }
 
   info(msg: ILogger, moduleName = '', source = 'main') {
-    logger.info({ text: 'info 开始' })
     const message = JSON.stringify(msg)
     console.log('info', this.transformName(source, moduleName) + message)
     this.pushCloud('info', msg, moduleName, source)
@@ -115,7 +106,6 @@ class Log {
   }
 
   warn(msg: ILogger, moduleName = '', source = 'main') {
-    logger.info({ text: 'warn 开始' })
     const message = JSON.stringify(msg)
     console.warn('warn', this.transformName(source, moduleName) + message)
     this.pushCloud('warn', msg, moduleName, source)
@@ -123,7 +113,6 @@ class Log {
   }
 
   error(msg: ILogger, moduleName = '', source = 'main') {
-    logger.info({ text: 'error 开始' })
     const message = JSON.stringify(msg)
     console.error('error', this.transformName(source, moduleName) + message)
     this.pushCloud('error', msg, moduleName, source)
@@ -131,7 +120,7 @@ class Log {
   }
 
   async stop(timeout = 3000) {
-    logger.info({ text: 'stop 开始' })
+
     if (this.consumer) {
       await this.consumer.stop(timeout)
     }
