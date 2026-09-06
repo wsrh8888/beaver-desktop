@@ -151,6 +151,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import { computed, defineComponent, onMounted, reactive, ref } from 'vue'
 import {
   createAgentModelApi,
@@ -174,6 +177,7 @@ export default defineComponent({
   name: 'AiSettingsModel',
   components: { BeaverButton, BeaverCheckbox, BeaverDialog, BeaverInput },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const aiModelStore = useAiModelStore()
     const addVisible = ref(false)
     const saving = ref(false)
@@ -202,6 +206,7 @@ export default defineComponent({
     })
 
     const tierLabel = (tier: string) => {
+    logger.info({ text: 'tierLabel 开始' })
       if (tier === 'fast')
         return '快速'
       if (tier === 'strong')
@@ -218,6 +223,7 @@ export default defineComponent({
     })
 
     const resetForm = () => {
+    logger.info({ text: 'resetForm 开始' })
       form.endpoint = ''
       form.apiKey = ''
       form.name = ''
@@ -226,11 +232,13 @@ export default defineComponent({
     }
 
     const openAddDialog = () => {
+    logger.info({ text: 'openAddDialog 开始' })
       resetForm()
       addVisible.value = true
     }
 
     const loadModels = async () => {
+    logger.info({ text: 'loadModels 开始' })
       try {
         const res = await listAgentModelsApi()
         if (res.code !== 0)
@@ -246,11 +254,13 @@ export default defineComponent({
         aiModelStore.setCustomModels(list)
       }
       catch {
+      logger.error({ text: 'defineComponent 失败' })
         // 列表失败时保持现状
       }
     }
 
     const handleAdd = async () => {
+    logger.info({ text: 'handleAdd 开始' })
       if (!canAdd.value || saving.value)
         return
       saving.value = true
@@ -281,6 +291,7 @@ export default defineComponent({
         resetForm()
       }
       catch {
+      logger.error({ text: 'defineComponent 失败' })
         Message.error('添加模型失败')
       }
       finally {
@@ -289,6 +300,7 @@ export default defineComponent({
     }
 
     const handleRemove = async (id: string) => {
+    logger.info({ text: 'handleRemove 开始' })
       if (removingId.value)
         return
       removingId.value = id
@@ -302,6 +314,7 @@ export default defineComponent({
         Message.success('已删除')
       }
       catch {
+      logger.error({ text: 'defineComponent 失败' })
         Message.error('删除失败')
       }
       finally {

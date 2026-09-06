@@ -24,6 +24,9 @@ import path from 'node:path'
 import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
 import ApplicationBase from './common/base'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('call-incoming')
+
 
 /**
  * 来电提示窗口 - 小窗口，用于显示来电邀请
@@ -38,6 +41,7 @@ class CallIncomingApplication extends ApplicationBase implements Application {
   }
 
   public createBrowserWindow(): BrowserWindow {
+    logger.info({ text: 'createBrowserWindow 开始' })
     this.win = new BrowserWindow({
       width: 360,
       height: 180,
@@ -70,6 +74,7 @@ class CallIncomingApplication extends ApplicationBase implements Application {
    * 关闭指定 roomId 的来电窗口
    */
   public closeByRoomId(roomId: string) {
+    logger.info({ text: 'closeByRoomId 开始' })
     const win = this.incomingWindows.get(roomId)
     if (win && !win.isDestroyed()) {
       win.close()
@@ -81,6 +86,7 @@ class CallIncomingApplication extends ApplicationBase implements Application {
    * 获取指定 roomId 的窗口
    */
   public getWindowByRoomId(roomId: string): BrowserWindow | undefined {
+    logger.info({ text: 'getWindowByRoomId 开始' })
     return this.incomingWindows.get(roomId)
   }
 
@@ -88,6 +94,7 @@ class CallIncomingApplication extends ApplicationBase implements Application {
    * 获取所有来电窗口
    */
   public getAllWindows(): Map<string, BrowserWindow> {
+    logger.info({ text: 'getAllWindows 开始' })
     return this.incomingWindows
   }
 }

@@ -23,6 +23,9 @@ import type { IUserInfo } from 'commonModule/type/store/userInfo'
 import { defineStore } from 'pinia'
 import { updateInfoApi } from 'renderModule/api/user'
 import { useContactStore } from '../contact/contact'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('user')
+
 
 /**
  * @description: 当前用户信息管理
@@ -47,6 +50,7 @@ export const useUserStore = defineStore('useUserStore', {
 
   actions: {
     async init() {
+    logger.info({ text: 'init 开始' })
       const storeUserId = await electron.storage.getAsync('userInfo')
       if (storeUserId) {
         this.currentUserId = storeUserId.userId!
@@ -54,6 +58,7 @@ export const useUserStore = defineStore('useUserStore', {
     },
 
     async updateUserInfo(updates: Partial<IUserInfo>): Promise<boolean> {
+    logger.info({ text: 'updateUserInfo 开始' })
       const res = await updateInfoApi(updates)
       if (res.code === 0) {
         // 直接更新到contactStore（用户主动更新，强制更新）
@@ -68,6 +73,7 @@ export const useUserStore = defineStore('useUserStore', {
     },
 
     reset() {
+    logger.info({ text: 'reset 开始' })
       this.currentUserId = ''
     },
   },

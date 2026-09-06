@@ -24,6 +24,9 @@ import type {
   IUserSettingsPrivacy,
 } from 'commonModule/type/ajax/user'
 import type { KeyboardActionId } from 'commonModule/type/mainStore'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('settingsRegistry')
+
 
 export type SettingsFieldType = 'devices' | 'toggle-group' | 'keyboard' | 'upgrade' | 'about'
 
@@ -105,9 +108,11 @@ export const settingsRegistry: ISettingsSection[] = [
 ]
 
 export function findSettingsSection(sectionId: string): ISettingsSection | undefined {
+    logger.info({ text: 'findSettingsSection 开始' })
   return settingsRegistry.find(section => section.id === sectionId)
 }
 
 export function getDefaultActiveSectionId(): string {
+    logger.info({ text: 'getDefaultActiveSectionId 开始' })
   return settingsRegistry[0].id
 }

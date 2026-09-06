@@ -26,12 +26,17 @@
  */
 
 import os from 'node:os'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 function encodeUAToken(value: string): string {
+    logger.info({ text: 'encodeUAToken 开始' })
   return encodeURIComponent(value)
 }
 
 export function generateUserAgentIdentifier(): string {
+    logger.info({ text: 'generateUserAgentIdentifier 开始' })
   const version = process.custom.VERSION
   const deviceId = process.custom.DEVICE_ID
   const platformName = process.custom.PLATFORM

@@ -19,6 +19,9 @@
  * beaver-desktop-header-v2
  */
 
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 /**
  * 图片工具函数
  */
@@ -42,6 +45,7 @@ export function calculateImageSize(
   maxWidth: number = 240,
   maxHeight: number = 300,
 ): ImageSize {
+    logger.info({ text: 'calculateImageSize 开始' })
   // 如果图片的宽度和高度都小于最大限制，直接使用原始尺寸
   if (originalWidth <= maxWidth && originalHeight <= maxHeight) {
     return {

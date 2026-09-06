@@ -74,6 +74,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('message')
+
 import type { ICirclePostItem } from 'commonModule/type/ajax/circle'
 import { computed, defineComponent, ref, watch } from 'vue'
 import CircleDetailsComponent from 'renderModule/windows/circle/page/circle/detail-components/details/index.vue'
@@ -110,6 +113,7 @@ export default defineComponent({
     GroupAssistantOverlay,
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const currentDetailType = ref<DetailType | null>(null)
     const activePost = ref<ICirclePostItem | null>(null)
     const circleRightRef = ref<{
@@ -145,18 +149,22 @@ export default defineComponent({
     })
 
     const handleShowDetails = (type: DetailType) => {
+    logger.info({ text: 'handleShowDetails 开始' })
       currentDetailType.value = type
     }
 
     const hideDetails = () => {
+    logger.info({ text: 'hideDetails 开始' })
       currentDetailType.value = null
     }
 
     const handleShowPostDetail = (post: ICirclePostItem) => {
+    logger.info({ text: 'handleShowPostDetail 开始' })
       activePost.value = post
     }
 
     const handlePostChanged = async () => {
+    logger.info({ text: 'handlePostChanged 开始' })
       await circleRightRef.value?.loadPosts()
       if (activePost.value) {
         const latest = circleRightRef.value?.postList?.find(
@@ -168,6 +176,7 @@ export default defineComponent({
     }
 
     const handleCircleQuit = () => {
+    logger.info({ text: 'handleCircleQuit 开始' })
       hideDetails()
       activePost.value = null
       if (messageViewStore.currentChatId)

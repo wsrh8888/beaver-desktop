@@ -22,12 +22,16 @@
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { getSelectedText } from 'renderModule/windows/app/page/message/right-component/content/utils/copy'
 import { BaseMessageHandler } from './base'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('text')
+
 
 /**
  * 文本消息处理器
  */
 class TextHandler extends BaseMessageHandler {
   handleCommand(commandId: string, message: any): Promise<void> {
+    logger.info({ text: 'handleCommand 开始' })
     switch (commandId) {
       case 'copy':
         return this.handleCopy(message)
@@ -50,10 +54,12 @@ class TextHandler extends BaseMessageHandler {
   }
 
   getSupportedCommands(): string[] {
+    logger.info({ text: 'getSupportedCommands 开始' })
     return ['copy', 'reply', 'forward', 'recall', 'delete', 'multiSelect']
   }
 
   getMenuItems(hasTextSelected: boolean = false, isSender: boolean = false): ContextMenuItem[] {
+    logger.info({ text: 'getMenuItems 开始' })
     if (hasTextSelected) {
       return [{ id: 'copy', label: '复制' }, { id: 'multiSelect', label: '多选' }]
     }
@@ -71,6 +77,7 @@ class TextHandler extends BaseMessageHandler {
   }
 
   private async handleCopy(message: any): Promise<void> {
+    logger.info({ text: 'handleCopy 开始' })
     // 优先用右键打开菜单时保存的选中文字（点击复制时选区可能已丢失）
     const selectedText = (message as any)._selectedText ?? getSelectedText()
     const textToCopy = selectedText || message.msg.textMsg?.content || ''

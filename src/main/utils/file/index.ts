@@ -23,6 +23,9 @@ import type { Buffer } from 'node:buffer'
 import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 /**
  * 创建目录
@@ -32,6 +35,7 @@ export async function createDir(dirPath: string): Promise<void> {
     await fs.promises.mkdir(dirPath, { recursive: true })
   }
   catch {
+      logger.error({ text: 'createDir 失败' })
     // 目录已存在或其他错误，忽略
   }
 }
@@ -45,6 +49,7 @@ export async function dirExists(dirPath: string): Promise<boolean> {
     return stat.isDirectory()
   }
   catch {
+      logger.error({ text: 'dirExists 失败' })
     return false
   }
 }
@@ -58,6 +63,7 @@ export async function fileExists(filePath: string): Promise<boolean> {
     return stat.isFile()
   }
   catch {
+      logger.error({ text: 'fileExists 失败' })
     return false
   }
 }
@@ -82,6 +88,7 @@ export async function deleteFile(filePath: string): Promise<boolean> {
     return false
   }
   catch {
+      logger.error({ text: 'deleteFile 失败' })
     return false
   }
 }
@@ -95,6 +102,7 @@ export async function getFileSize(filePath: string): Promise<number> {
     return stat.size
   }
   catch {
+      logger.error({ text: 'getFileSize 失败' })
     return 0
   }
 }
@@ -110,6 +118,7 @@ export function getFileExtFromUrl(fileUrl: string): string {
     }
   }
   catch {
+      logger.error({ text: 'getFileExtFromUrl 失败' })
     // ignore
   }
 
@@ -164,6 +173,7 @@ export async function calculateFileMD5(filePath: string): Promise<string> {
     })
   }
   catch (error) {
+      logger.error({ text: 'calculateFileMD5 失败', data: { error: (error as Error)?.message } })
     throw new Error(`Failed to calculate MD5 for file ${filePath}: ${(error as Error).message}`)
   }
 }

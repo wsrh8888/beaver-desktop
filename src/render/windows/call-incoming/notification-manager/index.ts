@@ -21,6 +21,9 @@
 
 import { type INotificationPayload, NotificationModule, NotificationCallCommand } from 'commonModule/type/preload/notification'
 import { useIncomingStore } from '../pinia/incoming'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 
 /**
  * 来电通知窗口通知管理（中间层）
@@ -31,6 +34,7 @@ import { useIncomingStore } from '../pinia/incoming'
  */
 class NotificationManager {
   init() {
+    logger.info({ text: 'init 开始' })
     const incomingStore = useIncomingStore()
     const params = (electron as any)?.app?.params
     if (params) incomingStore.setCallInfo(params)
@@ -61,6 +65,7 @@ class NotificationManager {
   }
 
   off() {
+    logger.info({ text: 'off 开始' })
     electron.notification.off(NotificationModule.CALL, this.handleNotification)
   }
 }

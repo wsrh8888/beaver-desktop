@@ -20,11 +20,15 @@
  */
 
 import crypto from 'node:crypto'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 /**
  * 计算MD5
  */
 export function calculateMD5(data: string): string {
+    logger.info({ text: 'calculateMD5 开始' })
   const hash = crypto.createHash('md5')
   hash.update(data)
   return hash.digest('hex')
@@ -34,6 +38,7 @@ export function calculateMD5(data: string): string {
  * 计算SHA256
  */
 export function calculateSHA256(data: string): string {
+    logger.info({ text: 'calculateSHA256 开始' })
   const hash = crypto.createHash('sha256')
   hash.update(data)
   return hash.digest('hex')
@@ -43,5 +48,6 @@ export function calculateSHA256(data: string): string {
  * 生成随机字符串
  */
 export function generateRandomString(length: number = 8): string {
+    logger.info({ text: 'generateRandomString 开始' })
   return Math.random().toString(36).substring(2, 2 + length)
 }

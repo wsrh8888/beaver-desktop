@@ -104,6 +104,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import type { IConversationInfoRes } from 'commonModule/type/ajax/chat'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { CacheType } from 'commonModule/type/cache/cache'
@@ -140,6 +143,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'close', 'sent'],
   setup(props, { emit }) {
+    logger.info({ text: 'setup 开始' })
     const searchKeyword = ref('')
     const selectedId = ref('')
     const sending = ref(false)
@@ -165,14 +169,17 @@ export default defineComponent({
     })
 
     const pickConversation = (item: IConversationInfoRes) => {
+    logger.info({ text: 'pickConversation 开始' })
       selectedId.value = item.conversationId
     }
 
     const clearSelection = () => {
+    logger.info({ text: 'clearSelection 开始' })
       selectedId.value = ''
     }
 
     const loadConversations = async () => {
+    logger.info({ text: 'loadConversations 开始' })
       try {
         const res = await electron.database.chat.getRecentChatList({
           page: 1,
@@ -181,6 +188,7 @@ export default defineComponent({
         conversations.value = res.list || []
       }
       catch {
+      logger.error({ text: 'defineComponent 失败' })
         conversations.value = []
       }
     }
@@ -190,11 +198,13 @@ export default defineComponent({
     })
 
     const handleClose = () => {
+    logger.info({ text: 'handleClose 开始' })
       emit('update:modelValue', false)
       emit('close')
     }
 
     const handleConfirm = async () => {
+    logger.info({ text: 'handleConfirm 开始' })
       if (!selectedId.value || !props.msg || sending.value)
         return
       const target = conversations.value.find(c => c.conversationId === selectedId.value)
@@ -207,6 +217,7 @@ export default defineComponent({
         handleClose()
       }
       catch {
+      logger.error({ text: 'defineComponent 失败' })
         Message.error('发送失败')
       }
       finally {

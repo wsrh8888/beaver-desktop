@@ -21,9 +21,13 @@
 
 import { emojiController } from './controller'
 import { emojiSyncModule } from './emoji'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const emojiDatasync = new class emojiDatasync {
   async checkAndSync() {
+    logger.info({ text: 'checkAndSync 开始' })
     // 并行同步表情数据和表情收藏数据
     await Promise.all([
       emojiSyncModule.checkAndSync(), // emoji表同步

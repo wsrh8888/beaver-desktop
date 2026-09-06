@@ -20,6 +20,9 @@
  */
 
 import type { BrowserWindow } from 'electron'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('registry')
+
 
 export interface IBridgeSession {
   /** 宿主标识，如 workbench */
@@ -33,10 +36,12 @@ class BridgeRegistry {
   private sessions = new Map<number, IBridgeSession>()
 
   register(webContentsId: number, session: IBridgeSession) {
+    logger.info({ text: 'register 开始' })
     this.sessions.set(webContentsId, session)
   }
 
   unregister(webContentsId: number) {
+    logger.info({ text: 'unregister 开始' })
     this.sessions.delete(webContentsId)
   }
 

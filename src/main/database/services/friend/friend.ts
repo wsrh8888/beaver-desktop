@@ -25,6 +25,9 @@ import { BaseService } from '../base'
 import { friends } from 'mainModule/database/tables/friend/friend'
 import { users } from 'mainModule/database/tables/user/user'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('friend')
+
   DBCreateFriendReq,
   DBUpsertFriendReq,
   DBBatchCreateFriendsReq,
@@ -45,6 +48,7 @@ class Friend extends BaseService {
    * @description 创建好友关系
    */
   async create(req: DBCreateFriendReq): Promise<void> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(friends).values(req).run()
   }
 
@@ -52,6 +56,7 @@ class Friend extends BaseService {
    * @description 创建或更新好友关系（upsert操作）
    */
   async upsert(req: DBUpsertFriendReq): Promise<void> {
+    logger.info({ text: 'upsert 开始' })
     await this.db.insert(friends)
       .values(req)
       .onConflictDoUpdate({
@@ -74,6 +79,7 @@ class Friend extends BaseService {
    * @description 批量获取好友详细信息（包含用户信息和备注）
    */
   async getFriendDetails(req: DBGetFriendDetailsReq): Promise<DBGetFriendDetailsRes> {
+    logger.info({ text: 'getFriendDetails 开始' })
     const { userId, friendIds } = req
     if (friendIds.length === 0) {
       return []
@@ -98,6 +104,7 @@ class Friend extends BaseService {
    * @description 根据好友关系ID列表批量查询好友关系记录
    */
   async getFriendsByIds(req: DBGetFriendsByIdsReq): Promise<DBGetFriendsByIdsRes> {
+    logger.info({ text: 'getFriendsByIds 开始' })
     const { friendIds } = req
     if (friendIds.length === 0) {
       return []
@@ -116,6 +123,7 @@ class Friend extends BaseService {
    * @description 根据friendshipIds批量查询本地好友关系（仅原始记录映射）
    */
   async getFriendRecordsByIds(req: DBGetFriendRecordsByIdsReq): Promise<DBGetFriendRecordsByIdsRes> {
+    logger.info({ text: 'getFriendRecordsByIds 开始' })
     const { friendshipIds } = req
     if (friendshipIds.length === 0) {
       return new Map()
@@ -139,6 +147,7 @@ class Friend extends BaseService {
    * @description 批量创建好友关系（调用upsert方法，避免重复数据错误）
    */
   async batchCreate(req: DBBatchCreateFriendsReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     const { friends } = req
     if (friends.length === 0)
       return
@@ -152,6 +161,7 @@ class Friend extends BaseService {
    * @description 获取好友关系记录（纯数据库查询，不含业务逻辑）
    */
   async getFriendRelations(req: DBGetFriendRelationsReq): Promise<DBGetFriendRelationsRes> {
+    logger.info({ text: 'getFriendRelations 开始' })
     const { userId, options } = req
     const { page = 1, limit = 20 } = options || {}
     const offset = (page - 1) * limit
@@ -174,6 +184,7 @@ class Friend extends BaseService {
    * @description 根据版本范围获取好友关系记录（纯数据库查询）
    */
   async getFriendRelationsByVerRange(req: DBGetFriendsByVerRangeReq): Promise<DBGetFriendsByVerRangeRes> {
+    logger.info({ text: 'getFriendRelationsByVerRange 开始' })
     const { userId, startVersion = 0, endVersion = Number.MAX_SAFE_INTEGER } = req
 
     // 查询指定版本范围内的好友关系记录

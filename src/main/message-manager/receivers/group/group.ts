@@ -21,6 +21,9 @@
 
 import groupBusiness from 'mainModule/business/group/group'
 import groupMemberBusiness from 'mainModule/business/group/group-member'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('group')
+
 
 /**
  * @description: 群组接收器 - 处理 groups 和 group_members 表的操作
@@ -31,6 +34,7 @@ class GroupReceiver {
    * 支持处理 groups 和 group_members 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tables } = tableUpdatesBody
 
     // 第一层循环：遍历所有的表更新

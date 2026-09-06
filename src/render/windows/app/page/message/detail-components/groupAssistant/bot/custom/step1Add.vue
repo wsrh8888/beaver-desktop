@@ -60,6 +60,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('step1Add')
+
 import { createBotApi } from 'renderModule/api/group'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import Message from 'renderModule/components/ui/message'
@@ -75,6 +78,7 @@ export default defineComponent({
   components: { BeaverButton },
   emits: ['close', 'created'],
   setup(_, { emit }) {
+    logger.info({ text: 'setup 开始' })
     const groupAssistantViewStore = useGroupAssistantViewStore()
     const avatarInputRef = ref<HTMLInputElement | null>(null)
     const submitting = ref(false)
@@ -85,10 +89,12 @@ export default defineComponent({
     const defaultAvatar = customTemplate.avatar
 
     const handleAvatarClick = () => {
+    logger.info({ text: 'handleAvatarClick 开始' })
       avatarInputRef.value?.click()
     }
 
     const onAvatarChange = async (e: Event) => {
+    logger.info({ text: 'onAvatarChange 开始' })
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file)
         return
@@ -98,6 +104,7 @@ export default defineComponent({
     }
 
     const submitCreate = async () => {
+    logger.info({ text: 'submitCreate 开始' })
       if (!formName.value.trim()) {
         Message.error('请填写名称')
         return
@@ -118,6 +125,7 @@ export default defineComponent({
     }
 
     const handleCancel = () => {
+    logger.info({ text: 'handleCancel 开始' })
       emit('close')
     }
 

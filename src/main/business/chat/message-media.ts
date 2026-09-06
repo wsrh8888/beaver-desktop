@@ -23,9 +23,13 @@ import { NotificationChatCommand, NotificationModule } from 'commonModule/type/p
 import dbServiceChatMessageMedia from 'mainModule/database/services/chat/message-media'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { store } from 'mainModule/store'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('message-media')
+
 
 class MessageMediaBusiness {
   async batchSave(userId: string, messageIds: string[]) {
+    logger.info({ text: 'batchSave 开始' })
     if (!userId || messageIds.length === 0)
       return
 
@@ -45,6 +49,7 @@ class MessageMediaBusiness {
   }
 
   async handleTableUpdates(userId: string, messageIds: string[]) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const currentUserId = store.get('userInfo')?.userId
     if (!currentUserId || userId !== currentUserId || messageIds.length === 0)
       return

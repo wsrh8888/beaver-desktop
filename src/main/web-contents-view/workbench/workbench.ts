@@ -26,6 +26,9 @@ import path from 'node:path'
 import { WebContentsView } from 'electron'
 import bridgeRegistry from 'mainModule/bridge/registry'
 import { __dirname } from 'mainModule/config'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('workbench')
+
 
 interface IWorkbenchViewOwner {
   win: BrowserWindow
@@ -38,6 +41,7 @@ class WorkbenchWebContentsView {
   private views = new Map<string, IWorkbenchViewOwner>()
 
   open(win: BrowserWindow, tabId: string, url: string, bounds: IEmbedViewBounds) {
+    logger.info({ text: 'open 开始' })
     if (this.views.has(tabId))
       this.show(win, tabId, bounds)
     else
@@ -45,6 +49,7 @@ class WorkbenchWebContentsView {
   }
 
   show(win: BrowserWindow, tabId: string, bounds: IEmbedViewBounds) {
+    logger.info({ text: 'show 开始' })
     this.detachAll(win)
     const owner = this.views.get(tabId)!
     win.contentView.addChildView(owner.view)
@@ -52,18 +57,22 @@ class WorkbenchWebContentsView {
   }
 
   hideAll(win: BrowserWindow) {
+    logger.info({ text: 'hideAll 开始' })
     this.detachAll(win)
   }
 
   setBounds(_win: BrowserWindow, tabId: string, bounds: IEmbedViewBounds) {
+    logger.info({ text: 'setBounds 开始' })
     this.views.get(tabId)?.view.setBounds(this.toBounds(bounds))
   }
 
   reload(_win: BrowserWindow, tabId: string) {
+    logger.info({ text: 'reload 开始' })
     this.views.get(tabId)?.view.webContents.reload()
   }
 
   closeTab(win: BrowserWindow, tabId: string) {
+    logger.info({ text: 'closeTab 开始' })
     const owner = this.views.get(tabId)
     if (!owner)
       return
@@ -75,10 +84,12 @@ class WorkbenchWebContentsView {
   }
 
   detachWindow(win: BrowserWindow) {
+    logger.info({ text: 'detachWindow 开始' })
     ;[...this.views.keys()].forEach(tabId => this.closeTab(win, tabId))
   }
 
   private create(win: BrowserWindow, tabId: string, url: string, bounds: IEmbedViewBounds) {
+    logger.info({ text: 'create 开始' })
     const view = new WebContentsView({
       webPreferences: {
         preload: path.join(__dirname, './preload/bridge.mjs'),
@@ -106,10 +117,12 @@ class WorkbenchWebContentsView {
   }
 
   private detachAll(win: BrowserWindow) {
+    logger.info({ text: 'detachAll 开始' })
     this.views.forEach(owner => this.removeFromWindow(win, owner.view))
   }
 
   private removeFromWindow(win: BrowserWindow, view: WebContentsView) {
+    logger.info({ text: 'removeFromWindow 开始' })
     if (win.isDestroyed())
       return
     if (win.contentView.children.includes(view))
@@ -117,6 +130,7 @@ class WorkbenchWebContentsView {
   }
 
   private toBounds(bounds: IEmbedViewBounds) {
+    logger.info({ text: 'toBounds 开始' })
     return {
       x: Math.round(bounds.x),
       y: Math.round(bounds.y),
@@ -126,12 +140,14 @@ class WorkbenchWebContentsView {
   }
 
   private sendLoadState(win: BrowserWindow, tabId: string, state: EmbedViewLoadState) {
+    logger.info({ text: 'sendLoadState 开始' })
     if (win.isDestroyed())
       return
     win.webContents.send(WORKBENCH_EMBED_STATE_CHANNEL, { tabId, state })
   }
 
   private bindLoadEvents(win: BrowserWindow, tabId: string, view: WebContentsView) {
+    logger.info({ text: 'bindLoadEvents 开始' })
     const { webContents } = view
     webContents.on('did-start-loading', () => this.sendLoadState(win, tabId, 'loading'))
     webContents.on('did-stop-loading', () => this.sendLoadState(win, tabId, 'loaded'))

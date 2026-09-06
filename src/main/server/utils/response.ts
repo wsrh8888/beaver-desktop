@@ -20,6 +20,9 @@
  */
 
 import type { Context } from 'koa'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('response')
+
 
 export interface IResponse {
   code: number
@@ -28,6 +31,7 @@ export interface IResponse {
 }
 
 export function success(ctx: Context, result: any, msg?: string): void {
+    logger.info({ text: 'success 开始' })
   ctx.body = {
     code: 0,
     msg: msg || '获取数据成功',
@@ -36,6 +40,7 @@ export function success(ctx: Context, result: any, msg?: string): void {
 }
 
 export function error(ctx: Context, code: number, msg: string): void {
+    logger.info({ text: 'error 开始' })
   ctx.body = {
     code,
     msg,
@@ -44,6 +49,7 @@ export function error(ctx: Context, code: number, msg: string): void {
 }
 
 export function response(ctx: Context, result: any, err?: string | Error): void {
+    logger.info({ text: 'response 开始' })
   if (!err) {
     ctx.body = {
       code: 0,

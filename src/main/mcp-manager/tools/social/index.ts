@@ -23,6 +23,9 @@
  * 社交相关的MCP工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const socialTools = [
   {
@@ -33,6 +36,7 @@ export const socialTools = [
       limit: z.number().min(1).max(100).default(50).describe('每页数量')
     }),
     handler: async (params) => {
+    logger.info({ text: 'handler 开始' })
       // 这里实现获取好友列表的逻辑
       return {
         success: true,

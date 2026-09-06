@@ -21,9 +21,13 @@
 
 import { friendSyncModule } from './friend'
 import { friendVerifySyncModule } from './friend-verify'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const friendDatasync = new class friendDatasync {
   async checkAndSync() {
+    logger.info({ text: 'checkAndSync 开始' })
     // 并行同步好友数据和好友验证数据
     await Promise.all([
       friendSyncModule.checkAndSync(),

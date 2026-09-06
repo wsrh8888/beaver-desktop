@@ -21,6 +21,9 @@
 
 import { store } from 'mainModule/store'
 import { getH5AuthCodeApi } from 'mainModule/api/oauth'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('quick-sign')
+
 
 /**
  * 快捷登录 Logic 层
@@ -43,6 +46,7 @@ export interface IQuickSignRes {
  * @returns [result, error] - 成功返回数据，失败返回错误信息
  */
 export async function getQuickSign(appId: string): Promise<[IQuickSignRes | null, string | null]> {
+    logger.info({ text: 'getQuickSign 开始' })
   // 检查是否已登录
   const userInfo = store.get('userInfo')
   if (!userInfo || !userInfo.token) {

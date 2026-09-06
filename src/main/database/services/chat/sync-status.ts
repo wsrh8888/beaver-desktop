@@ -23,6 +23,9 @@
 import { and, eq, inArray } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { chatSyncStatus } from '../../tables/chat/sync-status'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('sync-status')
+
 import type {
   DBGetSyncStatusReq,
   DBGetSyncStatusRes,
@@ -65,6 +68,7 @@ class dBServiceChatSyncStatus extends BaseService {
    * @description 获取指定模块的同步状态
    */
   async getSyncStatus(req: DBGetSyncStatusReq): Promise<DBGetSyncStatusRes> {
+    logger.info({ text: 'getSyncStatus 开始' })
     const syncStatus = await this.db.select().from(chatSyncStatus).where(and(eq(chatSyncStatus.module, req.module), eq(chatSyncStatus.conversationId, req.conversationId))).get()
     return syncStatus
   }
@@ -73,6 +77,7 @@ class dBServiceChatSyncStatus extends BaseService {
    * @description 获取消息同步状态
    */
   async getMessageSyncStatus(req: DBGetMessageSyncStatusReq): Promise<DBGetMessageSyncStatusRes> {
+    logger.info({ text: 'getMessageSyncStatus 开始' })
     return await this.getSyncStatus({ module: 'message', conversationId: req.conversationId })
   }
 
@@ -80,6 +85,7 @@ class dBServiceChatSyncStatus extends BaseService {
    * @description 获取会话同步状态
    */
   async getConversationSyncStatus(req: DBGetConversationSyncStatusReq): Promise<DBGetConversationSyncStatusRes> {
+    logger.info({ text: 'getConversationSyncStatus 开始' })
     return await this.getSyncStatus({ module: 'conversation', conversationId: req.conversationId })
   }
 
@@ -87,6 +93,7 @@ class dBServiceChatSyncStatus extends BaseService {
    * @description 获取用户会话同步状态
    */
   async getUserConversationSyncStatus(req: DBGetUserConversationSyncStatusReq): Promise<DBGetUserConversationSyncStatusRes> {
+    logger.info({ text: 'getUserConversationSyncStatus 开始' })
     return await this.getSyncStatus({ module: 'user_conversation', conversationId: req.conversationId })
   }
 
@@ -94,6 +101,7 @@ class dBServiceChatSyncStatus extends BaseService {
    * @description 批量获取同步状态
    */
   async getSyncStatuses(req: DBGetSyncStatusesReq): Promise<DBGetSyncStatusesRes> {
+    logger.info({ text: 'getSyncStatuses 开始' })
     if (req.conversationIds.length === 0)
       return []
     const syncStatuses = await this.db.select().from(chatSyncStatus).where(and(eq(chatSyncStatus.module, req.module), inArray(chatSyncStatus.conversationId, req.conversationIds))).all()
@@ -104,6 +112,7 @@ class dBServiceChatSyncStatus extends BaseService {
    * @description 批量获取会话版本状态
    */
   async getConversationVersions(req: DBGetConversationVersionsReq): Promise<DBGetConversationVersionsRes> {
+    logger.info({ text: 'getConversationVersions 开始' })
     const syncStatuses = await this.getSyncStatuses({ module: 'conversation', conversationIds: req.conversationIds })
     const versions = syncStatuses.map(status => ({
       conversationId: status.conversationId,
@@ -114,6 +123,7 @@ class dBServiceChatSyncStatus extends BaseService {
 
   // 批量获取消息版本状态
   async getMessageVersions(req: DBGetMessageVersionsReq): Promise<DBGetMessageVersionsRes> {
+    logger.info({ text: 'getMessageVersions 开始' })
     const statuses = await this.getSyncStatuses({ module: 'message', conversationIds: req.conversationIds })
     return statuses.map(status => ({
       conversationId: status.conversationId,
@@ -123,6 +133,7 @@ class dBServiceChatSyncStatus extends BaseService {
 
   // 批量获取用户会话版本状态
   async getUserConversationVersions(req: DBGetUserConversationVersionsReq): Promise<DBGetUserConversationVersionsRes> {
+    logger.info({ text: 'getUserConversationVersions 开始' })
     const statuses = await this.getSyncStatuses({ module: 'user_conversation', conversationIds: req.conversationIds })
     return statuses.map(status => ({
       conversationId: status.conversationId,
@@ -134,11 +145,13 @@ class dBServiceChatSyncStatus extends BaseService {
    * @description 获取所有同步状态
    */
   async getAllSyncStatus(req: DBGetAllSyncStatusReq): Promise<DBGetAllSyncStatusRes> {
+    logger.info({ text: 'getAllSyncStatus 开始' })
     return await this.db.select().from(chatSyncStatus).all()
   }
 
   // 更新或插入同步状态
   async upsertSyncStatus(req: DBUpsertSyncStatusReq): Promise<DBUpsertSyncStatusRes> {
+    logger.info({ text: 'upsertSyncStatus 开始' })
     await this.db
       .insert(chatSyncStatus)
       .values({
@@ -162,21 +175,25 @@ class dBServiceChatSyncStatus extends BaseService {
 
   // 更新消息同步状态
   async upsertMessageSyncStatus(req: DBUpsertMessageSyncStatusReq): Promise<DBUpsertMessageSyncStatusRes> {
+    logger.info({ text: 'upsertMessageSyncStatus 开始' })
     return this.upsertSyncStatus({ module: 'message', conversationId: req.conversationId, seq: req.seq })
   }
 
   // 更新会话同步状态
   async upsertConversationSyncStatus(req: DBUpsertConversationSyncStatusReq): Promise<DBUpsertConversationSyncStatusRes> {
+    logger.info({ text: 'upsertConversationSyncStatus 开始' })
     return this.upsertSyncStatus({ module: 'conversation', conversationId: req.conversationId, version: req.version })
   }
 
   // 更新用户会话同步状态
    async upsertUserConversationSyncStatus(req: DBUpsertUserConversationSyncStatusReq): Promise<DBUpsertUserConversationSyncStatusRes> {
+    logger.info({ text: 'upsertUserConversationSyncStatus 开始' })
     return this.upsertSyncStatus({ module: 'user_conversation', conversationId: req.conversationId, version: req.version })
   }
 
   // 批量更新同步状态
    async batchUpsertSyncStatus(req: DBBatchUpsertSyncStatusReq): Promise<DBBatchUpsertSyncStatusRes> {
+    logger.info({ text: 'batchUpsertSyncStatus 开始' })
     for (const status of req.statuses) {
       await this.upsertSyncStatus({
         module: status.module,
@@ -190,6 +207,7 @@ class dBServiceChatSyncStatus extends BaseService {
 
   // 删除同步状态
    async deleteSyncStatus(req: DBDeleteSyncStatusReq): Promise<DBDeleteSyncStatusRes> {
+    logger.info({ text: 'deleteSyncStatus 开始' })
     await this.db.delete(chatSyncStatus)
       .where(and(eq(chatSyncStatus.module, req.module), eq(chatSyncStatus.conversationId, req.conversationId)))
       .run()
@@ -198,6 +216,7 @@ class dBServiceChatSyncStatus extends BaseService {
 
   // 批量删除同步状态
    async batchDeleteSyncStatus(req: DBBatchDeleteSyncStatusReq): Promise<DBBatchDeleteSyncStatusRes> {
+    logger.info({ text: 'batchDeleteSyncStatus 开始' })
     if (req.conversationIds.length === 0)
       return { success: true }
     await this.db.delete(chatSyncStatus)
@@ -210,6 +229,7 @@ class dBServiceChatSyncStatus extends BaseService {
    * @description 获取需要同步的会话列表（基于消息序列号）
    */
   async getConversationsNeedMessageSync(req: DBGetConversationsNeedMessageSyncReq): Promise<DBGetConversationsNeedMessageSyncRes> {
+    logger.info({ text: 'getConversationsNeedMessageSync 开始' })
     const { serverSeqs } = req
     const localStatuses = await this.getSyncStatuses({ module: 'message', conversationIds: Object.keys(serverSeqs) })
     const statusMap = new Map(localStatuses.map(s => [s.conversationId, s]))
@@ -230,6 +250,7 @@ class dBServiceChatSyncStatus extends BaseService {
 
   // 清空所有同步状态（用于重置）
    async clearAllSyncStatus(req: DBClearAllSyncStatusReq): Promise<DBClearAllSyncStatusRes> {
+    logger.info({ text: 'clearAllSyncStatus 开始' })
     await this.db.delete(chatSyncStatus).run()
     return { success: true }
   }

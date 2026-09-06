@@ -21,9 +21,13 @@
 
 import type { ContextMenuItem } from 'renderModule/components/ui/context-menu/index.vue'
 import { BaseMessageHandler } from './base'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('voice')
+
 
 class VoiceHandler extends BaseMessageHandler {
   handleCommand(commandId: string, message: any): Promise<void> {
+    logger.info({ text: 'handleCommand 开始' })
     switch (commandId) {
       case 'reply':
         this.setReplyMessage(message)
@@ -43,10 +47,12 @@ class VoiceHandler extends BaseMessageHandler {
   }
 
   getSupportedCommands(): string[] {
+    logger.info({ text: 'getSupportedCommands 开始' })
     return ['reply', 'forward', 'recall', 'delete', 'multiSelect']
   }
 
   getMenuItems(_hasTextSelected: boolean = false, isSender: boolean = false): ContextMenuItem[] {
+    logger.info({ text: 'getMenuItems 开始' })
     const items: ContextMenuItem[] = [
       { id: 'reply', label: '引用' },
       { id: 'forward', label: '转发' },

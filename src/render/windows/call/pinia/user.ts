@@ -21,6 +21,9 @@
 
 import { defineStore } from 'pinia'
 import { useContactStore } from './contact'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('user')
+
 
 /**
  * @description: 当前用户信息管理
@@ -45,6 +48,7 @@ export const useUserStore = defineStore('useUserStore', {
 
   actions: {
     async init() {
+    logger.info({ text: 'init 开始' })
       const storeUserInfo = await electron.storage.getAsync('userInfo')
       if (storeUserInfo) {
         this.currentUserId = storeUserInfo.userId!

@@ -20,9 +20,13 @@
  */
 
 import messageMediaBusiness from 'mainModule/business/chat/message-media'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('message-media-receiver')
+
 
 class MessageMediaReceiver {
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
     const updates = tableUpdates.filter((update: any) => update.table === 'message_medias')
 

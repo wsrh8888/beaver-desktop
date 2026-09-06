@@ -63,6 +63,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import type { ICirclePostItem } from 'commonModule/type/ajax/circle'
 import { defineComponent, ref } from 'vue'
 import CircleCreateModal from 'renderModule/windows/circle/components/createCircle/index.vue'
@@ -81,6 +84,7 @@ export default defineComponent({
     CircleCreateModal,
   },
   setup(_props, { expose }) {
+    logger.info({ text: 'setup 开始' })
     const selectedCircleId = ref('')
     const showDetails = ref(false)
     const showCreateCircle = ref(false)
@@ -93,6 +97,7 @@ export default defineComponent({
     } | null>(null)
 
     const handleSelect = async (circleId: string) => {
+    logger.info({ text: 'handleSelect 开始' })
       selectedCircleId.value = circleId
       showDetails.value = false
       activePost.value = null
@@ -100,6 +105,7 @@ export default defineComponent({
     }
 
     const handleCreated = async (circleId: string) => {
+    logger.info({ text: 'handleCreated 开始' })
       showCreateCircle.value = false
       await leftRef.value?.loadList()
       selectedCircleId.value = circleId
@@ -107,6 +113,7 @@ export default defineComponent({
     }
 
     const handleQuit = async () => {
+    logger.info({ text: 'handleQuit 开始' })
       showDetails.value = false
       activePost.value = null
       selectedCircleId.value = ''
@@ -115,15 +122,18 @@ export default defineComponent({
     }
 
     const handleUpdated = async () => {
+    logger.info({ text: 'handleUpdated 开始' })
       await leftRef.value?.loadList()
       await rightRef.value?.loadAll()
     }
 
     const handleShowPostDetail = (post: ICirclePostItem) => {
+    logger.info({ text: 'handleShowPostDetail 开始' })
       activePost.value = post
     }
 
     const handlePostChanged = async () => {
+    logger.info({ text: 'handlePostChanged 开始' })
       await rightRef.value?.loadPosts()
       if (activePost.value) {
         const latest = rightRef.value?.postList?.find(
@@ -135,6 +145,7 @@ export default defineComponent({
     }
 
     const refresh = async () => {
+    logger.info({ text: 'refresh 开始' })
       await leftRef.value?.loadList()
       await rightRef.value?.loadAll()
     }

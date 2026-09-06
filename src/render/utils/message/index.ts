@@ -21,6 +21,9 @@
 
 import { MessageType } from 'commonModule/type/ajax/chat'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 
 /**
  * @description: 从编辑器 DOM 提取结构化消息列表 (IMessageMsg 格式)
@@ -29,6 +32,7 @@ export function parseEditorDOM(editorElement: HTMLElement): IMessageMsg[] {
   const messages: IMessageMsg[] = []
 
   const walk = (node: Node) => {
+    logger.info({ text: 'walk 开始' })
     if (node.nodeType === Node.TEXT_NODE) {
       const text = node.textContent
       if (text) {

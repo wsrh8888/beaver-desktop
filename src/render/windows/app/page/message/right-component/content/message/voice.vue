@@ -41,6 +41,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('voice')
+
 import { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { AudioPlayer, audioPlayerState } from 'renderModule/core/media/audio'
 import { useMessageMediaStore } from 'renderModule/windows/app/pinia/message/message-media'
@@ -72,6 +75,7 @@ export default defineComponent({
     },
   },
   setup(props) {
+    logger.info({ text: 'setup 开始' })
     const { playingMessageId } = toRefs(audioPlayerState)
     const messageMediaStore = useMessageMediaStore()
 
@@ -113,6 +117,7 @@ export default defineComponent({
     })
 
     const handlePlay = async () => {
+    logger.info({ text: 'handlePlay 开始' })
       const id = playbackId.value
       const url = fileUrl.value
       if (!id || !url)

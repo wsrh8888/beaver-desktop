@@ -25,14 +25,19 @@ import { fileURLToPath } from 'node:url'
 import { app } from 'electron'
 import ini from 'ini'
 import { machineIdSync } from 'node-machine-id'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export const getCachePath = () => {
+    logger.info({ text: 'getCachePath 开始' })
   return path.resolve(getRootPath(), 'BEAVER_CACHE')
 }
 
 export const getRootPath = () => {
+    logger.info({ text: 'getRootPath 开始' })
   if (process.env.NODE_ENV === 'development') {
     return path.resolve(__dirname, '../')
   }
@@ -42,6 +47,7 @@ export const getRootPath = () => {
 }
 
 export function initCustom() {
+    logger.info({ text: 'initCustom 开始' })
   // 使用 node-machine-id 获取真正的机器唯一标识
   // 这会返回一个 SHA-256 哈希值，确保每台机器的唯一性
   const deviceId = machineIdSync()
@@ -72,6 +78,7 @@ export function initCustom() {
 }
 
 const getVersion = () => {
+    logger.info({ text: 'getVersion 开始' })
   // 判断跟目录是否存在god.txt
   if (fs.existsSync(path.resolve(getExePath(), 'version'))) {
     // 读取文件内容
@@ -81,6 +88,7 @@ const getVersion = () => {
 }
 
 export function loadConfigs() {
+    logger.info({ text: 'loadConfigs 开始' })
   const configPaths = [
     path.resolve(__dirname, '../config.ini'),
     path.resolve(__dirname, '../../../config.ini'),
@@ -89,6 +97,7 @@ export function loadConfigs() {
 }
 
 function loadConfigFile(configPath: string) {
+    logger.info({ text: 'loadConfigFile 开始' })
   if (fs.existsSync(configPath)) {
     try {
       const config = ini.parse(fs.readFileSync(configPath, 'utf-8'))
@@ -112,6 +121,7 @@ function loadConfigFile(configPath: string) {
 }
 
 export const getExePath = () => {
+    logger.info({ text: 'getExePath 开始' })
   if (process.env.NODE_ENV === 'development') {
     return path.resolve(__dirname, '../')
   }

@@ -23,6 +23,9 @@ import { and, eq, gte, inArray, lte, or, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { groupJoinRequests } from 'mainModule/database/tables/group/join-requests'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('group-join-request')
+
   DBCreateGroupJoinRequestReq,
   DBBatchCreateGroupJoinRequestsReq,
   DBGetJoinRequestsByGroupIdsSimpleReq,
@@ -40,6 +43,7 @@ class GroupJoinRequest extends BaseService {
    * @description 创建或更新入群申请（upsert操作）
    */
   async upsert(req: DBCreateGroupJoinRequestReq): Promise<void> {
+    logger.info({ text: 'upsert 开始' })
     await this.db.insert(groupJoinRequests)
       .values(req)
       .onConflictDoUpdate({
@@ -58,6 +62,7 @@ class GroupJoinRequest extends BaseService {
    * @description 批量创建入群申请（支持插入或更新）
    */
   async batchCreate(req: DBBatchCreateGroupJoinRequestsReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (req.requests.length === 0)
       return
 
@@ -104,6 +109,7 @@ class GroupJoinRequest extends BaseService {
    * @description 根据申请者ID获取群组申请记录
    */
   async getJoinRequestsByApplicantId(req: DBGetJoinRequestsByApplicantIdReq): Promise<DBGetJoinRequestsByApplicantIdRes> {
+    logger.info({ text: 'getJoinRequestsByApplicantId 开始' })
     const { applicantUserId, options } = req
     const { page = 1, limit = 20 } = options || {}
     const offset = (page - 1) * limit
@@ -122,6 +128,7 @@ class GroupJoinRequest extends BaseService {
    * @description 根据群组ID列表获取群组申请记录（简化版）
    */
   async getJoinRequestsByGroupIdsSimple(req: DBGetJoinRequestsByGroupIdsSimpleReq): Promise<DBGetJoinRequestsByGroupIdsSimpleRes> {
+    logger.info({ text: 'getJoinRequestsByGroupIdsSimple 开始' })
     const { groupIds, options } = req
     const { page = 1, limit = 20 } = options || {}
     const offset = (page - 1) * limit
@@ -144,6 +151,7 @@ class GroupJoinRequest extends BaseService {
    * @description 根据申请者ID获取群组申请数量
    */
   async getJoinRequestsCountByApplicantId(req: DBGetJoinRequestsCountByApplicantIdReq): Promise<number> {
+    logger.info({ text: 'getJoinRequestsCountByApplicantId 开始' })
     const result = await this.db
       .select({ count: sql`COUNT(*)` })
       .from(groupJoinRequests)
@@ -157,6 +165,7 @@ class GroupJoinRequest extends BaseService {
    * @description 根据群组ID列表获取群组申请数量
    */
   async getJoinRequestsCountByGroupIds(req: DBGetJoinRequestsCountByGroupIdsReq): Promise<number> {
+    logger.info({ text: 'getJoinRequestsCountByGroupIds 开始' })
     if (req.groupIds.length === 0) {
       return 0
     }

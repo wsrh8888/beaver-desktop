@@ -59,6 +59,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('SearchResults')
+
 import type { ISearchResult } from 'commonModule/type/view/search'
 import { NotificationModule, NotificationSearchToVerifyCommand } from 'commonModule/type/preload/notification'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
@@ -86,7 +89,9 @@ export default defineComponent({
     },
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const handleActionClick = async (result: ISearchResult) => {
+    logger.info({ text: 'handleActionClick 开始' })
       await window.electron.window.openWindow('verify')
       electron.notification.send('verify', NotificationModule.SEARCH_TO_VERIFY, NotificationSearchToVerifyCommand.SEARCH_TO_VERIFY, {
         type: result.type,

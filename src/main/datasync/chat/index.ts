@@ -23,10 +23,14 @@ import messageSync from './chat-message'
 import conversationMetaSync from './conversation-meta'
 import messageMediaSync from './message-media'
 import userConversationSync from './user-conversation'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 // 聊天数据同步统一入口
 export const chatDatasync = new class ChatDatasync {
   async checkAndSync() {
+    logger.info({ text: 'checkAndSync 开始' })
     await Promise.all([
       userConversationSync.checkAndSync(),
       conversationMetaSync.checkAndSync(),

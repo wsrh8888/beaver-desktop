@@ -29,6 +29,9 @@ import crypto from 'node:crypto'
 import fs from 'node:fs'
 import path from 'node:path'
 import head from 'mainModule/utils/request/head'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export interface DownloadedFileInfo {
   path: string
@@ -101,6 +104,7 @@ export async function downloadFile(
  * 计算文件MD5
  */
 export async function calculateFileMd5(filePath: string): Promise<string> {
+    logger.info({ text: 'calculateFileMd5 开始' })
   return new Promise((resolve, reject) => {
     const hash = crypto.createHash('md5')
     const stream = fs.createReadStream(filePath)

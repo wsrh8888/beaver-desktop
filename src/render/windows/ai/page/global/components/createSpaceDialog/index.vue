@@ -59,6 +59,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import { defineComponent, nextTick, onMounted, ref } from 'vue'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverDialog from 'renderModule/components/ui/dialog/dialog.vue'
@@ -69,21 +72,25 @@ export default defineComponent({
   name: 'AiCreateSpaceDialog',
   components: { BeaverDialog, BeaverButton },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const aiGlobalStore = useAiGlobalStore()
     const aiSpaceStore = useAiSpaceStore()
     const name = ref('')
     const inputRef = ref<HTMLInputElement | null>(null)
 
     const handleClose = () => {
+    logger.info({ text: 'handleClose 开始' })
       aiGlobalStore.setVisible('createSpace', false)
     }
 
     const onDialogVisible = (visible: boolean) => {
+    logger.info({ text: 'onDialogVisible 开始' })
       if (!visible)
         handleClose()
     }
 
     const handleConfirm = async () => {
+    logger.info({ text: 'handleConfirm 开始' })
       const title = name.value.trim()
       if (!title)
         return

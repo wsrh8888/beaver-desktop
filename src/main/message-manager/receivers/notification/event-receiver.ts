@@ -20,6 +20,9 @@
  */
 
 import notificationEventBusiness from 'mainModule/business/notification/event'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('event-receiver')
+
 const eventBusiness = notificationEventBusiness
 
 /**
@@ -31,6 +34,7 @@ class EventReceiver {
    * 只处理 notification_event 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
 
     // 处理notification_event表的更新

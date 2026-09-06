@@ -22,7 +22,11 @@
 import { eq, inArray } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { emojiPackage } from 'mainModule/database/tables/emoji/package'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('package')
+
 import type {
+
   DBCreateEmojiPackageReq,
   DBBatchCreateEmojiPackagesReq,
   DBGetEmojiPackagesByIdsReq,
@@ -38,6 +42,7 @@ import type {
   DBGetPackageByAutoIdReq,
   DBGetPackageByAutoIdRes,
 } from 'commonModule/type/database/server/emoji/package'
+import { IDBEmojiPackage } from 'commonModule/type/database/db/emoji';
 
 // 表情包服务
 class EmojiPackage extends BaseService {
@@ -45,6 +50,7 @@ class EmojiPackage extends BaseService {
    * @description 创建表情包
    */
   async create(req: DBCreateEmojiPackageReq): Promise<void> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(emojiPackage).values(req).run()
   }
 
@@ -52,6 +58,7 @@ class EmojiPackage extends BaseService {
    * @description 批量创建表情包（upsert操作）
    */
   async batchCreate(req: DBBatchCreateEmojiPackagesReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (req.packageList.length === 0) {
       return
     }
@@ -81,6 +88,7 @@ class EmojiPackage extends BaseService {
    * @description 根据ID列表获取表情包
    */
   async getPackagesByIds(req: DBGetEmojiPackagesByIdsReq): Promise<DBGetEmojiPackagesByIdsRes> {
+    logger.info({ text: 'getPackagesByIds 开始' })
     if (req.ids.length === 0) {
       return new Map()
     }
@@ -102,6 +110,7 @@ class EmojiPackage extends BaseService {
    * @description 根据用户ID获取用户创建的表情包
    */
   async getPackagesByUserId(req: DBGetPackagesByUserIdReq): Promise<DBGetPackagesByUserIdRes> {
+    logger.info({ text: 'getPackagesByUserId 开始' })
     return await this.db
       .select()
       .from(emojiPackage)
@@ -113,6 +122,7 @@ class EmojiPackage extends BaseService {
    * @description 获取所有表情包
    */
   async getAllPackages(req: DBGetAllEmojiPackagesReq): Promise<DBGetAllEmojiPackagesRes> {
+    logger.info({ text: 'getAllPackages 开始' })
     return await this.db.select().from(emojiPackage).all()
   }
 
@@ -120,6 +130,7 @@ class EmojiPackage extends BaseService {
    * @description 根据ID获取单个表情包
    */
   async getPackageById(req: DBGetEmojiPackageByIdReq): Promise<DBGetEmojiPackageByIdRes> {
+    logger.info({ text: 'getPackageById 开始' })
     const result = await this.db
       .select()
       .from(emojiPackage)
@@ -133,6 +144,7 @@ class EmojiPackage extends BaseService {
    * @description 根据内部自增ID查询
    */
   async getPackageByAutoId(req: DBGetPackageByAutoIdReq): Promise<DBGetPackageByAutoIdRes> {
+    logger.info({ text: 'getPackageByAutoId 开始' })
     const result = await this.db.select().from(emojiPackage).where(eq(emojiPackage.id, req.id)).limit(1)
     return result[0] || null
   }

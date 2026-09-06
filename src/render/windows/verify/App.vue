@@ -40,6 +40,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('App')
+
 // import { NotificationEvent } from 'commonModule/type/preload/notification'
 import { computed, defineComponent } from 'vue'
 import AddFriendComponent from './components/add-friend.vue'
@@ -52,10 +55,12 @@ export default defineComponent({
     AddGroupComponent,
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     // 使用pinia store
     const verifyStore = useVerifyStore()
 
     const handleClose = async () => {
+    logger.info({ text: 'handleClose 开始' })
       // 清除缓存中的数据
       // 隐藏窗口
       electron.window.closeWindow('verify', { hideOnly: true })

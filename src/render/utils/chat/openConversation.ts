@@ -23,6 +23,9 @@ import Message from 'renderModule/components/ui/message'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('openConversation')
+
 
 function parseGroupId(conversationId: string): string | null {
   if (!conversationId.startsWith('group_')) {
@@ -45,6 +48,7 @@ export async function removeDissolvedGroupConversation(
   conversationId: string,
   options?: { showMessage?: boolean },
 ) {
+    logger.info({ text: 'removeDissolvedGroupConversation 开始' })
   const groupId = parseGroupId(conversationId)
   const conversationStore = useConversationStore()
   const groupStore = useGroupStore()

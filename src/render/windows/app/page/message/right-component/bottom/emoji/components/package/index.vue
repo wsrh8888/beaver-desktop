@@ -37,6 +37,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import type { IEmojiBase } from 'renderModule/windows/app/pinia/emoji/emoji'
 import { useEmojiStore } from 'renderModule/windows/app/pinia/emoji/emoji'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
@@ -56,10 +59,12 @@ export default defineComponent({
     },
   },
   setup(props) {
+    logger.info({ text: 'setup 开始' })
     const emojiStore = useEmojiStore()
     const emojiList = computed(() => emojiStore.getPackageEmojis(props.packageId))
 
     const loadEmojis = async () => {
+    logger.info({ text: 'loadEmojis 开始' })
       if (!props.packageId) {
         return
       }
@@ -75,6 +80,7 @@ export default defineComponent({
     })
 
     const onSelectEmoji = (emoji: IEmojiBase) => {
+    logger.info({ text: 'onSelectEmoji 开始' })
       // 如果是图片表情（有emojiId），直接发送消息
       if (emoji.emojiId && props.onSend) {
         (props.onSend as (e: { emojiId: string, fileKey: string, packageId?: string, width?: number, height?: number }) => void)({

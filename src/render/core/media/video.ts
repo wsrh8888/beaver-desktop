@@ -21,6 +21,9 @@
 
 import { CacheType } from 'commonModule/type/cache/cache'
 import { getFileNameFromUrl } from 'renderModule/utils/file/index'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('video')
+
 
 /**
  * @description: 聊天视频播放（独立播放器窗口）
@@ -37,6 +40,7 @@ export class VideoPlayer {
         videoUrl = cachedUrl
     }
     catch {
+      logger.error({ text: 'resolveUrl 失败' })
       // 缓存获取失败，使用在线 URL
     }
     return videoUrl

@@ -62,6 +62,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 
 export interface ContextMenuItem {
@@ -104,6 +107,7 @@ export default defineComponent({
   },
   emits: ['update:visible', 'command', 'show', 'hide'],
   setup(props, { emit }) {
+    logger.info({ text: 'setup 开始' })
     const triggerRef = ref<HTMLElement | null>(null)
     const menuRef = ref<HTMLElement | null>(null)
     const internalVisible = ref(false)
@@ -129,6 +133,7 @@ export default defineComponent({
 
     // 处理右键事件
     const handleContextMenu = async (event: MouseEvent) => {
+    logger.info({ text: 'handleContextMenu 开始' })
       if (props.trigger !== 'contextmenu') {
         return
       }
@@ -146,6 +151,7 @@ export default defineComponent({
 
     // 计算菜单位置
     const calculatePosition = async (event: MouseEvent) => {
+    logger.info({ text: 'calculatePosition 开始' })
       await nextTick()
 
       if (!menuRef.value) {
@@ -185,6 +191,7 @@ export default defineComponent({
 
     // 处理菜单项点击
     const handleItemClick = (item: ContextMenuItem) => {
+    logger.info({ text: 'handleItemClick 开始' })
       if (item.disabled) {
         return
       }
@@ -197,6 +204,7 @@ export default defineComponent({
 
     // 隐藏菜单
     const hideMenu = () => {
+    logger.info({ text: 'hideMenu 开始' })
       internalVisible.value = false
       emit('update:visible', false)
       emit('hide')
@@ -204,6 +212,7 @@ export default defineComponent({
 
     // 显示菜单（手动模式）
     const showMenu = async (event: MouseEvent | { x: number, y: number }) => {
+    logger.info({ text: 'showMenu 开始' })
       if (props.trigger !== 'manual') {
         return
       }
@@ -231,6 +240,7 @@ export default defineComponent({
 
     // 点击外部隐藏菜单
     const handleClickOutside = (event: MouseEvent) => {
+    logger.info({ text: 'handleClickOutside 开始' })
       if (!internalVisible.value) {
         return
       }
@@ -246,6 +256,7 @@ export default defineComponent({
 
     // 监听 ESC 键
     const handleKeyDown = (event: KeyboardEvent) => {
+    logger.info({ text: 'handleKeyDown 开始' })
       if (event.key === 'Escape' && internalVisible.value) {
         hideMenu()
       }

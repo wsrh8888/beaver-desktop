@@ -20,6 +20,9 @@
  */
 
 import friendBusiness from 'mainModule/business/friend/friend'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('receiver')
+
 
 /**
  * @description: 好友操作接收器 - 处理friends表的操作
@@ -31,6 +34,7 @@ class FriendReceiver {
    * 只处理 friends 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
 
     // 过滤出只包含 friends 的更新，逐个处理

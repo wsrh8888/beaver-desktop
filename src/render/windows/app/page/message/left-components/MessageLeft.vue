@@ -83,6 +83,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('MessageLeft')
+
 import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import AppStatusComponent from 'renderModule/windows/app/components/business/status/index.vue'
@@ -101,6 +104,7 @@ export default defineComponent({
     IncomingCallList
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
     const searchText = ref('')
@@ -110,6 +114,7 @@ export default defineComponent({
 
     // 处理聊天项点击
     const handleChatClick = async (chat: any) => {
+    logger.info({ text: 'handleChatClick 开始' })
       const canOpen = await tryOpenConversation(chat.conversationId)
       if (!canOpen) {
         return
@@ -119,6 +124,7 @@ export default defineComponent({
 
     // 打开AI窗口
     const openAiWindow = async () => {
+    logger.info({ text: 'openAiWindow 开始' })
       await electron.window.openWindow('ai', {
         unique: true,
         params: {}
@@ -128,6 +134,7 @@ export default defineComponent({
     const currentConversationId = computed(() => messageViewStore.currentChatId)
 
     const isCircleChat = (chat: { conversationId?: string, chatType?: number }) => {
+    logger.info({ text: 'isCircleChat 开始' })
       if (!chat)
         return false
       if (chat.conversationId?.startsWith('circle_'))

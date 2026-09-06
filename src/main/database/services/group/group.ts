@@ -25,6 +25,9 @@ import { BaseService } from '../base'
 import { groups } from 'mainModule/database/tables/group/groups'
 
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('group')
+
   DBCreateGroupReq,
   DBUpsertGroupReq,
   DBGetGroupReq,
@@ -43,6 +46,7 @@ class GroupService extends BaseService {
    * @description 创建群组
    */
   async create(req: DBCreateGroupReq): Promise<void> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(groups).values(req).run()
   }
 
@@ -50,6 +54,7 @@ class GroupService extends BaseService {
    * @description 创建或更新群组（upsert操作）
    */
   async upsert(req: DBUpsertGroupReq): Promise<void> {
+    logger.info({ text: 'upsert 开始' })
     await this.db.insert(groups)
       .values(req)
       .onConflictDoUpdate({
@@ -72,6 +77,7 @@ class GroupService extends BaseService {
    * @description 批量创建群组（支持插入或更新）
    */
   async batchCreate(req: DBBatchCreateGroupsReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (req.groups.length === 0)
       return
 
@@ -100,6 +106,7 @@ class GroupService extends BaseService {
    * @description 批量插入或更新群组（基于版本号判断是否需要更新）
    */
   async batchUpsert(req: DBBatchUpsertGroupsReq): Promise<void> {
+    logger.info({ text: 'batchUpsert 开始' })
     if (req.groups.length === 0)
       return
 
@@ -134,6 +141,7 @@ class GroupService extends BaseService {
    * @description 根据群组ID获取群组信息
    */
   async getGroupById(groupId: string): Promise<IDBGroup | undefined> {
+    logger.info({ text: 'getGroupById 开始' })
     return await this.db.select().from(groups).where(eq(groups.groupId as any, groupId as any)).get()
   }
 
@@ -141,6 +149,7 @@ class GroupService extends BaseService {
    * @description 根据群组ID列表批量获取群组信息
    */
   async getGroupsByIds(groupIds: string[]): Promise<IDBGroup[]> {
+    logger.info({ text: 'getGroupsByIds 开始' })
     if (groupIds.length === 0)
       return []
     return await this.db.select().from(groups).where(inArray(groups.groupId as any, groupIds as any)).all()
@@ -150,6 +159,7 @@ class GroupService extends BaseService {
    * @description 更新群组信息
    */
   async updateGroup(groupId: string, updateData: any): Promise<any> {
+    logger.info({ text: 'updateGroup 开始' })
     updateData.updatedAt = Math.floor(Date.now() / 1000)
     return await this.db.update(groups).set(updateData).where(eq(groups.groupId as any, groupId as any)).run()
   }
@@ -158,6 +168,7 @@ class GroupService extends BaseService {
    * @description 删除群组
    */
   async deleteGroup(groupId: string): Promise<any> {
+    logger.info({ text: 'deleteGroup 开始' })
     return await this.db.delete(groups).where(eq(groups.groupId as any, groupId as any)).run()
   }
 }

@@ -24,6 +24,9 @@ import path from 'node:path'
 import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
 import ApplicationBase from './common/base'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('video')
+
 
 class Video extends ApplicationBase implements Application {
   constructor() {
@@ -31,6 +34,7 @@ class Video extends ApplicationBase implements Application {
   }
 
   public createBrowserWindow(): BrowserWindow {
+    logger.info({ text: 'createBrowserWindow 开始' })
     this.win = new BrowserWindow({
       width: 1200,
       height: 800,

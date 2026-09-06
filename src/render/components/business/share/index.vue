@@ -48,6 +48,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { CardType, MessageType } from 'commonModule/type/ajax/chat'
 import { computed, defineComponent, type PropType, ref } from 'vue'
@@ -66,6 +69,7 @@ function parseInviteCode(url: string): string {
       return code
   }
   catch {
+      logger.error({ text: 'parseInviteCode 失败' })
     // ignore
   }
   const match = value.match(/[?&]code=([^&#]+)/i)
@@ -103,6 +107,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue'],
   setup(props, { emit }) {
+    logger.info({ text: 'setup 开始' })
     const selectVisible = ref(false)
     const pendingMsg = ref<IMessageMsg | null>(null)
 
@@ -137,6 +142,7 @@ export default defineComponent({
     }))
 
     const ensureInvite = () => {
+    logger.info({ text: 'ensureInvite 开始' })
       if (!props.inviteUrl) {
         Message.error('暂无可用邀请链接')
         return false
@@ -145,29 +151,34 @@ export default defineComponent({
     }
 
     const handleClose = () => {
+    logger.info({ text: 'handleClose 开始' })
       selectVisible.value = false
       pendingMsg.value = null
       emit('update:modelValue', false)
     }
 
     const openSelect = (msg: IMessageMsg) => {
+    logger.info({ text: 'openSelect 开始' })
       pendingMsg.value = msg
       selectVisible.value = true
     }
 
     const handleShareCard = () => {
+    logger.info({ text: 'handleShareCard 开始' })
       if (!ensureInvite())
         return
       openSelect(cardMsg.value)
     }
 
     const handleShareLink = () => {
+    logger.info({ text: 'handleShareLink 开始' })
       if (!ensureInvite())
         return
       openSelect(linkMsg.value)
     }
 
     const handleCopy = async () => {
+    logger.info({ text: 'handleCopy 开始' })
       if (!ensureInvite())
         return
       try {
@@ -176,11 +187,13 @@ export default defineComponent({
         handleClose()
       }
       catch {
+      logger.error({ text: 'defineComponent 失败' })
         Message.error('复制失败')
       }
     }
 
     const handleSaveQr = async () => {
+    logger.info({ text: 'handleSaveQr 开始' })
       if (!ensureInvite() || !qrImageUrl.value)
         return
       try {
@@ -196,16 +209,19 @@ export default defineComponent({
         Message.success('二维码已保存')
       }
       catch {
+      logger.error({ text: 'defineComponent 失败' })
         Message.error('保存失败')
       }
     }
 
     const handleSelectClose = () => {
+    logger.info({ text: 'handleSelectClose 开始' })
       selectVisible.value = false
       pendingMsg.value = null
     }
 
     const handleSent = () => {
+    logger.info({ text: 'handleSent 开始' })
       selectVisible.value = false
       pendingMsg.value = null
       emit('update:modelValue', false)

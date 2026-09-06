@@ -23,6 +23,9 @@
  * 搜索相关的MCP工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const searchTools = [
   {
@@ -33,6 +36,7 @@ export const searchTools = [
       type: z.enum(['all', 'friends', 'groups']).default('all').describe('搜索类型')
     }),
     handler: async (params) => {
+    logger.info({ text: 'handler 开始' })
       // 这里实现搜索联系人的逻辑
       return {
         success: true,

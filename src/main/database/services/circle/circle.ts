@@ -23,9 +23,13 @@ import type { IDBCircle } from 'commonModule/type/database/db/circle'
 import { eq, inArray } from 'drizzle-orm'
 import { circles } from 'mainModule/database/tables/circle/circles'
 import { BaseService } from '../base'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('circle')
+
 
 class CircleService extends BaseService {
   async upsert(circle: IDBCircle): Promise<void> {
+    logger.info({ text: 'upsert 开始' })
     await this.db.insert(circles)
       .values(circle)
       .onConflictDoUpdate({
@@ -46,6 +50,7 @@ class CircleService extends BaseService {
   }
 
   async batchUpsert(items: IDBCircle[]): Promise<void> {
+    logger.info({ text: 'batchUpsert 开始' })
     if (!items.length)
       return
     for (const item of items) {
@@ -56,16 +61,19 @@ class CircleService extends BaseService {
   }
 
   async getCircleById(circleId: string): Promise<IDBCircle | undefined> {
+    logger.info({ text: 'getCircleById 开始' })
     return await this.db.select().from(circles).where(eq(circles.circleId as any, circleId as any)).get()
   }
 
   async getCirclesByIds(circleIds: string[]): Promise<IDBCircle[]> {
+    logger.info({ text: 'getCirclesByIds 开始' })
     if (!circleIds.length)
       return []
     return await this.db.select().from(circles).where(inArray(circles.circleId as any, circleIds as any)).all()
   }
 
   async getCircleList(): Promise<IDBCircle[]> {
+    logger.info({ text: 'getCircleList 开始' })
     return await this.db.select().from(circles).all()
   }
 }

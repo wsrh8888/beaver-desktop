@@ -78,6 +78,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('TopConversations')
+
 import { CacheType } from 'commonModule/type/cache/cache'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
@@ -90,6 +93,7 @@ export default defineComponent({
     BeaverImage,
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const conversationStore = useConversationStore()
     const messageViewStore = useMessageViewStore()
 
@@ -123,6 +127,7 @@ export default defineComponent({
 
     // 处理点击事件
     const handleItemClick = async (chat: any, isExpandBtn: boolean = false) => {
+    logger.info({ text: 'handleItemClick 开始' })
       if (isExpandBtn) {
         isExpanded.value = true
       }

@@ -19,12 +19,16 @@
  * beaver-desktop-header-v2
  */
 
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 /**
  * @description: 从 ClipboardEvent 中获取所有文件
  * @param e ClipboardEvent 粘贴事件对象
  * @returns File[] 文件数组
  */
 export const getFilesFromClipboardEvent = (e: ClipboardEvent): File[] => {
+    logger.info({ text: 'getFilesFromClipboardEvent 开始' })
   const clipboardData = e.clipboardData
   if (!clipboardData)
     return []
@@ -50,6 +54,7 @@ export const getFilesFromClipboardEvent = (e: ClipboardEvent): File[] => {
  * @returns File[] 图片文件数组
  */
 export const getImagesFromClipboardEvent = (e: ClipboardEvent): File[] => {
+    logger.info({ text: 'getImagesFromClipboardEvent 开始' })
   return getFilesFromClipboardEvent(e).filter(file => file.type.startsWith('image/'))
 }
 
@@ -58,6 +63,7 @@ export const getImagesFromClipboardEvent = (e: ClipboardEvent): File[] => {
  * @returns Promise<File | null>
  */
 export const getImageFromClipboard = (): Promise<File | null> => {
+    logger.info({ text: 'getImageFromClipboard 开始' })
   return new Promise((resolve) => {
     if (!navigator.clipboard || !navigator.clipboard.read) {
       resolve(null)
@@ -90,6 +96,7 @@ export const getImageFromClipboard = (): Promise<File | null> => {
  * @returns Promise<File[]>
  */
 export const getFilesFromClipboard = (): Promise<File[]> => {
+    logger.info({ text: 'getFilesFromClipboard 开始' })
   return new Promise((resolve) => {
     if (!navigator.clipboard || !navigator.clipboard.read) {
       resolve([])

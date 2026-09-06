@@ -20,9 +20,13 @@
  */
 
 import circleSync from './circle'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const circleDatasync = new class CircleDatasync {
   async checkAndSync() {
+    logger.info({ text: 'checkAndSync 开始' })
     await circleSync.checkAndSync()
   }
 }()

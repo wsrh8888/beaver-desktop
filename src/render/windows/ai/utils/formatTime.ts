@@ -19,7 +19,11 @@
  * beaver-desktop-header-v2
  */
 
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('formatTime')
+
 export function formatChatTime(timestamp: number): string {
+    logger.info({ text: 'formatChatTime 开始' })
   const date = new Date(timestamp)
   return date.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' })
 }

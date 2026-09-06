@@ -20,6 +20,9 @@
  */
 
 import userConversationBusiness from 'mainModule/business/chat/user-conversation'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('user-conversation-receiver')
+
 
 /**
  * @description: 用户会话接收器 - 处理user_conversations表的操作
@@ -31,6 +34,7 @@ class UserConversationReceiver {
    * 只处理 user_conversations 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
 
     // 过滤出只包含 user_conversations 的更新，逐个处理

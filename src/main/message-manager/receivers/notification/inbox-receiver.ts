@@ -20,6 +20,9 @@
  */
 
 import notificationInboxBusiness from 'mainModule/business/notification/inbox'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('inbox-receiver')
+
 const inboxBusiness = notificationInboxBusiness
 
 /**
@@ -31,6 +34,7 @@ class InboxReceiver {
    * 只处理 notification_inbox 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
 
     // 处理notification_inbox表的更新

@@ -19,10 +19,14 @@
  * beaver-desktop-header-v2
  */
 
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('avatar')
+
 /**
  * @description: 处理头像路径，数据库存储完整 URL
  */
 export function processAvatarUrl(avatar: string): string {
+    logger.info({ text: 'processAvatarUrl 开始' })
   return avatar?.trim() || ''
 }
 
@@ -56,6 +60,7 @@ export function processArrayAvatars<T extends Record<string, any>>(
  * @description: 处理消息发送者的头像
  */
 export function processSenderAvatar(sender: any): any {
+    logger.info({ text: 'processSenderAvatar 开始' })
   if (!sender)
     return sender
 

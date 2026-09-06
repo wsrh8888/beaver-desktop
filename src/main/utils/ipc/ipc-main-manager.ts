@@ -20,6 +20,9 @@
  */
 
 import { ipcMain } from 'electron'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('ipc-main-manager')
+
 
 class IpcMainManager {
   /**
@@ -69,6 +72,7 @@ class IpcMainManager {
    * @param command - 要移除处理程序的 IPC 命令。
    */
   removeHandler(command: string) {
+    logger.info({ text: 'removeHandler 开始' })
     if (!command)
       return
     ipcMain.removeHandler(command)

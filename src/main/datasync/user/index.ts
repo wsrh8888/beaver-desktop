@@ -20,9 +20,13 @@
  */
 
 import { userSyncModule } from './user'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const userDatasync = new class userDatasync {
   async checkAndSync() {
+    logger.info({ text: 'checkAndSync 开始' })
     // 同步用户数据
     await userSyncModule.checkAndSync()
   }

@@ -19,6 +19,9 @@
  * beaver-desktop-header-v2
  */
 
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('notification')
+
 /** 成员状态（与 pinia call CallMember.status 一致） */
 export type CallMemberStatus = 'calling' | 'joined' | 'left' | 'rejected' | 'busy'
 
@@ -32,5 +35,6 @@ export const MEMBER_STATUS_HINT: Record<CallMemberStatus, string> = {
 }
 
 export function getMemberStatusHint(status: CallMemberStatus): string {
+    logger.info({ text: 'getMemberStatusHint 开始' })
   return MEMBER_STATUS_HINT[status] ?? ''
 }

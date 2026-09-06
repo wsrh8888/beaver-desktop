@@ -24,6 +24,9 @@ import { and, desc, eq, gt, inArray, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { notificationInboxes } from 'mainModule/database/tables/notification/inbox'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('inbox')
+
   DBBatchAddToInboxReq,
   DBGetUserInboxReq,
   DBGetUserInboxRes,
@@ -51,6 +54,7 @@ class dBServiceNotificationInbox extends BaseService {
    * @description 批量添加通知到收件箱
    */
   async batchAdd(req: DBBatchAddToInboxReq): Promise<void> {
+    logger.info({ text: 'batchAdd 开始' })
     if (!req.inboxes.length)
       return
 
@@ -76,6 +80,7 @@ class dBServiceNotificationInbox extends BaseService {
    * @description 标记指定事件为已读
    */
   async markReadByEventIds(req: DBMarkReadByEventIdsReq): Promise<void> {
+    logger.info({ text: 'markReadByEventIds 开始' })
     const { userId, eventIds, readAt } = req
     if (!eventIds.length)
       return
@@ -100,6 +105,7 @@ class dBServiceNotificationInbox extends BaseService {
    * @description 按版本增量拉取用户收件箱
    */
   async getInboxesAfterVersion(req: DBGetInboxesAfterVersionReq): Promise<DBGetInboxesAfterVersionRes> {
+    logger.info({ text: 'getInboxesAfterVersion 开始' })
     const { userId, version, limit = 100 } = req
     const inboxes = await this.db.select()
       .from(notificationInboxes)
@@ -119,6 +125,7 @@ class dBServiceNotificationInbox extends BaseService {
    * @description 获取指定事件ID的收件箱本地版本映射
    */
   async getVersionMapByEventIds(req: DBGetVersionMapByEventIdsReq): Promise<DBGetVersionMapByEventIdsRes> {
+    logger.info({ text: 'getVersionMapByEventIds 开始' })
     const { userId, eventIds } = req
     if (!userId || !eventIds.length)
       return { versionMap: new Map() }
@@ -147,6 +154,7 @@ class dBServiceNotificationInbox extends BaseService {
    * @description 根据事件ID列表获取收件箱记录
    */
   async getByEventIds(req: DBGetByEventIdsReq): Promise<DBGetByEventIdsRes> {
+    logger.info({ text: 'getByEventIds 开始' })
     const { userId, eventIds } = req
     if (!userId || !eventIds.length)
       return { inboxes: [] }
@@ -167,6 +175,7 @@ class dBServiceNotificationInbox extends BaseService {
    * @description 获取基础未读统计（不考虑游标时间）
    */
   async getBasicUnreadByCategories(req: DBGetBasicUnreadByCategoriesReq): Promise<DBGetBasicUnreadByCategoriesRes> {
+    logger.info({ text: 'getBasicUnreadByCategories 开始' })
     const { userId, categories } = req
     if (!userId)
       return { unreadStats: [] }
@@ -200,6 +209,7 @@ class dBServiceNotificationInbox extends BaseService {
    * @description 获取用户指定分类的通知列表（基础查询）
    */
   async getByUserIdAndCategories(req: DBGetByUserIdAndCategoriesReq): Promise<DBGetByUserIdAndCategoriesRes> {
+    logger.info({ text: 'getByUserIdAndCategories 开始' })
     const { userId, categories, limit = 100 } = req
     if (!userId) return { inboxes: [] }
 
@@ -225,6 +235,7 @@ class dBServiceNotificationInbox extends BaseService {
    * @description 获取指定时间之后指定分类的未读数量
    */
   async getUnreadCountAfterTime(req: DBGetUnreadCountAfterTimeReq): Promise<DBGetUnreadCountAfterTimeRes> {
+    logger.info({ text: 'getUnreadCountAfterTime 开始' })
     const { userId, category, afterTime } = req
     const unreadCount = await this.db.$count(notificationInboxes, and(
       eq(notificationInboxes.userId as any, userId as any),

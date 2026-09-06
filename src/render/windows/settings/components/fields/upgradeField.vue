@@ -40,6 +40,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('upgradeField')
+
 import type { ISettingsSection } from '../../config/settingsRegistry'
 import { getLatestVersionApi } from 'renderModule/api/update'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
@@ -60,10 +63,12 @@ export default defineComponent({
     },
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const isChecking = ref(false)
     const currentVersion = computed(() => electron.app.version)
 
     const handleCheckUpdate = async () => {
+    logger.info({ text: 'handleCheckUpdate 开始' })
       isChecking.value = true
       const res = await getLatestVersionApi({
         appId: UPDATE_APP_ID,

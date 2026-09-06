@@ -71,6 +71,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('assistant')
+
 import type { IBotItem } from 'commonModule/type/ajax/group'
 import { listBotsApi } from 'renderModule/api/group'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
@@ -85,6 +88,7 @@ export default defineComponent({
   components: { BeaverButton },
   emits: ['open', 'close'],
   setup() {
+    logger.info({ text: 'setup 开始' })
     const groupStore = useGroupStore()
     const messageViewStore = useMessageViewStore()
     const userStore = useUserStore()
@@ -111,6 +115,7 @@ export default defineComponent({
     const groupAssistantStore = useGroupAssistantViewStore()
 
     const loadList = async () => {
+    logger.info({ text: 'loadList 开始' })
       if (!groupId.value || !creatorUserId.value)
         return
       loading.value = true
@@ -134,6 +139,7 @@ export default defineComponent({
     })
 
     const openAdd = () => {
+    logger.info({ text: 'openAdd 开始' })
       if (!groupId.value)
         return
       groupAssistantStore.groupId = groupId.value
@@ -143,6 +149,7 @@ export default defineComponent({
     }
 
     const openBotDetail = (bot: IBotItem) => {
+    logger.info({ text: 'openBotDetail 开始' })
       if (!groupId.value)
         return
       groupAssistantStore.groupId = groupId.value

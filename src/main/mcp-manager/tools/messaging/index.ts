@@ -23,6 +23,9 @@
  * 消息相关的MCP工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const messagingTools = [
   {
@@ -33,6 +36,7 @@ export const messagingTools = [
       content: z.string().describe('消息内容')
     }),
     handler: async (params) => {
+    logger.info({ text: 'handler 开始' })
       // 这里实现发送消息的逻辑
       return {
         success: true,

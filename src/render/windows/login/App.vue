@@ -35,6 +35,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('App')
+
 import BeaverSDK from '@beaver-im/js-sdk'
 import type { ISdkLoginEvent } from '@beaver-im/js-sdk'
 import { openAppId } from 'commonModule/config'
@@ -63,11 +66,13 @@ export default defineComponent({
     BrandSection,
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     onMounted(() => {
       BeaverSDK.register()
     })
 
     const handleLogin = async (payload: CustomEvent | ISdkLoginEvent) => {
+    logger.info({ text: 'handleLogin 开始' })
       const event = parseLoginEvent(payload)
       if (!event || event.code === 0 ) {
         const res = await oauthCodeLoginApi({ appId: openAppId, code: event.result.authCode })

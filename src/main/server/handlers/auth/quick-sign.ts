@@ -22,6 +22,9 @@
 import type { Context } from 'koa'
 import { getQuickSign } from '../../logic/auth/quick-sign'
 import { response } from '../../utils/response'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('quick-sign')
+
 
 /**
  * GET /auth/quick_sign - 获取快捷登录状态（如果已登录，返回 authCode）
@@ -29,6 +32,7 @@ import { response } from '../../utils/response'
  * 对标 go-zero handler，负责 HTTP 请求/响应
  */
 export default async function quickSignHandler(ctx: Context): Promise<void> {
+    logger.info({ text: 'quickSignHandler 开始' })
   const appId = ctx.query.appid as string
 
   // 参数校验

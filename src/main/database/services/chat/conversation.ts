@@ -23,6 +23,9 @@ import { eq, inArray } from 'drizzle-orm'
 import { chatConversations } from 'mainModule/database/tables/chat/conversation'
 import { BaseService } from '../base'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('conversation')
+
   DBCreateConversationReq,
   DBUpsertConversationReq,
   DBBatchCreateConversationsReq,
@@ -43,6 +46,7 @@ class ChatConversation extends BaseService {
    * @description 创建单个会话
    */
   async create(req: DBCreateConversationReq): Promise<void> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(chatConversations).values(req).run()
   }
 
@@ -50,6 +54,7 @@ class ChatConversation extends BaseService {
    * @description upsert单个会话（插入或更新）
    */
   async upsert(req: DBUpsertConversationReq): Promise<void> {
+    logger.info({ text: 'upsert 开始' })
     // 处理字段名映射：API返回的 createdAt/updatedAt 映射到数据库的 createdAt/updatedAt
     const dbData = {
       conversationId: req.conversationId,
@@ -81,6 +86,7 @@ class ChatConversation extends BaseService {
    * @description 批量创建会话（支持插入或更新）
    */
   async batchCreate(req: DBBatchCreateConversationsReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (req.conversations.length === 0)
       return
 
@@ -118,6 +124,7 @@ class ChatConversation extends BaseService {
    * @description 获取所有会话（本地数据库场景，支持分页）
    */
   async getAllConversations(req: DBGetAllConversationsReq): Promise<DBGetAllConversationsRes> {
+    logger.info({ text: 'getAllConversations 开始' })
     const { page = 1, limit } = req
 
     let query = this.db.select().from(chatConversations)
@@ -135,6 +142,7 @@ class ChatConversation extends BaseService {
    * @description 根据会话ID列表批量获取会话元数据（包含最后消息）
    */
   async getConversationsByIds(req: DBGetConversationsByIdsReq): Promise<DBGetConversationsByIdsRes> {
+    logger.info({ text: 'getConversationsByIds 开始' })
     if (req.conversationIds.length === 0)
       return []
     const conversations = await this.db.select().from(chatConversations).where(inArray(chatConversations.conversationId as any, req.conversationIds as any)).all()
@@ -145,6 +153,7 @@ class ChatConversation extends BaseService {
    * @description 根据会话ID获取单个会话元数据
    */
   async getConversationById(req: DBGetConversationByIdReq): Promise<DBGetConversationByIdRes> {
+    logger.info({ text: 'getConversationById 开始' })
     const conversation = await this.db.select().from(chatConversations).where(eq(chatConversations.conversationId as any, req.conversationId as any)).get()
     return { conversation }
   }
@@ -153,6 +162,7 @@ class ChatConversation extends BaseService {
    * @description 根据类型获取会话（纯数据库查询）
    */
   async getConversationsByType(req: DBGetConversationsByTypeReq): Promise<DBGetConversationsByTypeRes> {
+    logger.info({ text: 'getConversationsByType 开始' })
     const conversations = await this.db.select().from(chatConversations).where(eq(chatConversations.type as any, req.type as any)).all()
     return conversations
   }
@@ -161,6 +171,7 @@ class ChatConversation extends BaseService {
    * @description 更新会话的最后消息
    */
   async updateLastMessage(req: DBUpdateLastMessageReq): Promise<void> {
+    logger.info({ text: 'updateLastMessage 开始' })
     const updateData: any = {
       lastMessage: req.lastMessage,
       updatedAt: Math.floor(Date.now() / 1000), // 使用秒级时间戳

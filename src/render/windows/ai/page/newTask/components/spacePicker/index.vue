@@ -89,6 +89,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import { computed, defineComponent, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
 import { useAiGlobalStore } from 'renderModule/windows/ai/pinia/global'
 import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
@@ -96,6 +99,7 @@ import { useAiSpaceStore } from 'renderModule/windows/ai/pinia/space'
 export default defineComponent({
   name: 'AiSpacePicker',
   setup() {
+    logger.info({ text: 'setup 开始' })
     const aiSpaceStore = useAiSpaceStore()
     const aiGlobalStore = useAiGlobalStore()
     const open = ref(false)
@@ -117,11 +121,13 @@ export default defineComponent({
     })
 
     const close = () => {
+    logger.info({ text: 'close 开始' })
       open.value = false
       keyword.value = ''
     }
 
     const toggle = async () => {
+    logger.info({ text: 'toggle 开始' })
       open.value = !open.value
       if (open.value) {
         keyword.value = ''
@@ -131,21 +137,25 @@ export default defineComponent({
     }
 
     const pickNone = () => {
+    logger.info({ text: 'pickNone 开始' })
       aiSpaceStore.selectSpace(null)
       close()
     }
 
     const pickSpace = (id: string) => {
+    logger.info({ text: 'pickSpace 开始' })
       aiSpaceStore.selectSpace(id)
       close()
     }
 
     const createSpace = () => {
+    logger.info({ text: 'createSpace 开始' })
       close()
       aiGlobalStore.setVisible('createSpace', true)
     }
 
     const openLocalFolder = async () => {
+    logger.info({ text: 'openLocalFolder 开始' })
       close()
       try {
         await aiSpaceStore.openLocalFolder()
@@ -156,6 +166,7 @@ export default defineComponent({
     }
 
     const onDocPointerDown = (event: MouseEvent) => {
+    logger.info({ text: 'onDocPointerDown 开始' })
       if (!open.value || !rootRef.value)
         return
       if (!rootRef.value.contains(event.target as Node))

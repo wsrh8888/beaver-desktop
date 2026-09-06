@@ -67,6 +67,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('deviceListField')
+
 import type { IDeviceInfo } from 'commonModule/type/ajax/auth'
 import type { ISettingsSection } from '../../config/settingsRegistry'
 import { getDevicesApi, kickDeviceApi } from 'renderModule/api/auth'
@@ -87,12 +90,14 @@ export default defineComponent({
     },
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const devices = ref<IDeviceInfo[]>([])
     const isLoading = ref(false)
     const kickingId = ref('')
     const currentDeviceId = ref('')
 
     const loadDevices = async () => {
+    logger.info({ text: 'loadDevices 开始' })
       isLoading.value = true
       const res = await getDevicesApi()
       isLoading.value = false
@@ -107,6 +112,7 @@ export default defineComponent({
     const isCurrentDevice = (deviceId: string) => deviceId === currentDeviceId.value
 
     const formatDeviceMeta = (device: IDeviceInfo) => {
+    logger.info({ text: 'formatDeviceMeta 开始' })
       const osLabel = device.deviceOsVersion
         ? `${device.deviceOs} ${device.deviceOsVersion}`
         : device.deviceOs
@@ -114,6 +120,7 @@ export default defineComponent({
     }
 
     const handleKick = (deviceId: string) => {
+    logger.info({ text: 'handleKick 开始' })
       MessageBox.confirm('确定要将该设备踢下线吗？', '提示').then(async () => {
         kickingId.value = deviceId
         const res = await kickDeviceApi({ deviceId })

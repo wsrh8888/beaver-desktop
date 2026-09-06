@@ -22,6 +22,9 @@
 import type { TrayMenuItem } from 'commonModule/type/preload/app'
 import type { BrowserWindow, Tray } from 'electron'
 import { BrowserWindow as ElectronBrowserWindow, screen } from 'electron'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('popup')
+
 
 export interface PopupWindowOptions {
   messages: TrayMenuItem[]
@@ -237,6 +240,7 @@ export class PopupWindow {
     // 不清除定时器，让之前的定时器继续（如果存在）
 
     const checkMousePosition = () => {
+    logger.info({ text: 'checkMousePosition 开始' })
       if (!this.window || this.window.isDestroyed() || !this.window.isVisible()) {
         this.stopMouseCheck()
         this.clearHideTimer()

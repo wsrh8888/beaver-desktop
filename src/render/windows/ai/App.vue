@@ -33,6 +33,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('App')
+
 import { defineComponent, onMounted } from 'vue'
 import AiHeader from 'renderModule/windows/ai/components/layout/header/header.vue'
 import AiSidebar from 'renderModule/windows/ai/components/layout/sidebar/index.vue'
@@ -44,6 +47,7 @@ export default defineComponent({
   name: 'AiApp',
   components: { AiHeader, AiSidebar, AiGlobalPage },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const aiViewStore = useAiViewStore()
     const aiAgentStore = useAiAgentStore()
 

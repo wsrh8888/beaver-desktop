@@ -19,10 +19,14 @@
  * beaver-desktop-header-v2
  */
 
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 /**
  * 验证缓存键格式
  */
 export function validateCacheKey(key: string, type: string): boolean {
+    logger.info({ text: 'validateCacheKey 开始' })
   if (!key || typeof key !== 'string') {
     return false
   }
@@ -47,6 +51,7 @@ export function validateCacheKey(key: string, type: string): boolean {
  * 验证版本号格式
  */
 export function validateVersion(version: string): boolean {
+    logger.info({ text: 'validateVersion 开始' })
   return /^\d+\.\d+\.\d+$/.test(version)
 }
 
@@ -54,6 +59,7 @@ export function validateVersion(version: string): boolean {
  * 验证用户ID格式
  */
 export function validateUserId(userId: string): boolean {
+    logger.info({ text: 'validateUserId 开始' })
   return /^\w+$/.test(userId)
 }
 
@@ -61,6 +67,7 @@ export function validateUserId(userId: string): boolean {
  * 验证文件名格式
  */
 export function validateFileName(fileName: string): boolean {
+    logger.info({ text: 'validateFileName 开始' })
   // 支持常见的文件名格式：字母、数字、下划线、点、连字符
   return /^[\w.-]+$/.test(fileName) && fileName.length > 0 && fileName.length < 255
 }

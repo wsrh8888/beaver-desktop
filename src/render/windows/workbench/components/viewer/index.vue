@@ -38,6 +38,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import { resolveWorkbenchEntry } from 'commonModule/type/ajax/workbench'
 import { defineComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { HOME_TAB_ID, useWorkbenchStore } from 'renderModule/windows/workbench/store/workbench/workbench'
@@ -45,6 +48,7 @@ import { HOME_TAB_ID, useWorkbenchStore } from 'renderModule/windows/workbench/s
 export default defineComponent({
   name: 'WorkbenchViewer',
   setup() {
+    logger.info({ text: 'setup 开始' })
     const workbenchStore = useWorkbenchStore()
     const hostRef = ref<HTMLDivElement | null>(null)
     const loading = ref(false)
@@ -53,6 +57,7 @@ export default defineComponent({
     let prevTabIds: string[] = []
 
     const getBounds = () => {
+    logger.info({ text: 'getBounds 开始' })
       const el = hostRef.value
       if (!el)
         return null
@@ -68,6 +73,7 @@ export default defineComponent({
     }
 
     const syncBounds = () => {
+    logger.info({ text: 'syncBounds 开始' })
       const bounds = getBounds()
       const tabId = workbenchStore.activeTabId
       if (!bounds || workbenchStore.isHomeTab || !tabId || tabId === HOME_TAB_ID)
@@ -76,6 +82,7 @@ export default defineComponent({
     }
 
     const showActiveTabEmbed = async () => {
+    logger.info({ text: 'showActiveTabEmbed 开始' })
       const tabId = workbenchStore.activeTabId
       if (workbenchStore.isHomeTab || !tabId || tabId === HOME_TAB_ID) {
         await electron.workbench.hideAllEmbeds()
@@ -98,6 +105,7 @@ export default defineComponent({
     }
 
     const handleReload = () => {
+    logger.info({ text: 'handleReload 开始' })
       const tabId = workbenchStore.activeTabId
       if (!tabId || tabId === HOME_TAB_ID)
         return
@@ -107,15 +115,18 @@ export default defineComponent({
     }
 
     const handleRefreshEvent = () => {
+    logger.info({ text: 'handleRefreshEvent 开始' })
       handleReload()
     }
 
     const handleVisibilityChange = () => {
+    logger.info({ text: 'handleVisibilityChange 开始' })
       if (document.visibilityState === 'visible')
         showActiveTabEmbed()
     }
 
     const handleEmbedState = (_event: unknown, payload: { tabId: string, state: string }) => {
+    logger.info({ text: 'handleEmbedState 开始' })
       if (payload.tabId !== workbenchStore.activeTabId)
         return
       if (payload.state === 'loading') {
@@ -133,6 +144,7 @@ export default defineComponent({
     }
 
     const syncClosedTabs = (tabIds: string[]) => {
+    logger.info({ text: 'syncClosedTabs 开始' })
       const removedIds = prevTabIds.filter(id => id !== HOME_TAB_ID && !tabIds.includes(id))
       removedIds.forEach((tabId) => {
         electron.workbench.closeEmbed({ tabId })

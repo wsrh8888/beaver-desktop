@@ -22,11 +22,15 @@
 import groupSync from './group'
 import groupJoinRequestSync from './group-join-request'
 import groupMemberSync from './group-member'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 // 群组数据同步统一入口
 // 独立同步三个模块：群资料、群成员、入群申请
 export const groupDatasync = new class GroupDatasync {
   async checkAndSync() {
+    logger.info({ text: 'checkAndSync 开始' })
     // 并行执行所有群组相关同步器
     await Promise.all([
       groupSync.checkAndSync(), // 群资料同步

@@ -24,11 +24,15 @@ import { baseUrl } from 'commonModule/config'
 import Message from 'renderModule/components/ui/message'
 import { getFileInfo } from 'renderModule/utils/file/index'
 import ajax from 'renderModule/utils/request/ajax'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('file')
+
 
 /**
  * @description: 文件上传总入口
  */
 export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFileUploadResult> => {
+    logger.info({ text: 'uploadFileApi 开始' })
   //  if(source === 'local') {
   return await uploadToLocalApi(file, fileKey)
   // } else if(source === 'qiniu') {
@@ -41,6 +45,7 @@ export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFile
  * @description: 通用文件上传函数
  */
 const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
+    logger.info({ text: 'uploadFileApiWithTarget 开始' })
   // 根据目标选择URL
   const uploadPath = target === 'qiniu' ? '/api/file/v1/uploadQiniu' : '/api/file/v1/uploadLocal'
   let uploadUrl = `${baseUrl}${uploadPath}`

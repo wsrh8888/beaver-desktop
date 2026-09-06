@@ -24,6 +24,9 @@ import favoriteEmojiPackageBusiness from 'mainModule/business/emoji/favorite-pac
 import emojiPackageEmojiBusiness from 'mainModule/business/emoji/package-emoji'
 import emojiPackageBusiness from 'mainModule/business/emoji/package'
 import emojiBusiness from 'mainModule/business/emoji/emoji'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('collect-receiver')
+
 
 /**
  * @description: 表情收藏接收器 - 处理表情收藏相关表的操作
@@ -34,6 +37,7 @@ class CollectReceiver {
    * 处理 emoji、emoji_collect、emoji_package_collect、emoji_package_emoji 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
 
     // 处理各种表情相关表的更新

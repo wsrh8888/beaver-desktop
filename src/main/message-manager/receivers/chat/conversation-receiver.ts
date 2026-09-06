@@ -20,6 +20,9 @@
  */
 
 import conversationBusiness from 'mainModule/business/chat/conversation'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('conversation-receiver')
+
 
 /**
  * @description: 会话接收器 - 处理conversations表的操作
@@ -31,6 +34,7 @@ class ConversationReceiver {
    * 只处理 conversations 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
 
     // 第一层循环：遍历所有的表更新

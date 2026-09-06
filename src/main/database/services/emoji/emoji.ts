@@ -23,6 +23,9 @@ import { eq, inArray } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { emoji } from 'mainModule/database/tables/emoji/emoji'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('emoji')
+
   DBCreateEmojiReq,
   DBBatchCreateEmojisReq,
   DBGetEmojisByIdsReq,
@@ -39,6 +42,7 @@ class Emoji extends BaseService {
    * @description 创建表情
    */
   async create(req: DBCreateEmojiReq): Promise<void> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(emoji).values(req).run()
   }
 
@@ -46,6 +50,7 @@ class Emoji extends BaseService {
    * @description 批量创建表情（upsert操作）
    */
   async batchCreate(req: DBBatchCreateEmojisReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (req.emojiList.length === 0) {
       return
     }
@@ -71,6 +76,7 @@ class Emoji extends BaseService {
    * @description 根据ID列表获取表情
    */
   async getEmojisByIds(req: DBGetEmojisByIdsReq): Promise<DBGetEmojisByIdsRes> {
+    logger.info({ text: 'getEmojisByIds 开始' })
     if (req.ids.length === 0) {
       return new Map()
     }
@@ -92,6 +98,7 @@ class Emoji extends BaseService {
    * @description 获取所有表情
    */
   async getAllEmojis(req: DBGetAllEmojisReq): Promise<DBGetAllEmojisRes> {
+    logger.info({ text: 'getAllEmojis 开始' })
     return await this.db.select().from(emoji).all()
   }
 
@@ -99,6 +106,7 @@ class Emoji extends BaseService {
    * @description 根据ID获取单个表情
    */
   async getEmojiById(req: DBGetEmojiByIdReq): Promise<DBGetEmojiByIdRes> {
+    logger.info({ text: 'getEmojiById 开始' })
     const result = await this.db
       .select()
       .from(emoji)

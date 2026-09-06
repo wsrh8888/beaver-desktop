@@ -20,6 +20,9 @@
  */
 
 import { defineStore } from 'pinia'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('circle')
+
 
 export interface ICircleInfo {
   circleId: string
@@ -50,10 +53,12 @@ export const useCircleStore = defineStore('circleStore', {
 
   actions: {
     reset() {
+    logger.info({ text: 'reset 开始' })
       this._circleList = []
     },
 
     async init() {
+    logger.info({ text: 'init 开始' })
       const result = await electron.database.circle.getCircleList()
       this._circleList = (result?.list || []).map(item => ({
         circleId: item.circleId,
@@ -65,6 +70,7 @@ export const useCircleStore = defineStore('circleStore', {
     },
 
     upsertCircle(circleData: ICircleInfo) {
+    logger.info({ text: 'upsertCircle 开始' })
       const index = this._circleList.findIndex(c => c.conversationId === circleData.conversationId)
       if (index !== -1) {
         this._circleList[index] = { ...this._circleList[index], ...circleData }
@@ -78,6 +84,7 @@ export const useCircleStore = defineStore('circleStore', {
      * 按圈子 id 从本地库刷新资料
      */
     async updateCirclesByIds(circleIds: string[]) {
+    logger.info({ text: 'updateCirclesByIds 开始' })
       if (!circleIds.length)
         return
       await this.init()
@@ -87,6 +94,7 @@ export const useCircleStore = defineStore('circleStore', {
      * 按会话 id 从本地库刷新圈子资料（圈 id 或 circle_ 前缀均可）
      */
     async updateCirclesByConversationIds(conversationIds: string[]) {
+    logger.info({ text: 'updateCirclesByConversationIds 开始' })
       const circleIds = conversationIds
         .filter(id => id.startsWith('circle_'))
         .map(id => id.slice('circle_'.length))
@@ -97,6 +105,7 @@ export const useCircleStore = defineStore('circleStore', {
     },
 
     removeCircle(circleIdOrConversationId: string) {
+    logger.info({ text: 'removeCircle 开始' })
       const conversationId = circleIdOrConversationId.startsWith('circle_')
         ? circleIdOrConversationId
         : `circle_${circleIdOrConversationId}`

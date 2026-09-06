@@ -26,12 +26,16 @@ import messageBusiness from 'mainModule/business/chat/message'
 import dbServiceChatUserConversation from 'mainModule/database/services/chat/user-conversation'
 import dbServiceChatMessageMedia from 'mainModule/database/services/chat/message-media'
 import { store } from 'mainModule/store'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 class ChatHandler {
   /**
    * 处理聊天相关的数据库命令
    */
   async handle(_event: Electron.IpcMainInvokeEvent, command: DataChatCommand, data: any, header: ICommonHeader): Promise<any> {
+    logger.info({ text: 'handle 开始' })
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
       throw new Error('用户未登录')

@@ -22,6 +22,9 @@
 import { defineStore } from 'pinia'
 import { markReadByCategoryApi } from 'renderModule/api/notification'
 import { useUserStore } from '../user/user'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('notification')
+
 
 export interface IMomentInteractionItem {
   eventId: string
@@ -43,11 +46,13 @@ function parsePayload(raw?: string | null): Record<string, any> {
     return JSON.parse(raw)
   }
   catch {
+      logger.error({ text: 'parsePayload 失败' })
     return {}
   }
 }
 
 function getActionText(eventType: string) {
+    logger.info({ text: 'getActionText 开始' })
   switch (eventType) {
     case 'moment_like':
       return '赞了你的朋友圈'
@@ -74,6 +79,7 @@ export const useMomentNotificationStore = defineStore('useMomentNotificationStor
 
   actions: {
     async refreshUnreadCount() {
+    logger.info({ text: 'refreshUnreadCount 开始' })
       try {
         const summary = await window.electron.database.notification.getUnreadSummary({
           categories: ['moment'],
@@ -82,11 +88,13 @@ export const useMomentNotificationStore = defineStore('useMomentNotificationStor
         this.unreadCount = momentCat?.unread ?? 0
       }
       catch {
+      logger.error({ text: 'refreshUnreadCount 失败' })
         this.unreadCount = 0
       }
     },
 
     async loadInteractions() {
+    logger.info({ text: 'loadInteractions 开始' })
       this.loading = true
       try {
         const inboxRes = await window.electron.database.notification.getInboxByCategory({
@@ -137,6 +145,7 @@ export const useMomentNotificationStore = defineStore('useMomentNotificationStor
           .filter(Boolean) as IMomentInteractionItem[]
       }
       catch {
+      logger.error({ text: 'loadInteractions 失败' })
         this.interactions = []
       }
       finally {
@@ -145,16 +154,19 @@ export const useMomentNotificationStore = defineStore('useMomentNotificationStor
     },
 
     async openMessagesPanel() {
+    logger.info({ text: 'openMessagesPanel 开始' })
       this.showMessagesPanel = true
       await this.loadInteractions()
       await this.markCategoryAsViewed()
     },
 
     closeMessagesPanel() {
+    logger.info({ text: 'closeMessagesPanel 开始' })
       this.showMessagesPanel = false
     },
 
     async markCategoryAsViewed() {
+    logger.info({ text: 'markCategoryAsViewed 开始' })
       if (this.unreadCount === 0)
         return
 
@@ -162,6 +174,7 @@ export const useMomentNotificationStore = defineStore('useMomentNotificationStor
         await markReadByCategoryApi({ category: 'moment' })
       }
       catch {
+      logger.error({ text: 'markCategoryAsViewed 失败' })
         // ignore
       }
       finally {
@@ -170,6 +183,7 @@ export const useMomentNotificationStore = defineStore('useMomentNotificationStor
     },
 
     async handleInboxUpdate() {
+    logger.info({ text: 'handleInboxUpdate 开始' })
       await this.refreshUnreadCount()
       if (this.showMessagesPanel) {
         await this.loadInteractions()

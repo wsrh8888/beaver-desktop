@@ -24,6 +24,9 @@ import { BaseService } from '../base'
 import { friendVerifies } from '../../tables/friend/friend_verify'
 import { users } from '../../tables/user/user'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('friend_verify')
+
   DBCreateFriendVerifyReq,
   DBCreateFriendVerifyRes,
   DBGetFriendVerifiesByIdsReq,
@@ -45,6 +48,7 @@ class FriendVerify extends BaseService {
    * @description 根据验证记录ID批量查询好友验证记录
    */
   async getFriendVerifiesByIds(req: DBGetFriendVerifiesByIdsReq): Promise<DBGetFriendVerifiesByIdsRes> {
+    logger.info({ text: 'getFriendVerifiesByIds 开始' })
     const { verifyIds } = req
     if (verifyIds.length === 0) {
       return { verifyMap: new Map() }
@@ -68,6 +72,7 @@ class FriendVerify extends BaseService {
    * @description 批量创建好友验证记录（支持插入或更新）
    */
   async batchCreate(req: DBBatchCreateFriendVerifiesReq): Promise<DBBatchCreateFriendVerifiesRes> {
+    logger.info({ text: 'batchCreate 开始' })
     const { verifies } = req
     if (verifies.length === 0)
       return {}
@@ -99,6 +104,7 @@ class FriendVerify extends BaseService {
    * @description 获取好友验证列表
    */
   async getValidList(req: DBGetValidListReq): Promise<DBGetValidListRes> {
+    logger.info({ text: 'getValidList 开始' })
     const { userId, page = 1, limit = 20 } = req
     const offset = (page - 1) * limit
 
@@ -121,6 +127,7 @@ class FriendVerify extends BaseService {
    * @description 根据版本范围获取验证列表
    */
   async getValidByVerRange(req: DBGetValidByVerRangeReq): Promise<DBGetValidByVerRangeRes> {
+    logger.info({ text: 'getValidByVerRange 开始' })
     const { userId, startVersion = 0, endVersion = Number.MAX_SAFE_INTEGER } = req
 
     // 查询指定版本范围内的验证记录
@@ -144,6 +151,7 @@ class FriendVerify extends BaseService {
    * @description 根据验证记录ID列表批量查询验证记录
    */
   async getValidByIds(req: DBGetValidByIdsReq): Promise<DBGetValidByIdsRes> {
+    logger.info({ text: 'getValidByIds 开始' })
     const { verifyIds } = req
     if (verifyIds.length === 0) {
       return []

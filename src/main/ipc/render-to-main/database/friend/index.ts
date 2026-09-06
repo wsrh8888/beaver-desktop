@@ -26,12 +26,16 @@ import friendVerifyBusiness from 'mainModule/business/friend/friend-verify'
 import dBServiceFriend  from 'mainModule/database/services/friend/friend'
 import dBServiceFriendVerify  from 'mainModule/database/services/friend/friend_verify'
 import { store } from 'mainModule/store'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 class FriendHandler {
   /**
    * 处理用户相关的数据库命令
    */
   async handle(_event: Electron.IpcMainInvokeEvent, command: DataFriendCommand, data: any, header: ICommonHeader): Promise<any> {
+    logger.info({ text: 'handle 开始' })
     const userStore = store.get('userInfo')
     if (!userStore?.userId) {
       throw new Error('用户未登录')

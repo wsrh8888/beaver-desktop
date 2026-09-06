@@ -111,6 +111,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import type { IFriendInfo } from 'commonModule/type/ajax/friend'
 import { CacheType } from 'commonModule/type/cache/cache'
 import searchIcon from 'renderModule/assets/image/create-group/search.svg'
@@ -144,6 +147,7 @@ export default defineComponent({
   },
   emits: ['update:modelValue', 'close', 'confirm'],
   setup(props, { emit }) {
+    logger.info({ text: 'setup 开始' })
     const searchKeyword = ref('')
     const selectedFriends = ref<IFriendInfo[]>([])
     const friendList = ref<IFriendInfo[]>([])
@@ -171,6 +175,7 @@ export default defineComponent({
     }
 
     const toggleFriendSelection = (friend: IFriendInfo) => {
+    logger.info({ text: 'toggleFriendSelection 开始' })
       const index = selectedFriends.value.findIndex(f => f.userId === friend.userId)
       if (index > -1)
         selectedFriends.value.splice(index, 1)
@@ -179,12 +184,14 @@ export default defineComponent({
     }
 
     const removeFriend = (userId: string) => {
+    logger.info({ text: 'removeFriend 开始' })
       const index = selectedFriends.value.findIndex(friend => friend.userId === userId)
       if (index > -1)
         selectedFriends.value.splice(index, 1)
     }
 
     const loadFriends = async () => {
+    logger.info({ text: 'loadFriends 开始' })
       try {
         const res = await electron.database.friend.getFriendsList({
           page: 1,
@@ -193,6 +200,7 @@ export default defineComponent({
         friendList.value = res.list || []
       }
       catch {
+      logger.error({ text: 'setup 失败' })
         friendList.value = []
       }
     }
@@ -202,11 +210,13 @@ export default defineComponent({
     })
 
     const handleClose = () => {
+    logger.info({ text: 'handleClose 开始' })
       emit('update:modelValue', false)
       emit('close')
     }
 
     const handleConfirm = () => {
+    logger.info({ text: 'handleConfirm 开始' })
       if (selectedFriends.value.length === 0)
         return
       emit('confirm', selectedFriends.value.map(f => f.userId))

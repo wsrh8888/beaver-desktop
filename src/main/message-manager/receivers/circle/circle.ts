@@ -20,12 +20,16 @@
  */
 
 import circleBusiness from 'mainModule/business/circle/circle'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('circle')
+
 
 /**
  * @description: 圈子资料接收器 - 处理 circles 表更新
  */
 class CircleReceiver {
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tables } = tableUpdatesBody
 
     for (const update of tables || []) {

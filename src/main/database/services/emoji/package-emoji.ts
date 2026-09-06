@@ -23,6 +23,9 @@ import { eq, inArray } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { emojiPackageEmoji } from 'mainModule/database/tables/emoji/package_emoji'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('package-emoji')
+
   DBCreatePackageEmojiReq,
   DBBatchCreatePackageEmojisReq,
   DBGetEmojisByPackageIdReq,
@@ -41,6 +44,7 @@ class EmojiPackageEmoji extends BaseService {
    * @description 创建表情包表情关联
    */
   async create(req: DBCreatePackageEmojiReq): Promise<void> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(emojiPackageEmoji).values(req).run()
   }
 
@@ -48,6 +52,7 @@ class EmojiPackageEmoji extends BaseService {
    * @description 批量创建表情包表情关联（upsert操作）
    */
   async batchCreate(req: DBBatchCreatePackageEmojisReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (req.relations.length === 0) {
       return
     }
@@ -71,6 +76,7 @@ class EmojiPackageEmoji extends BaseService {
    * @description 根据表情包ID获取表情列表
    */
   async getEmojisByPackageId(req: DBGetEmojisByPackageIdReq): Promise<DBGetEmojisByPackageIdRes> {
+    logger.info({ text: 'getEmojisByPackageId 开始' })
     return await this.db
       .select()
       .from(emojiPackageEmoji)
@@ -82,6 +88,7 @@ class EmojiPackageEmoji extends BaseService {
    * @description 根据表情包ID列表获取表情关联数据
    */
   async getEmojisByPackageIds(req: DBGetEmojisByPackageIdsReq): Promise<DBGetEmojisByPackageIdsRes> {
+    logger.info({ text: 'getEmojisByPackageIds 开始' })
     if (req.packageIds.length === 0) {
       return new Map()
     }
@@ -106,6 +113,7 @@ class EmojiPackageEmoji extends BaseService {
    * @description 根据表情ID获取所属的表情包
    */
   async getPackagesByEmojiId(req: DBGetPackagesByEmojiIdReq): Promise<DBGetPackagesByEmojiIdRes> {
+    logger.info({ text: 'getPackagesByEmojiId 开始' })
     return await this.db
       .select()
       .from(emojiPackageEmoji)
@@ -117,6 +125,7 @@ class EmojiPackageEmoji extends BaseService {
    * @description 删除表情包中的表情
    */
   async deleteByPackageIdAndEmojiId(req: DBDeleteByPackageIdAndEmojiIdReq): Promise<void> {
+    logger.info({ text: 'deleteByPackageIdAndEmojiId 开始' })
     await this.db
       .delete(emojiPackageEmoji)
       .where(eq(emojiPackageEmoji.packageId, req.packageId))
@@ -128,6 +137,7 @@ class EmojiPackageEmoji extends BaseService {
    * @description 根据关联ID列表获取表情关联数据
    */
   async getEmojisByRelationIds(req: { relationIds: string[] }): Promise<IDBEmojiPackageEmoji[]> {
+    logger.info({ text: 'getEmojisByRelationIds 开始' })
     if (req.relationIds.length === 0) {
       return []
     }
@@ -143,6 +153,7 @@ class EmojiPackageEmoji extends BaseService {
    * @description 删除表情包中的所有表情
    */
   async deleteByPackageId(req: DBDeleteByPackageIdReq): Promise<void> {
+    logger.info({ text: 'deleteByPackageId 开始' })
     await this.db
       .delete(emojiPackageEmoji)
       .where(eq(emojiPackageEmoji.packageId, req.packageId))

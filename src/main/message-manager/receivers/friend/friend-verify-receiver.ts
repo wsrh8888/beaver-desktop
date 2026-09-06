@@ -22,6 +22,9 @@
 import friendBusiness from 'mainModule/business/friend/friend'
 import friendVerifyBusiness from 'mainModule/business/friend/friend-verify'
 import userBusiness from 'mainModule/business/user/user'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('friend-verify-receiver')
+
 
 /**
  * @description: 好友验证接收器 - 处理friend_verify表的操作
@@ -33,6 +36,7 @@ class FriendVerifyReceiver {
    * 处理 friend_verify 表和 users 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
 
     // 过滤出 friend_verify 的更新

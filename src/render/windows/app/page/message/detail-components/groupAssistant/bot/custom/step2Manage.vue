@@ -121,6 +121,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('step2Manage')
+
 import {
   deleteBotApi,
   getBotDetailApi,
@@ -143,6 +146,7 @@ export default defineComponent({
   components: { BeaverButton },
   emits: ['close', 'saved'],
   setup(_, { emit }) {
+    logger.info({ text: 'setup 开始' })
     const groupAssistantViewStore = useGroupAssistantViewStore()
     const avatarInputRef = ref<HTMLInputElement | null>(null)
     const submitting = ref(false)
@@ -158,6 +162,7 @@ export default defineComponent({
     const formIpWhitelist = ref('')
 
     const parseLines = (value: string) => {
+    logger.info({ text: 'parseLines 开始' })
       return value
         .split(/[\n,，]/)
         .map(item => item.trim())
@@ -165,6 +170,7 @@ export default defineComponent({
     }
 
     const buildSecurityPayload = () => {
+    logger.info({ text: 'buildSecurityPayload 开始' })
       const keywords = parseLines(formKeywords.value)
       const ipWhitelist = parseLines(formIpWhitelist.value)
       return {
@@ -179,6 +185,7 @@ export default defineComponent({
     }
 
     const markSaved = () => {
+    logger.info({ text: 'markSaved 开始' })
       groupAssistantViewStore.markListDirty()
       emit('saved')
     }
@@ -200,6 +207,7 @@ export default defineComponent({
         signatureSecret: string
       }
     }) => {
+    logger.info({ text: 'fillForm 开始' })
       formName.value = bot.name
       formDescription.value = bot.description
       formAvatar.value = bot.avatar // 直接使用，不需要转换
@@ -213,6 +221,7 @@ export default defineComponent({
     }
 
     const loadBot = async () => {
+    logger.info({ text: 'loadBot 开始' })
       const res = await getBotDetailApi({ botId: groupBotId.value })
       if (res.code !== 0)
         return
@@ -226,6 +235,7 @@ export default defineComponent({
     const pickAvatar = () => avatarInputRef.value?.click()
 
     const onAvatarChange = async (e: Event) => {
+    logger.info({ text: 'onAvatarChange 开始' })
       const file = (e.target as HTMLInputElement).files?.[0]
       if (!file)
         return
@@ -251,6 +261,7 @@ export default defineComponent({
     }
 
     const submitSave = async () => {
+    logger.info({ text: 'submitSave 开始' })
       if (!formName.value.trim()) {
         Message.error('请填写名称')
         return
@@ -288,6 +299,7 @@ export default defineComponent({
     }
 
     const handleResetSecret = async () => {
+    logger.info({ text: 'handleResetSecret 开始' })
       await MessageBox.confirm('重置后旧密钥立即失效，请确认？', '重置密钥')
       const res = await resetBotSecretApi({ botId: groupBotId.value })
       if (res.code === 0) {
@@ -297,6 +309,7 @@ export default defineComponent({
     }
 
     const handleDelete = async () => {
+    logger.info({ text: 'handleDelete 开始' })
       await MessageBox.confirm('删除后 Webhook 将不可用，请确认？', '删除群助手')
       const res = await deleteBotApi({ botId: groupBotId.value })
       if (res.code === 0) {
@@ -306,31 +319,38 @@ export default defineComponent({
     }
 
     const copyText = async (text: string) => {
+    logger.info({ text: 'copyText 开始' })
       if (await copyToClipboard(text))
         Message.success('已复制')
     }
 
     const copySignSecret = async () => {
+    logger.info({ text: 'copySignSecret 开始' })
       await copyText(signSecret.value)
     }
 
     const resetSignSecret = async () => {
+    logger.info({ text: 'resetSignSecret 开始' })
       await handleResetSecret()
     }
 
     const showKeywordsHelp = () => {
+    logger.info({ text: 'showKeywordsHelp 开始' })
       Message.info('自定义关键词帮助文档')
     }
 
     const showIpHelp = () => {
+    logger.info({ text: 'showIpHelp 开始' })
       Message.info('IP白名单帮助文档')
     }
 
     const showSignHelp = () => {
+    logger.info({ text: 'showSignHelp 开始' })
       Message.info('签名校验帮助文档')
     }
 
     const showHelpDoc = () => {
+    logger.info({ text: 'showHelpDoc 开始' })
       Message.info('打开帮助文档')
     }
 

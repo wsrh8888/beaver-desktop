@@ -24,6 +24,9 @@ import { gt, inArray, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { notificationEvents } from 'mainModule/database/tables/notification/event'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('event')
+
   DBBatchCreateNotificationEventsReq,
   DBGetEventsAfterVersionReq,
   DBGetEventsAfterVersionRes,
@@ -40,6 +43,7 @@ class NotificationEvent extends BaseService {
    * @description 批量创建通知事件
    */
   async batchCreate(req: DBBatchCreateNotificationEventsReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (!req.events.length)
       return
 
@@ -68,6 +72,7 @@ class NotificationEvent extends BaseService {
    * @description 按版本增量拉取事件
    */
   async getEventsAfterVersion(req: DBGetEventsAfterVersionReq): Promise<DBGetEventsAfterVersionRes> {
+    logger.info({ text: 'getEventsAfterVersion 开始' })
     const limit = req.limit || 100
     const events = await this.db.select()
       .from(notificationEvents)
@@ -82,6 +87,7 @@ class NotificationEvent extends BaseService {
    * @description 获取指定事件ID的本地版本映射
    */
   async getVersionMapByIds(req: DBGetVersionMapByIdsReq): Promise<DBGetVersionMapByIdsRes> {
+    logger.info({ text: 'getVersionMapByIds 开始' })
     if (!req.eventIds.length)
       return { versionMap: new Map() }
 
@@ -104,6 +110,7 @@ class NotificationEvent extends BaseService {
    * @description 根据事件ID列表获取事件明细
    */
   async getByIds(req: DBGetNotificationEventsReq): Promise<DBGetNotificationEventsRes> {
+    logger.info({ text: 'getByIds 开始' })
     if (!req.eventIds.length)
       return []
 

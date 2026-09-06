@@ -19,6 +19,9 @@
  * beaver-desktop-header-v2
  */
 
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('copy')
+
 /**
  * 复制相关功能（仅 Electron，统一走主进程）
  */
@@ -27,6 +30,7 @@
  * 复制文本到剪贴板（主进程 clipboard.copyText）
  */
 export async function copyToClipboard(text: string): Promise<boolean> {
+    logger.info({ text: 'copyToClipboard 开始' })
   if (!text || text.trim().length === 0)
     return false
   return window.electron.clipboard.copyText(text)
@@ -36,6 +40,7 @@ export async function copyToClipboard(text: string): Promise<boolean> {
  * 获取当前选中的文本
  */
 export function getSelectedText(): string {
+    logger.info({ text: 'getSelectedText 开始' })
   const selection = window.getSelection()
   if (selection && selection.toString().trim().length > 0)
     return selection.toString().trim()
@@ -46,6 +51,7 @@ export function getSelectedText(): string {
  * 检查是否有文本被选中
  */
 export function hasTextSelected(): boolean {
+    logger.info({ text: 'hasTextSelected 开始' })
   const selection = window.getSelection()
   return !!(selection && selection.toString().trim().length > 0)
 }

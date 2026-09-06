@@ -21,8 +21,12 @@
 
 import { and, desc, eq, gte, inArray, lt, lte, sql } from 'drizzle-orm'
 import { chats } from 'mainModule/database/tables/chat/message'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('message')
+
 import { BaseService } from '../base'
 import type {
+
   DBCreateMessageReq,
   DBBatchCreateMessagesReq,
   DBBatchUpdateSendStatusReq,
@@ -38,6 +42,7 @@ class dBServiceMessage extends BaseService {
    * @description 创建单条消息
    */
   async create(req: DBCreateMessageReq): Promise<void> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(chats).values(req).run()
   }
 
@@ -45,6 +50,7 @@ class dBServiceMessage extends BaseService {
    * @description 批量创建消息（一次性插入所有消息，如果重复则更新关键字段）
    */
   async batchCreate(req: DBBatchCreateMessagesReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (req.messages.length === 0)
       return
 
@@ -65,6 +71,7 @@ class dBServiceMessage extends BaseService {
    * @description 批量更新消息的发送状态（用于收到服务器消息后，更新本地已发送消息的状态）
    */
   async batchUpdateSendStatus(req: DBBatchUpdateSendStatusReq): Promise<void> {
+    logger.info({ text: 'batchUpdateSendStatus 开始' })
     if (req.messageIds.length === 0)
       return
 
@@ -98,6 +105,7 @@ class dBServiceMessage extends BaseService {
    * @description 获取会话的历史消息（纯数据库查询，不含业务逻辑）
    */
   async getChatHistory(req: DBGetChatHistoryReq): Promise<DBGetChatHistoryRes> {
+    logger.info({ text: 'getChatHistory 开始' })
     const { seq, limit = 20 } = req
 
     let query = this.db.select().from(chats).where(eq(chats.conversationId as any, req.conversationId as any))
@@ -117,6 +125,7 @@ class dBServiceMessage extends BaseService {
    * @description 按序列号范围获取消息（纯数据库查询，不含业务逻辑）
    */
   async getChatMessagesBySeqRange(req: DBGetChatMessagesBySeqRangeReq): Promise<DBGetChatMessagesBySeqRangeRes> {
+    logger.info({ text: 'getChatMessagesBySeqRange 开始' })
     const messages = await this.db.select().from(chats).where(
       and(
         gte(chats.seq as any, req.startSeq as any),
@@ -131,6 +140,7 @@ class dBServiceMessage extends BaseService {
    * @description 批量删除消息（物理删除）
    */
   async batchDelete(messageIds: string[]): Promise<void> {
+    logger.info({ text: 'batchDelete 开始' })
     if (messageIds.length === 0)
       return
 
@@ -143,6 +153,7 @@ class dBServiceMessage extends BaseService {
    * @description 获取单条消息
    */
   async getById(messageId: string): Promise<any> {
+    logger.info({ text: 'getById 开始' })
     const result = await this.db.select().from(chats).where(eq(chats.messageId as any, messageId as any)).limit(1).all()
     return result.length > 0 ? result[0] : null
   }
@@ -151,6 +162,7 @@ class dBServiceMessage extends BaseService {
    * @description 获取某个会话中所有"发送中"的消息（用于 ACK 确认）
    */
   async getSendingMessages(conversationId: string): Promise<any[]> {
+    logger.info({ text: 'getSendingMessages 开始' })
     return await this.db.select().from(chats).where(
       and(
         eq(chats.conversationId as any, conversationId as any),

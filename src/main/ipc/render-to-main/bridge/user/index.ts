@@ -22,9 +22,13 @@
 import type { IBeaverBridgeResult } from 'commonModule/type/preload/bridge'
 import type { IBridgeSession } from 'mainModule/bridge/registry'
 import { store } from 'mainModule/store'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 class BridgeUserHandler {
   handle(action: string, _params: Record<string, unknown>, _session: IBridgeSession): IBeaverBridgeResult {
+    logger.info({ text: 'handle 开始' })
     switch (action) {
       case 'getUserInfo': {
         const session = store.get('userInfo')

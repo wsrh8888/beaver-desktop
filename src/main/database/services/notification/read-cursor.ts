@@ -24,6 +24,9 @@ import { and, eq, sql } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { notificationReads } from 'mainModule/database/tables/notification/read'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('read-cursor')
+
   DBUpsertCursorReq,
   DBGetCursorReq,
   DBGetCursorRes,
@@ -40,6 +43,7 @@ class NotificationReadCursor extends BaseService {
    * @description 写入或更新游标
    */
   async upsertCursor(req: DBUpsertCursorReq): Promise<void> {
+    logger.info({ text: 'upsertCursor 开始' })
     await this.db.insert(notificationReads)
       .values(req)
       .onConflictDoUpdate({
@@ -57,6 +61,7 @@ class NotificationReadCursor extends BaseService {
    * @description 查询用户分类游标
    */
   async getCursor(req: DBGetCursorReq): Promise<DBGetCursorRes> {
+    logger.info({ text: 'getCursor 开始' })
     const { userId, category } = req
     const cursor = await this.db.select()
       .from(notificationReads)
@@ -74,6 +79,7 @@ class NotificationReadCursor extends BaseService {
    * @description 获取用户游标版本映射（简化版）
    */
   async getVersionMap(req: DBGetVersionMapReq): Promise<DBGetVersionMapRes> {
+    logger.info({ text: 'getVersionMap 开始' })
     // 简化逻辑：返回空Map，表示需要同步所有数据
     return { versionMap: new Map() }
   }
@@ -82,6 +88,7 @@ class NotificationReadCursor extends BaseService {
    * @description 获取用户多个分类的游标
    */
   async getCursors(req: DBGetCursorsReq): Promise<DBGetCursorsRes> {
+    logger.info({ text: 'getCursors 开始' })
     const { userId, categories } = req
     if (!userId) return { cursors: [] }
 

@@ -39,6 +39,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue'
 import { useMomentStore } from '../../store/moment/moment'
 import MomentItem from './momentItem.vue'
@@ -49,11 +52,13 @@ export default defineComponent({
     MomentItem,
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const listContent = ref<HTMLDivElement>()
     const momentStore = useMomentStore()
 
     // 监听滚动事件
     const handleScroll = async () => {
+    logger.info({ text: 'handleScroll 开始' })
       if (!listContent.value)
         return
 
@@ -76,11 +81,13 @@ export default defineComponent({
 
     // 处理动态点击
     const handleMomentClick = (moment: any) => {
+    logger.info({ text: 'handleMomentClick 开始' })
       momentStore.showMomentDetail(moment.id)
     }
 
     // 处理评论点击
     const handleComment = (momentId: string) => {
+    logger.info({ text: 'handleComment 开始' })
       momentStore.showMomentDetail(momentId)
     }
 

@@ -23,6 +23,9 @@ import { and, eq } from 'drizzle-orm'
 import { BaseService } from '../base'
 import { media } from '../../tables/media/media'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('media')
+
   DBUpsertMediaReq,
   DBGetMediaInfoReq,
   DBGetMediaInfoRes,
@@ -39,6 +42,7 @@ class MediaService extends BaseService {
    * @description 添加或更新媒体记录
    */
   async upsert(req: DBUpsertMediaReq): Promise<void> {
+    logger.info({ text: 'upsert 开始' })
     const now = Math.floor(Date.now() / 1000)
 
     const existing = await this.db
@@ -77,6 +81,7 @@ class MediaService extends BaseService {
    * @description 根据完整 URL 获取媒体缓存信息
    */
   async getMediaInfo(req: DBGetMediaInfoReq): Promise<DBGetMediaInfoRes> {
+    logger.info({ text: 'getMediaInfo 开始' })
     const result = await this.db
       .select()
       .from(media)
@@ -104,6 +109,7 @@ class MediaService extends BaseService {
    * @description 标记为删除状态（软删除）
    */
   async deleteMedia(req: DBDeleteMediaReq): Promise<void> {
+    logger.info({ text: 'deleteMedia 开始' })
     await this.db
       .update(media)
       .set({

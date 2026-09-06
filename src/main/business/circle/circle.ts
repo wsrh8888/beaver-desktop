@@ -23,9 +23,13 @@ import { NotificationCircleCommand, NotificationModule } from 'commonModule/type
 import { circleSyncApi } from 'mainModule/api/circle'
 import dbServiceCircle from 'mainModule/database/services/circle/circle'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('circle')
+
 
 class CircleBusiness {
   async getCircleList() {
+    logger.info({ text: 'getCircleList 开始' })
     return dbServiceCircle.getCircleList()
   }
 
@@ -33,6 +37,7 @@ class CircleBusiness {
    * WS 推送圈子资料变更后，按本地版本增量拉取并通知渲染进程刷新
    */
   async handleTableUpdates(circleId: string, version: number) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     if (!circleId)
       return
 

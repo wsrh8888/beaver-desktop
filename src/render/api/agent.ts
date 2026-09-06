@@ -36,11 +36,15 @@ import type {
 } from 'commonModule/type/ajax/agent'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('agent')
+
 
 /**
  * @description: 创建 Agent 会话
  */
 export const createAgentApi = (data: ICreateAgentReq) => {
+    logger.info({ text: 'createAgentApi 开始' })
   return ajax<ICreateAgentRes>({
     method: 'POST',
     url: `${baseUrl}/api/agent/v1/createAgent`,
@@ -52,6 +56,7 @@ export const createAgentApi = (data: ICreateAgentReq) => {
  * @description: 创建用户自定义模型
  */
 export const createAgentModelApi = (data: ICreateAgentModelReq) => {
+    logger.info({ text: 'createAgentModelApi 开始' })
   return ajax<ICreateAgentModelRes>({
     method: 'POST',
     url: `${baseUrl}/api/agent/v1/createModel`,
@@ -63,6 +68,7 @@ export const createAgentModelApi = (data: ICreateAgentModelReq) => {
  * @description: 获取当前用户自定义模型列表
  */
 export const listAgentModelsApi = (data: IListAgentModelsReq = {}) => {
+    logger.info({ text: 'listAgentModelsApi 开始' })
   return ajax<IListAgentModelsRes>({
     method: 'POST',
     url: `${baseUrl}/api/agent/v1/listModels`,
@@ -74,6 +80,7 @@ export const listAgentModelsApi = (data: IListAgentModelsReq = {}) => {
  * @description: 更新用户自定义模型
  */
 export const updateAgentModelApi = (data: IUpdateAgentModelReq) => {
+    logger.info({ text: 'updateAgentModelApi 开始' })
   return ajax<IUpdateAgentModelRes>({
     method: 'POST',
     url: `${baseUrl}/api/agent/v1/updateModel`,
@@ -85,6 +92,7 @@ export const updateAgentModelApi = (data: IUpdateAgentModelReq) => {
  * @description: 删除用户自定义模型
  */
 export const deleteAgentModelApi = (data: IDeleteAgentModelReq) => {
+    logger.info({ text: 'deleteAgentModelApi 开始' })
   return ajax<IDeleteAgentModelRes>({
     method: 'POST',
     url: `${baseUrl}/api/agent/v1/deleteModel`,
@@ -96,6 +104,7 @@ export const deleteAgentModelApi = (data: IDeleteAgentModelReq) => {
  * @description: 获取平台官方模型列表（只读）
  */
 export const listOfficialModelsApi = (data: IListOfficialModelsReq = {}) => {
+    logger.info({ text: 'listOfficialModelsApi 开始' })
   return ajax<IListOfficialModelsRes>({
     method: 'POST',
     url: `${baseUrl}/api/agent/v1/listOfficialModels`,
@@ -134,6 +143,7 @@ export async function sendAgentMessageStream(
     token = userInfo?.token || ''
   }
   catch {
+      logger.error({ text: 'sendAgentMessageStream 失败' })
     token = ''
   }
 
@@ -167,6 +177,7 @@ export async function sendAgentMessageStream(
   let dataLines: string[] = []
 
   const flush = () => {
+    logger.info({ text: 'flush 开始' })
     if (!eventName && dataLines.length === 0)
       return
     const raw = dataLines.join('\n')
@@ -178,6 +189,7 @@ export async function sendAgentMessageStream(
         payload = JSON.parse(raw)
       }
       catch {
+      logger.error({ text: 'sendAgentMessageStream 失败' })
         payload = { message: raw }
       }
     }

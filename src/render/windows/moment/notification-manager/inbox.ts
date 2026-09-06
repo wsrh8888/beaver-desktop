@@ -23,13 +23,18 @@ import type { INotificationPayload } from 'commonModule/type/preload/notificatio
 import { NotificationModule, NotificationNotificationCommand } from 'commonModule/type/preload/notification'
 import { useMomentNotificationStore } from '../store/notification/notification'
 import { useMomentStore } from '../store/moment/moment'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('inbox')
+
 
 class MomentInboxNotificationManager {
   init() {
+    logger.info({ text: 'init 开始' })
     electron?.notification.on(NotificationModule.DATABASE_NOTIFICATION, this.handleNotification)
   }
 
   off() {
+    logger.info({ text: 'off 开始' })
     electron?.notification.off(NotificationModule.DATABASE_NOTIFICATION, this.handleNotification)
   }
 

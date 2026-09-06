@@ -26,6 +26,9 @@ import { BaseService } from '../base'
 import { groups } from 'mainModule/database/tables/group/groups'
 import { groupMembers } from 'mainModule/database/tables/group/members'
 import type {
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('group-member')
+
   DBAddGroupMemberReq,
   DBBatchAddGroupMembersReq,
   DBGetGroupMembersReq,
@@ -43,6 +46,7 @@ class GroupMember extends BaseService {
    * @description 创建或更新群成员（upsert操作）
    */
   async upsert(req: DBAddGroupMemberReq): Promise<void> {
+    logger.info({ text: 'upsert 开始' })
     // 先尝试查找是否已存在
     const existing = await this.db
       .select()
@@ -77,6 +81,7 @@ class GroupMember extends BaseService {
    * @description 批量创建群成员（支持插入或更新）
    */
   async batchCreate(req: DBBatchAddGroupMembersReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     if (req.members.length === 0)
       return
 
@@ -115,6 +120,7 @@ class GroupMember extends BaseService {
    * @description 获取群成员列表（纯数据库查询，不含业务逻辑）
    */
   async getGroupMembers(req: DBGetGroupMembersReq): Promise<DBGetGroupMembersRes> {
+    logger.info({ text: 'getGroupMembers 开始' })
     return await this.db.select().from(groupMembers).where(and(eq(groupMembers.groupId as any, req.groupId), eq(groupMembers.status as any, 1))).all()
   }
 
@@ -122,6 +128,7 @@ class GroupMember extends BaseService {
    * @description 获取用户加入的群组成员记录（纯数据库查询，不含业务逻辑）
    */
   async getUserMemberships(req: DBGetUserMembershipsReq): Promise<DBGetUserMembershipsRes> {
+    logger.info({ text: 'getUserMemberships 开始' })
     return await this.db
       .select()
       .from(groupMembers)

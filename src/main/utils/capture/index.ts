@@ -22,11 +22,15 @@
 import type { Size } from 'electron'
 import { desktopCapturer } from 'electron'
 import Screenshots from 'electron-screenshots'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 /** 选区截屏插件单例（复用窗口加快二次打开），首次调用 getScreenshots 时创建 */
 let screenshotsInstance: InstanceType<typeof Screenshots> | null = null
 
 export function getScreenshots(): InstanceType<typeof Screenshots> {
+    logger.info({ text: 'getScreenshots 开始' })
   if (!screenshotsInstance) {
     screenshotsInstance = new Screenshots({ singleWindow: true })
   }

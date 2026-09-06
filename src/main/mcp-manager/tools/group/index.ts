@@ -23,6 +23,9 @@
  * 群聊相关的MCP工具
  */
 import { z } from 'zod'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 export const groupTools = [
   {
@@ -30,6 +33,7 @@ export const groupTools = [
     description: '获取当前用户加入的群聊列表',
     inputSchema: z.object({}),
     handler: async () => {
+    logger.info({ text: 'handler 开始' })
       // 这里实现获取群聊列表的逻辑
       return {
         success: true,

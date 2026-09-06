@@ -34,6 +34,9 @@ import type {
   DBDeleteEmojiCollectReq,
 } from 'commonModule/type/database/server/emoji/collect'
 import { IDBEmojiCollect } from 'commonModule/type/database/db/emoji'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('collect')
+
 
 // 表情收藏服务
 class EmojiCollect extends BaseService {
@@ -41,6 +44,7 @@ class EmojiCollect extends BaseService {
    * @description 创建表情收藏
    */
   async create(req: DBCreateEmojiCollectReq): Promise<void> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(emojiCollect).values(req).run()
   }
 
@@ -48,6 +52,7 @@ class EmojiCollect extends BaseService {
    * @description 批量创建表情收藏（upsert操作）
    */
   async batchCreate(req: DBBatchCreateEmojiCollectsReq): Promise<void> {
+    logger.info({ text: 'batchCreate 开始' })
     const { collects } = req
     if (collects.length === 0) {
       return
@@ -74,6 +79,7 @@ class EmojiCollect extends BaseService {
    * @description 根据ID列表获取表情收藏
    */
   async getCollectsByIds(req: DBGetEmojiCollectsByIdsReq): Promise<DBGetEmojiCollectsByIdsRes> {
+    logger.info({ text: 'getCollectsByIds 开始' })
     const { ids } = req
     if (ids.length === 0) {
       return new Map()
@@ -96,6 +102,7 @@ class EmojiCollect extends BaseService {
    * @description 根据用户ID获取用户的所有表情收藏
    */
   async getCollectsByUserId(req: DBGetEmojiCollectsByUserIdReq): Promise<DBGetEmojiCollectsByUserIdRes> {
+    logger.info({ text: 'getCollectsByUserId 开始' })
     const { userId } = req
     return await this.db
       .select()
@@ -108,6 +115,7 @@ class EmojiCollect extends BaseService {
    * @description 根据ID获取单个表情收藏
    */
   async getCollectById(req: DBGetEmojiCollectByIdReq): Promise<DBGetEmojiCollectByIdRes> {
+    logger.info({ text: 'getCollectById 开始' })
     const { id } = req
     const result = await this.db
       .select()
@@ -122,6 +130,7 @@ class EmojiCollect extends BaseService {
    * @description 删除表情收藏
    */
   async delete(req: DBDeleteEmojiCollectReq): Promise<void> {
+    logger.info({ text: 'delete 开始' })
     const { id } = req
     await this.db
       .delete(emojiCollect)

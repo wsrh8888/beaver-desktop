@@ -56,6 +56,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('emoji')
+
 import favoriteIcon from 'renderModule/assets/image/emoji/favorite.svg'
 import defaultIcon from 'renderModule/assets/image/emoji/smile.svg'
 import storeIcon from 'renderModule/assets/image/emoji/store.svg'
@@ -78,6 +81,7 @@ export default defineComponent({
     BeaverImage,
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const activeTab = ref<string>('default')
     const activePackageId = ref<string>('')
 
@@ -105,19 +109,23 @@ export default defineComponent({
     })
 
     const handleStoreClick = () => {
+    logger.info({ text: 'handleStoreClick 开始' })
       globalStore.setComponent('emoji-store')
     }
 
     const handleTabClick = (tabId: string, packageId?: string) => {
+    logger.info({ text: 'handleTabClick 开始' })
       activeTab.value = tabId
       activePackageId.value = packageId || ''
     }
 
     const handleEmojiSelect = (emoji: { name: string }) => {
+    logger.info({ text: 'handleEmojiSelect 开始' })
       messageViewStore.appendTextToDraft(emoji.name)
     }
 
     const handleEmojiSend = async (emoji: { emojiId: string, fileKey: string, packageId?: string }) => {
+    logger.info({ text: 'handleEmojiSend 开始' })
       const conversationId = messageViewStore.currentChatId
       if (!conversationId) return
 
@@ -140,6 +148,7 @@ export default defineComponent({
     }
 
     const handleClickOutside = (event: MouseEvent) => {
+    logger.info({ text: 'handleClickOutside 开始' })
       const target = event.target as HTMLElement
       if (!target.closest('.emoji-popup') && !target.closest('.toolbar-btn')) {
         messageViewStore.setEmojiShow(false)

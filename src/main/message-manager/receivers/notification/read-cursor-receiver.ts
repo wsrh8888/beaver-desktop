@@ -20,6 +20,9 @@
  */
 
 import notificationReadCursorBusiness from 'mainModule/business/notification/read-cursor'
+import Logger from 'mainModule/utils/logger'
+const logger = new Logger('read-cursor-receiver')
+
 const readCursorBusiness = notificationReadCursorBusiness
 
 /**
@@ -31,6 +34,7 @@ class ReadCursorReceiver {
    * 只处理 notification_read_cursor 表的更新
    */
   async handleTableUpdates(tableUpdatesBody: any) {
+    logger.info({ text: 'handleTableUpdates 开始' })
     const { tableUpdates } = tableUpdatesBody
 
     // 处理notification_read_cursor表的更新

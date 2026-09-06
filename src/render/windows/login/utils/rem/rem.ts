@@ -19,6 +19,9 @@
  * beaver-desktop-header-v2
  */
 
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('rem')
+
 // src/render/login/utils/rem.ts - 登录窗口适配
 
 // 基准设计宽度（登录窗口：800*500）
@@ -30,6 +33,7 @@ export function setupRem(): void {
   const html = document.documentElement
 
   function updateRem() {
+    logger.info({ text: 'updateRem 开始' })
     // 获取视窗宽度
     const viewWidth = html.clientWidth || window.innerWidth
 

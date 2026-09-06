@@ -22,7 +22,11 @@
 import { and, eq, gte, lte } from 'drizzle-orm'
 import { chatUserConversations } from 'mainModule/database/tables/chat/user-conversation'
 import { BaseService } from '../base'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('user-conversation')
+
 import type {
+
   DBCreateUserConversationReq,
   DBCreateUserConversationRes,
   DBBatchCreateUserConversationsReq,
@@ -47,12 +51,14 @@ import type {
 class ChatUserConversation extends BaseService {
   // 创建单个用户会话关系
   async create(req: DBCreateUserConversationReq): Promise<DBCreateUserConversationRes> {
+    logger.info({ text: 'create 开始' })
     await this.db.insert(chatUserConversations).values(req.userConversationData).run()
     return { success: true }
   }
 
   // 批量创建用户会话关系（支持插入或更新）
   async batchCreate(req: DBBatchCreateUserConversationsReq): Promise<DBBatchCreateUserConversationsRes> {
+    logger.info({ text: 'batchCreate 开始' })
     const { userConversations } = req
     if (userConversations.length === 0)
       return { success: true }
@@ -81,6 +87,7 @@ class ChatUserConversation extends BaseService {
 
   // 更新用户的已读游标
    async updateReadSeq(req: DBUpdateReadSeqReq): Promise<DBUpdateReadSeqRes> {
+    logger.info({ text: 'updateReadSeq 开始' })
     await this.db
       .update(chatUserConversations)
       .set({
@@ -97,6 +104,7 @@ class ChatUserConversation extends BaseService {
 
   // 更新会话设置（置顶、免打扰等）
    async updateSettings(req: DBUpdateSettingsReq): Promise<DBUpdateSettingsRes> {
+    logger.info({ text: 'updateSettings 开始' })
     const { userId, conversationId, settings } = req
     const updateData: any = {
       updatedAt: Math.floor(Date.now() / 1000),
@@ -127,6 +135,7 @@ class ChatUserConversation extends BaseService {
 
   // 获取用户的基础会话数据（仅数据访问，不含业务逻辑）
    async getUserConversations(req: DBGetUserConversationsReq): Promise<DBGetUserConversationsRes> {
+    logger.info({ text: 'getUserConversations 开始' })
     const { userId, params } = req
     const { page = 1, limit = 50, offset } = params
     const actualOffset = offset !== undefined ? offset : (page - 1) * limit
@@ -142,6 +151,7 @@ class ChatUserConversation extends BaseService {
 
   // 获取用户所有未隐藏的会话（用于排序和分页）
    async getAllUserConversations(req: DBGetAllUserConversationsReq): Promise<DBGetAllUserConversationsRes> {
+    logger.info({ text: 'getAllUserConversations 开始' })
     const conversations = await this.db.select().from(chatUserConversations).where(and(
       eq(chatUserConversations.userId, req.userId as any),
       eq(chatUserConversations.isHidden, 0 as any),
@@ -152,6 +162,7 @@ class ChatUserConversation extends BaseService {
 
   // 根据会话ID列表批量获取用户的会话设置
    async getUserConversationsByIds(req: DBGetUserConversationsByIdsReq): Promise<DBGetUserConversationsByIdsRes> {
+    logger.info({ text: 'getUserConversationsByIds 开始' })
     const { userId, conversationIds } = req
     if (conversationIds.length === 0)
       return { conversations: [] }
@@ -166,6 +177,7 @@ class ChatUserConversation extends BaseService {
 
   // 根据会话ID获取会话信息
    async getConversationInfo(req: DBGetConversationInfoReq): Promise<DBGetConversationInfoRes> {
+    logger.info({ text: 'getConversationInfo 开始' })
     const userId = String(req.header.userId)
     const conversationId = req.params.conversationId
     const conversationInfo = await this.db.select().from(chatUserConversations).where(and(
@@ -178,6 +190,7 @@ class ChatUserConversation extends BaseService {
 
   // 按版本范围获取会话设置（用于数据同步）
    async getChatConversationsByVerRange(req: DBGetChatConversationsByVerRangeReq): Promise<DBGetChatConversationsByVerRangeRes> {
+    logger.info({ text: 'getChatConversationsByVerRange 开始' })
     const userId = String(req.header.userId)
     const { startVersion, endVersion } = req.params
     const conversations = await this.db.select().from(chatUserConversations).where(and(

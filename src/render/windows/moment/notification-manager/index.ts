@@ -21,17 +21,22 @@
 
 import MomentEventManager from './moment'
 import MomentInboxNotificationManager from './inbox'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 
 /**
  * @description: 事件中心
  */
 class NotificationManager {
   init() {
+    logger.info({ text: 'init 开始' })
     MomentEventManager.init()
     MomentInboxNotificationManager.init()
   }
 
   off() {
+    logger.info({ text: 'off 开始' })
     MomentEventManager.off()
     MomentInboxNotificationManager.off()
   }

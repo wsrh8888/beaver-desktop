@@ -25,9 +25,13 @@ import notificationInboxBusiness from 'mainModule/business/notification/inbox'
 import notificationReadCursorBusiness from 'mainModule/business/notification/read-cursor'
 import notificationEventBusiness from 'mainModule/business/notification/event'
 import { store } from 'mainModule/store'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('index')
+
 
 class NotificationHandler {
   async handle(_event: Electron.IpcMainInvokeEvent, command: DataNotificationCommand, data: any, header: ICommonHeader): Promise<any> {
+    logger.info({ text: 'handle 开始' })
     const userInfo = store.get('userInfo')
     const userId = header.userId || userInfo?.userId
     if (!userId)

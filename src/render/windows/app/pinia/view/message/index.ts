@@ -25,6 +25,9 @@ import { defineStore } from 'pinia'
 import { calculateImageSize } from 'renderModule/utils/image/index'
 import { useConversationStore } from '../../conversation/conversation'
 import { AudioPlayer } from 'renderModule/core/media/audio'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 
 /**
  * @description: 消息视图状态管理
@@ -70,6 +73,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 获取指定会话的草稿
      */
     getDraft(conversationId: string) {
+    logger.info({ text: 'getDraft 开始' })
       return this.drafts.get(conversationId) || { html: '', replyingTo: null }
     },
 
@@ -77,6 +81,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 更新当前会话的草稿 (由编辑器静默调用)
      */
     updateDraft(conversationId: string, content: { html?: string, replyingTo?: IChatHistory | null }) {
+    logger.info({ text: 'updateDraft 开始' })
       const current = this.getDraft(conversationId)
       this.drafts.set(conversationId, {
         html: content.html !== undefined ? content.html : current.html,
@@ -94,6 +99,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 向当前草稿追加媒体内容 (供外部组件直接调用)
      */
     async appendMediaToDraft(data: { type: string, fileUrl: string, info: any }) {
+    logger.info({ text: 'appendMediaToDraft 开始' })
       if (!this.currentChatId) return
 
       const src = await window.electron.cache.get(CacheType.USER_IMAGE, data.fileUrl) || ''
@@ -113,6 +119,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 向当前草稿追加文本 (供外部组件调用)
      */
     appendTextToDraft(text: string) {
+    logger.info({ text: 'appendTextToDraft 开始' })
       if (!this.currentChatId) return
       this.updateDraft(this.currentChatId, {
         html: this.getDraft(this.currentChatId).html + text
@@ -123,6 +130,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 清除当前会话的草稿
      */
     clearDraft(conversationId: string) {
+    logger.info({ text: 'clearDraft 开始' })
       this.drafts.delete(conversationId)
       if (conversationId === this.currentChatId) {
         this.replyingTo = null
@@ -133,6 +141,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 设置表情面板显示状态
      */
     setEmojiShow(show: boolean) {
+    logger.info({ text: 'setEmojiShow 开始' })
       this.showEmoji = show
     },
 
@@ -140,6 +149,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 设置输入框高度
      */
     setInputHeight(height: number) {
+    logger.info({ text: 'setInputHeight 开始' })
       this.inputHeight = height
     },
 
@@ -147,6 +157,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 设置引用消息（同步更新草稿）
      */
     setReplyingTo(message: IChatHistory | null) {
+    logger.info({ text: 'setReplyingTo 开始' })
       this.replyingTo = message
       if (this.currentChatId) {
         this.updateDraft(this.currentChatId, { replyingTo: message })
@@ -157,6 +168,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 进入多选模式，可选择预先选中一条消息
      */
     enterMultiSelect(firstMessageId?: string) {
+    logger.info({ text: 'enterMultiSelect 开始' })
       this.isMultiSelectMode = true
       this.selectedMessageIds = firstMessageId ? [firstMessageId] : []
     },
@@ -165,6 +177,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 退出多选模式，清空选中状态
      */
     exitMultiSelect() {
+    logger.info({ text: 'exitMultiSelect 开始' })
       this.isMultiSelectMode = false
       this.selectedMessageIds = []
     },
@@ -173,6 +186,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 切换某条消息的选中状态，超出 99 条上限时忽略
      */
     toggleMessageSelect(messageId: string) {
+    logger.info({ text: 'toggleMessageSelect 开始' })
       const idx = this.selectedMessageIds.indexOf(messageId)
       if (idx >= 0) {
         this.selectedMessageIds.splice(idx, 1)
@@ -188,6 +202,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      * @description: 设置当前会话，自动同步草稿状态
      */
     async setCurrentChat(conversationId: string) {
+    logger.info({ text: 'setCurrentChat 开始' })
       if (this.currentChatId === conversationId) return
 
       AudioPlayer.stop()

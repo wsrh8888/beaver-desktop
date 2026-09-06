@@ -52,6 +52,9 @@
 </template>
 
 <script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('toggleField')
+
 import type { ISettingsSection, NotificationSettingsKey, PrivacySettingsKey, SettingsToggleScope } from '../../config/settingsRegistry'
 import Message from 'renderModule/components/ui/message'
 import { defineComponent, type PropType } from 'vue'
@@ -66,9 +69,11 @@ export default defineComponent({
     },
   },
   setup() {
+    logger.info({ text: 'setup 开始' })
     const settingsStore = useSettingsStore()
 
     const getValue = (scope: SettingsToggleScope, key: string) => {
+    logger.info({ text: 'getValue 开始' })
       if (!settingsStore.settings) {
         return false
       }
@@ -82,6 +87,7 @@ export default defineComponent({
     }
 
     const handleToggle = async (scope: SettingsToggleScope, key: string, value: boolean) => {
+    logger.info({ text: 'handleToggle 开始' })
       let ok = false
       if (scope === 'privacy') {
         ok = await settingsStore.updatePrivacy(key as PrivacySettingsKey, value)

@@ -28,9 +28,13 @@ import type {
 } from 'commonModule/type/database/server/chat/message-media'
 import { chatMessageMedias } from 'mainModule/database/tables/chat/message-media'
 import { BaseService } from '../base'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('message-media')
+
 
 class ChatMessageMediaService extends BaseService {
   async batchCreate(req: DBBatchCreateMessageMediasReq): Promise<DBBatchCreateMessageMediasRes> {
+    logger.info({ text: 'batchCreate 开始' })
     const { records } = req
     if (records.length === 0)
       return { success: true }
@@ -47,6 +51,7 @@ class ChatMessageMediaService extends BaseService {
   }
 
   async getMessageIds(req: DBGetMessageMediaIdsReq): Promise<DBGetMessageMediaIdsRes> {
+    logger.info({ text: 'getMessageIds 开始' })
     const rows = await this.db
       .select({ messageId: chatMessageMedias.messageId })
       .from(chatMessageMedias)

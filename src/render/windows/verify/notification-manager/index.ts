@@ -20,16 +20,21 @@
  */
 
 import SearchToVerifyEventManager from './searchToVerify'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 
 /**
  * @description: 事件中心
  */
 class NotificationManager {
   init() {
+    logger.info({ text: 'init 开始' })
     SearchToVerifyEventManager.init()
   }
 
   off() {
+    logger.info({ text: 'off 开始' })
     SearchToVerifyEventManager.off()
   }
 }

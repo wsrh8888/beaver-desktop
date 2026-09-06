@@ -25,6 +25,9 @@ import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
 import workbenchWebContentsView from 'mainModule/web-contents-view/workbench/workbench'
 import ApplicationBase from './common/base'
+import Logger from 'mainModule/utils/logger';
+const logger = new Logger('workbench')
+
 
 class Workbench extends ApplicationBase implements Application {
   constructor() {
@@ -32,6 +35,7 @@ class Workbench extends ApplicationBase implements Application {
   }
 
   public createBrowserWindow(): BrowserWindow {
+    logger.info({ text: 'createBrowserWindow 开始' })
     this.win = new BrowserWindow({
       width: 1024,
       minWidth: 900,
@@ -57,6 +61,7 @@ class Workbench extends ApplicationBase implements Application {
   }
 
   protected initEvents() {
+    logger.info({ text: 'initEvents 开始' })
     this.win.on('close', () => {
       workbenchWebContentsView.detachWindow(this.win)
     })

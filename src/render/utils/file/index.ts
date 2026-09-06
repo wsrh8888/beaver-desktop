@@ -20,6 +20,9 @@
  */
 
 import BMF from 'browser-md5-file'
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
 
 // 图片尺寸类型
 interface ImageSize {
@@ -62,6 +65,7 @@ export function getFileNameFromUrl(fileUrl: string): string {
     }
   }
   catch {
+      logger.error({ text: 'getFileNameFromUrl 失败' })
     // ignore
   }
 
@@ -205,6 +209,7 @@ export const getVideoThumbnail = (file: File, time: number = 0): Promise<string>
         resolve(thumbnail)
       }
       catch (error) {
+      logger.error({ text: 'getFileNameFromUrl 失败', data: { error: (error as Error)?.message } })
         URL.revokeObjectURL(url)
         reject(error)
       }
