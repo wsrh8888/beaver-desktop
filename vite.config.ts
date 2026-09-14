@@ -43,6 +43,12 @@ function createPreload(name: string, entry: string, emptyOutDir = false) {
   }
 }
 
+/**
+ * 拆包约定：
+ * - 业务代码在 packages/@beaver/*（未来可独立发 npm）
+ * - 窗口 html 留在宿主根目录（Electron loadRender 约定 /name.html → dist/name.html）
+ * - html 内通过包名 import 入口，例如 import '@beaver/app-moment/moment-entry'
+ */
 export default defineConfig(({ command: _command }) => {
   return {
     plugins: [

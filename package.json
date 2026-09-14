@@ -76,6 +76,9 @@
   },
   "dependencies": {
     "@beaver-im/js-sdk": "^1.0.2",
+    "@beaver/app-ai": "file:../beaver-agent/agent_electron",
+    "@beaver/app-circle": "file:packages/app-circle",
+    "@beaver/app-moment": "file:packages/app-moment",
     "@koa/router": "^12.0.2",
     "@modelcontextprotocol/sdk": "1.24.3",
     "@rollup/plugin-commonjs": "^28.0.1",

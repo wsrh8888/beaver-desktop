@@ -28,13 +28,12 @@ const logger = new Logger('MessageManager')
 import WsManager from 'mainModule/ws-manager/index'
 import messageBusiness from 'mainModule/business/chat/message'
 import chatMessageRouter from './receivers/chat/inedx'
-import circleMessageRouter from './receivers/circle/index'
+import { circleMessageRouter } from '@beaver/app-circle/main'
 import emojiMessageRouter from './receivers/emoji/index'
 import friendMessageRouter from './receivers/friend/index'
 import groupMessageRouter from './receivers/group/index'
 import notificationMessageRouter from './receivers/notification/index'
 import userMessageRouter from './receivers/user/index'
-import mcpMessageRouter from './receivers/mcp/index'
 import callMessageRouter from './receivers/call/index'
 
 /**
@@ -213,9 +212,6 @@ class MessageManager {
         break
       case 'USER_PROFILE':
         userMessageRouter.processUserMessage(wsMessage.content)
-        break
-      case 'MCP_OPERATION':
-        mcpMessageRouter.processMCPMessage(wsMessage.content)
         break
       case 'CALL':
         callMessageRouter.processCallMessage(wsMessage.content)

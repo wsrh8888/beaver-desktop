@@ -7,6 +7,9 @@
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="/src/render/windows/circle/main.ts"></script>
+  <!-- 宿主窗口入口：只负责挂载，业务代码在 @beaver/app-circle -->
+  <script type="module">
+    import '@beaver/app-circle/circle-entry'
+  </script>
 </body>
 </html>

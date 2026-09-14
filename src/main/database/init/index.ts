@@ -20,7 +20,7 @@
  */
 
 import { initChatTables } from './chat/index'
-import { initCircleTables } from './circle/index'
+import { initCircleTables } from '@beaver/app-circle/main'
 import { initDatasyncTables } from './datasync/index'
 import { initEmojiTables } from './emoji/index'
 import { initFriendTables } from './friend/index'

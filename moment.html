@@ -3,10 +3,13 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Electron App</title>
+  <title>朋友圈</title>
 </head>
 <body>
   <div id="app"></div>
-  <script type="module" src="/src/render/windows/moment/main.ts"></script>
+  <!-- 宿主窗口入口：只负责挂载，业务代码在 @beaver/app-moment -->
+  <script type="module">
+    import '@beaver/app-moment/moment-entry'
+  </script>
 </body>
 </html>

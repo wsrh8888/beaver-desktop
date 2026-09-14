@@ -1,0 +1,18 @@
+{
+  "name": "@beaver/app-moment",
+  "version": "2.1.2",
+  "private": true,
+  "type": "module",
+  "description": "beaver 朋友圈 app：自带主进程(窗口/business/database) + 渲染进程(moment/circle)，通过 alias 映射被宿主聚合",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./main": "./src/main/index.ts",
+    "./renderer": "./src/renderer/index.ts",
+    "./moment-entry": "./src/renderer/windows/moment/main.ts"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  }
+}

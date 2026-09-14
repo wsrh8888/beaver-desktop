@@ -31,7 +31,7 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/render/**/*.vue", "src/**/*.vue", "src/**/*.d.ts"],
+  "include": ["src/**/*.ts", "src/render/**/*.vue", "src/**/*.vue", "src/**/*.d.ts", "packages/app-moment/src/**/*.ts", "packages/app-moment/src/**/*.vue", "../beaver-agent/agent_electron/src/**/*.ts", "../beaver-agent/agent_electron/src/**/*.vue", "packages/app-circle/src/**/*.ts", "packages/app-circle/src/**/*.vue"],
   "exclude": [
     "node_modules",
     "logs",

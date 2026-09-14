@@ -72,7 +72,6 @@ import ipcManager from './ipc'
 import authHandler from './ipc/render-to-main/auth'
 import messageManager from './message-manager'
 import { store } from './store'
-import { mcpManager } from './mcp-manager/index.js'
 import localServer from './server'
 // 屏蔽安全警告
 process.env.ELECTRON_DISABLE_SECURITY_WARNINGS = 'true'
@@ -126,7 +125,6 @@ class Main {
       logger.error({ text: '本地服务启动失败', data: { message: error?.message } })
     }
 
-    mcpManager.init()
     logger.info({ text: 'MCP 管理器初始化完成' })
   }
 

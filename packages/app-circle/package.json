@@ -1,0 +1,21 @@
+{
+  "name": "@beaver/app-circle",
+  "version": "2.1.2",
+  "private": true,
+  "type": "module",
+  "description": "beaver 圈子 app：自带主进程(窗口/business/database/datasync) + 渲染进程(circle 窗口 + app 窗口内嵌圈子组件)，通过 alias 映射被宿主聚合",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./main": "./src/main/index.ts",
+    "./renderer": "./src/renderer/index.ts",
+    "./circle-entry": "./src/renderer/windows/circle/main.ts"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@beaver/app-moment": "*"
+  }
+}

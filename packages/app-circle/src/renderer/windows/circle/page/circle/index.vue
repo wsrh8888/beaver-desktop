@@ -1,0 +1,198 @@
+<!--
+  Copyright (c) 2024-2026 Beaver IM Team
+  SPDX-License-Identifier: MIT
+  Project: beaver-desktop
+  https://github.com/wsrh8888/beaver-desktop
+
+  中文：
+  本文件为海狸 IM（Beaver IM）开源项目源代码。
+  版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
+  禁止删除、篡改或替换本文件头部版权与许可声明。
+  使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
+
+  English:
+  This file is part of the Beaver IM open-source project.
+  Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
+  Do not remove, alter, or replace this copyright and license header.
+  Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
+
+  beaver-desktop-header-v2
+-->
+
+<template>
+  <div class="circle-page">
+    <div class="circle-page__left">
+      <CircleLeft
+        ref="leftRef"
+        :current-circle-id="selectedCircleId"
+        @select="handleSelect"
+        @create="showCreateCircle = true"
+      />
+    </div>
+
+    <div class="circle-page__right">
+      <CircleRight
+        ref="rightRef"
+        :circle-id="selectedCircleId"
+        @show-details="showDetails = true"
+        @show-post-detail="handleShowPostDetail"
+      />
+    </div>
+
+    <CircleDetails
+      v-if="showDetails"
+      :circle-id="selectedCircleId"
+      @close="showDetails = false"
+      @quit="handleQuit"
+      @updated="handleUpdated"
+    />
+    <CirclePostDetail
+      v-if="activePost"
+      :key="activePost.postId"
+      :post="activePost"
+      @close="activePost = null"
+      @commented="handlePostChanged"
+      @liked="handlePostChanged"
+    />
+    <CircleCreateModal
+      v-if="showCreateCircle"
+      @close="showCreateCircle = false"
+      @success="handleCreated"
+    />
+  </div>
+</template>
+
+<script lang="ts">
+import Logger from 'renderModule/utils/logger';
+const logger = new Logger('index')
+
+import type { ICirclePostItem } from 'commonModule/type/ajax/circle'
+import { defineComponent, ref } from 'vue'
+import CircleCreateModal from '../../components/createCircle/index.vue'
+import CircleDetails from '../../page/circle/detail-components/details/index.vue'
+import CirclePostDetail from '../../page/circle/detail-components/postDetail/index.vue'
+import CircleLeft from '../../page/circle/left-components/index.vue'
+import CircleRight from '../../page/circle/right-component/index.vue'
+
+export default defineComponent({
+  name: 'CirclePage',
+  components: {
+    CircleLeft,
+    CircleRight,
+    CircleDetails,
+    CirclePostDetail,
+    CircleCreateModal,
+  },
+  setup(_props, { expose }) {
+    logger.info({ text: 'setup 开始' })
+    const selectedCircleId = ref('')
+    const showDetails = ref(false)
+    const showCreateCircle = ref(false)
+    const activePost = ref<ICirclePostItem | null>(null)
+    const leftRef = ref<{ loadList: () => Promise<void> } | null>(null)
+    const rightRef = ref<{
+      loadAll: (circleId?: string) => Promise<void>
+      loadPosts: () => Promise<void>
+      postList: ICirclePostItem[]
+    } | null>(null)
+
+    const handleSelect = async (circleId: string) => {
+    logger.info({ text: 'handleSelect 开始' })
+      selectedCircleId.value = circleId
+      showDetails.value = false
+      activePost.value = null
+      await rightRef.value?.loadAll(circleId)
+    }
+
+    const handleCreated = async (circleId: string) => {
+    logger.info({ text: 'handleCreated 开始' })
+      showCreateCircle.value = false
+      await leftRef.value?.loadList()
+      selectedCircleId.value = circleId
+      await rightRef.value?.loadAll(circleId)
+    }
+
+    const handleQuit = async () => {
+    logger.info({ text: 'handleQuit 开始' })
+      showDetails.value = false
+      activePost.value = null
+      selectedCircleId.value = ''
+      await leftRef.value?.loadList()
+      await rightRef.value?.loadAll('')
+    }
+
+    const handleUpdated = async () => {
+    logger.info({ text: 'handleUpdated 开始' })
+      await leftRef.value?.loadList()
+      await rightRef.value?.loadAll()
+    }
+
+    const handleShowPostDetail = (post: ICirclePostItem) => {
+    logger.info({ text: 'handleShowPostDetail 开始' })
+      activePost.value = post
+    }
+
+    const handlePostChanged = async () => {
+    logger.info({ text: 'handlePostChanged 开始' })
+      await rightRef.value?.loadPosts()
+      if (activePost.value) {
+        const latest = rightRef.value?.postList?.find(
+          item => item.postId === activePost.value?.postId,
+        )
+        if (latest)
+          activePost.value = latest
+      }
+    }
+
+    const refresh = async () => {
+    logger.info({ text: 'refresh 开始' })
+      await leftRef.value?.loadList()
+      await rightRef.value?.loadAll()
+    }
+
+    expose({ refresh })
+
+    return {
+      selectedCircleId,
+      showDetails,
+      showCreateCircle,
+      activePost,
+      leftRef,
+      rightRef,
+      handleSelect,
+      handleCreated,
+      handleQuit,
+      handleUpdated,
+      handleShowPostDetail,
+      handlePostChanged,
+      refresh,
+    }
+  },
+})
+</script>
+
+<style lang="less" scoped>
+.circle-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  position: relative;
+  overflow: hidden;
+
+  .circle-page__left {
+    height: 100%;
+    flex-shrink: 0;
+    overflow-y: auto;
+  }
+
+  .circle-page__right {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    overflow: hidden;
+  }
+}
+</style>
