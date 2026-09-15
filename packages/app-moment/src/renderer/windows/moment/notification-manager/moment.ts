@@ -22,7 +22,7 @@
 import type { INotificationPayload } from 'commonModule/type/preload/notification'
 import { NotificationModule, NotificationMediaViewerCommand } from 'commonModule/type/preload/notification'
 import { useMomentStore } from '../store/moment/moment'
-import Logger from 'renderModule/utils/logger'
+import { Logger } from '@beaver-im/beaver/renderer'
 
 const logger = new Logger('MomentNotificationManager')
 

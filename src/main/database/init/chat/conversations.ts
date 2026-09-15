@@ -47,7 +47,7 @@ export const initChatConversationsTable = (sqlite: any) => {
 
   fields.forEach((field) => {
     try {
-      sqlite.run(`ALTER TABLE chat_conversation_metas ADD COLUMN ${field}`)
+      sqlite.exec(`ALTER TABLE chat_conversation_metas ADD COLUMN ${field}`)
     }
     catch (error: any) {
       // 忽略已存在的列错误

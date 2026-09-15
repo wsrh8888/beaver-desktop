@@ -63,10 +63,10 @@
 </template>
 
 <script lang="ts">
-import Logger from 'renderModule/utils/logger';
+import { Logger } from '@beaver-im/beaver/renderer';
 const logger = new Logger('index')
 
-import type { ICirclePostItem } from 'commonModule/type/ajax/circle'
+import type { ICirclePostItem } from '@beaver-im/app-circle/common/type/ajax/circle'
 import { defineComponent, ref } from 'vue'
 import CircleCreateModal from '../../components/createCircle/index.vue'
 import CircleDetails from '../../page/circle/detail-components/details/index.vue'

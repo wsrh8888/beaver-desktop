@@ -23,7 +23,7 @@ import type { IStoreDataMap } from 'commonModule/type/mainStore'
 import type { IStorageModule } from 'commonModule/type/preload/storage'
 import type { IUserInfo } from 'commonModule/type/store/userInfo'
 import { defineStore } from 'pinia'
-import Logger from 'renderModule/utils/logger'
+import { Logger } from '@beaver-im/beaver/renderer'
 
 const logger = new Logger('MomentUserStore')
 

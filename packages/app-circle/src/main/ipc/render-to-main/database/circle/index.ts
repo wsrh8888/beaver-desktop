@@ -19,11 +19,10 @@
  * beaver-desktop-header-v2
  */
 
-import type { ICommonHeader } from 'commonModule/type/ajax/common'
-import { DataCircleCommand } from 'commonModule/type/ipc/database'
+import type { ICommonHeader } from '@beaver-im/beaver/common/type/ajax/common'
+import { DataCircleCommand } from '@beaver-im/app-circle/common/type/ipc/database'
 import circleBusiness from '../../../../business/circle/circle'
-import { store } from 'mainModule/store'
-import Logger from 'mainModule/utils/logger'
+import { Logger, store } from '@beaver-im/beaver/main'
 
 const loggerName = 'circle-handler'
 const logger = new Logger(loggerName)

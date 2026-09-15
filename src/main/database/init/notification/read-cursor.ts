@@ -45,7 +45,7 @@ export const initNotificationReadsTable = (sqlite: any) => {
 
   columns.forEach((column) => {
     try {
-      sqlite.run(`ALTER TABLE notification_reads ADD COLUMN ${column}`)
+      sqlite.exec(`ALTER TABLE notification_reads ADD COLUMN ${column}`)
     }
     catch (error: any) {
       if (!error.message?.includes('duplicate column name'))

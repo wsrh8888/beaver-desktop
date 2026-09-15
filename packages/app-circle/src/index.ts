@@ -8,19 +8,13 @@
  */
 
 /**
- * @beaver/app-circle 圈子 app
+ * @beaver-im/app-circle 圈子 app
  *
- * 自带主进程(窗口/business/database/datasync) + 渲染进程(circle 窗口 + app 窗口内嵌圈子组件)。
+ *   @beaver-im/app-circle/main
+ *   @beaver-im/app-circle/renderer
+ *   @beaver-im/app-circle/common/type/*   圈子领域类型（ajax / db / ipc / notification）
  *
- * 接入方式：本包通过 package.json 的 exports 暴露入口，宿主直接按包名引用：
- *   @beaver/app-circle/main
- *   @beaver/app-circle/renderer
- *
- * 依赖宿主内核（留根 src/，通过宿主现有 alias 引用）：
- *   mainModule/utils/logger, mainModule/config, mainModule/utils/request/request,
- *   mainModule/ipc/main-to-render, mainModule/database/services/base,
- *   commonModule/*（类型契约）
- *
- * 依赖同级包：@beaver/app-moment/renderer（MomentContentCard 组件）
+ * 平台：@beaver-im/beaver/main（logger/store/db/ajax/getBaseUrl/sendMainNotification/dataSyncCursor）
+ * 依赖同级：@beaver-im/app-moment/renderer（MomentContentCard）
  */
 export {}

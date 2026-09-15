@@ -8,17 +8,9 @@
  */
 
 /**
- * @beaver/app-moment 朋友圈 app
+ * @beaver-im/app-moment 朋友圈 app
  *
- * 自带主进程(窗口/business/database) + 渲染进程(moment/circle 两个窗口)。
- *
- * 接入方式：本包通过 package.json 的 exports 暴露入口，宿主直接按包名引用：
- *   @beaver/app-moment/main/application/moment
- *   @beaver/app-moment/renderer/windows/moment/*
- *
- * 依赖宿主内核（留根 src/，通过宿主现有 alias 引用）：
- *   mainModule/utils/logger, mainModule/config, mainModule/utils/request/request,
- *   mainModule/ipc/main-to-render, mainModule/database/services/base,
- *   commonModule/*（类型契约）
+ * 主进程走 @beaver-im/beaver/main；渲染进程走 @beaver-im/beaver/renderer + beaver-ui。
+ * 领域 ajax 在 renderer/api；类型暂仍用宿主 commonModule/type/ajax/moment（后续可再抽 common）。
  */
 export {}

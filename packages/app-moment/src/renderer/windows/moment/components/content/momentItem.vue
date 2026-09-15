@@ -66,7 +66,7 @@
               class="media-image"
             />
             <div v-else class="media-file">
-              <img src="renderModule/assets/image/common/file.svg" alt="文件" class="file-icon">
+              <img src="@beaver-im/app-moment/renderer/assets/image/common/file.svg" alt="文件" class="file-icon">
               <div class="file-name">
                 {{ getFileName(file.fileKey) }}
               </div>
@@ -96,7 +96,7 @@
         <!-- 操作按钮 -->
         <div class="actions-section">
           <div class="action-btn" @click.stop="handleCommentClick">
-            <img src="renderModule/assets/image/moment/comment.svg" alt="评论" class="action-icon">
+            <img src="@beaver-im/app-moment/renderer/assets/image/moment/comment.svg" alt="评论" class="action-icon">
             <span class="action-count">{{ commentCount || '评论' }}</span>
           </div>
           <div class="action-btn" @click.stop="handleLikeClick">
@@ -133,10 +133,10 @@
 
 <script lang="ts">
 import type { IMomentInfo } from 'commonModule/type/ajax/moment'
-import { CacheType } from 'commonModule/type/cache/cache'
-import SvgLikeActive from 'renderModule/assets/image/moment/like-active.svg'
-import SvgLike from 'renderModule/assets/image/moment/like-default.svg'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { CacheType } from '@beaver-im/beaver-ui'
+import SvgLikeActive from '@beaver-im/app-moment/renderer/assets/image/moment/like-active.svg'
+import SvgLike from '@beaver-im/app-moment/renderer/assets/image/moment/like-default.svg'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import { useMomentStore } from '../../store/moment/moment'
 import { useUserStore } from '../../store/user/user'
 import { computed, defineComponent } from 'vue'

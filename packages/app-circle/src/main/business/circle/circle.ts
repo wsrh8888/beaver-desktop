@@ -19,13 +19,12 @@
  * beaver-desktop-header-v2
  */
 
-import { NotificationCircleCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
 import { circleSyncApi } from '../../api/circle'
 import dbServiceCircle from '../../database/services/circle/circle'
-import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import Logger from 'mainModule/utils/logger';
-const logger = new Logger('circle')
+import { Logger, sendMainNotification } from '@beaver-im/beaver/main'
 
+const logger = new Logger('circle')
 
 class CircleBusiness {
   async getCircleList() {
@@ -61,7 +60,7 @@ class CircleBusiness {
     }))
     await dbServiceCircle.batchUpsert(localCircles)
 
-    sendMainNotification('*', NotificationModule.DATABASE_CIRCLE, NotificationCircleCommand.CIRCLE_UPDATE, {
+    sendMainNotification('*', CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand.CIRCLE_UPDATE, {
       updatedCircles: localCircles.map(item => ({
         circleId: item.circleId,
         version: item.version,

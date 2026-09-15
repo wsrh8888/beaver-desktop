@@ -28,7 +28,7 @@
           发布动态
         </h2>
         <div class="publish-close" @click="$emit('close')">
-          <img src="renderModule/assets/image/common/close.svg" alt="关闭">
+          <img src="@beaver-im/app-moment/renderer/assets/image/common/close.svg" alt="关闭">
         </div>
       </div>
 
@@ -55,7 +55,7 @@
               </div>
 
               <button class="media-remove" @click="removeMediaFile(index)">
-                <img src="renderModule/assets/image/common/close.svg" alt="删除">
+                <img src="@beaver-im/app-moment/renderer/assets/image/common/close.svg" alt="删除">
               </button>
             </div>
 
@@ -63,7 +63,7 @@
             <div v-if="mediaFiles.length < 9" class="upload-slot" @click="triggerFileSelect">
               <div class="upload-content">
                 <div class="upload-icon">
-                  <img src="renderModule/assets/image/common/add.svg" alt="添加">
+                  <img src="@beaver-im/app-moment/renderer/assets/image/common/add.svg" alt="添加">
                 </div>
                 <div class="upload-text">
                   添加图片
@@ -90,14 +90,14 @@
 
 <script lang="ts">
 import type { ICreateMomentReq } from 'commonModule/type/ajax/moment'
-import type { UploadResult } from 'renderModule/utils/upload'
-import { createMomentApi } from 'renderModule/api/moment'
-import BeaverButton from 'renderModule/components/ui/button/index.vue'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import { selectAndUploadFile } from 'renderModule/utils/upload'
+import type { UploadResult } from '@beaver-im/beaver/renderer'
+import { createMomentApi } from '@beaver-im/app-moment/renderer/api/moment'
+import BeaverButton from '@beaver-im/beaver-ui/button/index.vue'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
+import { selectAndUploadFile } from '@beaver-im/beaver/renderer'
 import { useMomentStore } from '../../store/moment/moment'
 import { computed, defineComponent, ref } from 'vue'
-import Logger from 'renderModule/utils/logger'
+import { Logger } from '@beaver-im/beaver/renderer'
 
 const logger = new Logger('MomentCreate')
 

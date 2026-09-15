@@ -135,12 +135,8 @@ export enum NotificationGroupCommand {
   GROUP_VALID_UPDATE = 'groupValidUpdate',
 }
 
-export enum NotificationCircleCommand {
-  /**
-   * 圈子资料更新
-   */
-  CIRCLE_UPDATE = 'circleUpdate',
-}
+/** @deprecated 圈子通知命令已迁到 @beaver-im/app-circle，此处兼容再导出 */
+export { NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
 
 export enum NotificationUserCommand {
   /**
@@ -150,6 +146,9 @@ export enum NotificationUserCommand {
 }
 
 export enum NotificationSearchToVerifyCommand {
+  /**
+   * 搜索到验证
+   */
   SEARCH_TO_VERIFY = 'searchToVerify',
 }
 

@@ -25,7 +25,7 @@ import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('DataSyncManager')
 import { chatDatasync } from './chat'
-import { circleDatasync } from '@beaver/app-circle/main'
+import { circleDatasync } from '@beaver-im/app-circle/main'
 import { emojiDatasync } from './emoji'
 import { friendDatasync } from './friend'
 import { groupDatasync } from './group'

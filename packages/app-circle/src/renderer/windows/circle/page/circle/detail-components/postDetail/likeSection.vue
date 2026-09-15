@@ -42,9 +42,9 @@
 </template>
 
 <script lang="ts">
-import type { ICirclePostLikeItem } from 'commonModule/type/ajax/circle'
-import { CacheType } from 'commonModule/type/cache/cache'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import type { ICirclePostLikeItem } from '@beaver-im/app-circle/common/type/ajax/circle'
+import { CacheType } from '@beaver-im/beaver-ui'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import { defineComponent } from 'vue'
 
 export default defineComponent({

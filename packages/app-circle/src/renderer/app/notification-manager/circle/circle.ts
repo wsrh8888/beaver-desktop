@@ -19,7 +19,7 @@
  * beaver-desktop-header-v2
  */
 
-import Logger from 'renderModule/utils/logger'
+import { Logger } from '@beaver-im/beaver/renderer'
 import { useCircleStore } from '../../pinia/circle/circle'
 
 const logger = new Logger('DatabaseCircleEventManager')

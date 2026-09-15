@@ -46,9 +46,8 @@ export enum DataGroupCommand {
   GET_GROUP_JOIN_REQUEST_LIST = 'group:getGroupJoinRequestList',
 }
 
-export enum DataCircleCommand {
-  GET_CIRCLE_LIST = 'circle:getCircleList',
-}
+/** 圈子 IPC 命令归 app-circle，宿主 re-export 兼容旧路径 */
+export { DataCircleCommand } from '@beaver-im/app-circle/common/type/ipc/database'
 
 export enum DataChatCommand {
   GET_RECENT_CHAT_LIST = 'chat:getRecentChatList',

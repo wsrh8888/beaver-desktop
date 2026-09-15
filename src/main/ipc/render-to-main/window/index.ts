@@ -28,19 +28,17 @@ import appApplication from 'mainModule/application/app'
 import audioApplication from 'mainModule/application/audio'
 import imageApplication from 'mainModule/application/image'
 import loginApplication from 'mainModule/application/login'
-import { momentApplication } from '@beaver/app-moment/main'
 import searchApplication from 'mainModule/application/search'
 import updateApplication from 'mainModule/application/updater'
 import verifyApplication from 'mainModule/application/verify'
 import videoApplication from 'mainModule/application/video'
 import callApplication from 'mainModule/application/call'
 import CallIncomingApplication from 'mainModule/application/call-incoming'
-import { aiApplication } from '@beaver/app-ai/main'
-import { circleApplication } from '@beaver/app-circle/main'
 import workbenchApplication from 'mainModule/application/workbench'
 import settingsApplication from 'mainModule/application/settings'
 import aboutApplication from 'mainModule/application/about'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { loadOptionalWindowApp } from 'mainModule/plugin/load-optional-app'
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('WindowHandler')
@@ -183,10 +181,15 @@ class WindowHandler {
           audioApplication.createBrowserWindow()
           newWindow = (audioApplication as any).win
           break
-        case 'moment':
-          momentApplication.createBrowserWindow()
-          newWindow = (momentApplication as any).win
+        case 'moment': {
+          const momentApplication = await loadOptionalWindowApp('moment')
+          if (!momentApplication) {
+            logger.warn({ text: '朋友圈能力包不可用，无法打开窗口' })
+            return
+          }
+          newWindow = momentApplication.createBrowserWindow()
           break
+        }
         case 'updater':
           updateApplication.createBrowserWindow()
           newWindow = (updateApplication as any).win
@@ -197,13 +200,24 @@ class WindowHandler {
         case 'call-incoming':
           newWindow = CallIncomingApplication.createBrowserWindow()
           break
-        case 'ai':
+        case 'ai': {
+          const aiApplication = await loadOptionalWindowApp('ai')
+          if (!aiApplication) {
+            logger.warn({ text: 'AI 能力包不可用，无法打开窗口' })
+            return
+          }
           newWindow = aiApplication.createBrowserWindow()
           break
-        case 'circle':
-          circleApplication.createBrowserWindow()
-          newWindow = (circleApplication as any).win
+        }
+        case 'circle': {
+          const circleApplication = await loadOptionalWindowApp('circle')
+          if (!circleApplication) {
+            logger.warn({ text: '圈子能力包不可用，无法打开窗口' })
+            return
+          }
+          newWindow = circleApplication.createBrowserWindow()
           break
+        }
         case 'workbench':
           workbenchApplication.createBrowserWindow()
           newWindow = (workbenchApplication as any).win

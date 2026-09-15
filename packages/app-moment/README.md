@@ -1,12 +1,12 @@
-# @beaver/app-moment（朋友圈 app）
+# @beaver-im/app-moment（朋友圈 app）
 
-beaver-desktop 插件化架构的第一个真实案例。朋友圈代码已从根 `src/` 迁入本包，通过 `package.json` 的 `exports` 暴露入口，宿主直接按包名 `@beaver/app-moment/...` 引用。
+beaver-desktop 插件化架构的第一个真实案例。朋友圈代码已从根 `src/` 迁入本包，通过 `package.json` 的 `exports` 暴露入口，宿主直接按包名 `@beaver-im/app-moment/...` 引用。
 
 ## 结构
 
 ```
 packages/app-moment/
-├── package.json              # @beaver/app-moment
+├── package.json              # @beaver-im/app-moment
 ├── tsconfig.json
 └── src/
     ├── index.ts              # 包入口（仅声明，无运行时逻辑）
@@ -28,8 +28,8 @@ packages/app-moment/
 `package.json` 的 `exports` 暴露入口，宿主直接按包名 import：
 
 ```ts
-import momentApplication from '@beaver/app-moment/main/application/moment'
-import MomentContentCard from '@beaver/app-moment/renderer/windows/moment/components/common/MomentContentCard.vue'
+import momentApplication from '@beaver-im/app-moment/main/application/moment'
+import MomentContentCard from '@beaver-im/app-moment/renderer/windows/moment/components/common/MomentContentCard.vue'
 ```
 
 宿主无需为包配置任何 alias / tsconfig paths，`exports` 即入口表。
@@ -49,5 +49,5 @@ import MomentContentCard from '@beaver/app-moment/renderer/windows/moment/compon
 
 ## 迁移后改动的宿主文件（仅 3 处，改成包名引用）
 
-- `src/main/ipc/render-to-main/window/index.ts` — `mainModule/application/moment` → `@beaver/app-moment/main/application/moment`
-- `src/render/windows/circle/.../postDetail/index.vue` — `renderModule/windows/moment/...` → `@beaver/app-moment/renderer/windows/moment/...`
+- `src/main/ipc/render-to-main/window/index.ts` — `mainModule/application/moment` → `@beaver-im/app-moment/main/application/moment`
+- `src/render/windows/circle/.../postDetail/index.vue` — `renderModule/windows/moment/...` → `@beaver-im/app-moment/renderer/windows/moment/...`

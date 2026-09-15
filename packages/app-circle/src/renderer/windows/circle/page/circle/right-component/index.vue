@@ -28,7 +28,7 @@
           <span class="circle-right-badge">圈子</span>
         </div>
         <button class="circle-right-more" type="button" @click="handleShowDetails">
-          <img src="renderModule/assets/image/chat/more.svg" alt="更多">
+          <img src="@beaver-im/app-circle/renderer/assets/image/chat/more.svg" alt="更多">
         </button>
       </div>
 
@@ -48,7 +48,7 @@
         type="button"
         @click="showCreatePost = true"
       >
-        <img src="renderModule/assets/image/moment/publish.svg" alt="发帖" class="circle-right-publish-icon">
+        <img src="@beaver-im/app-circle/renderer/assets/image/moment/publish.svg" alt="发帖" class="circle-right-publish-icon">
       </button>
     </template>
 
@@ -62,15 +62,15 @@
 </template>
 
 <script lang="ts">
-import type { ICirclePostItem, IGetCircleDetailRes } from 'commonModule/type/ajax/circle'
+import type { ICirclePostItem, IGetCircleDetailRes } from '@beaver-im/app-circle/common/type/ajax/circle'
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import {
   getCircleDetailApi,
   getPostListApi,
   likePostApi,
-} from 'renderModule/api/circle'
-import Message from 'renderModule/components/ui/message'
-import Logger from 'renderModule/utils/logger'
+} from '@beaver-im/app-circle/renderer/api/circle'
+import Message from '@beaver-im/beaver-ui/message'
+import { Logger } from '@beaver-im/beaver/renderer'
 import CirclePostModal from '../../../components/createPost/index.vue'
 import CirclePostItem from '../../../page/circle/right-component/components/postItem/index.vue'
 import { parseCircleId } from '../../../store/circle/circle'

@@ -1,0 +1,19 @@
+{
+  "name": "@beaver-im/beaver-ui",
+  "version": "2.1.2",
+  "private": true,
+  "type": "module",
+  "description": "Beaver 纯 UI 组件库（无业务数据）",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  }
+}

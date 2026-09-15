@@ -21,9 +21,7 @@
 
 import type { BrowserWindow } from 'electron'
 import path from 'node:path'
-import { __dirname } from 'mainModule/config'
-import { store } from 'mainModule/store'
-import Logger from 'mainModule/utils/logger'
+import { Logger, getCustom, getDirname, store } from '@beaver-im/beaver/main'
 
 const logger = new Logger('ApplicationBase')
 
@@ -42,7 +40,7 @@ export default class ApplicationBase {
       this.win.loadURL(new URL(`${this.name}.html`, process.env.VITE_DEV_SERVER_URL).href)
       return
     }
-    this.win.loadFile(path.join(__dirname, `../dist/${this.name}.html`))
+    this.win.loadFile(path.join(getDirname(), `../dist/${this.name}.html`))
   }
 
   protected loadUrlRender(url: string) {
@@ -51,7 +49,7 @@ export default class ApplicationBase {
 
   protected init() {
     (this.win as any).__appName = this.name
-    if (process.custom.TOOLS) {
+    if (getCustom().tools) {
       // 延迟打开开发者工具，确保窗口完全加载
       // setTimeout(() => {
       //   this.win.webContents.openDevTools()
@@ -65,12 +63,12 @@ export default class ApplicationBase {
   }
 
   getPreloadParams() {
+    const custom = getCustom()
     return {
-      env: process.custom.ENV,
+      env: custom.env,
       token: store.get('userInfo')?.token,
-      devicedId: process.custom.DEVICE_ID,
-      version: process.custom.VERSION,
-      ...(process.custom.BASE_URL ? { baseUrl: process.custom.BASE_URL } : {}),
+      devicedId: custom.deviceId,
+      version: custom.version,
     }
   }
 }

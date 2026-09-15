@@ -25,7 +25,7 @@
       <div class="circle-modal-header">
         <h3>创建圈子</h3>
         <button class="circle-modal-close" type="button" @click="handleClose">
-          <img src="renderModule/assets/image/header/close.svg" alt="关闭">
+          <img src="@beaver-im/app-circle/renderer/assets/image/header/close.svg" alt="关闭">
         </button>
       </div>
       <div class="circle-modal-body">
@@ -38,7 +38,7 @@
             image-class="circle-modal-avatar-image"
           />
           <div v-else class="circle-modal-avatar-placeholder">
-            <img src="renderModule/assets/image/common/add.svg" alt="上传">
+            <img src="@beaver-im/app-circle/renderer/assets/image/common/add.svg" alt="上传">
             <span>上传头像</span>
           </div>
           <input
@@ -79,11 +79,11 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
-import { createCircleApi } from 'renderModule/api/circle'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import Message from 'renderModule/components/ui/message'
-import Logger from 'renderModule/utils/logger'
-import { uploadFile } from 'renderModule/utils/upload'
+import { createCircleApi } from '@beaver-im/app-circle/renderer/api/circle'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
+import Message from '@beaver-im/beaver-ui/message'
+import { Logger } from '@beaver-im/beaver/renderer'
+import { uploadFile } from '@beaver-im/beaver/renderer'
 import { useCircleStore } from '../../store/circle/circle'
 
 const logger = new Logger('CreateCircleModal')

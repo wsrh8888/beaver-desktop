@@ -21,7 +21,7 @@
 
 import MomentEventManager from './moment'
 import MomentInboxNotificationManager from './inbox'
-import Logger from 'renderModule/utils/logger';
+import { Logger } from '@beaver-im/beaver/renderer';
 const logger = new Logger('index')
 
 

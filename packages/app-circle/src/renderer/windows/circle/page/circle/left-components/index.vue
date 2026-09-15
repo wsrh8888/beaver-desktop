@@ -23,7 +23,7 @@
   <div class="circle-sidebar">
     <div class="circle-sidebar-top">
       <button class="circle-sidebar-create" type="button" @click="$emit('create')">
-        <img src="renderModule/assets/image/common/add.svg" alt="创建" class="circle-sidebar-create-icon">
+        <img src="@beaver-im/app-circle/renderer/assets/image/common/add.svg" alt="创建" class="circle-sidebar-create-icon">
         创建圈子
       </button>
     </div>
@@ -63,12 +63,12 @@
 </template>
 
 <script lang="ts">
-import type { ICircleListItem } from 'commonModule/type/ajax/circle'
+import type { ICircleListItem } from '@beaver-im/app-circle/common/type/ajax/circle'
 import { defineComponent, onMounted, ref } from 'vue'
-import { getMyCircleListApi } from 'renderModule/api/circle'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import Message from 'renderModule/components/ui/message'
-import Logger from 'renderModule/utils/logger'
+import { getMyCircleListApi } from '@beaver-im/app-circle/renderer/api/circle'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
+import Message from '@beaver-im/beaver-ui/message'
+import { Logger } from '@beaver-im/beaver/renderer'
 import { useCircleStore } from '../../../store/circle/circle'
 
 const logger = new Logger('CircleLeftPanel')

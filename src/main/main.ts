@@ -46,6 +46,10 @@ if (process.defaultApp) {
 }
 
 import Logger from 'mainModule/utils/logger'
+import { bindBeaverMainApi } from './beaver-api'
+
+// 插件官方 API：必须在加载任何 app 包之前绑定宿主实现
+bindBeaverMainApi()
 
 const logger = new Logger('Main')
 

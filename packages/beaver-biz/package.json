@@ -1,0 +1,22 @@
+{
+  "name": "@beaver-im/beaver-biz",
+  "version": "2.1.2",
+  "private": true,
+  "type": "module",
+  "description": "Beaver 业务组件库（UI + 业务数据）",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./*": "./src/*"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@beaver-im/beaver-ui": "file:../beaver-ui"
+  },
+  "peerDependencies": {
+    "vue": "^3.0.0"
+  }
+}

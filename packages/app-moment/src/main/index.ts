@@ -7,5 +7,6 @@
  * beaver-desktop-header-v2
  */
 
-/** @beaver/app-moment 主进程出口（窗口 application） */
+/** @beaver-im/app-moment 主进程出口（窗口 application + 插件清单） */
 export { default as momentApplication } from './application/moment'
+export { momentManifest } from './manifest'

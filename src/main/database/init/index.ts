@@ -20,7 +20,8 @@
  */
 
 import { initChatTables } from './chat/index'
-import { initCircleTables } from '@beaver/app-circle/main'
+// 只引建表入口，禁止走 @beaver-im/app-circle/main 桶（会连带加载 Service，与 BaseService 循环）
+import { initCircleTables } from '@beaver-im/app-circle/main/init-tables'
 import { initDatasyncTables } from './datasync/index'
 import { initEmojiTables } from './emoji/index'
 import { initFriendTables } from './friend/index'

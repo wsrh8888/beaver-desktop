@@ -1,0 +1,29 @@
+{
+  "name": "@beaver-im/beaver",
+  "version": "2.1.2",
+  "private": true,
+  "type": "module",
+  "description": "Beaver 官方包：common + main + renderer（插件可见门面）。宿主内部类型仍在 src/common",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./common": "./src/common/index.ts",
+    "./common/type/*": "./src/common/type/*",
+    "./main": "./src/main/index.ts",
+    "./main/bind": "./src/main/bind/index.ts",
+    "./main/utils/logger": "./src/main/utils/logger/index.ts",
+    "./main/store": "./src/main/store/index.ts",
+    "./main/config": "./src/main/config/index.ts",
+    "./main/utils/request": "./src/main/utils/request/index.ts",
+    "./main/ipc/main-to-render": "./src/main/ipc/main-to-render/index.ts",
+    "./main/database": "./src/main/database/index.ts",
+    "./main/database/base": "./src/main/database/base/index.ts",
+    "./main/database/datasync": "./src/main/database/datasync/index.ts",
+    "./renderer": "./src/renderer/index.ts",
+    "./renderer/*": "./src/renderer/*"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  }
+}

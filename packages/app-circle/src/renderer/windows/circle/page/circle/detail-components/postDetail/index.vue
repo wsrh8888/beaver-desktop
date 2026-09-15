@@ -58,7 +58,7 @@
             <div class="placeholder" />
             <div class="tab-actions">
               <button class="refresh-btn" type="button" @click="handleRefresh">
-                <img src="renderModule/assets/image/moment/refresh.svg" alt="刷新" class="refresh-icon">
+                <img src="@beaver-im/app-circle/renderer/assets/image/moment/refresh.svg" alt="刷新" class="refresh-icon">
               </button>
             </div>
           </div>
@@ -91,7 +91,7 @@
 </template>
 
 <script lang="ts">
-import type { ICircleCommentItem, ICirclePostItem, ICirclePostLikeItem, IGetPostDetailRes } from 'commonModule/type/ajax/circle'
+import type { ICircleCommentItem, ICirclePostItem, ICirclePostLikeItem, IGetPostDetailRes } from '@beaver-im/app-circle/common/type/ajax/circle'
 import { computed, defineComponent, onMounted, onUnmounted, ref } from 'vue'
 import {
   createCommentApi,
@@ -99,10 +99,10 @@ import {
   getPostDetailApi,
   getPostLikesApi,
   likePostApi,
-} from 'renderModule/api/circle'
-import Message from 'renderModule/components/ui/message'
-import Logger from 'renderModule/utils/logger'
-import { MomentContentCard } from '@beaver/app-moment/renderer'
+} from '@beaver-im/app-circle/renderer/api/circle'
+import Message from '@beaver-im/beaver-ui/message'
+import { Logger } from '@beaver-im/beaver/renderer'
+import { MomentContentCard } from '@beaver-im/app-moment/renderer'
 import BottomInputSection from './bottomInputSection.vue'
 import CommentSection from './commentSection.vue'
 import LikeSection from './likeSection.vue'

@@ -75,10 +75,13 @@
     ]
   },
   "dependencies": {
+    "@beaver-im/beaver": "file:packages/beaver",
+    "@beaver-im/beaver-ui": "file:packages/beaver-ui",
+    "@beaver-im/beaver-biz": "file:packages/beaver-biz",
     "@beaver-im/js-sdk": "^1.0.2",
-    "@beaver/app-ai": "file:../beaver-agent/agent_electron",
-    "@beaver/app-circle": "file:packages/app-circle",
-    "@beaver/app-moment": "file:packages/app-moment",
+    "@beaver-im/app-ai": "file:../beaver-agent/agent_electron",
+    "@beaver-im/app-circle": "file:packages/app-circle",
+    "@beaver-im/app-moment": "file:packages/app-moment",
     "@koa/router": "^12.0.2",
     "@modelcontextprotocol/sdk": "1.24.3",
     "@rollup/plugin-commonjs": "^28.0.1",

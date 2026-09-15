@@ -13,15 +13,14 @@ import vue from '@vitejs/plugin-vue'
 import svgLoader from 'vite-svg-loader'
 
 /**
- * @beaver/app-circle 独立打包配置
+ * @beaver-im/app-circle 独立打包配置
  *
- * 两个 library 入口，各自聚合对外暴露的内容：
- *   - main     主进程（application + business + database + datasync + receiver + ipc）
- *   - renderer 渲染进程（对外组件/store）
+ * 两个 library 入口：
+ *   - main     主进程
+ *   - renderer 渲染进程
  *
- * 宿主内核模块（mainModule/* / renderModule/* / commonModule/* / preloadModule/*）
- * 标记为 external：产物里保留 import 串，运行时由宿主 vite 的 alias 解析。
- * electron / vue / pinia 同理 external，由宿主运行时提供。
+ * external 只留真正的运行时对等依赖（框架 / Node / 平台包）。
+ * 宿主 alias（renderModule / commonModule 等）不应出现在这里——那些是待替换的历史耦合。
  */
 export default defineConfig({
   plugins: [
@@ -43,11 +42,7 @@ export default defineConfig({
         'vue',
         'pinia',
         'node:path',
-        /^mainModule\//,
-        /^renderModule\//,
-        /^commonModule\//,
-        /^preloadModule\//,
-        /^@beaver\//,
+        /^@beaver-im\//,
       ],
       output: {
         entryFileNames: '[name].js',

@@ -37,7 +37,7 @@ export const initDatasyncTable = (sqlite: any) => {
 
   // 创建唯一索引（如果不存在）
   try {
-    sqlite.run(`CREATE UNIQUE INDEX IF NOT EXISTS unique_module ON datasync(module)`)
+    sqlite.exec(`CREATE UNIQUE INDEX IF NOT EXISTS unique_module ON datasync(module)`)
   }
   catch (error: any) {
     logger.warn({ text: '索引创建失败，可能已存在', data: { table: 'datasync', index: 'unique_module', error: error?.message } })

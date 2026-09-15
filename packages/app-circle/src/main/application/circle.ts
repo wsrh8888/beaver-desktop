@@ -19,12 +19,12 @@
  * beaver-desktop-header-v2
  */
 
-import type { Application } from 'commonModule/type/app/application'
+import type { Application } from '@beaver-im/beaver/common/type/app/application'
 import path from 'node:path'
 import { BrowserWindow } from 'electron'
-import { __dirname } from 'mainModule/config'
+import { Logger, getDirname } from '@beaver-im/beaver/main'
 import ApplicationBase from './common/base'
-import Logger from 'mainModule/utils/logger';
+
 const logger = new Logger('circle')
 
 
@@ -44,7 +44,7 @@ class Circle extends ApplicationBase implements Application {
       frame: false,
       resizable: true,
       webPreferences: {
-        preload: path.join(__dirname, './preload/index.mjs'),
+        preload: path.join(getDirname(), './preload/index.mjs'),
         nodeIntegration: false,
         nodeIntegrationInWorker: false,
         contextIsolation: true,

@@ -19,10 +19,10 @@
  * beaver-desktop-header-v2
  */
 
-import type { ICircleListItem } from 'commonModule/type/ajax/circle'
+import type { ICircleListItem } from '@beaver-im/app-circle/common/type/ajax/circle'
 import { defineStore } from 'pinia'
-import { getMyCircleListApi } from 'renderModule/api/circle'
-import Logger from 'renderModule/utils/logger'
+import { getMyCircleListApi } from '@beaver-im/app-circle/renderer/api/circle'
+import { Logger } from '@beaver-im/beaver/renderer'
 
 const logger = new Logger('CircleWindowStore')
 

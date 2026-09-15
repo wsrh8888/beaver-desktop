@@ -70,6 +70,7 @@ export default class ApplicationBase {
       token: store.get('userInfo')?.token,
       devicedId: process.custom.DEVICE_ID,
       version: process.custom.VERSION,
+      // 仅透传 config.ini 覆盖；默认域名由 commonModule/config 按 env 解析
       ...(process.custom.BASE_URL ? { baseUrl: process.custom.BASE_URL } : {}),
     }
   }

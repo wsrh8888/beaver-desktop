@@ -21,7 +21,7 @@
 
 import type { IMomentCommentModel, IMomentInfo } from 'commonModule/type/ajax/moment'
 import { defineStore } from 'pinia'
-import Logger from 'renderModule/utils/logger'
+import { Logger } from '@beaver-im/beaver/renderer'
 import {
   createMomentCommentApi,
   getMomentChildCommentsApi,
@@ -30,7 +30,7 @@ import {
   getMomentListApi,
   getMomentRootCommentsApi,
   likeMomentApi,
-} from 'renderModule/api/moment'
+} from '@beaver-im/app-moment/renderer/api/moment'
 import { useUserStore } from '../user/user'
 
 const logger = new Logger('MomentStore')

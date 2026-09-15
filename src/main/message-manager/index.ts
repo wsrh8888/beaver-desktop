@@ -28,7 +28,7 @@ const logger = new Logger('MessageManager')
 import WsManager from 'mainModule/ws-manager/index'
 import messageBusiness from 'mainModule/business/chat/message'
 import chatMessageRouter from './receivers/chat/inedx'
-import { circleMessageRouter } from '@beaver/app-circle/main'
+import { circleMessageRouter } from '@beaver-im/app-circle/main'
 import emojiMessageRouter from './receivers/emoji/index'
 import friendMessageRouter from './receivers/friend/index'
 import groupMessageRouter from './receivers/group/index'

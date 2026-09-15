@@ -14,6 +14,16 @@
     /* Bundler mode */
     "moduleResolution": "bundler",
     "paths": {
+      "@beaver-im/beaver": ["packages/beaver/src/index.ts"],
+      "@beaver-im/beaver/*": ["packages/beaver/src/*"],
+      "@beaver-im/beaver-ui": ["packages/beaver-ui/src/index.ts"],
+      "@beaver-im/beaver-ui/*": ["packages/beaver-ui/src/*"],
+      "@beaver-im/beaver-biz": ["packages/beaver-biz/src/index.ts"],
+      "@beaver-im/beaver-biz/*": ["packages/beaver-biz/src/*"],
+      "@beaver-im/app-circle": ["packages/app-circle/src/index.ts"],
+      "@beaver-im/app-circle/*": ["packages/app-circle/src/*"],
+      "@beaver-im/app-moment": ["packages/app-moment/src/index.ts"],
+      "@beaver-im/app-moment/*": ["packages/app-moment/src/*"],
       "commonModule/*": ["src/common/*"],
       "renderModule/*": ["src/render/*"],
       "mainModule/*": ["src/main/*"],
@@ -31,7 +41,7 @@
     "isolatedModules": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "src/render/**/*.vue", "src/**/*.vue", "src/**/*.d.ts", "packages/app-moment/src/**/*.ts", "packages/app-moment/src/**/*.vue", "../beaver-agent/agent_electron/src/**/*.ts", "../beaver-agent/agent_electron/src/**/*.vue", "packages/app-circle/src/**/*.ts", "packages/app-circle/src/**/*.vue"],
+  "include": ["src/**/*.ts", "src/render/**/*.vue", "src/**/*.vue", "src/**/*.d.ts", "packages/app-moment/src/**/*.ts", "packages/app-moment/src/**/*.vue", "../beaver-agent/agent_electron/src/**/*.ts", "../beaver-agent/agent_electron/src/**/*.vue", "packages/app-circle/src/**/*.ts", "packages/app-circle/src/**/*.vue", "packages/beaver/src/**/*.ts", "packages/beaver-ui/src/**/*.ts", "packages/beaver-ui/src/**/*.vue", "packages/beaver-biz/src/**/*.ts", "packages/beaver-biz/src/**/*.vue"],
   "exclude": [
     "node_modules",
     "logs",

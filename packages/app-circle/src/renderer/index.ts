@@ -7,7 +7,7 @@
  * beaver-desktop-header-v2
  */
 
-/** @beaver/app-circle 渲染进程出口（对外暴露的组件/store/路由，供宿主 app 窗口嵌入引用） */
+/** @beaver-im/app-circle 渲染进程出口（对外暴露的组件/store/路由，供宿主 app 窗口嵌入引用） */
 
 // 圈子窗口组件（app 窗口 message 面板嵌入）
 export { default as CircleRight } from './windows/circle/page/circle/right-component/index.vue'

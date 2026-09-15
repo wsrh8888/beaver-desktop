@@ -85,7 +85,7 @@
         type="button"
         @click="$emit('comment')"
       >
-        <img src="renderModule/assets/image/moment/comment.svg" alt="评论">
+        <img src="@beaver-im/app-circle/renderer/assets/image/moment/comment.svg" alt="评论">
         <span>{{ post.commentCount || 0 }}</span>
       </button>
     </div>
@@ -105,13 +105,13 @@
 </template>
 
 <script lang="ts">
-import type { ICirclePostItem } from 'commonModule/type/ajax/circle'
-import { CacheType } from 'commonModule/type/cache/cache'
+import type { ICirclePostItem } from '@beaver-im/app-circle/common/type/ajax/circle'
+import { CacheType } from '@beaver-im/beaver-ui'
 import { computed, defineComponent } from 'vue'
-import likeIcon from 'renderModule/assets/image/moment/like-default.svg'
-import likeActiveIcon from 'renderModule/assets/image/moment/like-active.svg'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import Logger from 'renderModule/utils/logger'
+import likeIcon from '@beaver-im/app-circle/renderer/assets/image/moment/like-default.svg'
+import likeActiveIcon from '@beaver-im/app-circle/renderer/assets/image/moment/like-active.svg'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
+import { Logger } from '@beaver-im/beaver/renderer'
 
 const logger = new Logger('CirclePostItem')
 

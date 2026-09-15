@@ -22,18 +22,18 @@
 <template>
   <div class="circle-header">
     <div class="circle-header-drag">
-      <img src="renderModule/assets/image/leftBar/circle_active.svg" alt="圈子" class="circle-header-icon">
+      <img src="@beaver-im/app-circle/renderer/assets/image/leftBar/circle_active.svg" alt="圈子" class="circle-header-icon">
       <span class="circle-header-title">圈子</span>
     </div>
     <div class="circle-header-actions">
       <button class="circle-header-btn" type="button" @click="$emit('refresh')">
-        <img src="renderModule/assets/image/moment/refresh.svg" alt="刷新" class="circle-header-btn-icon">
+        <img src="@beaver-im/app-circle/renderer/assets/image/moment/refresh.svg" alt="刷新" class="circle-header-btn-icon">
       </button>
       <button class="circle-header-btn" type="button" @click="handleMinimize">
-        <img src="renderModule/assets/image/header/minimize.svg" alt="最小化">
+        <img src="@beaver-im/app-circle/renderer/assets/image/header/minimize.svg" alt="最小化">
       </button>
       <button class="circle-header-btn circle-header-btn-close" type="button" @click="handleClose">
-        <img src="renderModule/assets/image/header/close.svg" alt="关闭">
+        <img src="@beaver-im/app-circle/renderer/assets/image/header/close.svg" alt="关闭">
       </button>
     </div>
   </div>

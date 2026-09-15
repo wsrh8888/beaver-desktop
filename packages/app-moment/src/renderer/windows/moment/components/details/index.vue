@@ -64,7 +64,7 @@
             <div class="placeholder" />
             <div class="tab-actions">
               <button class="refresh-btn" @click="handleRefresh">
-                <img src="renderModule/assets/image/moment/refresh.svg" alt="刷新" class="refresh-icon">
+                <img src="@beaver-im/app-moment/renderer/assets/image/moment/refresh.svg" alt="刷新" class="refresh-icon">
               </button>
             </div>
           </div>
@@ -112,7 +112,7 @@ import MomentContentCard from '../common/MomentContentCard.vue'
 import BottomInputSection from './bottomInputSection.vue'
 import CommentSection from './commentSection.vue'
 import LikeSection from './likeSection.vue'
-import Logger from 'renderModule/utils/logger'
+import { Logger } from '@beaver-im/beaver/renderer'
 
 const logger = new Logger('MomentDetail')
 

@@ -19,10 +19,10 @@
  * beaver-desktop-header-v2
  */
 
-import type { INotificationPayload, NotificationModule } from 'commonModule/type/preload/notification'
-import { NotificationCircleCommand } from 'commonModule/type/preload/notification'
+import type { INotificationPayload } from './types'
+import { CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
 
-import Logger from 'renderModule/utils/logger'
+import { Logger } from '@beaver-im/beaver/renderer'
 import circleNotificationManager from './circle'
 
 const logger = new Logger('圈子模块通知路由器')
@@ -31,7 +31,7 @@ const logger = new Logger('圈子模块通知路由器')
  * @description: 圈子模块通知路由器
  */
 class CircleNotificationRouter {
-  async handleNotification(params: INotificationPayload<NotificationModule.DATABASE_CIRCLE>) {
+  async handleNotification(params: INotificationPayload) {
     logger.info({
       text: '收到圈子模块通知',
       data: params,
@@ -48,3 +48,4 @@ class CircleNotificationRouter {
 }
 
 export const circleNotificationRouter = new CircleNotificationRouter()
+export { CIRCLE_NOTIFICATION_MODULE }

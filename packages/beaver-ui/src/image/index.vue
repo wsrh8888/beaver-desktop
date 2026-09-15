@@ -1,0 +1,132 @@
+<!--
+  Copyright (c) 2024-2026 Beaver IM Team
+  SPDX-License-Identifier: MIT
+  Project: beaver-desktop
+  https://github.com/wsrh8888/beaver-desktop
+
+  中文：
+  本文件为海狸 IM（Beaver IM）开源项目源代码。
+  版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
+  禁止删除、篡改或替换本文件头部版权与许可声明。
+  使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
+
+  English:
+  This file is part of the Beaver IM open-source project.
+  Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
+  Do not remove, alter, or replace this copyright and license header.
+  Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
+
+  beaver-desktop-header-v2
+-->
+
+<template>
+  <img
+    v-if="imageSrc"
+    :src="imageSrc"
+    :class="imageClass"
+    :style="imageStyle"
+    :alt="alt"
+    :loading="lazyLoad ? 'lazy' : 'eager'"
+    @load="handleLoad"
+    @error="handleError"
+    @click="handleClick"
+  >
+</template>
+
+<script lang="ts">
+import type { PropType } from 'vue'
+import { CacheType } from '../cache'
+import { ref, watch } from 'vue'
+
+export default {
+  name: 'BeaverImage',
+  props: {
+    // 完整文件 URL（业务层统一存 URL，不再拼接 preview 路径）
+    fileName: {
+      type: String,
+      required: true,
+    },
+    // 缓存类型
+    cacheType: {
+      type: String as PropType<CacheType>,
+      default: CacheType.USER_AVATAR,
+    },
+    // 图片模式
+    mode: {
+      type: String,
+      default: 'aspectFill',
+    },
+    // 是否懒加载
+    lazyLoad: {
+      type: Boolean,
+      default: true,
+    },
+    // 图片类名
+    imageClass: {
+      type: String,
+      default: '',
+    },
+    // 图片样式
+    imageStyle: {
+      type: Object,
+      default: () => ({}),
+    },
+    // 图片alt属性
+    alt: {
+      type: String,
+      default: '图片',
+    },
+  },
+  emits: ['load', 'error', 'click'],
+  setup(props, { emit }) {
+    const imageSrc = ref('')
+    // 计算图片源
+    const updateImage = async () => {
+      const result = await electron.cache.get(props.cacheType, props.fileName) || ''
+      imageSrc.value = result
+    }
+
+    // 监听属性变化
+    watch(() => props.fileName, () => {
+      updateImage()
+    }, { immediate: true })
+
+    // 事件处理
+    const handleLoad = (event: Event) => {
+      emit('load', event)
+    }
+
+    const handleError = (event: Event) => {
+      emit('error', event)
+    }
+
+    const handleClick = (event: Event) => {
+      emit('click', event)
+    }
+
+    return {
+      imageSrc,
+      handleLoad,
+      handleError,
+      handleClick,
+    }
+  },
+}
+</script>
+
+<style lang="less" scoped>
+img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+
+  &[loading="lazy"] {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+
+    &:not([src=""]) {
+      opacity: 1;
+    }
+  }
+}
+</style>

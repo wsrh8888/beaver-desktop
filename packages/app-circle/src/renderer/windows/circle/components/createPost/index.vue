@@ -25,7 +25,7 @@
       <div class="circle-modal-header">
         <h3>发布帖子</h3>
         <button class="circle-modal-close" type="button" @click="handleClose">
-          <img src="renderModule/assets/image/header/close.svg" alt="关闭">
+          <img src="@beaver-im/app-circle/renderer/assets/image/header/close.svg" alt="关闭">
         </button>
       </div>
 
@@ -51,7 +51,7 @@
                 @click="handleMediaClick(file)"
               />
               <button class="circle-modal-media-remove" type="button" @click="removeMediaFile(index)">
-                <img src="renderModule/assets/image/common/close.svg" alt="删除">
+                <img src="@beaver-im/app-circle/renderer/assets/image/common/close.svg" alt="删除">
               </button>
             </div>
 
@@ -60,7 +60,7 @@
               class="circle-modal-media-upload"
               @click="triggerFileSelect"
             >
-              <img src="renderModule/assets/image/common/add.svg" alt="添加">
+              <img src="@beaver-im/app-circle/renderer/assets/image/common/add.svg" alt="添加">
               <span>添加图片</span>
             </div>
           </div>
@@ -86,11 +86,11 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
-import { createPostApi } from 'renderModule/api/circle'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import Message from 'renderModule/components/ui/message'
-import { selectAndUploadFile } from 'renderModule/utils/upload'
-import Logger from 'renderModule/utils/logger'
+import { createPostApi } from '@beaver-im/app-circle/renderer/api/circle'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
+import Message from '@beaver-im/beaver-ui/message'
+import { selectAndUploadFile } from '@beaver-im/beaver/renderer'
+import { Logger } from '@beaver-im/beaver/renderer'
 
 const logger = new Logger('CirclePostModal')
 

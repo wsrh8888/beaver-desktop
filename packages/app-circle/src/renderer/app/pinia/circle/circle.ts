@@ -20,7 +20,7 @@
  */
 
 import { defineStore } from 'pinia'
-import Logger from 'renderModule/utils/logger';
+import { Logger } from '@beaver-im/beaver/renderer';
 const logger = new Logger('circle')
 
 

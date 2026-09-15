@@ -39,7 +39,7 @@ export const initGroupSyncStatusTable = (sqlite: any) => {
 
   // 创建唯一索引（如果不存在）
   try {
-    sqlite.run(`CREATE UNIQUE INDEX IF NOT EXISTS unique_group_module ON group_sync_status(group_id, module)`)
+    sqlite.exec(`CREATE UNIQUE INDEX IF NOT EXISTS unique_group_module ON group_sync_status(group_id, module)`)
   }
   catch (error: any) {
     logger.warn({ text: '索引创建失败，可能已存在', data: { table: 'group_sync_status', index: 'unique_group_module', error: error?.message } })

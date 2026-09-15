@@ -20,7 +20,7 @@
  */
 
 import circleBusiness from '../../../business/circle/circle'
-import Logger from 'mainModule/utils/logger'
+import { Logger } from '@beaver-im/beaver/main'
 const logger = new Logger('circle')
 
 

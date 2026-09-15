@@ -25,7 +25,7 @@
       <div class="circle-details-header">
         <h3>圈子详情</h3>
         <button class="circle-details-close" type="button" @click="$emit('close')">
-          <img src="renderModule/assets/image/group/close.svg" alt="关闭">
+          <img src="@beaver-im/app-circle/renderer/assets/image/group/close.svg" alt="关闭">
         </button>
       </div>
 
@@ -41,7 +41,7 @@
               />
               <span v-else class="circle-details-avatar-text">{{ name.slice(0, 1) }}</span>
               <div v-if="canManage" class="circle-details-avatar-edit">
-                <img src="renderModule/assets/image/group/edit.svg" alt="编辑">
+                <img src="@beaver-im/app-circle/renderer/assets/image/group/edit.svg" alt="编辑">
               </div>
             </div>
             <input
@@ -77,7 +77,7 @@
               type="button"
               @click="handleAddMember"
             >
-              <img src="renderModule/assets/image/group/add.svg" alt="添加">
+              <img src="@beaver-im/app-circle/renderer/assets/image/group/add.svg" alt="添加">
               添加成员
             </button>
           </div>
@@ -103,7 +103,7 @@
                   type="button"
                   @click.stop="handleRemoveMember(member.userId)"
                 >
-                  <img src="renderModule/assets/image/create-group/remove.svg" alt="删除">
+                  <img src="@beaver-im/app-circle/renderer/assets/image/create-group/remove.svg" alt="删除">
                 </button>
               </div>
               <div class="circle-details-member-name">
@@ -122,7 +122,7 @@
           >
             {{ showAllMembers ? '收起成员列表' : '查看更多成员' }}
             <img
-              src="renderModule/assets/image/group/expand.svg"
+              src="@beaver-im/app-circle/renderer/assets/image/group/expand.svg"
               alt="展开"
               :style="{ transform: showAllMembers ? 'rotate(180deg)' : 'rotate(0)' }"
             >
@@ -132,7 +132,7 @@
         <div class="circle-details-settings">
           <div class="circle-details-settings-item" @click="openShare">
             <span>分享圈子</span>
-            <img src="renderModule/assets/image/group/expand.svg" alt="">
+            <img src="@beaver-im/app-circle/renderer/assets/image/group/expand.svg" alt="">
           </div>
         </div>
 
@@ -168,7 +168,7 @@
     <Share
       v-if="normalizedId && shareVisible"
       v-model="shareVisible"
-      :card-type="CardType.CIRCLE"
+      :card-type="CARD_TYPE_CIRCLE"
       :id="normalizedId"
       :name="name"
       :avatar="avatar"
@@ -178,9 +178,8 @@
 </template>
 
 <script lang="ts">
-import type { ICircleMemberItem, IGetCircleDetailRes } from 'commonModule/type/ajax/circle'
-import { CardType } from 'commonModule/type/ajax/chat'
-import { CacheType } from 'commonModule/type/cache/cache'
+import type { ICircleMemberItem, IGetCircleDetailRes } from '@beaver-im/app-circle/common/type/ajax/circle'
+import { CacheType } from '@beaver-im/beaver-ui'
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import {
   deleteCircleApi,
@@ -190,16 +189,17 @@ import {
   quitCircleApi,
   removeCircleMembersApi,
   updateCircleApi,
-} from 'renderModule/api/circle'
-import SelectFriend from 'renderModule/components/business/selectFriend/index.vue'
-import Share from 'renderModule/components/business/share/index.vue'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
-import Message from 'renderModule/components/ui/message'
-import MessageBox from 'renderModule/components/ui/messagebox'
-import Logger from 'renderModule/utils/logger'
-import { uploadFile } from 'renderModule/utils/upload'
-import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+} from '@beaver-im/app-circle/renderer/api/circle'
+import SelectFriend from '@beaver-im/beaver-biz/selectFriend/index.vue'
+import Share from '@beaver-im/beaver-biz/share/index.vue'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
+import Message from '@beaver-im/beaver-ui/message'
+import MessageBox from '@beaver-im/beaver-ui/messagebox'
+import { Logger, uploadFile, getUserId } from '@beaver-im/beaver/renderer'
 import { parseCircleId, useCircleStore } from '../../../../store/circle/circle'
+
+/** 与宿主 CardType.CIRCLE 同值；Share 只收 number */
+const CARD_TYPE_CIRCLE = 3
 
 const logger = new Logger('CircleDetails')
 
@@ -215,7 +215,6 @@ export default defineComponent({
   emits: ['close', 'quit', 'updated'],
   setup(props, { emit }) {
     const circleStore = useCircleStore()
-    const userStore = useUserStore()
     const shareVisible = ref(false)
     const showAddMemberModal = ref(false)
     const showAllMembers = ref(false)
@@ -236,13 +235,7 @@ export default defineComponent({
     })
 
     const ensureUserId = async () => {
-      if (!userStore.getUserId)
-        await userStore.init()
-      currentUserId.value = userStore.getUserId || ''
-      if (!currentUserId.value) {
-        const info = await electron.storage.getAsync('userInfo')
-        currentUserId.value = info?.userId || ''
-      }
+      currentUserId.value = await getUserId()
     }
 
     const loadDetail = async () => {
@@ -489,7 +482,7 @@ export default defineComponent({
 
     return {
       CacheType,
-      CardType,
+      CARD_TYPE_CIRCLE,
       shareVisible,
       showAddMemberModal,
       showAllMembers,

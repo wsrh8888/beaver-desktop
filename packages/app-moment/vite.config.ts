@@ -13,7 +13,7 @@ import vue from '@vitejs/plugin-vue'
 import svgLoader from 'vite-svg-loader'
 
 /**
- * @beaver/app-moment 独立打包配置
+ * @beaver-im/app-moment 独立打包配置
  *
  * 两个 library 入口，各自聚合对外暴露的内容：
  *   - main     主进程（application）
@@ -47,6 +47,8 @@ export default defineConfig({
         /^renderModule\//,
         /^commonModule\//,
         /^preloadModule\//,
+        /^@beaver\//,
+        /^@beaver-im\//,
       ],
       output: {
         entryFileNames: '[name].js',

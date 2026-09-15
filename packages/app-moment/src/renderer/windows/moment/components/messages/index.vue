@@ -68,8 +68,8 @@
 </template>
 
 <script lang="ts">
-import { CacheType } from 'commonModule/type/cache/cache'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { CacheType } from '@beaver-im/beaver-ui'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import { computed, defineComponent } from 'vue'
 import { useMomentNotificationStore } from '../../store/notification/notification'
 import { useMomentStore } from '../../store/moment/moment'

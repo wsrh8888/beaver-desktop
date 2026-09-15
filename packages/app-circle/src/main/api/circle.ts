@@ -19,14 +19,23 @@
  * beaver-desktop-header-v2
  */
 
-import type { ICircleSyncReq, ICircleSyncRes } from 'commonModule/type/ajax/circle'
-import { getBaseUrl } from 'commonModule/config'
-import ajax from 'mainModule/utils/request/request'
+import type { ICircleSyncReq, ICircleSyncRes } from '@beaver-im/app-circle/common/type/ajax/circle'
+import type { IGetSyncCircleInfoReq, IGetSyncCircleInfoRes } from '@beaver-im/app-circle/common/type/ajax/datasync'
+import { ajax, getBaseUrl } from '@beaver-im/beaver/main'
 
 export const circleSyncApi = (data: ICircleSyncReq) => {
   return ajax<ICircleSyncRes>({
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/circle/v1/circle/sync`,
+  })
+}
+
+/** datasync：拉取圈子版本摘要 */
+export const datasyncGetSyncCircleInfoApi = (data: IGetSyncCircleInfoReq) => {
+  return ajax<IGetSyncCircleInfoRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncCircleInfo`,
   })
 }

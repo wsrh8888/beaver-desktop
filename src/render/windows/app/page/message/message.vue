@@ -77,9 +77,9 @@
 import Logger from 'renderModule/utils/logger';
 const logger = new Logger('message')
 
-import type { ICirclePostItem } from 'commonModule/type/ajax/circle'
+import type { ICirclePostItem } from '@beaver-im/app-circle/common/type/ajax/circle'
 import { computed, defineComponent, ref, watch } from 'vue'
-import { CircleDetails as CircleDetailsComponent, CirclePostDetail, CircleRight, parseCircleId } from '@beaver/app-circle/renderer'
+import { CircleDetails as CircleDetailsComponent, CirclePostDetail, CircleRight, parseCircleId } from '@beaver-im/app-circle/renderer'
 import { useConversationStore } from '../../pinia/conversation/conversation'
 import { useMessageViewStore } from '../../pinia/view/message'
 import GroupAssistantOverlay from './detail-components/groupAssistant/index.vue'

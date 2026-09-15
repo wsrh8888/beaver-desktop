@@ -32,7 +32,7 @@
             class="user-avatar"
           />
           <div v-else class="avatar-placeholder">
-            <img src="renderModule/assets/image/common/default-avatar.svg" alt="默认头像" class="default-avatar">
+            <img src="@beaver-im/app-moment/renderer/assets/image/common/default-avatar.svg" alt="默认头像" class="default-avatar">
           </div>
         </slot>
       </div>
@@ -76,7 +76,7 @@
                 class="media-image"
               />
               <div v-else class="media-file">
-                <img src="renderModule/assets/image/moment/file.svg" alt="文件" class="file-icon">
+                <img src="@beaver-im/app-moment/renderer/assets/image/moment/file.svg" alt="文件" class="file-icon">
                 <div class="file-name">
                   {{ getFileName(file.fileKey) }}
                 </div>
@@ -96,8 +96,8 @@
 </template>
 
 <script lang="ts">
-import { CacheType } from 'commonModule/type/cache/cache'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import { CacheType } from '@beaver-im/beaver-ui'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import { defineComponent } from 'vue'
 
 export default defineComponent({

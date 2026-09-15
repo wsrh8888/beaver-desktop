@@ -39,7 +39,7 @@
 </template>
 
 <script lang="ts">
-import Logger from 'renderModule/utils/logger';
+import { Logger } from '@beaver-im/beaver/renderer';
 const logger = new Logger('index')
 
 import { computed, defineComponent, nextTick, onMounted, ref, watch } from 'vue'

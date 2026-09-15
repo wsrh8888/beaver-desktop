@@ -19,11 +19,10 @@
  * beaver-desktop-header-v2
  */
 
-import type { IDBCircle } from 'commonModule/type/database/db/circle'
+import type { IDBCircle } from '@beaver-im/app-circle/common/type/database/db/circle'
 import { eq, inArray } from 'drizzle-orm'
 import { circles } from '../../tables/circle/circles'
-import { BaseService } from 'mainModule/database/services/base'
-import Logger from 'mainModule/utils/logger';
+import { BaseService, Logger } from '@beaver-im/beaver/main'
 const logger = new Logger('circle')
 
 

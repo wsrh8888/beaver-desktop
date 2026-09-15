@@ -25,6 +25,7 @@ import { CacheType } from 'commonModule/type/cache/cache'
 import { cacheTypeToFilePath } from 'mainModule/cache/config'
 import { getCachePath } from 'mainModule/config'
 import { createDir } from '../utils/file'
+import { bindDbManager } from './db-accessor'
 import { initTables } from './tables'
 import Logger from 'mainModule/utils/logger'
 
@@ -90,4 +91,6 @@ class DBManager {
   }
 }
 
-export default new DBManager()
+const dbManager = new DBManager()
+bindDbManager(dbManager)
+export default dbManager

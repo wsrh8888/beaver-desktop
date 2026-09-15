@@ -19,14 +19,11 @@
  * beaver-desktop-header-v2
  */
 
-import type { ICircleInfoVersionItem } from 'commonModule/type/ajax/datasync'
-import { NotificationCircleCommand, NotificationModule } from 'commonModule/type/preload/notification'
-import { circleSyncApi } from '../../api/circle'
-import { datasyncGetSyncCircleInfoApi } from 'mainModule/api/datasync'
+import type { ICircleInfoVersionItem } from '@beaver-im/app-circle/common/type/ajax/datasync'
+import { CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
+import { circleSyncApi, datasyncGetSyncCircleInfoApi } from '../../api/circle'
 import dbServiceCircle from '../../database/services/circle/circle'
-import dbServiceDataSync from 'mainModule/database/services/datasync/datasync'
-import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import Logger from 'mainModule/utils/logger'
+import { Logger, dataSyncCursor, sendMainNotification } from '@beaver-im/beaver/main'
 
 const logger = new Logger('CircleSync')
 
@@ -34,7 +31,7 @@ class CircleSync {
   async checkAndSync() {
     logger.info({ text: '开始同步圈子资料' })
     try {
-      const lastVersion = await dbServiceDataSync.get({ module: 'circles' })
+      const lastVersion = await dataSyncCursor.get({ module: 'circles' })
         .then(cursor => cursor?.version || 0)
         .catch(() => 0)
 
@@ -54,7 +51,7 @@ class CircleSync {
         ? Math.max(...circleVersions.map(item => item.version || 0), lastVersion)
         : lastVersion
 
-      await dbServiceDataSync.upsert({
+      await dataSyncCursor.upsert({
         module: 'circles',
         version: maxVersion,
         updatedAt: serverResponse.result?.serverTimestamp
@@ -116,7 +113,7 @@ class CircleSync {
     }))
     await dbServiceCircle.batchUpsert(localCircles)
 
-    sendMainNotification('*', NotificationModule.DATABASE_CIRCLE, NotificationCircleCommand.CIRCLE_UPDATE, {
+    sendMainNotification('*', CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand.CIRCLE_UPDATE, {
       updatedCircles: localCircles.map(item => ({
         circleId: item.circleId,
         version: item.version,

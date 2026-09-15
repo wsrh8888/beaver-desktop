@@ -34,7 +34,7 @@
         </button>
         <!-- 刷新按钮 -->
         <button class="header-btn refresh-btn" @click="handleRefresh">
-          <img src="renderModule/assets/image/moment/refresh.svg" alt="刷新" class="header-icon" :class="{ refreshing: isRefreshing }">
+          <img src="@beaver-im/app-moment/renderer/assets/image/moment/refresh.svg" alt="刷新" class="header-icon" :class="{ refreshing: isRefreshing }">
         </button>
       </div>
 

@@ -29,7 +29,7 @@
 
     <!-- 发布按钮 -->
     <button class="publish-float-btn" @click="handlePublish">
-      <img src="renderModule/assets/image/moment/publish.svg" alt="发布" class="publish-icon">
+      <img src="@beaver-im/app-moment/renderer/assets/image/moment/publish.svg" alt="发布" class="publish-icon">
     </button>
 
     <!-- 发布弹窗 -->

@@ -92,9 +92,9 @@
 </template>
 
 <script lang="ts">
-import type { ICircleCommentItem } from 'commonModule/type/ajax/circle'
-import { CacheType } from 'commonModule/type/cache/cache'
-import BeaverImage from 'renderModule/components/ui/image/index.vue'
+import type { ICircleCommentItem } from '@beaver-im/app-circle/common/type/ajax/circle'
+import { CacheType } from '@beaver-im/beaver-ui'
+import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import { computed, defineComponent } from 'vue'
 
 export default defineComponent({
