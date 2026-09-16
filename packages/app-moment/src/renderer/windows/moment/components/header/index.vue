@@ -34,7 +34,7 @@
         </button>
         <!-- 刷新按钮 -->
         <button class="header-btn refresh-btn" @click="handleRefresh">
-          <img src="@beaver-im/app-moment/renderer/assets/image/moment/refresh.svg" alt="刷新" class="header-icon" :class="{ refreshing: isRefreshing }">
+          <img :src="refreshIcon" alt="刷新" class="header-icon" :class="{ refreshing: isRefreshing }">
         </button>
       </div>
 
@@ -57,6 +57,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, ref } from 'vue'
+import refreshIcon from '../../../../assets/image/moment/refresh.svg'
 import { useMomentNotificationStore } from '../../store/notification/notification'
 
 export default defineComponent({
@@ -93,6 +94,7 @@ export default defineComponent({
       handleRefresh,
       handleMinimize,
       handleClose,
+      refreshIcon,
     }
   },
 })

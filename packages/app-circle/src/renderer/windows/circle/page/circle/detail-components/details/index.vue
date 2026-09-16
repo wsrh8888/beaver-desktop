@@ -25,7 +25,7 @@
       <div class="circle-details-header">
         <h3>圈子详情</h3>
         <button class="circle-details-close" type="button" @click="$emit('close')">
-          <img src="@beaver-im/app-circle/renderer/assets/image/group/close.svg" alt="关闭">
+          <img :src="groupCloseIcon" alt="关闭">
         </button>
       </div>
 
@@ -41,7 +41,7 @@
               />
               <span v-else class="circle-details-avatar-text">{{ name.slice(0, 1) }}</span>
               <div v-if="canManage" class="circle-details-avatar-edit">
-                <img src="@beaver-im/app-circle/renderer/assets/image/group/edit.svg" alt="编辑">
+                <img :src="groupEditIcon" alt="编辑">
               </div>
             </div>
             <input
@@ -77,7 +77,7 @@
               type="button"
               @click="handleAddMember"
             >
-              <img src="@beaver-im/app-circle/renderer/assets/image/group/add.svg" alt="添加">
+              <img :src="groupAddIcon" alt="添加">
               添加成员
             </button>
           </div>
@@ -103,7 +103,7 @@
                   type="button"
                   @click.stop="handleRemoveMember(member.userId)"
                 >
-                  <img src="@beaver-im/app-circle/renderer/assets/image/create-group/remove.svg" alt="删除">
+                  <img :src="removeIcon" alt="删除">
                 </button>
               </div>
               <div class="circle-details-member-name">
@@ -122,7 +122,7 @@
           >
             {{ showAllMembers ? '收起成员列表' : '查看更多成员' }}
             <img
-              src="@beaver-im/app-circle/renderer/assets/image/group/expand.svg"
+              :src="groupExpandIcon"
               alt="展开"
               :style="{ transform: showAllMembers ? 'rotate(180deg)' : 'rotate(0)' }"
             >
@@ -132,7 +132,7 @@
         <div class="circle-details-settings">
           <div class="circle-details-settings-item" @click="openShare">
             <span>分享圈子</span>
-            <img src="@beaver-im/app-circle/renderer/assets/image/group/expand.svg" alt="">
+            <img :src="groupExpandIcon" alt="">
           </div>
         </div>
 
@@ -178,7 +178,7 @@
 </template>
 
 <script lang="ts">
-import type { ICircleMemberItem, IGetCircleDetailRes } from '@beaver-im/app-circle/common/type/ajax/circle'
+import type { ICircleMemberItem, IGetCircleDetailRes } from '../../../../../../../common/type/ajax/circle'
 import { CacheType } from '@beaver-im/beaver-ui'
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import {
@@ -189,7 +189,12 @@ import {
   quitCircleApi,
   removeCircleMembersApi,
   updateCircleApi,
-} from '@beaver-im/app-circle/renderer/api/circle'
+} from '../../../../../../api/circle'
+import groupCloseIcon from '../../../../../../assets/image/group/close.svg'
+import groupEditIcon from '../../../../../../assets/image/group/edit.svg'
+import groupAddIcon from '../../../../../../assets/image/group/add.svg'
+import removeIcon from '../../../../../../assets/image/create-group/remove.svg'
+import groupExpandIcon from '../../../../../../assets/image/group/expand.svg'
 import SelectFriend from '@beaver-im/beaver-biz/selectFriend/index.vue'
 import Share from '@beaver-im/beaver-biz/share/index.vue'
 import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
@@ -483,6 +488,11 @@ export default defineComponent({
     return {
       CacheType,
       CARD_TYPE_CIRCLE,
+      groupCloseIcon,
+      groupEditIcon,
+      groupAddIcon,
+      removeIcon,
+      groupExpandIcon,
       shareVisible,
       showAddMemberModal,
       showAllMembers,

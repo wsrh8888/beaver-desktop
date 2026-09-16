@@ -7,9 +7,9 @@
  * beaver-desktop-header-v2
  */
 
-import type { IPluginManifest } from '@beaver-im/beaver/common/type/plugin'
+import type { IPluginManifest } from '@beaver-im/beaver'
 
-/** 朋友圈能力包清单（供宿主插件加载器识别） */
+/** 朋友圈能力包清单 */
 export const momentManifest: IPluginManifest = {
   id: 'moment',
   name: 'Beaver Moment',

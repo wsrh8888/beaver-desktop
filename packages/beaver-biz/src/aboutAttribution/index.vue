@@ -22,7 +22,7 @@
 <template>
   <div class="about-attribution">
     <div class="about-attribution__hero">
-      <img src="commonModule/assets/img/logo/logo.png" alt="海狸 Logo" class="about-attribution__logo">
+      <img src="../assets/logo.png" alt="海狸 Logo" class="about-attribution__logo">
       <p class="about-attribution__demo-tag">
         署名示范
       </p>

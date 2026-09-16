@@ -25,7 +25,7 @@ import { CacheType } from 'commonModule/type/cache/cache'
 import { cacheTypeToFilePath } from 'mainModule/cache/config'
 import { getCachePath } from 'mainModule/config'
 import { createDir } from '../utils/file'
-import { bindDbManager } from './db-accessor'
+import { bindDbManager } from './bind'
 import { initTables } from './tables'
 import Logger from 'mainModule/utils/logger'
 

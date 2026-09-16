@@ -1,0 +1,29 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": false,
+    "skipLibCheck": true,
+    "jsx": "preserve",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@beaver-im/beaver": ["./src/index.ts"],
+      "@beaver-im/beaver/*": ["./src/*"]
+    },
+    "noEmit": false,
+    "declaration": true,
+    "emitDeclarationOnly": true,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": [
+    "src/index.ts",
+    "src/main/index.ts",
+    "src/common/**/*.ts"
+  ],
+  "exclude": [
+    "src/renderer/**",
+    "node_modules"
+  ]
+}

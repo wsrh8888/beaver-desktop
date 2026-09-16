@@ -60,7 +60,7 @@
               <div class="friend-checkbox">
                 <img
                   v-if="isSelected(friend.userId)"
-                  src="renderModule/assets/image/create-group/check.svg"
+                  src="../assets/check.svg"
                   alt="选中"
                 >
               </div>
@@ -82,7 +82,7 @@
               >
                 <span>{{ friend.nickName }}</span>
                 <button class="remove-friend" @click="removeFriend(friend.userId)">
-                  <img src="renderModule/assets/image/create-group/remove.svg" alt="删除">
+                  <img src="../assets/remove.svg" alt="删除">
                 </button>
               </div>
               <div v-if="selectedFriends.length === 0" class="empty-tip">
@@ -111,12 +111,12 @@
 </template>
 
 <script lang="ts">
-import Logger from 'renderModule/utils/logger';
+import { Logger } from '@beaver-im/beaver/renderer'
 const logger = new Logger('index')
 
-import type { IFriendInfo } from 'commonModule/type/ajax/friend'
-import { CacheType } from 'commonModule/type/cache/cache'
-import searchIcon from 'renderModule/assets/image/create-group/search.svg'
+import type { IFriendPickItem } from '../types'
+import { CacheType } from '@beaver-im/beaver-ui/cache'
+import searchIcon from '../assets/search.svg'
 import BeaverButton from '@beaver-im/beaver-ui/button/index.vue'
 import BeaverDialog from '@beaver-im/beaver-ui/dialog/dialog.vue'
 import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
@@ -149,8 +149,8 @@ export default defineComponent({
   setup(props, { emit }) {
     logger.info({ text: 'setup 开始' })
     const searchKeyword = ref('')
-    const selectedFriends = ref<IFriendInfo[]>([])
-    const friendList = ref<IFriendInfo[]>([])
+    const selectedFriends = ref<IFriendPickItem[]>([])
+    const friendList = ref<IFriendPickItem[]>([])
 
     const visible = computed({
       get: () => props.modelValue,
@@ -174,7 +174,7 @@ export default defineComponent({
       return selectedFriends.value.some(friend => friend.userId === userId)
     }
 
-    const toggleFriendSelection = (friend: IFriendInfo) => {
+    const toggleFriendSelection = (friend: IFriendPickItem) => {
     logger.info({ text: 'toggleFriendSelection 开始' })
       const index = selectedFriends.value.findIndex(f => f.userId === friend.userId)
       if (index > -1)

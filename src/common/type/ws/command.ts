@@ -38,7 +38,7 @@ export enum WsCommand {
    */
   GROUP_OPERATION = 'GROUP_OPERATION',
   /**
-   * @description: 圈子操作类
+   * @description: 圈子操作类（协议值；由 app-circle 经 WS registry 处理）
    */
   CIRCLE_OPERATION = 'CIRCLE_OPERATION',
   /**

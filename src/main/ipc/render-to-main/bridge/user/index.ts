@@ -20,7 +20,7 @@
  */
 
 import type { IBeaverBridgeResult } from 'commonModule/type/preload/bridge'
-import type { IBridgeSession } from 'mainModule/bridge/registry'
+import type { IBridgeSession } from '@beaver-im/beaver/main'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger';
 const logger = new Logger('index')

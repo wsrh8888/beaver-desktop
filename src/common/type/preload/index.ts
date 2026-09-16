@@ -33,7 +33,7 @@ import type { IWebSocketModule } from './websocket'
 import type { IWindowModule } from './window'
 import type { ICallModule } from './call'
 import type { IKeyboardModule } from './keyboard'
-import type { ISettingsModule } from './settings'
+import type { ISettingsModule } from '@beaver-im/app-settings/common/type/preload/settings'
 import type { IWorkbenchModule } from './workbench'
 import type { IFsModule } from './fs'
 

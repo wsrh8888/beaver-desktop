@@ -14,9 +14,10 @@
     "build": "vite build"
   },
   "dependencies": {
+    "@beaver-im/beaver": "file:../beaver",
     "@beaver-im/beaver-ui": "file:../beaver-ui"
   },
   "peerDependencies": {
-    "vue": "^3.0.0"
+    "vue": "^3.5.0"
   }
 }

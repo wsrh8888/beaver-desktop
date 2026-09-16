@@ -1,0 +1,27 @@
+{
+  "name": "@beaver-im/app-audio",
+  "version": "2.1.2",
+  "private": true,
+  "type": "module",
+  "description": "beaver 音频播放器 app：main + audio.html。平台能力走 @beaver-im/beaver",
+  "main": "./dist/main.js",
+  "exports": {
+    "./main": "./dist/main.js",
+    "./audio.html": "./dist/audio.html"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite build --mode renderer --watch",
+    "build": "vite build --mode main && vite build --mode renderer"
+  },
+  "dependencies": {
+    "@beaver-im/beaver": "file:../beaver"
+  },
+  "peerDependencies": {
+    "electron": ">=28",
+    "vue": "^3.5.0",
+    "pinia": "^4.0.0"
+  }
+}

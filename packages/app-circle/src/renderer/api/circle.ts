@@ -60,7 +60,7 @@ import type {
   IUpdateCircleRes,
   IResolveCircleInviteReq,
   IResolveCircleInviteRes,
-} from '@beaver-im/app-circle/common/type/ajax/circle'
+} from '../../common/type/ajax/circle'
 import { ajax, getBaseUrl } from '@beaver-im/beaver/renderer'
 
 export const getMyCircleListApi = (data: IGetMyCircleListReq) => {

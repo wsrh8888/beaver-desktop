@@ -19,8 +19,8 @@
  * beaver-desktop-header-v2
  */
 
-import type { ICircleSyncReq, ICircleSyncRes } from '@beaver-im/app-circle/common/type/ajax/circle'
-import type { IGetSyncCircleInfoReq, IGetSyncCircleInfoRes } from '@beaver-im/app-circle/common/type/ajax/datasync'
+import type { ICircleSyncReq, ICircleSyncRes } from '../../common/type/ajax/circle'
+import type { IGetSyncCircleInfoReq, IGetSyncCircleInfoRes } from '../../common/type/ajax/datasync'
 import { ajax, getBaseUrl } from '@beaver-im/beaver/main'
 
 export const circleSyncApi = (data: ICircleSyncReq) => {

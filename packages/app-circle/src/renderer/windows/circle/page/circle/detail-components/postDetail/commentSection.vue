@@ -92,7 +92,7 @@
 </template>
 
 <script lang="ts">
-import type { ICircleCommentItem } from '@beaver-im/app-circle/common/type/ajax/circle'
+import type { ICircleCommentItem } from '../../../../../../../common/type/ajax/circle'
 import { CacheType } from '@beaver-im/beaver-ui'
 import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import { computed, defineComponent } from 'vue'

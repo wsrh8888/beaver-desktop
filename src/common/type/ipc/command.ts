@@ -200,24 +200,6 @@ export enum KeyboardCommand {
 }
 
 /**
- * @description: 用户设置（主进程 store 读写）
- */
-export enum SettingsCommand {
-  /**
-   * @description: 初始化用户设置（登录后拉取云端）
-   */
-  SETTINGS_INIT = 'settings:init',
-  /**
-   * @description: 获取用户设置
-   */
-  SETTINGS_GET = 'settings:get',
-  /**
-   * @description: 保存用户设置
-   */
-  SETTINGS_UPDATE = 'settings:update',
-}
-
-/**
  * @description: 认证相关的 Command
  */
 export enum AuthCommand {
@@ -263,7 +245,6 @@ export enum DatabaseCommand {
   FRIEND = 'database:friend',
   CHAT = 'database:chat',
   GROUP = 'database:group',
-  CIRCLE = 'database:circle',
   EMOJI = 'database:emoji',
   NOTIFICATION = 'database:notification',
 }
@@ -318,18 +299,6 @@ export enum NotificationCommand {
    * @description: 删除托盘菜单项
    */
   DeleteTrayItem = 'notification:deleteTrayItem',
-}
-
-/**
- * @description: 工作台内嵌 WebContentsView 相关 Command
- */
-export enum WorkbenchCommand {
-  EMBED_OPEN = 'workbench:embedOpen',
-  EMBED_HIDE_ALL = 'workbench:embedHideAll',
-  EMBED_SET_BOUNDS = 'workbench:embedSetBounds',
-  EMBED_RELOAD = 'workbench:embedReload',
-  EMBED_CLOSE = 'workbench:embedClose',
-  OPEN_EXTERNAL = 'workbench:openExternal',
 }
 
 /**

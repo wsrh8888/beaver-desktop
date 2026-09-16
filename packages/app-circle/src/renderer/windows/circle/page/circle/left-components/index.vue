@@ -23,7 +23,7 @@
   <div class="circle-sidebar">
     <div class="circle-sidebar-top">
       <button class="circle-sidebar-create" type="button" @click="$emit('create')">
-        <img src="@beaver-im/app-circle/renderer/assets/image/common/add.svg" alt="创建" class="circle-sidebar-create-icon">
+        <img :src="addIcon" alt="创建" class="circle-sidebar-create-icon">
         创建圈子
       </button>
     </div>
@@ -63,9 +63,10 @@
 </template>
 
 <script lang="ts">
-import type { ICircleListItem } from '@beaver-im/app-circle/common/type/ajax/circle'
+import type { ICircleListItem } from '../../../../../../common/type/ajax/circle'
 import { defineComponent, onMounted, ref } from 'vue'
-import { getMyCircleListApi } from '@beaver-im/app-circle/renderer/api/circle'
+import { getMyCircleListApi } from '../../../../../api/circle'
+import addIcon from '../../../../../assets/image/common/add.svg'
 import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import Message from '@beaver-im/beaver-ui/message'
 import { Logger } from '@beaver-im/beaver/renderer'
@@ -121,6 +122,7 @@ export default defineComponent({
     return {
       list,
       loading,
+      addIcon,
       loadList,
     }
   },

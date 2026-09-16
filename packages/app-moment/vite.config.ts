@@ -7,54 +7,130 @@
  * beaver-desktop-header-v2
  */
 
+/**
+ * @beaver-im/app-moment 发版构建（两层）：
+ * 1. main     — 主进程：activate / application / manifest（对等依赖 external）
+ * 2. renderer — 渲染进程：moment 窗口挂载入口 + moment.html 壳（自包含，loadFile 可用）
+ *
+ * 产物：
+ *   dist/main.js
+ *   dist/renderer.js (+renderer.css / assets)
+ *   dist/moment.html
+ */
 import path from 'node:path'
-import { defineConfig } from 'vite'
+import fs from 'node:fs'
+import { transformSync } from 'esbuild'
+import { defineConfig, type Plugin, type UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import svgLoader from 'vite-svg-loader'
 
-/**
- * @beaver-im/app-moment 独立打包配置
- *
- * 两个 library 入口，各自聚合对外暴露的内容：
- *   - main     主进程（application）
- *   - renderer 渲染进程（对外组件）
- *
- * 宿主内核模块（mainModule/* / renderModule/* / commonModule/* / preloadModule/*）
- * 标记为 external：产物里保留 import 串，运行时由宿主 vite 的 alias 解析。
- * electron / vue / pinia 同理 external，由宿主运行时提供。
- */
-export default defineConfig({
-  plugins: [
-    vue(),
-    svgLoader({ defaultImport: 'url' }),
-  ],
-  build: {
-    lib: {
-      entry: {
-        main: path.resolve(__dirname, 'src/main/index.ts'),
-        renderer: path.resolve(__dirname, 'src/renderer/index.ts'),
-      },
-      formats: ['es'],
-      fileName: (_format, entryName) => `${entryName}.js`,
-    },
-    rollupOptions: {
-      external: [
-        'electron',
-        'vue',
-        'pinia',
-        'node:path',
-        /^mainModule\//,
-        /^renderModule\//,
-        /^commonModule\//,
-        /^preloadModule\//,
-        /^@beaver\//,
-        /^@beaver-im\//,
-      ],
-      output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: 'chunks/[name]-[hash].js',
-        assetFileNames: 'assets/[name][extname]',
-      },
-    },
+const root = __dirname
+
+const sharedResolve = {
+  alias: {
+    '@beaver-im/beaver': path.resolve(root, '../beaver/src'),
+    '@beaver-im/beaver-ui': path.resolve(root, '../beaver-ui/src'),
+    '@beaver-im/beaver-biz': path.resolve(root, '../beaver-biz/src'),
+    commonModule: path.resolve(root, '../../src/common'),
   },
+}
+
+/** lib 保住 named export；写盘后再用 esbuild 压成单行 */
+function minifyMainDist(): Plugin {
+  return {
+    name: 'minify-main-dist',
+    apply: 'build',
+    enforce: 'post',
+    writeBundle(_options, bundle) {
+      for (const fileName of Object.keys(bundle)) {
+        if (!fileName.endsWith('.js'))
+          continue
+        const filePath = path.resolve(root, 'dist', fileName)
+        if (!fs.existsSync(filePath))
+          continue
+        const code = fs.readFileSync(filePath, 'utf8')
+        const result = transformSync(code, {
+          minify: true,
+          legalComments: 'none',
+        })
+        fs.writeFileSync(filePath, result.code)
+      }
+    },
+  }
+}
+
+function mainConfig(): UserConfig {
+  return {
+    plugins: [minifyMainDist()],
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      // lib 保住 activate/application/manifest；单行压缩交给 writeBundle
+      minify: false,
+      sourcemap: false,
+      lib: {
+        entry: {
+          main: path.resolve(root, 'src/main/index.ts'),
+        },
+        formats: ['es'],
+        fileName: () => 'main.js',
+      },
+      rollupOptions: {
+        external: [
+          'electron',
+          'node:path',
+          'node:fs',
+          'node:url',
+          'node:module',
+          /^@beaver-im\//,
+        ],
+        output: {
+          entryFileNames: 'main.js',
+        },
+      },
+    },
+  }
+}
+
+function rendererConfig(): UserConfig {
+  return {
+    root,
+    base: './',
+    plugins: [
+      vue(),
+      svgLoader({ defaultImport: 'url' }),
+    ],
+    resolve: sharedResolve,
+    esbuild: {
+      legalComments: 'none',
+    },
+    build: {
+      outDir: 'dist',
+      emptyOutDir: false,
+      minify: 'esbuild',
+      cssMinify: true,
+      sourcemap: false,
+      rollupOptions: {
+        input: {
+          moment: path.resolve(root, 'moment.html'),
+        },
+        output: {
+          entryFileNames: 'renderer.js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          compact: true,
+          assetFileNames: (info) => {
+            if (info.name && info.name.endsWith('.css'))
+              return 'renderer.css'
+            return 'assets/[name]-[hash][extname]'
+          },
+        },
+      },
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => {
+  if (mode === 'renderer')
+    return rendererConfig()
+  return mainConfig()
 })

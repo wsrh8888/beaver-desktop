@@ -49,4 +49,6 @@ class CircleMessageRouter {
   }
 }
 
-export default new CircleMessageRouter()
+const circleMessageRouter = new CircleMessageRouter()
+
+export default circleMessageRouter

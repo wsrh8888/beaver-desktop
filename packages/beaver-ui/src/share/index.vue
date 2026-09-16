@@ -119,11 +119,12 @@
 </template>
 
 <script lang="ts">
-import { CardType } from 'commonModule/type/ajax/chat'
 import { computed, defineComponent, type PropType, ref, watch } from 'vue'
 import BeaverButton from '../button/index.vue'
 import BeaverDialog from '../dialog/dialog.vue'
 import BeaverImage from '../image/index.vue'
+
+const CardType = { USER: 1, GROUP: 2, CIRCLE: 3 } as const
 
 type ShareTab = 'card' | 'link' | 'qr'
 

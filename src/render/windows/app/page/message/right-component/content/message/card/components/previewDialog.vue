@@ -63,7 +63,7 @@
 <script lang="ts">
 import { CacheType } from 'commonModule/type/cache/cache'
 import { CardType } from 'commonModule/type/ajax/chat'
-import { getCircleDetailApi, joinCircleApi, resolveCircleInviteApi } from 'renderModule/api/circle'
+import { getCircleDetailApi, joinCircleApi, resolveCircleInviteApi } from 'renderModule/api/circle-card'
 import { getGroupInfoApi, joinGroupApi, resolveGroupInviteApi } from 'renderModule/api/group'
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
 import BeaverDialog from 'renderModule/components/ui/dialog/dialog.vue'
@@ -75,7 +75,6 @@ import { useFriendStore } from 'renderModule/windows/app/pinia/friend/friend'
 import { useFriendViewStore } from 'renderModule/windows/app/pinia/view/friend'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message'
-import { useCircleStore } from '@beaver-im/app-circle/renderer'
 import { computed, defineComponent, onMounted, ref } from 'vue'
 import Logger from 'renderModule/utils/logger'
 import { useRouter } from 'vue-router'
@@ -116,7 +115,6 @@ export default defineComponent({
     const friendViewStore = useFriendViewStore()
     const groupStore = useGroupStore()
     const messageViewStore = useMessageViewStore()
-    const circleStore = useCircleStore()
 
     const joining = ref(false)
     const name = ref('')
@@ -232,19 +230,13 @@ export default defineComponent({
         else if (props.cardType === CardType.CIRCLE) {
           resolvedId.value = props.id
           conversationId.value = props.id.startsWith('circle_') ? props.id : `circle_${props.id}`
-          const cached = circleStore.getCircleById(conversationId.value)
-          if (cached) {
-            name.value = cached.name || '圈子'
-            avatar.value = cached.avatar || ''
-            alreadyJoined.value = true
-          }
           const res = await getCircleDetailApi({ circleId: props.id })
           if (res.code === 0 && res.result) {
             name.value = res.result.name || name.value || '圈子'
             avatar.value = res.result.avatar || avatar.value
             desc.value = res.result.description
               || `${res.result.memberCount || 0} 位成员`
-            alreadyJoined.value = (res.result.role || 0) > 0 || !!circleStore.getCircleById(conversationId.value)
+            alreadyJoined.value = (res.result.role || 0) > 0
           }
         }
       }
@@ -289,7 +281,7 @@ export default defineComponent({
       if (!id)
         return
       const cid = id.startsWith('circle_') ? id : `circle_${id}`
-      await circleStore.init()
+      await conversationStore.initConversationById(cid)
       await messageViewStore.setCurrentChat(cid)
       router.push('/message')
       handleClose()
@@ -357,7 +349,6 @@ export default defineComponent({
               const id = res.result?.circleId || circleId || resolvedId.value
               if (id)
                 resolvedId.value = id
-              await circleStore.init()
               if (id)
                 await conversationStore.initConversationById(`circle_${id}`)
               openCircle()

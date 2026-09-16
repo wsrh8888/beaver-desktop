@@ -97,13 +97,6 @@ export interface IGroupInfoVersionItem {
   version: number // 群资料版本
 }
 
-/** 圈子 datasync 类型归 app-circle，宿主 re-export 兼容旧路径 */
-export type {
-  IGetSyncCircleInfoReq,
-  IGetSyncCircleInfoRes,
-  ICircleInfoVersionItem,
-} from '@beaver-im/app-circle/common/type/ajax/datasync'
-
 // 获取群成员同步请求
 export interface IGetSyncGroupMembersReq {
   since?: number // 从这个版本号之后开始同步，不传则同步所有

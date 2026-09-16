@@ -48,11 +48,11 @@
 </template>
 
 <script lang="ts">
-import Logger from 'renderModule/utils/logger';
+import { Logger } from '@beaver-im/beaver/renderer'
 const logger = new Logger('index')
 
-import type { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { CardType, MessageType } from 'commonModule/type/ajax/chat'
+import type { IShareMessagePayload } from '../types'
+import { CardType, MessageType } from '../types'
 import { computed, defineComponent, type PropType, ref } from 'vue'
 import SelectConversation from '../selectConversation/index.vue'
 import ShareUi from '@beaver-im/beaver-ui/share/index.vue'
@@ -109,7 +109,7 @@ export default defineComponent({
   setup(props, { emit }) {
     logger.info({ text: 'setup 开始' })
     const selectVisible = ref(false)
-    const pendingMsg = ref<IMessageMsg | null>(null)
+    const pendingMsg = ref<IShareMessagePayload | null>(null)
 
     const visible = computed({
       get: () => props.modelValue,
@@ -125,7 +125,7 @@ export default defineComponent({
       return `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${data}`
     })
 
-    const cardMsg = computed<IMessageMsg>(() => ({
+    const cardMsg = computed<IShareMessagePayload>(() => ({
       type: MessageType.CARD,
       cardMsg: {
         cardType: props.cardType,
@@ -134,7 +134,7 @@ export default defineComponent({
       },
     }))
 
-    const linkMsg = computed<IMessageMsg>(() => ({
+    const linkMsg = computed<IShareMessagePayload>(() => ({
       type: MessageType.TEXT,
       textMsg: {
         content: props.inviteUrl,
@@ -157,7 +157,7 @@ export default defineComponent({
       emit('update:modelValue', false)
     }
 
-    const openSelect = (msg: IMessageMsg) => {
+    const openSelect = (msg: IShareMessagePayload) => {
     logger.info({ text: 'openSelect 开始' })
       pendingMsg.value = msg
       selectVisible.value = true

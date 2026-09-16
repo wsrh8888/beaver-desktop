@@ -7,7 +7,7 @@
  * beaver-desktop-header-v2
  */
 
-/** 与宿主 NotificationModule.DATABASE_CIRCLE 同值 */
+/** 圈子通知通道（主进程 sendMainNotification / 宿主 NotificationModule.DATABASE_CIRCLE） */
 export const CIRCLE_NOTIFICATION_MODULE = 'database:circle' as const
 
 export type CircleNotificationModule = typeof CIRCLE_NOTIFICATION_MODULE

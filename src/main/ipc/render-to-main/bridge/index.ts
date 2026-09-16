@@ -21,7 +21,7 @@
 
 import type { IBeaverBridgeResult } from 'commonModule/type/preload/bridge'
 import { BridgeCommand } from 'commonModule/type/ipc/command'
-import bridgeRegistry from 'mainModule/bridge/registry'
+import { getBridgeSession } from '@beaver-im/beaver/main'
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('BridgeHandler')
@@ -39,7 +39,7 @@ class BridgeHandler {
       return { code: 1, msg: `unknown command: ${command}`, result: null }
     }
 
-    const session = bridgeRegistry.get(event.sender.id)
+    const session = getBridgeSession(event.sender.id)
     if (!session || (session.win && session.win.isDestroyed())) {
       return { code: 1, msg: 'bridge context not found', result: null }
     }

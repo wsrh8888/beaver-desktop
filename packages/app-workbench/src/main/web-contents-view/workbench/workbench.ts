@@ -1,0 +1,159 @@
+/**
+ * Copyright (c) 2024-2026 Beaver IM Team
+ * SPDX-License-Identifier: MIT
+ * Project: beaver-desktop
+ * https://github.com/wsrh8888/beaver-desktop
+ *
+ * 中文：
+ * 本文件为海狸 IM（Beaver IM）开源项目源代码。
+ * 版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
+ * 禁止删除、篡改或替换本文件头部版权与许可声明。
+ * 使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
+ *
+ * English:
+ * This file is part of the Beaver IM open-source project.
+ * Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
+ * Do not remove, alter, or replace this copyright and license header.
+ * Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
+ *
+ * beaver-desktop-header-v2
+ */
+
+import type { BrowserWindow } from 'electron'
+import type { EmbedViewLoadState, IEmbedViewBounds } from '../../../common/type/main/embed-view'
+import { WORKBENCH_EMBED_STATE_CHANNEL } from '../../../common/type/main/web-contents-view/workbench'
+import path from 'node:path'
+import { WebContentsView } from 'electron'
+import { Logger, getDirname, registerBridgeSession, unregisterBridgeSession } from '@beaver-im/beaver/main'
+
+const logger = new Logger('workbench')
+
+interface IWorkbenchViewOwner {
+  win: BrowserWindow
+  tabId: string
+  view: WebContentsView
+}
+
+/** 工作台内嵌 WebContentsView，只管理 tabId → 实例，显示哪个 Tab 由渲染层决定 */
+class WorkbenchWebContentsView {
+  private views = new Map<string, IWorkbenchViewOwner>()
+
+  open(win: BrowserWindow, tabId: string, url: string, bounds: IEmbedViewBounds) {
+    logger.info({ text: 'open 开始' })
+    if (this.views.has(tabId))
+      this.show(win, tabId, bounds)
+    else
+      this.create(win, tabId, url, bounds)
+  }
+
+  show(win: BrowserWindow, tabId: string, bounds: IEmbedViewBounds) {
+    logger.info({ text: 'show 开始' })
+    this.detachAll(win)
+    const owner = this.views.get(tabId)!
+    win.contentView.addChildView(owner.view)
+    owner.view.setBounds(this.toBounds(bounds))
+  }
+
+  hideAll(win: BrowserWindow) {
+    logger.info({ text: 'hideAll 开始' })
+    this.detachAll(win)
+  }
+
+  setBounds(_win: BrowserWindow, tabId: string, bounds: IEmbedViewBounds) {
+    logger.info({ text: 'setBounds 开始' })
+    this.views.get(tabId)?.view.setBounds(this.toBounds(bounds))
+  }
+
+  reload(_win: BrowserWindow, tabId: string) {
+    logger.info({ text: 'reload 开始' })
+    this.views.get(tabId)?.view.webContents.reload()
+  }
+
+  closeTab(win: BrowserWindow, tabId: string) {
+    logger.info({ text: 'closeTab 开始' })
+    const owner = this.views.get(tabId)
+    if (!owner)
+      return
+
+    this.removeFromWindow(win, owner.view)
+    unregisterBridgeSession(owner.view.webContents.id)
+    owner.view.webContents.close()
+    this.views.delete(tabId)
+  }
+
+  detachWindow(win: BrowserWindow) {
+    logger.info({ text: 'detachWindow 开始' })
+    ;[...this.views.keys()].forEach(tabId => this.closeTab(win, tabId))
+  }
+
+  private create(win: BrowserWindow, tabId: string, url: string, bounds: IEmbedViewBounds) {
+    logger.info({ text: 'create 开始' })
+    const view = new WebContentsView({
+      webPreferences: {
+        preload: path.join(getDirname(), './preload/bridge.mjs'),
+        nodeIntegration: false,
+        contextIsolation: true,
+        sandbox: true,
+      },
+    })
+    view.setBackgroundColor('#FFFFFF')
+    this.views.set(tabId, { win, tabId, view })
+    registerBridgeSession(view.webContents.id, {
+      host: 'workbench',
+      tabId,
+      win,
+    })
+    this.bindLoadEvents(win, tabId, view)
+    // 拦截 target=_blank / window.open，避免额外弹出 BrowserWindow（百度等站常见）
+    view.webContents.setWindowOpenHandler(({ url: nextUrl }) => {
+      if (nextUrl)
+        view.webContents.loadURL(nextUrl)
+      return { action: 'deny' }
+    })
+    view.webContents.loadURL(url)
+    this.show(win, tabId, bounds)
+  }
+
+  private detachAll(win: BrowserWindow) {
+    logger.info({ text: 'detachAll 开始' })
+    this.views.forEach(owner => this.removeFromWindow(win, owner.view))
+  }
+
+  private removeFromWindow(win: BrowserWindow, view: WebContentsView) {
+    logger.info({ text: 'removeFromWindow 开始' })
+    if (win.isDestroyed())
+      return
+    if (win.contentView.children.includes(view))
+      win.contentView.removeChildView(view)
+  }
+
+  private toBounds(bounds: IEmbedViewBounds) {
+    logger.info({ text: 'toBounds 开始' })
+    return {
+      x: Math.round(bounds.x),
+      y: Math.round(bounds.y),
+      width: Math.round(bounds.width),
+      height: Math.round(bounds.height),
+    }
+  }
+
+  private sendLoadState(win: BrowserWindow, tabId: string, state: EmbedViewLoadState) {
+    logger.info({ text: 'sendLoadState 开始' })
+    if (win.isDestroyed())
+      return
+    win.webContents.send(WORKBENCH_EMBED_STATE_CHANNEL, { tabId, state })
+  }
+
+  private bindLoadEvents(win: BrowserWindow, tabId: string, view: WebContentsView) {
+    logger.info({ text: 'bindLoadEvents 开始' })
+    const { webContents } = view
+    webContents.on('did-start-loading', () => this.sendLoadState(win, tabId, 'loading'))
+    webContents.on('did-stop-loading', () => this.sendLoadState(win, tabId, 'loaded'))
+    webContents.on('did-fail-load', (_event, errorCode) => {
+      if (errorCode !== -3)
+        this.sendLoadState(win, tabId, 'failed')
+    })
+  }
+}
+
+export default new WorkbenchWebContentsView()

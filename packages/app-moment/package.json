@@ -3,21 +3,27 @@
   "version": "2.1.2",
   "private": true,
   "type": "module",
-  "description": "beaver 朋友圈 app：自带主进程(窗口 application) + 渲染进程(moment 窗口)，通过宿主聚合；主进程/渲染平台能力走 @beaver-im/beaver",
-  "main": "./src/index.ts",
+  "description": "beaver 朋友圈 app：main + moment.html。平台能力走 @beaver-im/beaver",
+  "main": "./dist/main.js",
   "exports": {
-    ".": "./src/index.ts",
-    "./main": "./src/main/index.ts",
-    "./renderer": "./src/renderer/index.ts",
-    "./renderer/*": "./src/renderer/*",
-    "./moment-entry": "./src/renderer/windows/moment/main.ts"
+    "./main": "./dist/main.js",
+    "./moment.html": "./dist/moment.html"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "dev": "vite build --mode renderer --watch",
+    "build": "vite build --mode main && vite build --mode renderer"
   },
   "dependencies": {
     "@beaver-im/beaver": "file:../beaver",
-    "@beaver-im/beaver-ui": "file:../beaver-ui"
+    "@beaver-im/beaver-ui": "file:../beaver-ui",
+    "@beaver-im/beaver-biz": "file:../beaver-biz"
+  },
+  "peerDependencies": {
+    "electron": ">=28",
+    "vue": "^3.5.0",
+    "pinia": "^4.0.0"
   }
 }

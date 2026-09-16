@@ -19,7 +19,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { IDBCircle } from '@beaver-im/app-circle/common/type/database/db/circle'
+import type { IDBCircle } from '../../../../common/type/database/db/circle'
 import { eq, inArray } from 'drizzle-orm'
 import { circles } from '../../tables/circle/circles'
 import { BaseService, Logger } from '@beaver-im/beaver/main'

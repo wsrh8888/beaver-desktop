@@ -1,0 +1,133 @@
+/**
+ * Copyright (c) 2024-2026 Beaver IM Team
+ * SPDX-License-Identifier: MIT
+ * Project: beaver-desktop
+ * https://github.com/wsrh8888/beaver-desktop
+ *
+ * beaver-desktop-header-v2
+ */
+
+/**
+ * @beaver-im/app-video 发版构建（两层）：
+ * 1. main     — 主进程：activate / application / manifest（对等依赖 external）
+ * 2. renderer — 渲染进程：video 窗口挂载入口 + video.html 壳（自包含，loadFile 可用）
+ *
+ * 产物：
+ *   dist/main.js
+ *   dist/renderer.js (+renderer.css / assets)
+ *   dist/video.html
+ */
+import path from 'node:path'
+import fs from 'node:fs'
+import { transformSync } from 'esbuild'
+import { defineConfig, type Plugin, type UserConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import svgLoader from 'vite-svg-loader'
+
+const root = __dirname
+
+const sharedResolve = {
+  alias: {
+    '@beaver-im/beaver': path.resolve(root, '../beaver/src'),
+  },
+}
+
+/** lib 保住 named export；写盘后再用 esbuild 压成单行 */
+function minifyMainDist(): Plugin {
+  return {
+    name: 'minify-main-dist',
+    apply: 'build',
+    enforce: 'post',
+    writeBundle(_options, bundle) {
+      for (const fileName of Object.keys(bundle)) {
+        if (!fileName.endsWith('.js'))
+          continue
+        const filePath = path.resolve(root, 'dist', fileName)
+        if (!fs.existsSync(filePath))
+          continue
+        const code = fs.readFileSync(filePath, 'utf8')
+        const result = transformSync(code, {
+          minify: true,
+          legalComments: 'none',
+        })
+        fs.writeFileSync(filePath, result.code)
+      }
+    },
+  }
+}
+
+function mainConfig(): UserConfig {
+  return {
+    plugins: [minifyMainDist()],
+    build: {
+      outDir: 'dist',
+      emptyOutDir: true,
+      // lib 保住 activate/application/manifest；单行压缩交给 writeBundle
+      minify: false,
+      sourcemap: false,
+      lib: {
+        entry: {
+          main: path.resolve(root, 'src/main/index.ts'),
+        },
+        formats: ['es'],
+        fileName: () => 'main.js',
+      },
+      rollupOptions: {
+        external: [
+          'electron',
+          'node:path',
+          'node:fs',
+          'node:url',
+          'node:module',
+          /^@beaver-im\//,
+        ],
+        output: {
+          entryFileNames: 'main.js',
+        },
+      },
+    },
+  }
+}
+
+function rendererConfig(): UserConfig {
+  return {
+    root,
+    base: './',
+    plugins: [
+      vue(),
+      svgLoader({ defaultImport: 'url' }),
+    ],
+    resolve: sharedResolve,
+    esbuild: {
+      legalComments: 'none',
+    },
+    build: {
+      outDir: 'dist',
+      emptyOutDir: false,
+      minify: 'esbuild',
+      cssMinify: true,
+      sourcemap: false,
+      rollupOptions: {
+        input: {
+          video: path.resolve(root, 'video.html'),
+        },
+        output: {
+          entryFileNames: 'renderer.js',
+          chunkFileNames: 'assets/[name]-[hash].js',
+          compact: true,
+          assetFileNames: (info) => {
+            if (info.name && info.name.endsWith('.css'))
+              return 'renderer.css'
+            return 'assets/[name]-[hash][extname]'
+          },
+        },
+      },
+    },
+  }
+}
+
+export default defineConfig(({ mode }) => {
+  if (mode === 'renderer')
+    return rendererConfig()
+  return mainConfig()
+})

@@ -1,0 +1,29 @@
+{
+  "name": "@beaver-im/app-search",
+  "version": "2.1.2",
+  "private": true,
+  "type": "module",
+  "description": "beaver 搜索/验证 app：search + verify 双窗口 + 跨窗口 SEARCH_TO_VERIFY 契约。平台能力走 @beaver-im/beaver，UI 走 @beaver-im/beaver-ui",
+  "main": "./dist/main.js",
+  "exports": {
+    "./main": "./dist/main.js",
+    "./search.html": "./dist/search.html",
+    "./verify.html": "./dist/verify.html"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite build --mode renderer --watch",
+    "build": "vite build --mode main && vite build --mode renderer"
+  },
+  "dependencies": {
+    "@beaver-im/beaver": "file:../beaver",
+    "@beaver-im/beaver-ui": "file:../beaver-ui"
+  },
+  "peerDependencies": {
+    "electron": ">=28",
+    "vue": "^3.5.0",
+    "pinia": "^4.0.0"
+  }
+}

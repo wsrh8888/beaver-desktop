@@ -32,14 +32,13 @@ import {
   NetworkCommand,
   NotificationCommand,
   KeyboardCommand,
-  SettingsCommand,
   StorageCommand,
   UpdateCommand,
   WebSocketCommand,
   WinHook,
-  WorkbenchCommand,
 } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
+import { getDatabaseIpcHandler, getIpcHandler } from '@beaver-im/beaver/main'
 import ipcMainManager from 'mainModule/utils/ipc/ipc-main-manager'
 import Logger from 'mainModule/utils/logger'
 
@@ -59,10 +58,8 @@ import notificationHandler from './notification'
 import storageHandler from './storage'
 import updaterHandler from './updater'
 import webSocketHandler from './websocket'
-import settingsHandler from './settings'
 import keyboardHandler from './keyboard'
 import windowHandler from './window'
-import workbenchHandler from './workbench'
 import fsHandler from './fs'
 
 const loggerName = 'render-to-main-msg'
@@ -72,7 +69,6 @@ const commandGroups = [
   { enum: ClipboardCommand, handler: clipboardHandler },
   { enum: StorageCommand, handler: storageHandler },
   { enum: KeyboardCommand, handler: keyboardHandler },
-  { enum: SettingsCommand, handler: settingsHandler },
   { enum: ConfigCommand, handler: configHandler },
   { enum: UpdateCommand, handler: updaterHandler },
   { enum: NotificationCommand, handler: notificationHandler },
@@ -83,7 +79,6 @@ const commandGroups = [
   { enum: NetworkCommand, handler: networkHandler },
   { enum: WebSocketCommand, handler: webSocketHandler },
   { enum: LoggerCommand, handler: loggerHandler },
-  { enum: WorkbenchCommand, handler: workbenchHandler },
   { enum: BridgeCommand, handler: bridgeHandler },
   { enum: FsCommand, handler: fsHandler },
 ]
@@ -142,6 +137,15 @@ class IpcManager {
     data: any,
   ) {
     try {
+      // 能力包自注册的数据库通道（不要求写入宿主 DatabaseCommand 枚举）
+      if (getDatabaseIpcHandler(command))
+        return databaseHandler.handle(event as Electron.IpcMainInvokeEvent, command as any, data)
+
+      // 能力包自注册的通用 IPC 命令集合（不要求写入宿主 commandGroups）
+      const ipcHandler = getIpcHandler(command)
+      if (ipcHandler)
+        return ipcHandler(event, command, data)
+
       const group = commandGroups.find(g =>
         Object.values(g.enum).includes(command),
       )

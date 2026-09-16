@@ -46,10 +46,11 @@ if (process.defaultApp) {
 }
 
 import Logger from 'mainModule/utils/logger'
-import { bindBeaverMainApi } from './beaver-api'
+import { bindBeaverMain } from './plugin/bind'
+import { activatePlugins } from './plugin/activate-plugins'
 
 // 插件官方 API：必须在加载任何 app 包之前绑定宿主实现
-bindBeaverMainApi()
+bindBeaverMain()
 
 const logger = new Logger('Main')
 
@@ -92,16 +93,16 @@ class Main {
     initCustom()
     this.initUa()
     loadConfigs()
-    this.initMainProcess()
+    void this.initMainProcess()
   }
 
-  initMainProcess() {
+  async initMainProcess() {
     logger.info({ text: '开始初始化' })
     this.setupEventListeners()
     logger.info({ text: '主进程事件监听器已注册' })
     cacheManager.init()
     logger.info({ text: '缓存模块初始化完成' })
-    this.beforeAppReady()
+    await this.beforeAppReady()
     this.onAppReady()
     logger.info({ text: '初始化完成' })
   }
@@ -128,8 +129,6 @@ class Main {
     } catch (error: any) {
       logger.error({ text: '本地服务启动失败', data: { message: error?.message } })
     }
-
-    logger.info({ text: 'MCP 管理器初始化完成' })
   }
 
   setupEventListeners() {
@@ -181,7 +180,9 @@ class Main {
   }
 
 
-  beforeAppReady() {
+  async beforeAppReady() {
+    await activatePlugins()
+    logger.info({ text: '插件激活完成' })
     messageManager.init()
     logger.info({ text: '消息管理器初始化完成' })
     ipcManager.init()

@@ -29,7 +29,7 @@
 
     <!-- 发布按钮 -->
     <button class="publish-float-btn" @click="handlePublish">
-      <img src="@beaver-im/app-moment/renderer/assets/image/moment/publish.svg" alt="发布" class="publish-icon">
+      <img :src="publishIcon" alt="发布" class="publish-icon">
     </button>
 
     <!-- 发布弹窗 -->
@@ -51,6 +51,7 @@
 
 <script lang="ts">
 import { defineComponent, onMounted, onUnmounted, ref } from 'vue'
+import publishIcon from '../../assets/image/moment/publish.svg'
 import MomentContent from './components/content/index.vue'
 import MomentCreate from './components/create/index.vue'
 
@@ -91,6 +92,7 @@ export default defineComponent({
       showPublishModal,
       momentStore,
       handlePublish,
+      publishIcon,
     }
   },
 })

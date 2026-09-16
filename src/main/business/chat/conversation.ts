@@ -27,12 +27,12 @@ import type {
 import type { ICommonHeader } from 'commonModule/type/ajax/common'
 import type { IConversationItem } from 'commonModule/type/pinia/conversation'
 import type { QueueItem } from '../base/base'
+import { resolveConversationDisplays } from '@beaver-im/beaver/main'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { getConversationsListByIdsApi } from 'mainModule/api/chat'
 import dBServiceChatConversation from 'mainModule/database/services/chat/conversation'
 import dbServiceChatUserConversation from 'mainModule/database/services/chat/user-conversation'
 import dBServiceFriend from 'mainModule/database/services/friend/friend'
-import { dbServiceCircle } from '@beaver-im/app-circle/main'
 import dbServiceGroup from 'mainModule/database/services/group/group'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
@@ -124,10 +124,9 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
       const offset = (page - 1) * limit
       const paginatedConversations = mergedConversations.slice(offset, offset + limit)
 
-      // 6. 获取好友信息（私聊需要）和群组信息（群聊需要）
+      // 6. 获取好友信息（私聊需要）和群组信息（群聊需要）；其它类型走插件展示贡献
       const privateChatFriendIds: string[] = []
       const groupIds: string[] = []
-      const circleIds: string[] = []
 
       paginatedConversations.forEach((conv: any) => {
         if (conv.type === 1) { // 私聊
@@ -148,12 +147,6 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
           const parts = conv.conversationId.split('_')
           if (parts.length >= 2 && parts[0] === 'group') {
             groupIds.push(parts.slice(1).join('_')) // 支持groupId中包含下划线的情况
-          }
-        }
-        else if (conv.type === 3 || conv.conversationId?.startsWith('circle_')) {
-          const parts = conv.conversationId.split('_')
-          if (parts.length >= 2 && parts[0] === 'circle') {
-            circleIds.push(parts.slice(1).join('_'))
           }
         }
       })
@@ -221,11 +214,9 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         groupDetailsMap.set(group.groupId, group)
       })
 
-      const circleDetails = await dbServiceCircle.getCirclesByIds(circleIds)
-      const circleDetailsMap = new Map()
-      circleDetails.forEach((circle: any) => {
-        circleDetailsMap.set(circle.circleId, circle)
-      })
+      const pluginDisplays = await resolveConversationDisplays(
+        paginatedConversations.filter((conv: any) => conv.type !== 1 && conv.type !== 2),
+      )
 
       // 7. 业务逻辑处理：数据聚合、未读消息计算等
       const list = paginatedConversations.map((conv: any): IConversationInfoRes => {
@@ -264,18 +255,12 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
             }
           }
         }
-        else if (conv.type === 3 || conv.conversationId?.startsWith('circle_')) {
-          const parts = conv.conversationId.split('_')
-          if (parts.length >= 2 && parts[0] === 'circle') {
-            const circleId = parts.slice(1).join('_')
-            const circleDetail = circleDetailsMap.get(circleId)
-            if (circleDetail) {
-              avatar = circleDetail.avatar || ''
-              nickName = circleDetail.name || '圈子'
-            }
-            else {
-              nickName = '圈子'
-            }
+        else {
+          const display = pluginDisplays.get(conv.conversationId)
+          if (display) {
+            avatar = display.avatar || ''
+            nickName = display.nickName || ''
+            notice = display.notice || ''
           }
         }
 
@@ -427,18 +412,13 @@ class ConversationBusiness extends BaseBusiness<ConversationSyncItem> {
         }
       }
     }
-    else if (meta.type === 3 || conversationId.startsWith('circle_')) {
-      const parts = conversationId.split('_')
-      if (parts.length >= 2 && parts[0] === 'circle') {
-        const circleId = parts.slice(1).join('_')
-        const circleDetails = await dbServiceCircle.getCirclesByIds([circleId])
-        if (circleDetails.length > 0) {
-          avatar = circleDetails[0].avatar || ''
-          nickName = circleDetails[0].name || '圈子'
-        }
-        else {
-          nickName = '圈子'
-        }
+    else {
+      const pluginDisplays = await resolveConversationDisplays([{ type: meta.type || 0, conversationId }])
+      const display = pluginDisplays.get(conversationId)
+      if (display) {
+        avatar = display.avatar || ''
+        nickName = display.nickName || ''
+        notice = display.notice || ''
       }
     }
 

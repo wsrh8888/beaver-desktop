@@ -104,8 +104,8 @@
 </template>
 
 <script lang="ts">
-import eyeOffIcon from 'renderModule/assets/image/login/eye-off.svg'
-import eyeIcon from 'renderModule/assets/image/login/eye.svg'
+import eyeOffIcon from './eye-off.svg'
+import eyeIcon from './eye.svg'
 import { computed, defineComponent, nextTick, ref } from 'vue'
 
 export type InputSize = 'large' | 'default' | 'small' | 'mini'

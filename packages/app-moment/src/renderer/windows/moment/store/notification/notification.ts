@@ -20,7 +20,7 @@
  */
 
 import { defineStore } from 'pinia'
-import { markReadByCategoryApi } from '@beaver-im/app-moment/renderer/api/notification'
+import { markReadByCategoryApi } from '../../../../api/notification'
 import { useUserStore } from '../user/user'
 import { Logger } from '@beaver-im/beaver/renderer';
 const logger = new Logger('notification')

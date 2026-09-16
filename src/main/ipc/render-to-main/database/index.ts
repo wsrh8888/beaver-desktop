@@ -4,26 +4,14 @@
  * Project: beaver-desktop
  * https://github.com/wsrh8888/beaver-desktop
  *
- * 中文：
- * 本文件为海狸 IM（Beaver IM）开源项目源代码。
- * 版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
- * 禁止删除、篡改或替换本文件头部版权与许可声明。
- * 使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
- *
- * English:
- * This file is part of the Beaver IM open-source project.
- * Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
- * Do not remove, alter, or replace this copyright and license header.
- * Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
- *
  * beaver-desktop-header-v2
  */
 
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
+import { getDatabaseIpcHandler } from '@beaver-im/beaver/main'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
 import chatHandler from './chat'
-import { circleHandler } from '@beaver-im/app-circle/main'
 import emojiHandler from './emoji'
 import friendHandler from './friend'
 import groupHandler from './group'
@@ -37,13 +25,18 @@ class DatabaseHandler {
   /**
    * 处理数据库相关的IPC命令
    */
-  async handle(_event: Electron.IpcMainInvokeEvent, command: DatabaseCommand, data: any = {}): Promise<unknown> {
+  async handle(_event: Electron.IpcMainInvokeEvent, command: string, data: any = {}): Promise<unknown> {
     logger.info({ text: '处理数据库命令', data: { command, data } })
     const userInfo = store.get('userInfo')
     const header = {
       userId: userInfo?.userId || '',
     }
     try {
+      // 能力包注册的数据库通道优先（如 database:circle）
+      const pluginHandler = getDatabaseIpcHandler(command)
+      if (pluginHandler)
+        return await pluginHandler(_event, data?.command, data?.data, header)
+
       switch (command) {
         case DatabaseCommand.USER:
           return await userHandler.handle(_event, data?.command, data?.data, header)
@@ -53,8 +46,6 @@ class DatabaseHandler {
           return await chatHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.GROUP:
           return await groupHandler.handle(_event, data?.command, data?.data, header)
-        case DatabaseCommand.CIRCLE:
-          return await circleHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.EMOJI:
           return await emojiHandler.handle(_event, data?.command, data?.data, header)
         case DatabaseCommand.NOTIFICATION:

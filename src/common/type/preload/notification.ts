@@ -23,6 +23,7 @@
  * 主进程通知渲染进程
  */
 import type { TrayMenuItem } from './app'
+import type { NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
 
 export enum NotificationModule {
   /**
@@ -30,7 +31,7 @@ export enum NotificationModule {
    */
   DATABASE_GROUP = 'database:group',
   /**
-   * 圈子通知
+   * 圈子通知（通道与 app-circle CIRCLE_NOTIFICATION_MODULE 同值）
    */
   DATABASE_CIRCLE = 'database:circle',
   /**
@@ -134,9 +135,6 @@ export enum NotificationGroupCommand {
    */
   GROUP_VALID_UPDATE = 'groupValidUpdate',
 }
-
-/** @deprecated 圈子通知命令已迁到 @beaver-im/app-circle，此处兼容再导出 */
-export { NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
 
 export enum NotificationUserCommand {
   /**

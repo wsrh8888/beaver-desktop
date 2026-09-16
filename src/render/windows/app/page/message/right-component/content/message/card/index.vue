@@ -71,7 +71,7 @@
 import { CacheType } from 'commonModule/type/cache/cache'
 import { CardType } from 'commonModule/type/ajax/chat'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { getCircleDetailApi } from 'renderModule/api/circle'
+import { getCircleDetailApi } from 'renderModule/api/circle-card'
 import BeaverImage from 'renderModule/components/ui/image/index.vue'
 import Message from 'renderModule/components/ui/message'
 import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'

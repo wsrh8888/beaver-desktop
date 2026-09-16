@@ -11,6 +11,6 @@
  * @beaver-im/app-moment 朋友圈 app
  *
  * 主进程走 @beaver-im/beaver/main；渲染进程走 @beaver-im/beaver/renderer + beaver-ui。
- * 领域 ajax 在 renderer/api；类型暂仍用宿主 commonModule/type/ajax/moment（后续可再抽 common）。
+ * 领域类型在 common/type/ajax/moment；ajax 在 renderer/api。
  */
 export {}

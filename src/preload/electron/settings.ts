@@ -19,9 +19,9 @@
  * beaver-desktop-header-v2
  */
 
-import type { IUserSettings } from 'commonModule/type/settings'
-import type { ISettingsModule } from 'commonModule/type/preload'
-import { SettingsCommand } from 'commonModule/type/ipc/command'
+import type { IUserSettings } from '@beaver-im/app-settings/common/type/settings'
+import type { ISettingsModule } from '@beaver-im/app-settings/common/type/preload/settings'
+import { SettingsCommand } from '@beaver-im/app-settings/common/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'preloadModule/utils/ipcRender'
 

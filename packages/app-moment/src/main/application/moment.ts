@@ -19,11 +19,10 @@
  * beaver-desktop-header-v2
  */
 
-import type { Application } from '@beaver-im/beaver/common/type/app/application'
+import type { Application } from '@beaver-im/beaver'
 import path from 'node:path'
 import { BrowserWindow } from 'electron'
-import { Logger, getDirname } from '@beaver-im/beaver/main'
-import ApplicationBase from './common/base'
+import { ApplicationBase, Logger, getDirname } from '@beaver-im/beaver/main'
 
 const logger = new Logger('moment')
 

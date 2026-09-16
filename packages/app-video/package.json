@@ -1,0 +1,27 @@
+{
+  "name": "@beaver-im/app-video",
+  "version": "2.1.2",
+  "private": true,
+  "type": "module",
+  "description": "beaver 视频播放器 app：main + video.html。平台能力走 @beaver-im/beaver",
+  "main": "./dist/main.js",
+  "exports": {
+    "./main": "./dist/main.js",
+    "./video.html": "./dist/video.html"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite build --mode renderer --watch",
+    "build": "vite build --mode main && vite build --mode renderer"
+  },
+  "dependencies": {
+    "@beaver-im/beaver": "file:../beaver"
+  },
+  "peerDependencies": {
+    "electron": ">=28",
+    "vue": "^3.5.0",
+    "pinia": "^4.0.0"
+  }
+}

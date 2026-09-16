@@ -25,20 +25,9 @@ import { NotificationModule, NotificationMediaViewerCommand, NotificationCallCom
 import { getScreenshots } from 'mainModule/utils/capture'
 import { BrowserWindow } from 'electron'
 import appApplication from 'mainModule/application/app'
-import audioApplication from 'mainModule/application/audio'
-import imageApplication from 'mainModule/application/image'
 import loginApplication from 'mainModule/application/login'
-import searchApplication from 'mainModule/application/search'
-import updateApplication from 'mainModule/application/updater'
-import verifyApplication from 'mainModule/application/verify'
-import videoApplication from 'mainModule/application/video'
-import callApplication from 'mainModule/application/call'
-import CallIncomingApplication from 'mainModule/application/call-incoming'
-import workbenchApplication from 'mainModule/application/workbench'
-import settingsApplication from 'mainModule/application/settings'
-import aboutApplication from 'mainModule/application/about'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
-import { loadOptionalWindowApp } from 'mainModule/plugin/load-optional-app'
+import { getPluginApplication } from 'mainModule/plugin/activate-plugins'
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('WindowHandler')
@@ -154,82 +143,23 @@ class WindowHandler {
       logger.info({ text: '打开新窗口', data: { name, unique, hasWindow: !!window, params } })
       let newWindow!: BrowserWindow
 
-      switch (name) {
-        case 'app':
-          newWindow = appApplication.createBrowserWindow()
-          break
-        case 'login':
-          newWindow = loginApplication.createBrowserWindow()
-          break
-        case 'search':
-          searchApplication.createBrowserWindow()
-          newWindow = (searchApplication as any).win
-          break
-        case 'verify':
-          verifyApplication.createBrowserWindow()
-          newWindow = (verifyApplication as any).win
-          break
-        case 'image':
-          imageApplication.createBrowserWindow()
-          newWindow = (imageApplication as any).win
-          break
-        case 'video':
-          videoApplication.createBrowserWindow()
-          newWindow = (videoApplication as any).win
-          break
-        case 'audio':
-          audioApplication.createBrowserWindow()
-          newWindow = (audioApplication as any).win
-          break
-        case 'moment': {
-          const momentApplication = await loadOptionalWindowApp('moment')
-          if (!momentApplication) {
-            logger.warn({ text: '朋友圈能力包不可用，无法打开窗口' })
+      // 能力包窗口：不点名业务，按 activate 缓存的 application 查表
+      const pluginApplication = getPluginApplication(name)
+      if (pluginApplication) {
+        newWindow = pluginApplication.createBrowserWindow()
+      }
+      else {
+        switch (name) {
+          case 'app':
+            newWindow = appApplication.createBrowserWindow()
+            break
+          case 'login':
+            newWindow = loginApplication.createBrowserWindow()
+            break
+          default:
+            logger.warn({ text: '未知窗口或能力包未激活', data: { name } })
             return
-          }
-          newWindow = momentApplication.createBrowserWindow()
-          break
         }
-        case 'updater':
-          updateApplication.createBrowserWindow()
-          newWindow = (updateApplication as any).win
-          break
-        case 'call':
-          newWindow = callApplication.createBrowserWindow()
-          break
-        case 'call-incoming':
-          newWindow = CallIncomingApplication.createBrowserWindow()
-          break
-        case 'ai': {
-          const aiApplication = await loadOptionalWindowApp('ai')
-          if (!aiApplication) {
-            logger.warn({ text: 'AI 能力包不可用，无法打开窗口' })
-            return
-          }
-          newWindow = aiApplication.createBrowserWindow()
-          break
-        }
-        case 'circle': {
-          const circleApplication = await loadOptionalWindowApp('circle')
-          if (!circleApplication) {
-            logger.warn({ text: '圈子能力包不可用，无法打开窗口' })
-            return
-          }
-          newWindow = circleApplication.createBrowserWindow()
-          break
-        }
-        case 'workbench':
-          workbenchApplication.createBrowserWindow()
-          newWindow = (workbenchApplication as any).win
-          break
-        case 'settings':
-          settingsApplication.createBrowserWindow()
-          newWindow = (settingsApplication as any).win
-          break
-        case 'about':
-          aboutApplication.createBrowserWindow()
-          newWindow = (aboutApplication as any).win
-          break
       }
 
       // 如果创建了新窗口，等待它准备好，然后发送参数

@@ -22,18 +22,18 @@
 <template>
   <div class="circle-header">
     <div class="circle-header-drag">
-      <img src="@beaver-im/app-circle/renderer/assets/image/leftBar/circle_active.svg" alt="圈子" class="circle-header-icon">
+      <img :src="circleActiveIcon" alt="圈子" class="circle-header-icon">
       <span class="circle-header-title">圈子</span>
     </div>
     <div class="circle-header-actions">
       <button class="circle-header-btn" type="button" @click="$emit('refresh')">
-        <img src="@beaver-im/app-circle/renderer/assets/image/moment/refresh.svg" alt="刷新" class="circle-header-btn-icon">
+        <img :src="refreshIcon" alt="刷新" class="circle-header-btn-icon">
       </button>
       <button class="circle-header-btn" type="button" @click="handleMinimize">
-        <img src="@beaver-im/app-circle/renderer/assets/image/header/minimize.svg" alt="最小化">
+        <img :src="minimizeIcon" alt="最小化">
       </button>
       <button class="circle-header-btn circle-header-btn-close" type="button" @click="handleClose">
-        <img src="@beaver-im/app-circle/renderer/assets/image/header/close.svg" alt="关闭">
+        <img :src="closeIcon" alt="关闭">
       </button>
     </div>
   </div>
@@ -41,6 +41,10 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
+import circleActiveIcon from '../../../../assets/image/leftBar/circle_active.svg'
+import refreshIcon from '../../../../assets/image/moment/refresh.svg'
+import minimizeIcon from '../../../../assets/image/header/minimize.svg'
+import closeIcon from '../../../../assets/image/header/close.svg'
 
 export default defineComponent({
   name: 'CircleHeader',
@@ -55,6 +59,10 @@ export default defineComponent({
     }
 
     return {
+      circleActiveIcon,
+      refreshIcon,
+      minimizeIcon,
+      closeIcon,
       handleMinimize,
       handleClose,
     }

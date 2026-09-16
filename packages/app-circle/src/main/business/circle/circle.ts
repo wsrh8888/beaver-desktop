@@ -19,7 +19,7 @@
  * beaver-desktop-header-v2
  */
 
-import { CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
+import { CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand } from '../../../common/type/notification'
 import { circleSyncApi } from '../../api/circle'
 import dbServiceCircle from '../../database/services/circle/circle'
 import { Logger, sendMainNotification } from '@beaver-im/beaver/main'

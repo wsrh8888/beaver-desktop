@@ -1,0 +1,141 @@
+<!--
+  Copyright (c) 2024-2026 Beaver IM Team
+  SPDX-License-Identifier: MIT
+  Project: beaver-desktop
+  https://github.com/wsrh8888/beaver-desktop
+
+  中文：
+  本文件为海狸 IM（Beaver IM）开源项目源代码。
+  版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
+  禁止删除、篡改或替换本文件头部版权与许可声明。
+  使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
+
+  English:
+  This file is part of the Beaver IM open-source project.
+  Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
+  Do not remove, alter, or replace this copyright and license header.
+  Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
+
+  beaver-desktop-header-v2
+-->
+
+<template>
+  <div class="verify__content">
+    <!-- 标题栏 -->
+    <div class="titlebar">
+      <div class="title">
+        {{ windowTitle }}
+      </div>
+      <button class="close-btn" @click="handleClose">
+        <img :src="closeIcon" alt="关闭">
+      </button>
+    </div>
+
+    <!-- 主要内容 -->
+    <div class="verify__main">
+      <AddFriendComponent v-if="verifyType === 'friend'" :target-value="targetValue" @close="handleClose" />
+      <AddGroupComponent v-if="verifyType === 'group'" :target-value="targetValue" @close="handleClose" />
+    </div>
+  </div>
+</template>
+
+<script lang="ts">
+import { Logger } from '@beaver-im/beaver/renderer'
+
+const logger = new Logger('App')
+
+import { computed, defineComponent } from 'vue'
+import AddFriendComponent from './components/add-friend.vue'
+import AddGroupComponent from './components/add-group.vue'
+import { useVerifyStore } from './pinia/verify'
+import closeIcon from '../../assets/image/common/close.svg'
+
+export default defineComponent({
+  components: {
+    AddFriendComponent,
+    AddGroupComponent,
+  },
+  setup() {
+    logger.info({ text: 'setup 开始' })
+    // 使用pinia store
+    const verifyStore = useVerifyStore()
+
+    const handleClose = async () => {
+      logger.info({ text: 'handleClose 开始' })
+      // 清除缓存中的数据
+      // 隐藏窗口
+      electron.window.closeWindow('verify', { hideOnly: true })
+    }
+
+    return {
+      closeIcon,
+      targetValue: computed(() => verifyStore.searchData),
+      windowTitle: computed(() => verifyStore.verifyType === 'friend' ? '添加好友' : '添加群组'),
+      verifyType: computed(() => verifyStore.verifyType),
+      handleClose,
+    }
+  },
+})
+</script>
+
+<style lang="less" scoped>
+.verify__content {
+  width: 100%;
+  height: 100vh;
+  background: #FFFFFF;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  -webkit-app-region: drag; // 允许整个窗口拖动
+}
+
+/* 顶部标题栏 */
+.titlebar {
+  height: 40px;
+  background-color: #F9FAFB;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  border-bottom: 1px solid #EBEEF5;
+  -webkit-app-region: drag; // 可拖动区域
+  flex-shrink: 0;
+
+  .title {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2D3436;
+    -webkit-app-region: drag; // 标题部分也可拖动
+  }
+
+  .close-btn {
+    width: 16px;
+    height: 16px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-app-region: no-drag; // 关闭按钮不可拖动
+
+    img {
+      width: 16px;
+      height: 16px;
+      opacity: 0.7;
+      transition: opacity 0.2s ease;
+    }
+
+    &:hover img {
+      opacity: 1;
+    }
+  }
+}
+
+// 主要内容区域
+.verify__main {
+  flex: 1;
+  overflow: hidden;
+  -webkit-app-region: no-drag; // 内容区域不可拖动
+}
+</style>

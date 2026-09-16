@@ -44,7 +44,7 @@
         />
         <div class="input-actions">
           <button class="send-btn" :disabled="!commentText.trim()" @click="handleSendComment">
-            <img src="@beaver-im/app-moment/renderer/assets/image/moment/send.svg" alt="发送" class="send-icon">
+            <img :src="sendIcon" alt="发送" class="send-icon">
           </button>
         </div>
       </div>
@@ -53,8 +53,9 @@
 </template>
 
 <script lang="ts">
-import SvgLikeActive from '@beaver-im/app-moment/renderer/assets/image/moment/like-active.svg'
-import SvgLike from '@beaver-im/app-moment/renderer/assets/image/moment/like-default.svg'
+import SvgLikeActive from '../../../../assets/image/moment/like-active.svg'
+import SvgLike from '../../../../assets/image/moment/like-default.svg'
+import sendIcon from '../../../../assets/image/moment/send.svg'
 import { defineComponent, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 
 export default defineComponent({
@@ -179,6 +180,7 @@ export default defineComponent({
       handleTextareaInput,
       SvgLikeActive,
       SvgLike,
+      sendIcon,
     }
   },
 })

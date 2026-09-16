@@ -28,7 +28,7 @@
           发布动态
         </h2>
         <div class="publish-close" @click="$emit('close')">
-          <img src="@beaver-im/app-moment/renderer/assets/image/common/close.svg" alt="关闭">
+          <img :src="closeIcon" alt="关闭">
         </div>
       </div>
 
@@ -55,7 +55,7 @@
               </div>
 
               <button class="media-remove" @click="removeMediaFile(index)">
-                <img src="@beaver-im/app-moment/renderer/assets/image/common/close.svg" alt="删除">
+                <img :src="closeIcon" alt="删除">
               </button>
             </div>
 
@@ -63,7 +63,7 @@
             <div v-if="mediaFiles.length < 9" class="upload-slot" @click="triggerFileSelect">
               <div class="upload-content">
                 <div class="upload-icon">
-                  <img src="@beaver-im/app-moment/renderer/assets/image/common/add.svg" alt="添加">
+                  <img :src="addIcon" alt="添加">
                 </div>
                 <div class="upload-text">
                   添加图片
@@ -89,12 +89,14 @@
 </template>
 
 <script lang="ts">
-import type { ICreateMomentReq } from 'commonModule/type/ajax/moment'
+import type { ICreateMomentReq } from '../../../../../common/type/ajax/moment'
 import type { UploadResult } from '@beaver-im/beaver/renderer'
-import { createMomentApi } from '@beaver-im/app-moment/renderer/api/moment'
+import { createMomentApi } from '../../../../api/moment'
 import BeaverButton from '@beaver-im/beaver-ui/button/index.vue'
 import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import { selectAndUploadFile } from '@beaver-im/beaver/renderer'
+import closeIcon from '../../../../assets/image/common/close.svg'
+import addIcon from '../../../../assets/image/common/add.svg'
 import { useMomentStore } from '../../store/moment/moment'
 import { computed, defineComponent, ref } from 'vue'
 import { Logger } from '@beaver-im/beaver/renderer'
@@ -238,6 +240,8 @@ export default defineComponent({
       removeMediaFile,
       handleMediaClick,
       handlePublish,
+      closeIcon,
+      addIcon,
     }
   },
 })

@@ -134,7 +134,6 @@ export default defineComponent({
     const currentConversationId = computed(() => messageViewStore.currentChatId)
 
     const isCircleChat = (chat: { conversationId?: string, chatType?: number }) => {
-    logger.info({ text: 'isCircleChat 开始' })
       if (!chat)
         return false
       if (chat.conversationId?.startsWith('circle_'))

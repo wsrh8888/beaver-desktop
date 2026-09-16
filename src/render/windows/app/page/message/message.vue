@@ -33,7 +33,7 @@
         <ChatMenusComponent />
       </template>
 
-      <!-- 圈子：圈子会话面板 -->
+      <!-- 圈子：圈子会话面板（宿主直接组合官方能力包） -->
       <template v-else-if="panelType === 'circle'">
         <CircleRight
           ref="circleRightRef"
@@ -42,11 +42,8 @@
           @show-post-detail="handleShowPostDetail"
         />
       </template>
-
-      <!-- 后续其他会话类型在此扩展，例如：v-else-if="panelType === 'xxx'" -->
     </div>
 
-    <!-- 各种详情组件放在外层，因为使用了 fixed 定位 -->
     <GroupDetailsComponent :visible="currentDetailType === 'group'" @close="hideDetails" />
     <PrivateDetailsComponent
       v-if="currentDetailType === 'private'"
@@ -74,7 +71,7 @@
 </template>
 
 <script lang="ts">
-import Logger from 'renderModule/utils/logger';
+import Logger from 'renderModule/utils/logger'
 const logger = new Logger('message')
 
 import type { ICirclePostItem } from '@beaver-im/app-circle/common/type/ajax/circle'
@@ -128,7 +125,6 @@ export default defineComponent({
       return parseCircleId(id)
     })
 
-    /** 按会话类型决定右侧面板，后续可继续扩展 */
     const panelType = computed<PanelType | null>(() => {
       const id = currentChatId.value
       if (!id)
@@ -141,27 +137,26 @@ export default defineComponent({
       if (info?.chatType === 3)
         return 'circle'
 
-      // chatType 1 私聊 / 2 群聊，统一走聊天面板
       return 'chat'
     })
 
     const handleShowDetails = (type: DetailType) => {
-    logger.info({ text: 'handleShowDetails 开始' })
+      logger.info({ text: 'handleShowDetails 开始' })
       currentDetailType.value = type
     }
 
     const hideDetails = () => {
-    logger.info({ text: 'hideDetails 开始' })
+      logger.info({ text: 'hideDetails 开始' })
       currentDetailType.value = null
     }
 
     const handleShowPostDetail = (post: ICirclePostItem) => {
-    logger.info({ text: 'handleShowPostDetail 开始' })
+      logger.info({ text: 'handleShowPostDetail 开始' })
       activePost.value = post
     }
 
     const handlePostChanged = async () => {
-    logger.info({ text: 'handlePostChanged 开始' })
+      logger.info({ text: 'handlePostChanged 开始' })
       await circleRightRef.value?.loadPosts()
       if (activePost.value) {
         const latest = circleRightRef.value?.postList?.find(
@@ -173,7 +168,7 @@ export default defineComponent({
     }
 
     const handleCircleQuit = () => {
-    logger.info({ text: 'handleCircleQuit 开始' })
+      logger.info({ text: 'handleCircleQuit 开始' })
       hideDetails()
       activePost.value = null
       if (messageViewStore.currentChatId)

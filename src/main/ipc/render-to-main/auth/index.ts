@@ -19,7 +19,8 @@
  * beaver-desktop-header-v2
  */
 
-import { AuthCommand, SettingsCommand } from 'commonModule/type/ipc/command'
+import { AuthCommand } from 'commonModule/type/ipc/command'
+import { SettingsCommand, settingsHandler as settings } from '@beaver-im/app-settings/main'
 import { BrowserWindow } from 'electron'
 import AppApplication from 'mainModule/application/app'
 import LoginApplication from 'mainModule/application/login'
@@ -29,7 +30,6 @@ import { store } from 'mainModule/store'
 import Log from 'mainModule/utils/log'
 import Logger from 'mainModule/utils/logger'
 import wsManager from 'mainModule/ws-manager'
-import settings from 'mainModule/ipc/render-to-main/settings'
 
 const logger = new Logger('AuthHandler')
 

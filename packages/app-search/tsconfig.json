@@ -1,0 +1,22 @@
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "baseUrl": "./",
+    "jsx": "preserve",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "paths": {
+      "@beaver-im/app-search": ["./src/index.ts"],
+      "@beaver-im/app-search/*": ["./src/*"],
+      "@beaver-im/beaver": ["../beaver/src/index.ts"],
+      "@beaver-im/beaver/*": ["../beaver/src/*"],
+      "@beaver-im/beaver-ui": ["../beaver-ui/src/index.ts"],
+      "@beaver-im/beaver-ui/*": ["../beaver-ui/src/*"]
+    }
+  },
+  "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts"]
+}

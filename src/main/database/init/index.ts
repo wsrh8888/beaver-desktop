@@ -4,24 +4,11 @@
  * Project: beaver-desktop
  * https://github.com/wsrh8888/beaver-desktop
  *
- * 中文：
- * 本文件为海狸 IM（Beaver IM）开源项目源代码。
- * 版权所有 © 2024-2026 Beaver IM Team，基于 MIT 协议授权。
- * 禁止删除、篡改或替换本文件头部版权与许可声明。
- * 使用与商业授权说明：https://wsrh8888.github.io/beaver-docs/community/license.html
- *
- * English:
- * This file is part of the Beaver IM open-source project.
- * Copyright (c) 2024-2026 Beaver IM Team. Licensed under the MIT License.
- * Do not remove, alter, or replace this copyright and license header.
- * Usage & commercial licensing: https://wsrh8888.github.io/beaver-docs/community/license.html
- *
  * beaver-desktop-header-v2
  */
 
+import { getRegisteredTableInits } from '@beaver-im/beaver/main'
 import { initChatTables } from './chat/index'
-// 只引建表入口，禁止走 @beaver-im/app-circle/main 桶（会连带加载 Service，与 BaseService 循环）
-import { initCircleTables } from '@beaver-im/app-circle/main/init-tables'
 import { initDatasyncTables } from './datasync/index'
 import { initEmojiTables } from './emoji/index'
 import { initFriendTables } from './friend/index'
@@ -38,11 +25,13 @@ export const initTables = (db: any) => {
   initUserTables(db)
   initFriendTables(db)
   initGroupTables(db)
-  initCircleTables(db)
   initChatTables(db)
   initEmojiTables(db)
   initDatasyncTables(db)
   initNotificationTables(db)
   initMediaTables(db)
+  // 插件自注册建表（如圈子），宿主不点名业务包
+  for (const init of getRegisteredTableInits())
+    init(db)
   logger.info({ text: '数据表初始化完成' })
 }

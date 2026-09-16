@@ -19,8 +19,8 @@
  * beaver-desktop-header-v2
  */
 
-import type { ICommonHeader } from '@beaver-im/beaver/common/type/ajax/common'
-import { DataCircleCommand } from '@beaver-im/app-circle/common/type/ipc/database'
+import type { ICommonHeader } from '@beaver-im/beaver'
+import { DataCircleCommand } from '../../../../../common/type/ipc/database'
 import circleBusiness from '../../../../business/circle/circle'
 import { Logger, store } from '@beaver-im/beaver/main'
 

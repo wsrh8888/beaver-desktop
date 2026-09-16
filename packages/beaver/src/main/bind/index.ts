@@ -14,12 +14,6 @@ import type { IHostCustom } from '../../common/type/config'
 
 export type LogLevel = 'info' | 'warn' | 'error'
 
-/** 同步游标（能力包按 module 读写，如 circles） */
-export interface IDataSyncCursor {
-  get: (req: { module: string }) => Promise<{ version?: number | null } | undefined>
-  upsert: (req: { module: string, version?: number | null, updatedAt: number }) => Promise<void>
-}
-
 /**
  * 宿主注入的主进程运行时（对齐 preload 的 electronAPI 模块树，而不是打平一袋函数）。
  * 门面层（logger/store/config/...）只读这里对应子对象。
@@ -32,16 +26,12 @@ export interface MainRuntime {
   config: {
     /** 宿主主进程资源根（拼 preload / dist） */
     dirname: string
-    /** API baseUrl */
-    getBaseUrl: () => string
     /** 宿主动态运行时（原 process.custom，每次读取最新值） */
     getCustom: () => IHostCustom
   }
   database: {
     /** 当前用户库 drizzle 实例（未 init 时应抛错） */
     getDb: () => any
-    /** 同步游标表 */
-    dataSyncCursor: IDataSyncCursor
   }
   request: {
     ajax: AjaxFn

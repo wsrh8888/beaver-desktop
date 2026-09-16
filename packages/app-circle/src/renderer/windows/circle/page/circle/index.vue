@@ -66,7 +66,7 @@
 import { Logger } from '@beaver-im/beaver/renderer';
 const logger = new Logger('index')
 
-import type { ICirclePostItem } from '@beaver-im/app-circle/common/type/ajax/circle'
+import type { ICirclePostItem } from '../../../../../common/type/ajax/circle'
 import { defineComponent, ref } from 'vue'
 import CircleCreateModal from '../../components/createCircle/index.vue'
 import CircleDetails from '../../page/circle/detail-components/details/index.vue'

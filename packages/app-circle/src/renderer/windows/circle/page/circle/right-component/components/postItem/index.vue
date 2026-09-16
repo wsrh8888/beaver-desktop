@@ -85,7 +85,7 @@
         type="button"
         @click="$emit('comment')"
       >
-        <img src="@beaver-im/app-circle/renderer/assets/image/moment/comment.svg" alt="评论">
+        <img :src="commentIcon" alt="评论">
         <span>{{ post.commentCount || 0 }}</span>
       </button>
     </div>
@@ -105,11 +105,12 @@
 </template>
 
 <script lang="ts">
-import type { ICirclePostItem } from '@beaver-im/app-circle/common/type/ajax/circle'
+import type { ICirclePostItem } from '../../../../../../../../common/type/ajax/circle'
 import { CacheType } from '@beaver-im/beaver-ui'
 import { computed, defineComponent } from 'vue'
-import likeIcon from '@beaver-im/app-circle/renderer/assets/image/moment/like-default.svg'
-import likeActiveIcon from '@beaver-im/app-circle/renderer/assets/image/moment/like-active.svg'
+import likeIcon from '../../../../../../../assets/image/moment/like-default.svg'
+import likeActiveIcon from '../../../../../../../assets/image/moment/like-active.svg'
+import commentIcon from '../../../../../../../assets/image/moment/comment.svg'
 import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import { Logger } from '@beaver-im/beaver/renderer'
 
@@ -167,6 +168,7 @@ export default defineComponent({
       CacheType,
       likeIcon,
       likeActiveIcon,
+      commentIcon,
       displayFiles,
       formatTime,
       handleMediaClick,

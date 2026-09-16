@@ -8,4 +8,3 @@
  */
 
 export { BaseService } from './base'
-export { dataSyncCursor } from './datasync'

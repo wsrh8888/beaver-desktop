@@ -8,6 +8,7 @@
  */
 
 import type { IHostCustom } from '../../common/type/config'
+import { getBaseUrl as getCommonBaseUrl } from '../../common/config'
 import { getMainRuntime } from '../bind'
 
 /**
@@ -18,9 +19,9 @@ export function getDirname(): string {
   return getMainRuntime().config.dirname
 }
 
-/** API 根地址（原 commonModule/config.getBaseUrl） */
+/** API 根地址（common 按 env 解析） */
 export function getBaseUrl(): string {
-  return getMainRuntime().config.getBaseUrl()
+  return getCommonBaseUrl()
 }
 
 /** 宿主动态运行时（原 process.custom） */

@@ -4,25 +4,26 @@
   "private": true,
   "type": "module",
   "description": "beaver 圈子 app：main/renderer + 领域 type（common/type）。平台能力走 @beaver-im/beaver",
-  "main": "./src/index.ts",
+  "main": "./dist/main.js",
   "exports": {
-    ".": "./src/index.ts",
-    "./common": "./src/common/index.ts",
-    "./common/type/*": "./src/common/type/*",
-    "./main": "./src/main/index.ts",
-    "./main/init-tables": "./src/main/database/init/circle/index.ts",
-    "./renderer": "./src/renderer/index.ts",
-    "./renderer/*": "./src/renderer/*",
-    "./circle-entry": "./src/renderer/windows/circle/main.ts"
+    "./main": "./dist/main.js",
+    "./circle.html": "./dist/circle.html"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
-    "dev": "vite",
-    "build": "vite build"
+    "dev": "vite build --mode renderer --watch",
+    "build": "vite build --mode main && vite build --mode renderer"
   },
   "dependencies": {
     "@beaver-im/beaver": "file:../beaver",
     "@beaver-im/beaver-ui": "file:../beaver-ui",
-    "@beaver-im/beaver-biz": "file:../beaver-biz",
-    "@beaver-im/app-moment": "*"
+    "@beaver-im/beaver-biz": "file:../beaver-biz"
+  },
+  "peerDependencies": {
+    "electron": ">=28",
+    "vue": "^3.5.0",
+    "pinia": "^4.0.0"
   }
 }

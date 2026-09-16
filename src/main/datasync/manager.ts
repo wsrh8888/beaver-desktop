@@ -20,25 +20,21 @@
  */
 
 import { NotificationAppLifecycleCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { getRegisteredDataSync } from '@beaver-im/beaver/main'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import Logger from 'mainModule/utils/logger'
-
-const logger = new Logger('DataSyncManager')
 import { chatDatasync } from './chat'
-import { circleDatasync } from '@beaver-im/app-circle/main'
 import { emojiDatasync } from './emoji'
 import { friendDatasync } from './friend'
 import { groupDatasync } from './group'
 import { notificationDatasync } from './notification'
 import { userDatasync } from './user'
 
+const logger = new Logger('DataSyncManager')
+
 // 数据同步管理器
 class DataSyncManager {
   private isSyncing = false
-
-  constructor() {
-    // 不需要初始化，直接使用导出的实例
-  }
 
   // 获取当前同步状态
   getStatus() {
@@ -59,9 +55,13 @@ class DataSyncManager {
       await chatDatasync.checkAndSync()
       await friendDatasync.checkAndSync()
       await groupDatasync.checkAndSync()
-      await circleDatasync.checkAndSync()
       await emojiDatasync.checkAndSync()
       await notificationDatasync.checkAndSync()
+
+      // 能力包自注册的同步（如圈子），宿主不点名业务包
+      for (const mod of getRegisteredDataSync()) {
+        await mod.checkAndSync()
+      }
 
       this.isSyncing = false
       // 通知前端：同步完成，系统就绪

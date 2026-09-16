@@ -19,7 +19,7 @@ export interface IPluginInfo {
   inject: number
 }
 
-/** 能力包清单（宿主按名单加载） */
+/** 插件清单（宿主按名单加载） */
 export interface IPluginManifest {
   id: string
   name: string
@@ -44,4 +44,9 @@ export interface IMainPluginModule {
   activate?: (ctx: IMainActivateContext) => void | Promise<void>
   deactivate?: () => void | Promise<void>
   application?: Application
+}
+
+/** 插件可自注册的同步模块 */
+export interface IDataSyncModule {
+  checkAndSync: () => Promise<void>
 }

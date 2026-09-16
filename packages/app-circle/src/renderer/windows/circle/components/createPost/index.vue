@@ -25,7 +25,7 @@
       <div class="circle-modal-header">
         <h3>发布帖子</h3>
         <button class="circle-modal-close" type="button" @click="handleClose">
-          <img src="@beaver-im/app-circle/renderer/assets/image/header/close.svg" alt="关闭">
+          <img :src="closeIcon" alt="关闭">
         </button>
       </div>
 
@@ -51,7 +51,7 @@
                 @click="handleMediaClick(file)"
               />
               <button class="circle-modal-media-remove" type="button" @click="removeMediaFile(index)">
-                <img src="@beaver-im/app-circle/renderer/assets/image/common/close.svg" alt="删除">
+                <img :src="removeIcon" alt="删除">
               </button>
             </div>
 
@@ -60,7 +60,7 @@
               class="circle-modal-media-upload"
               @click="triggerFileSelect"
             >
-              <img src="@beaver-im/app-circle/renderer/assets/image/common/add.svg" alt="添加">
+              <img :src="addIcon" alt="添加">
               <span>添加图片</span>
             </div>
           </div>
@@ -86,7 +86,10 @@
 
 <script lang="ts">
 import { computed, defineComponent, ref } from 'vue'
-import { createPostApi } from '@beaver-im/app-circle/renderer/api/circle'
+import { createPostApi } from '../../../../api/circle'
+import closeIcon from '../../../../assets/image/header/close.svg'
+import removeIcon from '../../../../assets/image/common/close.svg'
+import addIcon from '../../../../assets/image/common/add.svg'
 import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import Message from '@beaver-im/beaver-ui/message'
 import { selectAndUploadFile } from '@beaver-im/beaver/renderer'
@@ -192,6 +195,9 @@ export default defineComponent({
       mediaFiles,
       submitting,
       canSubmit,
+      closeIcon,
+      removeIcon,
+      addIcon,
       handleClose,
       triggerFileSelect,
       removeMediaFile,

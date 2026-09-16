@@ -7,9 +7,9 @@
  * beaver-desktop-header-v2
  */
 
-import type { IPluginManifest } from '@beaver-im/beaver/common/type/plugin'
+import type { IPluginManifest } from '@beaver-im/beaver'
 
-/** 圈子能力包清单（供宿主插件加载器识别） */
+/** 圈子能力包清单 */
 export const circleManifest: IPluginManifest = {
   id: 'circle',
   name: 'Beaver Circle',

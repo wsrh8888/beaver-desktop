@@ -26,8 +26,9 @@ import type { IGetGroupListReq, IGetGroupMembersBatchReq, IGetGroupMembersReq, I
 import type { IGetNotificationEventsByIdsReq, IGetNotificationEventsByIdsRes, IGetNotificationInboxByIdsReq, IGetNotificationInboxByIdsRes, IGetNotificationReadCursorsReq, IGetNotificationReadCursorsRes } from 'commonModule/type/ajax/notification'
 import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
+import { CIRCLE_DATABASE_IPC, DataCircleCommand } from '@beaver-im/app-circle/common/type/ipc/database'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
-import { DataChatCommand, DataCircleCommand, DataEmojiCommand, DataFriendCommand, DataGroupCommand, DataNotificationCommand, DataUserCommand } from 'commonModule/type/ipc/database'
+import { DataChatCommand, DataEmojiCommand, DataFriendCommand, DataGroupCommand, DataNotificationCommand, DataUserCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
@@ -179,7 +180,7 @@ export const databaseModule: IDatabaseModule = {
   },
   circle: {
     getCircleList: async (): Promise<{ list: Array<{ circleId: string, name: string, avatar?: string }> }> => {
-      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, DatabaseCommand.CIRCLE, {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, CIRCLE_DATABASE_IPC, {
         command: DataCircleCommand.GET_CIRCLE_LIST,
       })
     },

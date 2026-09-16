@@ -7,36 +7,44 @@
  * beaver-desktop-header-v2
  */
 
-import path from 'node:path'
-import { defineConfig } from 'vite'
-
 /**
- * @beaver-im/beaver 独立打包配置
+ * @beaver-im/beaver 发版构建（三层）：
+ * 1. common   — src/index.ts → dist/index.js（插件契约类型 + config 运行时值）
+ * 2. main     — src/main/index.ts → dist/main.js（主进程门面，externalize electron/node）
+ * 3. renderer — src/renderer/index.ts → dist/renderer.js（渲染门面，externalize electron）
  *
- * common（对外类型）+ main（运行时门面）。不依赖宿主 alias / common-share。
+ * d.ts 由 package.json build 脚本里的 tsc --emitDeclarationOnly 单独产出。
  */
-export default defineConfig({
-  build: {
-    lib: {
-      entry: {
-        main: path.resolve(__dirname, 'src/main/index.ts'),
-        common: path.resolve(__dirname, 'src/common/index.ts'),
+import path from 'node:path'
+import { defineConfig, type UserConfig } from 'vite'
+
+const root = __dirname
+
+function libConfig(entryName: string, entryPath: string, externals: string[], outputName: string): UserConfig {
+  return {
+    build: {
+      outDir: 'dist',
+      emptyOutDir: entryName === 'common',
+      minify: false,
+      sourcemap: false,
+      lib: {
+        entry: { [entryName]: entryPath },
+        formats: ['es'],
+        fileName: () => outputName,
       },
-      formats: ['es'],
-      fileName: (_format, entryName) => `${entryName}.js`,
-    },
-    rollupOptions: {
-      external: [
-        'electron',
-        'node:path',
-        /^@beaver\//,
-        /^@beaver-im\//,
-      ],
-      output: {
-        entryFileNames: '[name].js',
-        chunkFileNames: 'chunks/[name]-[hash].js',
-        assetFileNames: 'assets/[name][extname]',
+      rollupOptions: {
+        external: externals,
+        output: { entryFileNames: outputName },
       },
     },
-  },
+  }
+}
+
+export default defineConfig(({ mode }) => {
+  if (mode === 'renderer')
+    return libConfig('renderer', path.resolve(root, 'src/renderer/index.ts'), ['electron', 'axios', 'moment', 'uuid'], 'renderer.js')
+  if (mode === 'main')
+    return libConfig('main', path.resolve(root, 'src/main/index.ts'), ['electron', 'node:path', 'node:fs', 'node:url', 'node:module'], 'main.js')
+  // default: common (index)
+  return libConfig('common', path.resolve(root, 'src/index.ts'), [], 'index.js')
 })

@@ -19,7 +19,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { IMomentCommentModel, IMomentInfo } from 'commonModule/type/ajax/moment'
+import type { IMomentCommentModel, IMomentInfo } from '../../../../../common/type/ajax/moment'
 import { defineStore } from 'pinia'
 import { Logger } from '@beaver-im/beaver/renderer'
 import {
@@ -30,7 +30,7 @@ import {
   getMomentListApi,
   getMomentRootCommentsApi,
   likeMomentApi,
-} from '@beaver-im/app-moment/renderer/api/moment'
+} from '../../../../api/moment'
 import { useUserStore } from '../user/user'
 
 const logger = new Logger('MomentStore')

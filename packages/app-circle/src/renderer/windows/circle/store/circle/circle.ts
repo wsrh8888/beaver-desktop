@@ -19,9 +19,9 @@
  * beaver-desktop-header-v2
  */
 
-import type { ICircleListItem } from '@beaver-im/app-circle/common/type/ajax/circle'
+import type { ICircleListItem } from '../../../../../common/type/ajax/circle'
 import { defineStore } from 'pinia'
-import { getMyCircleListApi } from '@beaver-im/app-circle/renderer/api/circle'
+import { getMyCircleListApi } from '../../../../api/circle'
 import { Logger } from '@beaver-im/beaver/renderer'
 
 const logger = new Logger('CircleWindowStore')
@@ -34,7 +34,7 @@ function parseCircleId(conversationId: string) {
 
 /**
  * 圈子独立窗口用：仅缓存「我的圈子」列表（HTTP）。
- * 主窗会话列表请用 app/pinia/circle，不要混用。
+ * 主窗会话列表用宿主 pinia/circle，不要混用。
  */
 export const useCircleStore = defineStore('useCircleWindowStore', {
   state: () => ({

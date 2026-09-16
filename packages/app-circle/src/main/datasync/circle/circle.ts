@@ -19,11 +19,12 @@
  * beaver-desktop-header-v2
  */
 
-import type { ICircleInfoVersionItem } from '@beaver-im/app-circle/common/type/ajax/datasync'
-import { CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
+import type { ICircleInfoVersionItem } from '../../../common/type/ajax/datasync'
+import { CIRCLE_NOTIFICATION_MODULE, NotificationCircleCommand } from '../../../common/type/notification'
 import { circleSyncApi, datasyncGetSyncCircleInfoApi } from '../../api/circle'
 import dbServiceCircle from '../../database/services/circle/circle'
-import { Logger, dataSyncCursor, sendMainNotification } from '@beaver-im/beaver/main'
+import circleSyncStatus from '../../database/services/circle/sync-status'
+import { Logger, sendMainNotification } from '@beaver-im/beaver/main'
 
 const logger = new Logger('CircleSync')
 
@@ -31,9 +32,7 @@ class CircleSync {
   async checkAndSync() {
     logger.info({ text: '开始同步圈子资料' })
     try {
-      const lastVersion = await dataSyncCursor.get({ module: 'circles' })
-        .then(cursor => cursor?.version || 0)
-        .catch(() => 0)
+      const lastVersion = await circleSyncStatus.getVersion()
 
       // 第一阶段：datasync 拿版本摘要
       const serverResponse = await datasyncGetSyncCircleInfoApi({ since: lastVersion })
@@ -51,13 +50,12 @@ class CircleSync {
         ? Math.max(...circleVersions.map(item => item.version || 0), lastVersion)
         : lastVersion
 
-      await dataSyncCursor.upsert({
-        module: 'circles',
-        version: maxVersion,
-        updatedAt: serverResponse.result?.serverTimestamp
+      await circleSyncStatus.upsert(
+        maxVersion,
+        serverResponse.result?.serverTimestamp
           ? Math.floor(serverResponse.result.serverTimestamp / 1000)
           : Math.floor(Date.now() / 1000),
-      }).catch(() => {})
+      )
 
       logger.info({
         text: '圈子资料同步完成',

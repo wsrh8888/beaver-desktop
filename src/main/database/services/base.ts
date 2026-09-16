@@ -7,15 +7,8 @@
  * beaver-desktop-header-v2
  */
 
-// 数据库服务基类
-// 注意：不能静态 import ../db。否则会形成
-// BaseService → db → initTables → app-circle 桶（含 Service）→ BaseService
-// 打包成 ESM 后触发 "Cannot access 'BaseService' before initialization"
-// 也不能 createRequire(相对路径)：打进 dist-electron 单文件后相对路径失效。
-import { getDb } from '../db-accessor'
-
-export abstract class BaseService {
-  protected get db() {
-    return getDb()
-  }
-}
+/**
+ * 宿主核心库 Service 与能力包统一使用 @beaver-im/beaver 的 BaseService。
+ * db 经 bindMain({ database: { getDb } }) 注入，避免与 db/initTables 静态循环依赖。
+ */
+export { BaseService } from '@beaver-im/beaver/main'

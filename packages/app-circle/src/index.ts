@@ -8,13 +8,12 @@
  */
 
 /**
- * @beaver-im/app-circle 圈子 app
+ * @beaver-im/app-circle 圈子能力包
  *
- *   @beaver-im/app-circle/main
- *   @beaver-im/app-circle/renderer
- *   @beaver-im/app-circle/common/type/*   圈子领域类型（ajax / db / ipc / notification）
+ *   main      — 圈子窗口 application + 主进程 activate（表/datasync/WS/IPC）
+ *   renderer  — 圈子独立窗口（circle-entry），不是主窗会话 store
+ *   common    — 圈子领域类型
  *
- * 平台：@beaver-im/beaver/main（logger/store/db/ajax/getBaseUrl/sendMainNotification/dataSyncCursor）
- * 依赖同级：@beaver-im/app-moment/renderer（MomentContentCard）
+ * 主窗会话列表 / 名片等仍在宿主；需要圈子窗口 UI 时可组合本包组件。
  */
 export {}

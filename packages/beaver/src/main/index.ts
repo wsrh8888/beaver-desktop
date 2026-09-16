@@ -16,5 +16,31 @@ export { getDirname, getBaseUrl, getCustom } from './config'
 export type { IHostCustom } from '../common/type/config'
 export { ajax } from './utils/request'
 export { sendMainNotification } from './ipc/main-to-render'
-export { BaseService, dataSyncCursor } from './database'
-export type { IDataSyncCursor } from './bind'
+export { BaseService } from './database'
+export { registerDataSync, getRegisteredDataSync } from './datasync/registry'
+export type { IDataSyncModule } from '../common/type/plugin'
+export { registerWsHandler, getWsHandler } from './ws/registry'
+export type { WsMessageHandler } from './ws/registry'
+export { registerDatabaseIpcHandler, getDatabaseIpcHandler, registerIpcHandler, getIpcHandler } from './ipc/registry'
+export type { DatabaseIpcHandler, IpcHandler } from './ipc/registry'
+export {
+  registerBridgeSession,
+  unregisterBridgeSession,
+  getBridgeSession,
+} from './bridge/registry'
+export type { IBridgeSession } from './bridge/registry'
+export { registerKeyboardBinding, setKeyboardBindingHandler } from './keyboard/registry'
+export type { KeyboardBindingHandler } from './keyboard/registry'
+export { registerTableInit, getRegisteredTableInits } from './database/table-init-registry'
+export type { TableInitFn } from './database/table-init-registry'
+export {
+  registerConversationDisplayProvider,
+  getConversationDisplayProviders,
+  resolveConversationDisplays,
+} from './conversation/display-registry'
+export type {
+  IConversationRef,
+  IConversationDisplay,
+  IConversationDisplayProvider,
+} from './conversation/display-registry'
+export { default as ApplicationBase } from './application/base'

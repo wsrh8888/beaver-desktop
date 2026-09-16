@@ -57,7 +57,7 @@
               <div class="conversation-checkbox">
                 <img
                   v-if="selectedId === item.conversationId"
-                  src="renderModule/assets/image/create-group/check.svg"
+                  src="../assets/check.svg"
                   alt="选中"
                 >
               </div>
@@ -75,7 +75,7 @@
               <div v-if="selectedItem" class="selected-conversation">
                 <span>{{ selectedItem.nickName }}</span>
                 <button class="remove-conversation" @click="clearSelection">
-                  <img src="renderModule/assets/image/create-group/remove.svg" alt="删除">
+                  <img src="../assets/remove.svg" alt="删除">
                 </button>
               </div>
               <div v-else class="empty-tip">
@@ -104,19 +104,17 @@
 </template>
 
 <script lang="ts">
-import Logger from 'renderModule/utils/logger';
+import { Logger } from '@beaver-im/beaver/renderer'
 const logger = new Logger('index')
 
-import type { IConversationInfoRes } from 'commonModule/type/ajax/chat'
-import type { IMessageMsg } from 'commonModule/type/ws/message-types'
-import { CacheType } from 'commonModule/type/cache/cache'
-import searchIcon from 'renderModule/assets/image/create-group/search.svg'
+import type { IConversationPickItem, IShareMessagePayload } from '../types'
+import { CacheType } from '@beaver-im/beaver-ui/cache'
+import searchIcon from '../assets/search.svg'
 import BeaverButton from '@beaver-im/beaver-ui/button/index.vue'
 import BeaverDialog from '@beaver-im/beaver-ui/dialog/dialog.vue'
 import BeaverImage from '@beaver-im/beaver-ui/image/index.vue'
 import BeaverInput from '@beaver-im/beaver-ui/input/Input.vue'
 import Message from '@beaver-im/beaver-ui/message'
-import { ChatCore } from 'renderModule/core/message/index'
 import { computed, defineComponent, onMounted, type PropType, ref } from 'vue'
 
 export default defineComponent({
@@ -137,7 +135,7 @@ export default defineComponent({
       default: '选择会话',
     },
     msg: {
-      type: Object as PropType<IMessageMsg | null>,
+      type: Object as PropType<IShareMessagePayload | null>,
       default: null,
     },
   },
@@ -147,7 +145,7 @@ export default defineComponent({
     const searchKeyword = ref('')
     const selectedId = ref('')
     const sending = ref(false)
-    const conversations = ref<IConversationInfoRes[]>([])
+    const conversations = ref<IConversationPickItem[]>([])
 
     const visible = computed({
       get: () => props.modelValue,
@@ -168,7 +166,7 @@ export default defineComponent({
       return conversations.value.find(c => c.conversationId === selectedId.value) || null
     })
 
-    const pickConversation = (item: IConversationInfoRes) => {
+    const pickConversation = (item: IConversationPickItem) => {
     logger.info({ text: 'pickConversation 开始' })
       selectedId.value = item.conversationId
     }
@@ -211,7 +209,14 @@ export default defineComponent({
       const chatType = target?.chatType === 2 ? 'group' : 'private'
       sending.value = true
       try {
-        await ChatCore.sendMessage(selectedId.value, props.msg, chatType)
+        const messageId = crypto.randomUUID()
+        const msgClone = JSON.parse(JSON.stringify(props.msg))
+        await (window as any).electron.websocket.chat.sendMessage({
+          conversationId: selectedId.value,
+          messageId,
+          msg: msgClone,
+          chatType,
+        })
         Message.success('已发送')
         emit('sent')
         handleClose()

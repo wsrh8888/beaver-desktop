@@ -64,7 +64,7 @@
             <div class="placeholder" />
             <div class="tab-actions">
               <button class="refresh-btn" @click="handleRefresh">
-                <img src="@beaver-im/app-moment/renderer/assets/image/moment/refresh.svg" alt="刷新" class="refresh-icon">
+                <img :src="refreshIcon" alt="刷新" class="refresh-icon">
               </button>
             </div>
           </div>
@@ -104,8 +104,9 @@
 </template>
 
 <script lang="ts">
-import type { IMomentInfo } from 'commonModule/type/ajax/moment'
+import type { IMomentInfo } from '../../../../../common/type/ajax/moment'
 import { computed, defineComponent, onMounted, onUnmounted, ref, watch } from 'vue'
+import refreshIcon from '../../../../assets/image/moment/refresh.svg'
 import { useMomentStore } from '../../store/moment/moment'
 import { useUserStore } from '../../store/user/user'
 import MomentContentCard from '../common/MomentContentCard.vue'
@@ -302,6 +303,7 @@ export default defineComponent({
       getFileName,
       displayUserName,
       displayAvatar,
+      refreshIcon,
     }
   },
 })

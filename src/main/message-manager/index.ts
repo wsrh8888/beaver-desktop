@@ -23,12 +23,12 @@ import { NotificationAppLifecycleCommand, NotificationModule } from 'commonModul
 import { dataSyncManager } from 'mainModule/datasync/manager.ts'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import Logger from 'mainModule/utils/logger'
+import { getWsHandler } from '@beaver-im/beaver/main'
 
 const logger = new Logger('MessageManager')
 import WsManager from 'mainModule/ws-manager/index'
 import messageBusiness from 'mainModule/business/chat/message'
 import chatMessageRouter from './receivers/chat/inedx'
-import { circleMessageRouter } from '@beaver-im/app-circle/main'
 import emojiMessageRouter from './receivers/emoji/index'
 import friendMessageRouter from './receivers/friend/index'
 import groupMessageRouter from './receivers/group/index'
@@ -191,6 +191,13 @@ class MessageManager {
    * @param wsMessage WebSocket 消息
    */
   private processMessage(wsMessage: any, source: 'ws' | 'queue') {
+    // 能力包自注册的 WS 处理器（如 CIRCLE_OPERATION）
+    const registered = getWsHandler(wsMessage.command)
+    if (registered) {
+      void registered(wsMessage.content)
+      return
+    }
+
     switch (wsMessage.command) {
       case 'CHAT_MESSAGE':
         chatMessageRouter.processChatMessage(wsMessage.content)
@@ -200,9 +207,6 @@ class MessageManager {
         break
       case 'GROUP_OPERATION':
         groupMessageRouter.processGroupMessage(wsMessage.content)
-        break
-      case 'CIRCLE_OPERATION':
-        circleMessageRouter.processCircleMessage(wsMessage.content)
         break
       case 'NOTIFICATION':
         notificationMessageRouter.processNotificationMessage(wsMessage.content)
@@ -222,7 +226,7 @@ class MessageManager {
         }
         break
       default:
-        logger.warn({ text: '未处理的消息类型', data: { command: wsMessage.command } })
+        logger.warn({ text: '未处理的消息类型', data: { command: wsMessage.command, source } })
     }
   }
 }

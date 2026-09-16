@@ -23,9 +23,9 @@ import type {
   IWorkbenchEmbedBounds,
   IWorkbenchEmbedStatePayload,
   IWorkbenchModule,
-} from 'commonModule/type/preload/workbench'
-import { WORKBENCH_EMBED_STATE_CHANNEL } from 'commonModule/type/main/web-contents-view/workbench'
-import { WorkbenchCommand } from 'commonModule/type/ipc/command'
+} from '@beaver-im/app-workbench/common/type/preload/workbench'
+import { WORKBENCH_EMBED_STATE_CHANNEL } from '@beaver-im/app-workbench/common/type/main/web-contents-view/workbench'
+import { WorkbenchCommand } from '@beaver-im/app-workbench/common/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'preloadModule/utils/ipcRender'
 

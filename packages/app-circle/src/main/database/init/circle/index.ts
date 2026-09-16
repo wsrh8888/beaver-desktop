@@ -20,8 +20,10 @@
  */
 
 import { initCirclesTable } from './circles'
+import { initCircleSyncStatusTable } from './sync-status'
 
 export const initCircleTables = (db: any) => {
   const sqlite = db.$client
   initCirclesTable(sqlite)
+  initCircleSyncStatusTable(sqlite)
 }

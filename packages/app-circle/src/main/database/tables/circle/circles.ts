@@ -19,7 +19,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { IDBCircle } from '@beaver-im/app-circle/common/type/database/db/circle'
+import type { IDBCircle } from '../../../../common/type/database/db/circle'
 import { sql } from 'drizzle-orm'
 import { integer, sqliteTable, text } from 'drizzle-orm/sqlite-core'
 

@@ -23,7 +23,7 @@ import type { Application } from 'commonModule/type/app/application'
 import path from 'node:path'
 import { BrowserWindow } from 'electron'
 import { __dirname } from 'mainModule/config'
-import ApplicationBase from './common/base'
+import { ApplicationBase } from '@beaver-im/beaver/main'
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('LoginApplication')

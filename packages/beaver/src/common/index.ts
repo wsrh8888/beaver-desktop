@@ -19,5 +19,6 @@
  *   @beaver-im/beaver/common/type/ajax
  *   @beaver-im/beaver/common/type/ajax/common
  *   @beaver-im/beaver/common/type/config
+ *   @beaver-im/beaver/common/config
  */
 export {}

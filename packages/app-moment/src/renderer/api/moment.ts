@@ -36,7 +36,7 @@ import type {
   IGetMomentListRes,
   ILikeMomentReq,
   ILikeMomentRes,
-} from 'commonModule/type/ajax/moment'
+} from '../../common/type/ajax/moment'
 import { ajax, getBaseUrl } from '@beaver-im/beaver/renderer'
 
 /**
