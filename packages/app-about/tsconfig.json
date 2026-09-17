@@ -6,12 +6,12 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": "./",
     "jsx": "preserve",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "paths": {
-      "@appMainModule/*": ["./src/main/*"],
-      "@appRenderModule/*": ["./src/renderer/*"]
+      "@packageCommon/*": ["./src/common/*"],
+      "@packageMain/*": ["./src/main/*"],
+      "@packageRender/*": ["./src/renderer/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts"]

@@ -6,18 +6,12 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": "./",
     "jsx": "preserve",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "paths": {
-      "@beaver-im/app-circle": ["./src/index.ts"],
-      "@beaver-im/app-circle/*": ["./src/*"],
-      "@beaver-im/beaver": ["../beaver/src/index.ts"],
-      "@beaver-im/beaver/*": ["../beaver/src/*"],
-      "@beaver-im/beaver-ui": ["../beaver-ui/src/index.ts"],
-      "@beaver-im/beaver-ui/*": ["../beaver-ui/src/*"],
-      "@beaver-im/beaver-biz": ["../beaver-biz/src/index.ts"],
-      "@beaver-im/beaver-biz/*": ["../beaver-biz/src/*"]
+      "@packageCommon/*": ["./src/common/*"],
+      "@packageMain/*": ["./src/main/*"],
+      "@packageRender/*": ["./src/renderer/*"]
     }
   },
   "include": ["src/**/*.ts", "src/**/*.vue", "src/**/*.d.ts"]

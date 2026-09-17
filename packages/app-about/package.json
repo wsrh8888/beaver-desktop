@@ -14,7 +14,10 @@
   ],
   "scripts": {
     "dev": "vite build --mode renderer --watch",
-    "build": "vite build --mode main && vite build --mode renderer"
+    "build_main": "vite build --mode main",
+    "build_render": "vite build --mode renderer",
+    "build": "pnpm run build_main && pnpm run build_render",
+    "package": "pnpm run build_main && pnpm run build_render"
   },
   "dependencies": {
     "@beaver-im/beaver": "file:../beaver",

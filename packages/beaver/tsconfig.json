@@ -6,12 +6,12 @@
     "strict": true,
     "skipLibCheck": true,
     "noEmit": true,
-    "baseUrl": "./",
     "jsx": "preserve",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "paths": {
-      "@beaver-im/beaver": ["./src/index.ts"],
-      "@beaver-im/beaver/*": ["./src/*"]
+      "@packageCommon/*": ["./src/common/*"],
+      "@packageMain/*": ["./src/main/*"],
+      "@packageRender/*": ["./src/renderer/*"]
     }
   },
   "include": ["src/**/*.ts", "src/renderer/**/*.less"]

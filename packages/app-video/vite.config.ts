@@ -14,7 +14,7 @@
  *
  * 产物：
  *   dist/main.js
- *   dist/renderer.js (+renderer.css / assets)
+ *   dist/renderer.js (+ renderer.css / assets)
  *   dist/video.html
  */
 import path from 'node:path'
@@ -24,12 +24,13 @@ import { defineConfig, type Plugin, type UserConfig } from 'vite'
 import vue from '@vitejs/plugin-vue'
 import svgLoader from 'vite-svg-loader'
 
-const root = __dirname
+const root = import.meta.dirname
 
-const sharedResolve = {
-  alias: {
-    '@beaver-im/beaver': path.resolve(root, '../beaver/src'),
-  },
+/** 包内别名：跨层引用走别名，避免深层相对路径 */
+const alias = {
+  '@packageCommon': path.resolve(root, 'src/common'),
+  '@packageMain': path.resolve(root, 'src/main'),
+  '@packageRender': path.resolve(root, 'src/renderer'),
 }
 
 /** lib 保住 named export；写盘后再用 esbuild 压成单行 */
@@ -56,9 +57,46 @@ function minifyMainDist(): Plugin {
   }
 }
 
-function mainConfig(): UserConfig {
+export default defineConfig(({ mode }): UserConfig => {
+  if (mode === 'renderer') {
+    return {
+      root,
+      base: './',
+      plugins: [
+        vue(),
+        svgLoader({ defaultImport: 'url' }),
+      ],
+      resolve: { alias },
+      esbuild: {
+        legalComments: 'none',
+      },
+      build: {
+        outDir: 'dist',
+        emptyOutDir: false,
+        minify: 'esbuild',
+        cssMinify: true,
+        sourcemap: false,
+        rollupOptions: {
+          input: {
+            video: path.resolve(root, 'video.html'),
+          },
+          output: {
+            entryFileNames: 'renderer.js',
+            chunkFileNames: 'assets/[name]-[hash].js',
+            assetFileNames: (info) => {
+              if (info.names.some(n => n.endsWith('.css')))
+                return 'renderer.css'
+              return 'assets/[name]-[hash][extname]'
+            },
+          },
+        },
+      },
+    }
+  }
+
   return {
     plugins: [minifyMainDist()],
+    resolve: { alias },
     build: {
       outDir: 'dist',
       emptyOutDir: true,
@@ -87,47 +125,4 @@ function mainConfig(): UserConfig {
       },
     },
   }
-}
-
-function rendererConfig(): UserConfig {
-  return {
-    root,
-    base: './',
-    plugins: [
-      vue(),
-      svgLoader({ defaultImport: 'url' }),
-    ],
-    resolve: sharedResolve,
-    esbuild: {
-      legalComments: 'none',
-    },
-    build: {
-      outDir: 'dist',
-      emptyOutDir: false,
-      minify: 'esbuild',
-      cssMinify: true,
-      sourcemap: false,
-      rollupOptions: {
-        input: {
-          video: path.resolve(root, 'video.html'),
-        },
-        output: {
-          entryFileNames: 'renderer.js',
-          chunkFileNames: 'assets/[name]-[hash].js',
-          compact: true,
-          assetFileNames: (info) => {
-            if (info.name && info.name.endsWith('.css'))
-              return 'renderer.css'
-            return 'assets/[name]-[hash][extname]'
-          },
-        },
-      },
-    },
-  }
-}
-
-export default defineConfig(({ mode }) => {
-  if (mode === 'renderer')
-    return rendererConfig()
-  return mainConfig()
 })

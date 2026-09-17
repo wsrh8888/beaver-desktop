@@ -22,9 +22,9 @@
 import type { ICircleSyncReq, ICircleSyncRes } from '../../common/type/ajax/circle'
 import type { IGetSyncCircleInfoReq, IGetSyncCircleInfoRes } from '../../common/type/ajax/datasync'
 import { ajax, getBaseUrl } from '@beaver-im/beaver/main'
-
-export const circleSyncApi = (data: ICircleSyncReq) => {
-  return ajax<ICircleSyncRes>({
+import type { IAjaxResponse } from '@beaver-im/beaver/common'
+export const circleSyncApi = (data: ICircleSyncReq): Promise<IAjaxResponse<ICircleSyncRes>> => {
+  return ajax<IAjaxResponse<ICircleSyncRes>>({
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/circle/v1/circle/sync`,

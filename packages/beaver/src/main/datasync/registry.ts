@@ -7,7 +7,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { IDataSyncModule } from '../../common/type/plugin'
+import type { IDataSyncModule } from '@packageCommon/type/plugin'
 
 const modules: IDataSyncModule[] = []
 

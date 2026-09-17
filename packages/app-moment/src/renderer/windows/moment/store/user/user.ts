@@ -19,9 +19,9 @@
  * beaver-desktop-header-v2
  */
 
-import type { IStoreDataMap } from 'commonModule/type/mainStore'
-import type { IStorageModule } from 'commonModule/type/preload/storage'
-import type { IUserInfo } from 'commonModule/type/store/userInfo'
+import type { IStoreDataMap } from '@packageCommon/type/mainStore'
+import type { IStorageModule } from '@packageCommon/type/preload/storage'
+import type { IUserInfo } from '@packageCommon/type/store/userInfo'
 import { defineStore } from 'pinia'
 import { Logger } from '@beaver-im/beaver/renderer'
 

@@ -23,7 +23,7 @@ import { createPinia } from 'pinia'
 import { createApp } from 'vue'
 import { initWindow } from '@beaver-im/beaver/renderer'
 import App from './App.vue'
-import '@beaver-im/beaver/renderer/assets/style/index.less'
+import '@beaver-im/beaver/renderer.css'
 
 initWindow()
 

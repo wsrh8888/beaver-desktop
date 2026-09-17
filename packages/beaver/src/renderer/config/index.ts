@@ -7,4 +7,4 @@
  * beaver-desktop-header-v2
  */
 
-export { getBaseUrl } from '../../common/config'
+export { getBaseUrl } from '@packageCommon/config'

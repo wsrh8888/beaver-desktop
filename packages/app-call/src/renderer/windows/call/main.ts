@@ -24,7 +24,7 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import notificationManager from './notification-manager'
 import { initWindow } from '@beaver-im/beaver/renderer'
-import '@beaver-im/beaver/renderer/assets/style/index.less'
+import '@beaver-im/beaver/renderer.css'
 
 initWindow()
 

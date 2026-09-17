@@ -7,7 +7,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { ILogger } from '../../../common/type/logger'
+import type { ILogger } from '@packageCommon/type/logger'
 import { getMainRuntime } from '../../bind'
 
 /** 主进程 Logger 门面（对齐原 mainModule/utils/logger，实现由宿主 bind） */

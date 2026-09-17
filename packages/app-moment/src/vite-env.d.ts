@@ -11,5 +11,5 @@ declare module '*.svg' {
   export default src
 }
 
-/** 渲染进程 preload 桥；完整类型仍在宿主 commonModule/type/preload */
+/** 渲染进程 preload 桥；完整类型在 @packageCommon/type/preload */
 declare const electron: any

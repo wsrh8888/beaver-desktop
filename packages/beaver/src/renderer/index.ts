@@ -8,12 +8,12 @@
  */
 
 /** @beaver-im/beaver 渲染进程出口（直接依赖 electron.xxx，无需 bind） */
+import './assets/style/index.less'
+
 export { default as Logger } from './utils/logger'
-export { ajax } from './utils/request'
-export type { AjaxFn, IAjaxRequestConfig, IAjaxResponse } from './utils/request'
-export { uploadFile, selectAndUploadFile, uploadFileFromBase64 } from './utils/upload'
-export type { UploadResult, UploadFileType, UploadStyle } from './utils/upload'
-export { getBaseUrl } from './config'
-export { getUserId } from './user'
-export { initWindow } from './utils/init/window'
-export { uploadFileApi } from './api/file'
+export * from './utils/request'
+export * from './utils/upload'
+export * from './config'
+export * from './user'
+export * from './utils/init/window'
+export * from './api/file'

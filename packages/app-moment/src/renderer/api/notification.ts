@@ -10,7 +10,7 @@
 import type {
   IMarkReadByCategoryReq,
   IMarkReadByCategoryRes,
-} from 'commonModule/type/ajax/notification'
+} from '@packageCommon/type/ajax/notification'
 import { ajax, getBaseUrl } from '@beaver-im/beaver/renderer'
 
 /** 按分类标记通知已读（朋友圈 inbox 用） */

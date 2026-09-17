@@ -7,8 +7,8 @@
  * beaver-desktop-header-v2
  */
 
-import type { IHostCustom } from '../../common/type/config'
-import { getBaseUrl as getCommonBaseUrl } from '../../common/config'
+import type { IHostCustom } from '@packageCommon/type/config'
+import { getBaseUrl as getCommonBaseUrl } from '@packageCommon/config'
 import { getMainRuntime } from '../bind'
 
 /**

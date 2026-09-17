@@ -8,8 +8,11 @@
     "jsx": "preserve",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "paths": {
-      "@beaver-im/beaver": ["./src/index.ts"],
-      "@beaver-im/beaver/*": ["./src/*"]
+      "@beaver-im/beaver": ["./src/common/index.ts"],
+      "@beaver-im/beaver/*": ["./src/*"],
+      "@packageCommon/*": ["./src/common/*"],
+      "@packageMain/*": ["./src/main/*"],
+      "@packageRender/*": ["./src/renderer/*"]
     },
     "noEmit": false,
     "declaration": true,
@@ -18,12 +21,13 @@
     "rootDir": "src"
   },
   "include": [
-    "src/index.ts",
+    "src/common/index.ts",
     "src/main/index.ts",
-    "src/common/**/*.ts"
+    "src/renderer/index.ts",
+    "src/common/**/*.ts",
+    "src/renderer/vite-env.d.ts"
   ],
   "exclude": [
-    "src/renderer/**",
     "node_modules"
   ]
 }

@@ -4,20 +4,37 @@
   "private": true,
   "type": "module",
   "description": "Beaver 官方包：common + main + renderer（插件可见门面）。宿主内部类型仍在 src/common",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/common.js",
+  "types": "./dist/common/index.d.ts",
   "exports": {
-    ".": "./dist/index.js",
-    "./common": "./dist/index.js",
-    "./main": "./dist/main.js",
-    "./renderer": "./dist/renderer.js"
+    ".": {
+      "types": "./dist/common/index.d.ts",
+      "import": "./dist/common.js"
+    },
+    "./common": {
+      "types": "./dist/common/index.d.ts",
+      "import": "./dist/common.js"
+    },
+    "./main": {
+      "types": "./dist/main/index.d.ts",
+      "import": "./dist/main.js"
+    },
+    "./renderer": {
+      "types": "./dist/renderer/index.d.ts",
+      "import": "./dist/renderer.js"
+    },
+    "./renderer.css": "./dist/renderer.css"
   },
   "files": [
     "dist"
   ],
   "scripts": {
     "dev": "vite build --mode common --watch",
-    "build": "vite build --mode common && vite build --mode main && vite build --mode renderer && tsc -p tsconfig.build.json"
+    "build_common": "vite build --mode common",
+    "build_main": "vite build --mode main",
+    "build_render": "vite build --mode renderer",
+    "tsc": "tsc -p tsconfig.build.json",
+    "package": "pnpm run build_common && pnpm run build_main && pnpm run build_render && pnpm run tsc"
   },
   "peerDependencies": {
     "electron": ">=28"
@@ -25,8 +42,10 @@
   "devDependencies": {
     "@types/uuid": "^10.0.0",
     "axios": "^1.20.0",
+    "less": "^4.9.1",
     "moment": "^2.31.0",
     "typescript": "^7.0.2",
-    "uuid": "^14.0.2"
+    "uuid": "^14.0.2",
+    "vite": "^8.3.0"
   }
 }

@@ -43,9 +43,9 @@ import MomentContentCard from '@beaver-im/app-moment/renderer/windows/moment/com
 | `mainModule/utils/request/request` | HTTP 客户端 |
 | `mainModule/ipc/main-to-render` | `sendMainNotification` |
 | `mainModule/database/services/base` | `BaseService` 基类 |
-| `commonModule/*` | 类型契约（ajax / database / preload / app） |
+| `@packageCommon/*` | 类型契约（ajax / preload / mainStore / store） |
 
-这些是跨 app 共享的内核能力，不随本包迁移。
+moment 所需的类型契约已随本包迁移（`src/common/type`），不再依赖宿主 commonModule。
 
 ## 迁移后改动的宿主文件（仅 3 处，改成包名引用）
 

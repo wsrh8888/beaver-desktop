@@ -8,17 +8,20 @@
  */
 
 /**
- * @beaver-im/beaver/common — 官方对外契约（插件可依赖）
+ * @beaver-im/beaver — common 层（插件契约类型 + 运行时 config）
  *
- * 只放能力包会 import 的 type；宿主内部大片 ajax/pinia/view 仍在 src/common。
- *
- *   @beaver-im/beaver/common/type/logger
- *   @beaver-im/beaver/common/type/mainStore
- *   @beaver-im/beaver/common/type/plugin
- *   @beaver-im/beaver/common/type/app/application
- *   @beaver-im/beaver/common/type/ajax
- *   @beaver-im/beaver/common/type/ajax/common
- *   @beaver-im/beaver/common/type/config
- *   @beaver-im/beaver/common/config
+ *   .          — 本模块（common）
+ *   ./main     — 主进程门面
+ *   ./renderer — 渲染进程门面
  */
-export {}
+
+// ── 插件契约类型 ──
+export type * from './type/app/application'
+export type * from './type/plugin'
+export type * from './type/mainStore'
+export type * from './type/ajax'
+export type * from './type/ajax/common'
+export type * from './type/config'
+
+// ── 运行时 config 值（运行时从 process.custom / electron.app 读取环境） ──
+export * from './config'
