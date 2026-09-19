@@ -27,6 +27,12 @@ import Logger from 'renderModule/utils/logger'
 import { useConversationStore } from '../conversation/conversation'
 
 const logger = new Logger('MessageStore')
+
+const streamMeta = new Map<string, { lastSeq: number, done: boolean }>()
+
+function streamMessageId(streamId: string) {
+  return `stream:${streamId}`
+}
 /**
  * @description: 聊天消息存储和管理
  * 核心职责：
@@ -54,6 +60,11 @@ export const useMessageStore = defineStore('useMessageStore', {
       currentMinSeq: number // 当前加载的最小消息序列号（用于加载历史消息）
       currentMaxSeq: number // 当前加载的最大消息序列号（用于增量同步）
     }>(),
+
+    /**
+     * 流式草稿。key 为会话 ID。不落库，终稿到达后清掉已结束的草稿。
+     */
+    streamDrafts: new Map<string, IChatHistory[]>(),
   }),
 
   getters: {
@@ -85,6 +96,13 @@ export const useMessageStore = defineStore('useMessageStore', {
       const messages = state.chatHistory.get(conversationId) || []
       return messages.length > 0 ? messages[messages.length - 1] : null
     },
+
+    /**
+     * 当前会话还在往外吐的草稿。正式消息到达前先显示在列表末尾。
+     */
+    getStreamDrafts: state => (conversationId: string) => {
+      return [...(state.streamDrafts.get(conversationId) || [])]
+    },
   },
 
   actions: {
@@ -94,6 +112,8 @@ export const useMessageStore = defineStore('useMessageStore', {
     reset() {
       this.chatHistory.clear()
       this.messagePagination.clear()
+      this.streamDrafts.clear()
+      streamMeta.clear()
     },
 
     /**
@@ -227,6 +247,9 @@ export const useMessageStore = defineStore('useMessageStore', {
 
       this.chatHistory.set(conversationId, history)
 
+      // 终稿已经进来了，清掉同一发送者已经说完的草稿，避免和正式气泡叠在一起。
+      this.dropFinishedStreams(conversationId, message.sender?.userId)
+
       // 更新消息分页状态的序列号范围
       const pagination = this.messagePagination.get(conversationId)
       if (pagination) {
@@ -319,6 +342,79 @@ export const useMessageStore = defineStore('useMessageStore', {
      */
     removeMessage(conversationId: string, messageId: string) {
       this.removeMessages(conversationId, [messageId])
+    },
+
+    /**
+     * 按 streamId 拼接增量。乱序或重复的 seq 丢掉，不写本地库。
+     */
+    applyStream(payload: {
+      conversationId: string
+      streamId: string
+      senderId: string
+      delta: string
+      seq: number
+      done: boolean
+    }) {
+      const messageId = streamMessageId(payload.streamId)
+      const meta = streamMeta.get(messageId) || { lastSeq: 0, done: false }
+      if (payload.seq > 0 && payload.seq <= meta.lastSeq) {
+        if (payload.done)
+          meta.done = true
+        streamMeta.set(messageId, meta)
+        return
+      }
+      if (payload.seq > 0)
+        meta.lastSeq = payload.seq
+      if (payload.done)
+        meta.done = true
+      streamMeta.set(messageId, meta)
+
+      const list = [...(this.streamDrafts.get(payload.conversationId) || [])]
+      const existing = list.find(item => item.messageId === messageId)
+      const nextText = `${existing?.msg?.textMsg?.content || ''}${payload.delta || ''}`
+      const draft: IChatHistory = {
+        id: 0,
+        messageId,
+        conversationId: payload.conversationId,
+        seq: 0,
+        msg: { type: 1, textMsg: { content: nextText } },
+        sender: {
+          userId: payload.senderId,
+          avatar: existing?.sender?.avatar || '',
+          nickName: existing?.sender?.nickName || '',
+          userType: existing?.sender?.userType || 1,
+        },
+        created_at: existing?.created_at || new Date().toISOString(),
+        status: 1,
+      }
+      if (existing) {
+        const index = list.findIndex(item => item.messageId === messageId)
+        list[index] = draft
+      }
+      else {
+        list.push(draft)
+      }
+      this.streamDrafts.set(payload.conversationId, list)
+    },
+
+    /**
+     * 正式消息到达后，去掉同一发送者已经结束的流式草稿。
+     */
+    dropFinishedStreams(conversationId: string, senderId?: string) {
+      if (!senderId)
+        return
+      const list = this.streamDrafts.get(conversationId)
+      if (!list?.length)
+        return
+      const kept = list.filter((item) => {
+        const meta = streamMeta.get(item.messageId)
+        if (!meta?.done || item.sender?.userId !== senderId)
+          return true
+        streamMeta.delete(item.messageId)
+        return false
+      })
+      if (kept.length !== list.length)
+        this.streamDrafts.set(conversationId, kept)
     },
 
     /**

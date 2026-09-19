@@ -78,7 +78,7 @@
   },
   "dependencies": {
     "@beaver-im/app-about": "file:packages/app-about",
-    "@beaver-im/app-ai": "file:..\\beaver-agent\\agent_electron",
+    "@beaver-im/app-ai": "link:../beaver-agent/agent_electron",
     "@beaver-im/app-audio": "file:packages/app-audio",
     "@beaver-im/app-call": "file:packages/app-call",
     "@beaver-im/app-circle": "file:packages/app-circle",

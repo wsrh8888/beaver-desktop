@@ -34,8 +34,9 @@ import type { IWindowModule } from './window'
 import type { ICallModule } from './call'
 import type { IKeyboardModule } from './keyboard'
 import type { ISettingsModule } from '@beaver-im/app-settings/common/type/preload/settings'
-import type { IWorkbenchModule } from './workbench'
+import type { IWorkbenchModule } from '@beaver-im/app-workbench/common/type/preload/workbench'
 import type { IFsModule } from './fs'
+import type { IAgentHostModule } from '@beaver-im/app-ai/common/type/preload/agent'
 
 /**
  * @description: Electron preload接口
@@ -125,4 +126,9 @@ export interface ElectronAPP {
    * @description: 通用文件系统（与业务解耦）
    */
   fs: IFsModule
+
+  /**
+   * @description: AI 本机工具（文件 / shell 在主进程执行）
+   */
+  agent: IAgentHostModule
 }

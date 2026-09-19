@@ -27,7 +27,7 @@
       'multi-selected': messageViewStore.isMultiSelectMode && messageViewStore.selectedMessageIds.includes(message.messageId),
     }">
       <!-- 多选复选框 -->
-      <div v-if="messageViewStore.isMultiSelectMode && message.sender.userId !== ''" class="message-checkbox"
+      <div v-if="messageViewStore.isMultiSelectMode && message.sender.userId !== '' && !String(message.messageId).startsWith('stream:')" class="message-checkbox"
         @click.stop="messageViewStore.toggleMessageSelect(message.messageId)">
         <span
           :class="messageViewStore.selectedMessageIds.includes(message.messageId) ? 'cb-checked' : 'cb-unchecked'" />
@@ -168,7 +168,11 @@ export default defineComponent({
 
     const messages = computed(() => {
       const currentId = messageViewStore.currentChatId
-      return currentId ? messageStore.getChatHistory(currentId) : []
+      if (!currentId)
+        return []
+      const history = messageStore.getChatHistory(currentId)
+      const drafts = messageStore.getStreamDrafts(currentId)
+      return drafts.length ? [...history, ...drafts] : history
     })
 
     // 判断messageViewStore.currentChatId的值是否发生变化
@@ -205,8 +209,8 @@ export default defineComponent({
 
     // 处理右键菜单
     const handleContextMenu = (event: MouseEvent, message: any) => {
-      // 多选模式下禁用右键菜单
-      if (messageViewStore.isMultiSelectMode)
+      // 多选模式下禁用右键菜单。流式草稿还没落库，不能走撤回和删除。
+      if (messageViewStore.isMultiSelectMode || String(message?.messageId || '').startsWith('stream:'))
         return
 
       event.preventDefault()
@@ -304,7 +308,8 @@ export default defineComponent({
         const list = messages.value
         if (!list.length)
           return ''
-        return list[list.length - 1].messageId
+        const last = list[list.length - 1]
+        return `${last.messageId}:${last.msg?.textMsg?.content?.length || 0}`
       },
       (newLastId, oldLastId) => {
         if (newLastId && newLastId !== oldLastId)

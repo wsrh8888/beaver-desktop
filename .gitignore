@@ -15,7 +15,7 @@ dist-ssr
 release/*
 dist/*
 cache/*
-
+.turbo
 # Editor directories and files
 !.vscode/extensions.json
 .idea

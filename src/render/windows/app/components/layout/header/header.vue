@@ -87,7 +87,6 @@ export default defineComponent({
 
   .window-controls {
     display: flex;
-    -webkit-app-region: no-drag;
   }
 
   .window-control-button {

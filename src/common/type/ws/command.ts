@@ -19,7 +19,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { IChatMessageSendBody } from './message-types'
+import type { IChatMessageSendBody, IChatMessageStreamBody } from './message-types'
 
 /**
  * @description: WebSocket 命令类型枚举 - 与服务端保持一致
@@ -84,6 +84,8 @@ export enum WsType {
   GROUP_MESSAGE_RECEIVE = 'group_message_receive', // 服务端->客户端 群聊消息接收
   PRIVATE_MESSAGE_SYNC = 'private_message_sync', // 服务端->客户端 私聊消息同步（发送者的其他设备）
   GROUP_MESSAGE_SYNC = 'group_message_sync', // 服务端->客户端 群聊消息同步（发送者的其他设备）
+  CHAT_MESSAGE_STREAM_SEND = 'chat_message_stream_send', // 客户端->服务端 流式增量，不落库
+  CHAT_MESSAGE_STREAM_RECEIVE = 'chat_message_stream_receive', // 服务端->客户端 流式增量，不落库
   MESSAGE_READ_RECEIPT = 'message_read_receipt', // 服务端->客户端 已读回执
   MESSAGE_RECALL = 'message_recall', // 服务端->客户端 消息撤回
 
@@ -142,6 +144,8 @@ export interface IWsData<T extends WsType = WsType> {
 export interface WsTypeToBodyMap {
   [WsType.PRIVATE_MESSAGE_SEND]: IChatMessageSendBody
   [WsType.GROUP_MESSAGE_SEND]: IChatMessageSendBody
+  [WsType.CHAT_MESSAGE_STREAM_SEND]: IChatMessageStreamBody
+  [WsType.CHAT_MESSAGE_STREAM_RECEIVE]: IChatMessageStreamBody
 }
 
 // 辅助类型：获取指定 WsType 对应的消息体类型

@@ -11,6 +11,7 @@
  * 宿主 Vite 辅助。
  * 能力包窗口用字符串名单重定向到源码 html，不读 package.json。
  */
+import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
@@ -81,7 +82,27 @@ export function packageHtmlDev() {
   }
 }
 
-const EXTERNAL = ['electron', 'electron-screenshots', 'ws', '@beaver-im/app-ai']
+const EXTERNAL = ['electron', 'electron-screenshots', 'ws']
+
+const require = createRequire(import.meta.url)
+
+/**
+ * 仓库外能力包的真实目录。
+ * 用 node 解析，不写死相对路径，包 link 到任意位置都能读到。
+ */
+export function linkedPackageRoots(): string[] {
+  const names = ['@beaver-im/app-ai']
+  const roots: string[] = []
+  for (const name of names) {
+    try {
+      roots.push(path.dirname(require.resolve(`${name}/package.json`)))
+    }
+    catch {
+      // 未安装时跳过，不影响宿主其它窗口
+    }
+  }
+  return roots
+}
 
 export function externalOf(id: string) {
   return EXTERNAL.some(name => id === name || id.startsWith(`${name}/`))

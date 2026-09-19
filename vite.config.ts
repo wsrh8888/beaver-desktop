@@ -14,7 +14,7 @@ import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron'
 import electronRenderer from 'vite-plugin-electron-renderer'
 import svgLoader from 'vite-svg-loader'
-import { createAliases, externalOf, htmlInputs, packageHtmlDev, projectRoot } from './vite.apps'
+import { createAliases, externalOf, htmlInputs, linkedPackageRoots, packageHtmlDev, projectRoot } from './vite.apps'
 
 const alias = createAliases()
 const pages = htmlInputs()
@@ -82,7 +82,7 @@ export default defineConfig(({ command }) => {
     host: '127.0.0.1',
     strictPort: false,
     fs: {
-      allow: [path.resolve(projectRoot, '..')],
+      allow: [path.resolve(projectRoot, '..'), ...linkedPackageRoots()],
     },
   },
   build: {

@@ -150,6 +150,12 @@ class MessageManager {
    * @param wsMessage WebSocket 消息
    */
   private handleWsMessage(wsMessage: any) {
+    // 流式帧不进同步队列。排队会把正在往外吐的字卡住，而这帧本身不落库。
+    if (this.isStreamFrame(wsMessage)) {
+      this.processMessage(wsMessage, 'ws')
+      return
+    }
+
     // 如果正在数据同步，加入消息队列
     if (this.isDataSyncing) {
       this.messageQueue.push(wsMessage)
@@ -158,6 +164,11 @@ class MessageManager {
 
     // 正常处理消息
     this.processMessage(wsMessage, 'ws')
+  }
+
+  private isStreamFrame(wsMessage: any) {
+    return wsMessage?.command === 'CHAT_MESSAGE'
+      && wsMessage?.content?.data?.type === 'chat_message_stream_receive'
   }
 
   /**

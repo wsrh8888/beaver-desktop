@@ -167,6 +167,10 @@ export enum NotificationChatCommand {
    * 消息媒体状态表更新 - message_medias表有变更
    */
   MESSAGE_MEDIA_UPDATE = 'messageMediaUpdate',
+  /**
+   * 流式增量。不写库，窗口按 streamId 拼接，终稿仍走正式消息。
+   */
+  MESSAGE_STREAM = 'messageStream',
 }
 
 export enum NotificationEmojiCommand {

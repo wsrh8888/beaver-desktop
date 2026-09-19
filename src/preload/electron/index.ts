@@ -22,6 +22,11 @@
 import type { ElectronAPP } from 'commonModule/type/preload'
 
 import { contextBridge } from 'electron'
+import { createAgentModule } from '@beaver-im/app-ai/preload'
+import { createSettingsModule } from '@beaver-im/app-settings/preload'
+import { createWorkbenchModule } from '@beaver-im/app-workbench/preload'
+import { IEvent } from 'commonModule/type/ipc/event'
+import ipcRenderManager from 'preloadModule/utils/ipcRender'
 
 import { appModule } from './app'
 import { authModule } from './auth'
@@ -36,17 +41,32 @@ import { updateModule } from './update'
 import { websocketModule } from './websocket'
 import { windowModule } from './window'
 import { keyboardModule } from './keyboard'
-import { settingsModule } from './settings'
-import { workbenchModule } from './workbench'
 import { callModule } from './call'
 import { fsModule } from './fs'
+
+/**
+ * 业务包只描述自己的命令。事件通道留在宿主。
+ * 这份 preload 被每个子窗口共用，所以 agent 不限于 AI 窗口。
+ * 工作台内嵌网页走 bridge.mjs，不挂这些能力。
+ */
+const ipc = {
+  invoke: <T = unknown>(command: string, data?: unknown) => {
+    return ipcRenderManager.invoke<T>(IEvent.RenderToMainSyncMsg, command, data)
+  },
+  on: (channel: string, callback: (event: unknown, ...args: any[]) => void) => {
+    ipcRenderManager.on(channel, callback)
+  },
+  off: (channel: string, callback: (event: unknown, ...args: any[]) => void) => {
+    ipcRenderManager.removeListener(channel, callback)
+  },
+}
 
 const electronAPI: ElectronAPP = {
   logger: loggerModule,
   window: windowModule,
   call: callModule,
   keyboard: keyboardModule,
-  settings: settingsModule,
+  settings: createSettingsModule(ipc),
   app: appModule,
   clipboard: clipboardModule,
   storage: storageModule,
@@ -57,8 +77,9 @@ const electronAPI: ElectronAPP = {
   notification: notificationModule,
   auth: authModule,
   datasync: datasyncModule,
-  workbench: workbenchModule,
+  workbench: createWorkbenchModule(ipc),
   fs: fsModule,
+  agent: createAgentModule(ipc),
 }
 
 contextBridge.exposeInMainWorld('electron', electronAPI)

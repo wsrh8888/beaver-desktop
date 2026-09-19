@@ -10,6 +10,7 @@
       "development": "./src/main/index.ts",
       "default": "./dist/main.js"
     },
+    "./preload": "./src/preload/workbench.ts",
     "./common/*": "./src/common/*.ts",
     "./renderer": "./src/renderer/index.ts",
     "./renderer/*": "./src/renderer/*.ts",

@@ -18,8 +18,8 @@ importers:
         specifier: file:packages/app-about
         version: link:packages/app-about
       '@beaver-im/app-ai':
-        specifier: file:..\beaver-agent\agent_electron
-        version: file:../beaver-agent/agent_electron(electron@44.4.1)(marked@18.0.13)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@7.0.2)(vue@3.5.42(typescript@7.0.2)))(vue-router@5.3.1(@vue/compiler-sfc@3.5.42)(esbuild@0.28.2)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@7.0.2)(vue@3.5.42(typescript@7.0.2)))(rolldown@1.2.8)(vite@8.3.0(@types/node@22.20.3)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))(vue@3.5.42(typescript@7.0.2)))(vue@3.5.42(typescript@7.0.2))
+        specifier: link:../beaver-agent/agent_electron
+        version: link:../beaver-agent/agent_electron
       '@beaver-im/app-audio':
         specifier: file:packages/app-audio
         version: link:packages/app-audio
@@ -614,25 +614,6 @@ packages:
   '@babel/types@7.29.8':
     resolution: {integrity: sha512-Vj1jF3cPfxg7OAfoI7QnVKLoILlm2JF9pnVHrX8qx7AHMiYWT+NDAA7jChlNgRS4WTLc/fD1lXLmPixluj+3Gg==}
     engines: {node: '>=6.9.0'}
-
-  '@beaver-im/app-ai@file:../beaver-agent/agent_electron':
-    resolution: {directory: ../beaver-agent/agent_electron, type: directory}
-    peerDependencies:
-      electron: '>=28'
-      marked: ^18.0.0
-      pinia: ^4.0.0
-      vue: ^3.5.0
-      vue-router: ^4.2.0
-
-  '@beaver-im/beaver-ui@file:packages/beaver-ui':
-    resolution: {directory: packages/beaver-ui, type: directory}
-    peerDependencies:
-      vue: ^3.5.0
-
-  '@beaver-im/beaver@file:packages/beaver':
-    resolution: {directory: packages/beaver, type: directory}
-    peerDependencies:
-      electron: '>=28'
 
   '@beaver-im/js-sdk@1.0.2':
     resolution: {integrity: sha512-54khJHBJ/tkLIuDEm3LnFHEBrxbGI2TFoOieLmUjAmkoH4ogU3GiDrJhrG+5tNF1+qLwix1XAGmrETJkA1r/6A==}
@@ -4603,27 +4584,6 @@ snapshots:
     dependencies:
       '@babel/helper-string-parser': 7.29.7
       '@babel/helper-validator-identifier': 7.29.7
-
-  '@beaver-im/app-ai@file:../beaver-agent/agent_electron(electron@44.4.1)(marked@18.0.13)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@7.0.2)(vue@3.5.42(typescript@7.0.2)))(vue-router@5.3.1(@vue/compiler-sfc@3.5.42)(esbuild@0.28.2)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@7.0.2)(vue@3.5.42(typescript@7.0.2)))(rolldown@1.2.8)(vite@8.3.0(@types/node@22.20.3)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))(vue@3.5.42(typescript@7.0.2)))(vue@3.5.42(typescript@7.0.2))':
-    dependencies:
-      '@beaver-im/beaver': file:packages/beaver(electron@44.4.1)
-      '@beaver-im/beaver-ui': file:packages/beaver-ui(electron@44.4.1)(vue@3.5.42(typescript@7.0.2))
-      electron: 44.4.1
-      marked: 18.0.13
-      pinia: 4.0.3(@vue/devtools-api@8.2.1)(typescript@7.0.2)(vue@3.5.42(typescript@7.0.2))
-      vue: 3.5.42(typescript@7.0.2)
-      vue-router: 5.3.1(@vue/compiler-sfc@3.5.42)(esbuild@0.28.2)(pinia@4.0.3(@vue/devtools-api@8.2.1)(typescript@7.0.2)(vue@3.5.42(typescript@7.0.2)))(rolldown@1.2.8)(vite@8.3.0(@types/node@22.20.3)(esbuild@0.28.2)(jiti@2.7.0)(less@4.9.1)(terser@5.51.2)(tsx@4.23.13)(yaml@2.9.1))(vue@3.5.42(typescript@7.0.2))
-
-  '@beaver-im/beaver-ui@file:packages/beaver-ui(electron@44.4.1)(vue@3.5.42(typescript@7.0.2))':
-    dependencies:
-      '@beaver-im/beaver': file:packages/beaver(electron@44.4.1)
-      vue: 3.5.42(typescript@7.0.2)
-    transitivePeerDependencies:
-      - electron
-
-  '@beaver-im/beaver@file:packages/beaver(electron@44.4.1)':
-    dependencies:
-      electron: 44.4.1
 
   '@beaver-im/js-sdk@1.0.2(typescript@7.0.2)':
     dependencies:

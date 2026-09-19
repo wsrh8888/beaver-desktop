@@ -83,6 +83,38 @@ class DatabaseChatMessageEventManager {
       })
     }
   }
+
+  /**
+   * 流式增量只改内存草稿，不拉库、不加未读。
+   */
+  processMessageStream(data: {
+    conversationId?: string
+    streamId?: string
+    senderId?: string
+    delta?: string
+    seq?: number
+    done?: boolean
+  }) {
+    const conversationId = data?.conversationId || ''
+    const streamId = data?.streamId || ''
+    if (!conversationId || !streamId)
+      return
+
+    logger.info({
+      text: '收到流式增量',
+      data: { conversationId, streamId, seq: data.seq, done: data.done },
+    })
+
+    const messageStore = useMessageStore()
+    messageStore.applyStream({
+      conversationId,
+      streamId,
+      senderId: data.senderId || '',
+      delta: data.delta || '',
+      seq: Number(data.seq) || 0,
+      done: Boolean(data.done),
+    })
+  }
 }
 
 export default new DatabaseChatMessageEventManager()

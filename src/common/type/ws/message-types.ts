@@ -23,6 +23,18 @@ export interface ITextMsg {
   content: string
 }
 
+/**
+ * 流式增量。不落库、不占 seq。终稿仍走正式消息。
+ */
+export interface IChatMessageStreamBody {
+  streamId: string
+  senderId?: string
+  conversationId?: string
+  delta: string
+  seq: number
+  done: boolean
+}
+
 export interface IImageMsg {
   fileUrl: string
   width?: number

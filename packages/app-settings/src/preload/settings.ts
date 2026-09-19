@@ -19,25 +19,21 @@
  * beaver-desktop-header-v2
  */
 
-import type { IUserSettings } from '@beaver-im/app-settings/common/type/settings'
-import type { ISettingsModule } from '@beaver-im/app-settings/common/type/preload/settings'
-import { SettingsCommand } from '@beaver-im/app-settings/common/type/ipc/command'
-import { IEvent } from 'commonModule/type/ipc/event'
-import ipcRenderManager from 'preloadModule/utils/ipcRender'
+import type { IUserSettings } from '../common/type/settings'
+import type { ISettingsModule } from '../common/type/preload/settings'
+import { SettingsCommand } from '../common/type/ipc/command'
 
-export const settingsModule: ISettingsModule = {
-  get: () => {
-    return ipcRenderManager.invoke<IUserSettings>(
-      IEvent.RenderToMainSyncMsg,
-      SettingsCommand.SETTINGS_GET,
-      {},
-    )
-  },
-  update: (settings: IUserSettings) => {
-    return ipcRenderManager.invoke<IUserSettings>(
-      IEvent.RenderToMainSyncMsg,
-      SettingsCommand.SETTINGS_UPDATE,
-      { settings },
-    )
-  },
+export interface IPreloadInvoke {
+  invoke: <T = unknown>(command: string, data?: unknown) => Promise<T>
+}
+
+export function createSettingsModule(ipc: IPreloadInvoke): ISettingsModule {
+  return {
+    get: () => {
+      return ipc.invoke<IUserSettings>(SettingsCommand.SETTINGS_GET, {})
+    },
+    update: (settings: IUserSettings) => {
+      return ipc.invoke<IUserSettings>(SettingsCommand.SETTINGS_UPDATE, { settings })
+    },
+  }
 }

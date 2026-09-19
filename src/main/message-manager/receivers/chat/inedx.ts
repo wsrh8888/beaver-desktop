@@ -19,12 +19,14 @@
  * beaver-desktop-header-v2
  */
 
+import { WsType } from 'commonModule/type/ws/command'
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('ChatMessageRouter')
 import conversationReceiver from './conversation-receiver'
 import messageMediaReceiver from './message-media-receiver'
 import messageReceiver from './message-receiver'
+import streamReceiver from './stream-receiver'
 import userConversationReceiver from './user-conversation-receiver'
 
 /**
@@ -67,6 +69,11 @@ class ChatMessageRouter {
 
       case 'chat_message_media_receive':
         await this.messageMediaReceiver.handleTableUpdates(wsMessage.data.body)
+        break
+
+      // 流式增量。不落库，转给窗口按 streamId 拼接。
+      case WsType.CHAT_MESSAGE_STREAM_RECEIVE:
+        streamReceiver.handle(data)
         break
 
       default:

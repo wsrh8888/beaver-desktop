@@ -57,6 +57,9 @@ class ChatNotificationRouter {
       case NotificationChatCommand.MESSAGE_MEDIA_UPDATE:
         await messageMediaNotificationManager.processMessageMediaUpdate(params.data)
         break
+      case NotificationChatCommand.MESSAGE_STREAM:
+        await messageNotificationManager.processMessageStream(params.data)
+        break
       default:
         logger.warn({ text: '未知的聊天通知命令', data: { command: params.command } })
     }
