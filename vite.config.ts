@@ -14,25 +14,25 @@ import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron'
 import electronRenderer from 'vite-plugin-electron-renderer'
 import svgLoader from 'vite-svg-loader'
-import { createAliases, htmlInputs, projectRoot } from './vite.apps'
+import { createAliases, externalOf, htmlInputs, packageHtmlDev, projectRoot } from './vite.apps'
 
 const alias = createAliases()
 const pages = htmlInputs()
 
 /** preload 多入口共用 outDir：仅第一个 emptyOutDir */
-function preload(name: string, entry: string, emptyOutDir = false) {
+function preload(name: string, entry: string, conditions: string[], emptyOutDir = false) {
   return {
     onstart({ reload }: { reload: () => void }) {
       reload()
     },
     vite: {
-      resolve: { alias },
+      resolve: { alias, conditions },
       build: {
         outDir: 'dist-electron/preload',
         emptyOutDir,
         rollupOptions: {
           input: { [name]: entry },
-          external: ['electron', 'electron-screenshots'],
+          external: externalOf,
           output: {
             format: 'cjs' as const,
             inlineDynamicImports: true,
@@ -46,8 +46,11 @@ function preload(name: string, entry: string, emptyOutDir = false) {
   }
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => {
+  const conditions = command === 'serve' ? ['development'] : []
+  return {
   plugins: [
+    packageHtmlDev(),
     vue(),
     svgLoader({ defaultImport: 'url' }),
     electron([
@@ -56,21 +59,22 @@ export default defineConfig({
         vite: {
           build: {
             outDir: 'dist-electron',
-            emptyOutDir: true,
+            emptyOutDir: false,
             rollupOptions: {
-              external: ['electron', 'electron-screenshots', 'ws'],
+              external: externalOf,
             },
           },
-          resolve: { alias },
+          resolve: { alias, conditions },
         },
       },
-      preload('index', path.resolve(projectRoot, 'src/preload/electron/index.ts'), true),
-      preload('bridge', path.resolve(projectRoot, 'src/preload/bridge/index.ts')),
+      preload('index', path.resolve(projectRoot, 'src/preload/electron/index.ts'), conditions, true),
+      preload('bridge', path.resolve(projectRoot, 'src/preload/bridge/index.ts'), conditions),
     ]),
     electronRenderer(),
   ],
   resolve: {
     alias,
+    conditions,
     dedupe: ['vue', 'vue-router', 'pinia', 'marked'],
   },
   server: {
@@ -90,7 +94,7 @@ export default defineConfig({
         format: 'es',
         globals: { electron: 'electron' },
       },
-      external: ['electron', 'electron-screenshots'],
+      external: externalOf,
     },
   },
   css: {
@@ -108,4 +112,5 @@ export default defineConfig({
       ],
     },
   },
+  }
 })

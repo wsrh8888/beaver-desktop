@@ -8,7 +8,7 @@
  */
 
 import type { AxiosError, AxiosRequestConfig } from 'axios'
-import type { IAjaxRequestConfig, IAjaxResponse, AjaxFn } from '@packageCommon/type/ajax'
+import type { IAjaxRequestConfig, IAjaxResponse, AjaxFn } from '@beaver-im/beaver'
 import axios from 'axios'
 import moment from 'moment'
 import { v4 as uuidV4 } from 'uuid'

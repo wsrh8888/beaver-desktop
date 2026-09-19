@@ -8,38 +8,51 @@
   "types": "./dist/common/index.d.ts",
   "exports": {
     ".": {
+      "development": "./src/common/index.ts",
       "types": "./dist/common/index.d.ts",
-      "import": "./dist/common.js"
+      "import": "./dist/common.js",
+      "default": "./dist/common.js"
     },
     "./common": {
+      "development": "./src/common/index.ts",
       "types": "./dist/common/index.d.ts",
-      "import": "./dist/common.js"
+      "import": "./dist/common.js",
+      "default": "./dist/common.js"
     },
     "./main": {
+      "development": "./src/main/index.ts",
       "types": "./dist/main/index.d.ts",
-      "import": "./dist/main.js"
+      "import": "./dist/main.js",
+      "default": "./dist/main.js"
     },
     "./renderer": {
+      "development": "./src/renderer/index.ts",
       "types": "./dist/renderer/index.d.ts",
-      "import": "./dist/renderer.js"
+      "import": "./dist/renderer.js",
+      "default": "./dist/renderer.js"
     },
-    "./renderer.css": "./dist/renderer.css"
+    "./renderer.css": {
+      "development": "./src/renderer/assets/style/index.less",
+      "default": "./dist/renderer.css"
+    }
   },
   "files": [
     "dist"
   ],
   "scripts": {
-    "dev": "vite build --mode common --watch",
+    "dev": "concurrently -k -n common,main,renderer \"vite build --mode common --watch\" \"vite build --mode main --watch\" \"vite build --mode renderer --watch\"",
     "build_common": "vite build --mode common",
     "build_main": "vite build --mode main",
     "build_render": "vite build --mode renderer",
     "tsc": "tsc -p tsconfig.build.json",
-    "package": "pnpm run build_common && pnpm run build_main && pnpm run build_render && pnpm run tsc"
+    "build": "pnpm run build_common && pnpm run build_main && pnpm run build_render && pnpm run tsc",
+    "package": "pnpm run build"
   },
   "peerDependencies": {
     "electron": ">=28"
   },
   "devDependencies": {
+    "concurrently": "catalog:",
     "@types/uuid": "^10.0.0",
     "axios": "^1.20.0",
     "less": "^4.9.1",

@@ -7,7 +7,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { IStore, IStoreOptions } from '@packageCommon/type/mainStore'
+import type { IStore, IStoreOptions } from '@beaver-im/beaver'
 import { getMainRuntime } from '../bind'
 
 /**

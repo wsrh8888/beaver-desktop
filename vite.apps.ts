@@ -8,9 +8,8 @@
  */
 
 /**
- * 宿主 Vite 辅助：写死入口，不加魔法。
- * - 已走包内 dist 的能力包（app-about / app-audio / app-circle / app-moment / app-settings / app-video / app-image / app-updater / app-search / app-call / app-workbench）不进 SRC_APPS
- * - 下列包仍走源码 alias + 宿主编 html
+ * 宿主 Vite 辅助。
+ * 能力包窗口用字符串名单重定向到源码 html，不读 package.json。
  */
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
@@ -20,22 +19,12 @@ const nm = path.resolve(projectRoot, 'node_modules')
 
 export type ViteAlias = { find: string | RegExp, replacement: string }
 
-function pkg(...segs: string[]) {
-  return path.resolve(projectRoot, 'packages', ...segs)
-}
-
 function root(...segs: string[]) {
   return path.resolve(projectRoot, ...segs)
 }
 
-/** 还走源码的能力包（发版吃 dist 的不要写进来） */
-const SRC_APPS = [
-  'beaver-ui',
-  'beaver-biz',
-] as const
-
 export function createAliases(): ViteAlias[] {
-  const aliases: ViteAlias[] = [
+  return [
     { find: 'commonModule', replacement: root('src/common') },
     { find: 'mainModule', replacement: root('src/main') },
     { find: 'renderModule', replacement: root('src/render') },
@@ -43,24 +32,57 @@ export function createAliases(): ViteAlias[] {
     { find: 'vue-router', replacement: path.resolve(nm, 'vue-router') },
     { find: 'marked', replacement: path.resolve(nm, 'marked') },
   ]
-
-  for (const dir of SRC_APPS) {
-    const name = `@beaver-im/${dir}`
-    const src = pkg(dir, 'src')
-    aliases.push(
-      { find: new RegExp(`^${name.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}/(.*)$`), replacement: `${src}/$1` },
-      { find: name, replacement: path.join(src, 'index.ts') },
-    )
-  }
-
-  return aliases
 }
 
-/** 宿主要编的窗口 html（about 自带 dist，不在此列） */
+/** 宿主要编的窗口 html。app-ai 在仓库外，窗口走它自己的 dist，不进宿主 */
 export function htmlInputs(): Record<string, string> {
   return {
     app: root('app.html'),
     login: root('login.html'),
-    ai: root('ai.html'),
   }
+}
+
+/** 开发态 /<name>.html 对应的能力包源码页 */
+const PACKAGE_HTML = [
+  'packages/app-about/about.html',
+  'packages/app-audio/audio.html',
+  'packages/app-call/call.html',
+  'packages/app-call/call-incoming.html',
+  'packages/app-circle/circle.html',
+  'packages/app-image/image.html',
+  'packages/app-moment/moment.html',
+  'packages/app-search/search.html',
+  'packages/app-search/verify.html',
+  'packages/app-settings/settings.html',
+  'packages/app-updater/updater.html',
+  'packages/app-video/video.html',
+  'packages/app-workbench/workbench.html',
+]
+
+export function packageHtmlDev() {
+  return {
+    name: 'package-html-dev',
+    configureServer(server) {
+      server.middlewares.use((req, res, next) => {
+        const [pathname = '', query] = (req.url ?? '').split('?')
+        const file = pathname.replace(/^\//, '')
+        if (!file || file.startsWith('packages/'))
+          return next()
+        const target = PACKAGE_HTML.find(item => item.endsWith(`/${file}`))
+        if (!target)
+          return next()
+        // 必须改浏览器地址，html 里的 ./src 才能落到 packages/<app>/src
+        const location = query ? `/${target}?${query}` : `/${target}`
+        res.statusCode = 302
+        res.setHeader('Location', location)
+        res.end()
+      })
+    },
+  }
+}
+
+const EXTERNAL = ['electron', 'electron-screenshots', 'ws', '@beaver-im/app-ai']
+
+export function externalOf(id: string) {
+  return EXTERNAL.some(name => id === name || id.startsWith(`${name}/`))
 }

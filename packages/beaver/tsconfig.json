@@ -9,6 +9,7 @@
     "jsx": "preserve",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "paths": {
+      "@beaver-im/beaver": ["./src/common/index.ts"],
       "@packageCommon/*": ["./src/common/*"],
       "@packageMain/*": ["./src/main/*"],
       "@packageRender/*": ["./src/renderer/*"]

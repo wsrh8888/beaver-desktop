@@ -1,2 +1,7 @@
 packages:
+  - '.'
   - 'packages/*'
+
+catalog:
+  concurrently: ^9.2.1
+

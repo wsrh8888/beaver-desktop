@@ -6,14 +6,23 @@
   "description": "beaver 设置 app：main + settings.html。平台能力走 @beaver-im/beaver",
   "main": "./dist/main.js",
   "exports": {
-    "./main": "./dist/main.js",
+    "./main": {
+      "development": "./src/main/index.ts",
+      "default": "./dist/main.js"
+    },
+    "./common/*": "./src/common/*.ts",
+    "./renderer": "./src/renderer/index.ts",
+    "./renderer/*": "./src/renderer/*.ts",
     "./settings.html": "./dist/settings.html"
   },
   "files": [
     "dist"
   ],
+  "devDependencies": {
+    "concurrently": "catalog:"
+  },
   "scripts": {
-    "dev": "vite build --mode renderer --watch",
+    "dev": "concurrently -k -n main,renderer \"vite build --mode main --watch\" \"vite build --mode renderer --watch\"",
     "build_main": "vite build --mode main",
     "build_render": "vite build --mode renderer",
     "build": "pnpm run build_main && pnpm run build_render",

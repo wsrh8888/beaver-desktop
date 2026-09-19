@@ -97,18 +97,18 @@ git remote add upstream https://github.com/wsrh8888/beaver-desktop.git
 
 3. **Install dependencies**
 ```bash
-npm install
+pnpm install
 ```
 
 4. **Start development mode**
 ```bash
-npm run dev
+pnpm run dev
 ```
 
 5. **Build for testing**
 ```bash
-npm run build-renderer
-npm run package
+pnpm run build-renderer
+pnpm run package
 ```
 
 ## 📝 Coding Standards
@@ -222,9 +222,9 @@ git rebase upstream/main
 
 2. **Run tests and build**
 ```bash
-npm run lint
-npm run build-renderer
-npm run package
+pnpm run lint
+pnpm run build-renderer
+pnpm run package
 ```
 
 3. **Check formatting**

@@ -7,10 +7,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { ILogger } from '@packageCommon/type/logger'
-import type { IStore } from '@packageCommon/type/mainStore'
-import type { AjaxFn } from '@packageCommon/type/ajax'
-import type { IHostCustom } from '@packageCommon/type/config'
+import type { AjaxFn, IHostCustom, ILogger, IStore } from '@beaver-im/beaver'
 
 export type LogLevel = 'info' | 'warn' | 'error'
 

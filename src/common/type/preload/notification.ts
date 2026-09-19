@@ -23,7 +23,7 @@
  * 主进程通知渲染进程
  */
 import type { TrayMenuItem } from './app'
-import type { NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
+import type { NotificationCircleCommand } from '@beaver-im/app-circle/common'
 
 export enum NotificationModule {
   /**

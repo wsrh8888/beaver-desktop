@@ -22,6 +22,7 @@ export type * from './type/mainStore'
 export type * from './type/ajax'
 export type * from './type/ajax/common'
 export type * from './type/config'
+export type * from './type/logger'
 
 // ── 运行时 config 值（运行时从 process.custom / electron.app 读取环境） ──
 export * from './config'

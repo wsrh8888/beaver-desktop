@@ -60,6 +60,10 @@ class About extends ApplicationBase implements Application {
   }
 
   private loadAboutRender() {
+    if (process.env.VITE_DEV_SERVER_URL) {
+      this.loadRender()
+      return
+    }
     const html = require.resolve('@beaver-im/app-about/about.html')
     logger.info({ text: '加载包内 about.html', data: { html } })
     this.win.loadFile(html)

@@ -7,7 +7,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { AjaxFn, IAjaxRequestConfig, IAjaxResponse } from '@packageCommon/type/ajax'
+import type { AjaxFn, IAjaxRequestConfig, IAjaxResponse } from '@beaver-im/beaver'
 import { getMainRuntime } from '../../bind'
 
 /** 主进程 ajax 门面（实现由宿主 bind，能力包禁止 import mainModule/utils/request） */

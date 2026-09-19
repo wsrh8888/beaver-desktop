@@ -8,7 +8,7 @@
  */
 
 import type { INotificationPayload } from './types'
-import { NotificationCircleCommand } from '@beaver-im/app-circle/common/type/notification'
+import { NotificationCircleCommand } from '@beaver-im/app-circle/common'
 import Logger from 'renderModule/utils/logger'
 import circleNotificationManager from './circle'
 

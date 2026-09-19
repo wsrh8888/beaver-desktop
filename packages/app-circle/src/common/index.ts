@@ -10,10 +10,6 @@
 /**
  * @beaver-im/app-circle/common — 圈子领域契约（仅本能力包）
  *
- *   type/ajax/circle
- *   type/database/db/circle
- *   type/notification
- *
- * 平台类型用 @beaver-im/beaver/common；宿主内部其它域仍在 src/common。
+ * 对外只走本入口。平台类型用 @beaver-im/beaver/common；宿主内部其它域仍在 src/common。
  */
-export {}
+export * from './type/notification'

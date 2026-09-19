@@ -7,7 +7,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { ILogger } from '@packageCommon/type/logger'
+import type { ILogger } from '@beaver-im/beaver'
 
 function getElectron(): any {
   return (globalThis as any).electron || (globalThis as any).window?.electron

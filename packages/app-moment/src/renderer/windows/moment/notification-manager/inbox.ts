@@ -19,8 +19,8 @@
  * beaver-desktop-header-v2
  */
 
-import type { INotificationPayload } from '@packageCommon/type/preload/notification'
-import { NotificationModule, NotificationNotificationCommand } from '@packageCommon/type/preload/notification'
+import type { INotificationPayload } from '@beaver-im/app-moment/common'
+import { NotificationModule, NotificationNotificationCommand } from '@beaver-im/app-moment/common'
 import { useMomentNotificationStore } from '../store/notification/notification'
 import { useMomentStore } from '../store/moment/moment'
 import { Logger } from '@beaver-im/beaver/renderer';
