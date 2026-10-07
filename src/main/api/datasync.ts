@@ -52,6 +52,8 @@ import type {
   IGetSyncDeletedMessagesRes,
   IGetSyncMessageMediasReq,
   IGetSyncMessageMediasRes,
+  IGetSyncAgentConversationsReq,
+  IGetSyncAgentConversationsRes,
 } from 'commonModule/type/ajax/datasync'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
@@ -229,5 +231,16 @@ export const datasyncGetSyncMessageMediasApi = (data: IGetSyncMessageMediasReq) 
     method: 'POST',
     data,
     url: `${getBaseUrl()}/api/datasync/v1/getSyncMessageMedias`,
+  })
+}
+
+/**
+ * @description: 获取 Agent 会话版本摘要（增量/全量游标）
+ */
+export const datasyncGetSyncAgentConversationsApi = (data: IGetSyncAgentConversationsReq) => {
+  return ajax<IGetSyncAgentConversationsRes>({
+    method: 'POST',
+    data,
+    url: `${getBaseUrl()}/api/datasync/v1/getSyncAgentConversations`,
   })
 }

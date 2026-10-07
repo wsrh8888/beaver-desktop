@@ -27,6 +27,8 @@ import type { IGetNotificationEventsByIdsReq, IGetNotificationEventsByIdsRes, IG
 import type { IGetAllUsersRes, IUserInfoRes, IUserSyncByIdsReq, IUserSyncByIdsRes } from 'commonModule/type/ajax/user'
 import type { IDatabaseModule } from 'commonModule/type/preload/database'
 import { CIRCLE_DATABASE_IPC, DataCircleCommand } from '@beaver-im/app-circle/common/type/ipc/database'
+import { AI_DATABASE_IPC, DataAiCommand } from '@beaver-im/app-ai/common/type/ipc/database'
+import type { IDBAiArtifact, IDBAiChat, IDBAiMessage } from '@beaver-im/app-ai/common/type/database/db/ai'
 import { DatabaseCommand } from 'commonModule/type/ipc/command'
 import { DataChatCommand, DataEmojiCommand, DataFriendCommand, DataGroupCommand, DataNotificationCommand, DataUserCommand } from 'commonModule/type/ipc/database'
 import { IEvent } from 'commonModule/type/ipc/event'
@@ -182,6 +184,55 @@ export const databaseModule: IDatabaseModule = {
     getCircleList: async (): Promise<{ list: Array<{ circleId: string, name: string, avatar?: string }> }> => {
       return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, CIRCLE_DATABASE_IPC, {
         command: DataCircleCommand.GET_CIRCLE_LIST,
+      })
+    },
+  },
+  ai: {
+    listChats: async (): Promise<{ list: IDBAiChat[] }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, AI_DATABASE_IPC, {
+        command: DataAiCommand.LIST_CHATS,
+      })
+    },
+    getChat: async (params: { chatId: string }) => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, AI_DATABASE_IPC, {
+        command: DataAiCommand.GET_CHAT,
+        data: params,
+      })
+    },
+    upsertChat: async (params: IDBAiChat): Promise<{ ok: boolean }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, AI_DATABASE_IPC, {
+        command: DataAiCommand.UPSERT_CHAT,
+        data: params,
+      })
+    },
+    deleteChat: async (params: { chatId: string }): Promise<{ ok: boolean }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, AI_DATABASE_IPC, {
+        command: DataAiCommand.DELETE_CHAT,
+        data: params,
+      })
+    },
+    listMessages: async (params: { chatId: string }): Promise<{ list: IDBAiMessage[] }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, AI_DATABASE_IPC, {
+        command: DataAiCommand.LIST_MESSAGES,
+        data: params,
+      })
+    },
+    upsertMessage: async (params: IDBAiMessage): Promise<{ ok: boolean }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, AI_DATABASE_IPC, {
+        command: DataAiCommand.UPSERT_MESSAGE,
+        data: params,
+      })
+    },
+    upsertArtifact: async (params: IDBAiArtifact): Promise<{ ok: boolean }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, AI_DATABASE_IPC, {
+        command: DataAiCommand.UPSERT_ARTIFACT,
+        data: params,
+      })
+    },
+    deleteArtifact: async (params: { artifactId: string }): Promise<{ ok: boolean }> => {
+      return await ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, AI_DATABASE_IPC, {
+        command: DataAiCommand.DELETE_ARTIFACT,
+        data: params,
       })
     },
   },

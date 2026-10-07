@@ -31,13 +31,26 @@ import type {
   IListOfficialModelsReq,
   IListOfficialModelsRes,
   ISendAgentMessageReq,
+  ISendAgentMessageRes,
   IUpdateAgentModelReq,
   IUpdateAgentModelRes,
 } from 'commonModule/type/ajax/agent'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
-import Logger from 'renderModule/utils/logger';
+import Logger from 'renderModule/utils/logger'
 const logger = new Logger('agent')
+
+/**
+ * @description: 发消息给 Agent（HTTP 只返回 accepted；增量经 IM ws 推）
+ */
+export const sendAgentMessageApi = (data: ISendAgentMessageReq) => {
+  logger.info({ text: 'sendAgentMessageApi 开始' })
+  return ajax<ISendAgentMessageRes>({
+    method: 'POST',
+    url: `${baseUrl}/api/agent/v1/message/sendMessage`,
+    data,
+  })
+}
 
 
 /**

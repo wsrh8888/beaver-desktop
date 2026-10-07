@@ -116,10 +116,37 @@ export interface ICreateAgentRes {
   agent: IAgentItem
 }
 
+/** 多模态 part（用户真实输入） */
+export interface IAgentMessagePart {
+  type: 'text' | 'image' | 'file'
+  text?: string
+  fileId?: string
+  fileUrl?: string
+  name?: string
+  mime?: string
+  size?: number
+  width?: number
+  height?: number
+}
+
 export interface ISendAgentMessageReq {
-  agentId: string
-  content: string
+  conversationId?: string
+  topicId?: string
+  parts: IAgentMessagePart[]
+  interactMode?: 'ask' | 'plan' | 'craft'
+  permissionMode?: 'default' | 'full'
   clientMsgId?: string
   modelId?: string
   modelSource?: 'official' | 'custom'
+  /** workspace | chat | circle | moment */
+  module?: string
+  /** 场景绑定 ID，如 IM conversationId */
+  refId?: string
+}
+
+export interface ISendAgentMessageRes {
+  conversationId: string
+  topicId: string
+  messageId: string
+  status: string
 }

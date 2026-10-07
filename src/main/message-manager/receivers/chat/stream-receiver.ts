@@ -48,6 +48,8 @@ function parseStreamBody(raw: unknown): IChatMessageStreamBody | null {
     delta: typeof record.delta === 'string' ? record.delta : '',
     seq: Number(record.seq) || 0,
     done: Boolean(record.done),
+    event: typeof record.event === 'string' ? record.event : '',
+    dataJson: typeof record.dataJson === 'string' ? record.dataJson : '',
   }
 }
 
@@ -80,6 +82,8 @@ class StreamReceiver {
       delta: body.delta,
       seq: body.seq,
       done: body.done,
+      event: body.event || '',
+      dataJson: body.dataJson || '',
     })
   }
 }

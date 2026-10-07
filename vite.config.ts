@@ -62,6 +62,11 @@ export default defineConfig(({ command }) => {
             emptyOutDir: false,
             rollupOptions: {
               external: externalOf,
+              // 主进程打成单文件，避免 Rolldown 把 drizzle 拆成循环 chunk
+              //（indexes ↔ drizzle-orm）导致 Class extends value undefined
+              output: {
+                inlineDynamicImports: true,
+              },
             },
           },
           resolve: { alias, conditions },

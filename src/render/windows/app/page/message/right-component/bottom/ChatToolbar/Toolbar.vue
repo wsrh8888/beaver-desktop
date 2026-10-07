@@ -59,6 +59,9 @@ export default defineComponent({
         case 'screenshot':
           await handleScreenshot()
           break
+        case 'ai':
+          messageViewStore.toggleAiAssistant()
+          break
         default:
           break
       }

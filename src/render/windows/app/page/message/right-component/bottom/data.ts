@@ -19,6 +19,7 @@
  * beaver-desktop-header-v2
  */
 
+import CodeSvg from 'renderModule/assets/image/chat/code.svg'
 import EmojiSvg from 'renderModule/assets/image/chat/emoji.svg'
 import FileSvg from 'renderModule/assets/image/chat/file.svg'
 import ImageSvg from 'renderModule/assets/image/chat/image.svg'
@@ -49,5 +50,11 @@ export const toolList = [
     name: '图片',
     value: 'image',
     icon: ImageSvg,
+  },
+  {
+    id: 7,
+    name: 'AI助手',
+    value: 'ai',
+    icon: CodeSvg,
   },
 ]

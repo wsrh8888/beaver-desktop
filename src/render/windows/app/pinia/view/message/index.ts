@@ -56,6 +56,10 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
      */
     showEmoji: false,
     /**
+     * @description: 是否显示当前会话 AI 助手侧栏
+     */
+    showAiAssistant: false,
+    /**
      * @description: 聊天输入框高度
      */
     inputHeight: 151,
@@ -146,6 +150,20 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
     },
 
     /**
+     * @description: 打开/关闭当前会话 AI 助手侧栏
+     */
+    setAiAssistantShow(show: boolean) {
+      logger.info({ text: 'setAiAssistantShow 开始', data: { show } })
+      this.showAiAssistant = show
+      if (show)
+        this.showEmoji = false
+    },
+
+    toggleAiAssistant() {
+      this.setAiAssistantShow(!this.showAiAssistant)
+    },
+
+    /**
      * @description: 设置输入框高度
      */
     setInputHeight(height: number) {
@@ -209,6 +227,7 @@ export const useMessageViewStore = defineStore('useMessageViewStore', {
 
       // 退出多选模式
       this.exitMultiSelect()
+      this.showAiAssistant = false
 
       // 更新当前会话前，可以先根据新会话恢复 UI 状态 (由组件处理)
       const draft = this.getDraft(conversationId)

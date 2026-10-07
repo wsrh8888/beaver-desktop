@@ -19,6 +19,7 @@
  * beaver-desktop-header-v2
  */
 
+import type { IDBAiArtifact, IDBAiChat, IDBAiMessage } from '@beaver-im/app-ai/common/type/database/db/ai'
 import type { IChatConversationVerRangeReq, IChatConversationVerRangeRes, IChatHistoryReq, IChatHistoryRes, IChatMessageVerRangeReq, IChatMessageVerRangeRes, IConversationInfoReq, IConversationInfoRes, IRecentChatReq, IRecentChatRes } from '../ajax/chat'
 import type { IGetEmojiPackageEmojisReq, IGetEmojiPackageEmojisRes, IGetEmojiPackagesByIdsReq, IGetEmojiPackagesByIdsRes, IGetEmojiPackagesReq, IGetEmojiPackagesRes, IGetEmojisListReq, IGetEmojisListRes } from '../ajax/emoji'
 import type { IFriendListReq, IFriendListRes, IFriendVerRangeReq, IValidListReq, IValidListRes, IValidVerRangeReq } from '../ajax/friend'
@@ -116,6 +117,23 @@ export interface IDatabaseModule {
   }
   circle: {
     getCircleList(): Promise<{ list: Array<{ circleId: string, name: string, avatar?: string }> }>
+  }
+  /**
+   * @description: AI 助手本地会话 / 消息（@beaver-im/app-ai）
+   */
+  ai: {
+    listChats(): Promise<{ list: IDBAiChat[] }>
+    getChat(params: { chatId: string }): Promise<{
+      chat: IDBAiChat | null
+      messages: IDBAiMessage[]
+      artifacts: IDBAiArtifact[]
+    }>
+    upsertChat(params: IDBAiChat): Promise<{ ok: boolean }>
+    deleteChat(params: { chatId: string }): Promise<{ ok: boolean }>
+    listMessages(params: { chatId: string }): Promise<{ list: IDBAiMessage[] }>
+    upsertMessage(params: IDBAiMessage): Promise<{ ok: boolean }>
+    upsertArtifact(params: IDBAiArtifact): Promise<{ ok: boolean }>
+    deleteArtifact(params: { artifactId: string }): Promise<{ ok: boolean }>
   }
   /**
    * @description: 表情相关

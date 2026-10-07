@@ -20,6 +20,7 @@
  */
 
 import Logger from 'renderModule/utils/logger'
+import { useChatAiAssistantStore } from '../../pinia/chatAiAssistant'
 import { useMessageStore } from '../../pinia/message/message'
 import { useConversationStore } from '../../pinia/conversation/conversation'
 import { useMessageViewStore } from '../../pinia/view/message'
@@ -94,6 +95,8 @@ class DatabaseChatMessageEventManager {
     delta?: string
     seq?: number
     done?: boolean
+    event?: string
+    dataJson?: string
   }) {
     const conversationId = data?.conversationId || ''
     const streamId = data?.streamId || ''
@@ -102,8 +105,24 @@ class DatabaseChatMessageEventManager {
 
     logger.info({
       text: '收到流式增量',
-      data: { conversationId, streamId, seq: data.seq, done: data.done },
+      data: { conversationId, streamId, seq: data.seq, done: data.done, event: data.event },
     })
+
+    // 会话 AI 侧栏 pending 优先（conversationId 已与 IM 会话 ID 对齐）
+    const aiHandled = useChatAiAssistantStore().applyStream({
+      conversationId,
+      streamId,
+      delta: data.delta || '',
+      done: Boolean(data.done),
+      event: data.event || '',
+      dataJson: data.dataJson || '',
+    })
+    if (aiHandled)
+      return
+
+    // Agent 成帧事件（带 event）不进 IM 消息流草稿，避免与侧栏同 ID 时污染聊天区
+    if (data.event)
+      return
 
     const messageStore = useMessageStore()
     messageStore.applyStream({

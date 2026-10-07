@@ -57,6 +57,11 @@
       @close="hideDetails"
       @quit="handleCircleQuit"
     />
+    <AiAssistantComponent
+      v-if="currentDetailType === 'ai'"
+      :visible="currentDetailType === 'ai'"
+      @close="hideDetails"
+    />
     <CirclePostDetail
       v-if="activePost"
       :post="activePost"
@@ -79,6 +84,7 @@ import { computed, defineComponent, ref, watch } from 'vue'
 import { CircleDetails as CircleDetailsComponent, CirclePostDetail, CircleRight, parseCircleId } from '@beaver-im/app-circle/renderer'
 import { useConversationStore } from '../../pinia/conversation/conversation'
 import { useMessageViewStore } from '../../pinia/view/message'
+import AiAssistantComponent from './detail-components/aiAssistant/index.vue'
 import GroupAssistantOverlay from './detail-components/groupAssistant/index.vue'
 import GroupDetailsComponent from './detail-components/groupDetails/index.vue'
 import MergedForwardViewer from './detail-components/MergedForwardViewer.vue'
@@ -101,6 +107,7 @@ export default defineComponent({
     GroupDetailsComponent,
     PrivateDetailsComponent,
     CircleDetailsComponent,
+    AiAssistantComponent,
     CirclePostDetail,
     CircleRight,
     MergedForwardViewer,
@@ -142,13 +149,31 @@ export default defineComponent({
 
     const handleShowDetails = (type: DetailType) => {
       logger.info({ text: 'handleShowDetails 开始' })
+      if (type === 'ai')
+        messageViewStore.setAiAssistantShow(true)
+      else
+        messageViewStore.setAiAssistantShow(false)
       currentDetailType.value = type
     }
 
     const hideDetails = () => {
       logger.info({ text: 'hideDetails 开始' })
+      messageViewStore.setAiAssistantShow(false)
       currentDetailType.value = null
     }
+
+    watch(
+      () => messageViewStore.showAiAssistant,
+      (show) => {
+        if (show) {
+          if (currentDetailType.value !== 'ai')
+            currentDetailType.value = 'ai'
+          return
+        }
+        if (currentDetailType.value === 'ai')
+          currentDetailType.value = null
+      },
+    )
 
     const handleShowPostDetail = (post: ICirclePostItem) => {
       logger.info({ text: 'handleShowPostDetail 开始' })

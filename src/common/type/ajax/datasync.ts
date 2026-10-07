@@ -348,3 +348,29 @@ export interface INotificationReadCursorVersionItem {
   category: string // 分类
   version: number // 已读游标版本
 }
+
+// 获取 Agent 会话同步请求
+export interface IGetSyncAgentConversationsReq {
+  since?: number // 会话 version 游标，只返回 version > since；不传或 0 则全量
+  module?: string // 入口模块：workspace/chat/circle/moment
+  limit?: number // 分页大小
+}
+
+// 获取 Agent 会话同步响应
+export interface IGetSyncAgentConversationsRes {
+  conversationVersions: IAgentConversationVersionItem[] // 变更的 Agent 会话摘要
+  serverVersion: number // 本次最大会话 version，作客户端游标
+  serverTimestamp: number // 服务端处理时间戳
+}
+
+// Agent 会话版本信息
+export interface IAgentConversationVersionItem {
+  conversationId: string // 会话ID
+  version: number // 会话版本号（消息同步游标）
+  latestTopicId: string // 最新话题ID
+  title: string // 会话标题
+  updatedAt: number // 更新时间毫秒
+  preview: string // 最新消息预览
+  module: string // 入口模块
+  workspace: string // cloud=云端轻会话；local=本机空间（可远程控盘）
+}
