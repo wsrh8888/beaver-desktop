@@ -22,6 +22,7 @@
 import type { IChatMessageStreamBody } from 'commonModule/type/ws/message-types'
 import { NotificationChatCommand, NotificationModule } from 'commonModule/type/preload/notification'
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
+import { handleHostToolCall } from '../agent'
 import Logger from 'mainModule/utils/logger'
 
 const logger = new Logger('ChatStreamReceiver')
@@ -70,9 +71,15 @@ class StreamReceiver {
       return
     }
 
+    // host 事件：服务端下发的本机工具调用。主进程直接执行并回传，不转发渲染进程。
+    if (body.event === 'host') {
+      void handleHostToolCall(conversationId, body.dataJson || '')
+      return
+    }
+
     logger.info({
       text: '转发流式增量',
-      data: { conversationId, streamId: body.streamId, seq: body.seq, done: body.done },
+      data: { conversationId, streamId: body.streamId, seq: body.seq, done: body.done, event: body.event },
     })
 
     sendMainNotification('*', NotificationModule.DATABASE_CHAT, NotificationChatCommand.MESSAGE_STREAM, {

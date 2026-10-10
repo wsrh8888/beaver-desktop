@@ -183,6 +183,10 @@ class Main {
   async beforeAppReady() {
     await activatePlugins()
     logger.info({ text: '插件激活完成' })
+    // 启动 McpManager（builtin in-process server）+ 注册 CONFIRM_TOOL IPC。不依赖 ws/登录态。
+    const { getMcpManager } = await import('./mcp')
+    await getMcpManager()
+    logger.info({ text: 'MCP 模块初始化完成' })
     messageManager.init()
     logger.info({ text: '消息管理器初始化完成' })
     ipcManager.init()

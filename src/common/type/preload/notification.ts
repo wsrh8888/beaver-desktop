@@ -72,6 +72,12 @@ export enum NotificationModule {
    * 通话通知
    */
   CALL = 'ws:call',
+  /**
+   * MCP 工具确认通知（主进程 → AI 渲染进程）
+   * 服务端下发 requiresConfirm 工具的 host 事件后，主进程把工具入参 + schema
+   * 发给 AI 渲染进程渲染确认卡片，用户确认/编辑后经 IPC 回传主进程续跑。
+   */
+  MCP_CONFIRM = 'mcp:confirm',
 }
 
 export enum NotificationCallCommand {
@@ -211,6 +217,20 @@ export enum NotificationNotificationCommand {
   READ_CURSOR_UPDATE = 'readCursorUpdate',
 }
 
+export enum NotificationMcpConfirmCommand {
+  /**
+   * 请求用户确认工具调用。
+   * data: { confirmId, server, tool, description, args, schema }
+   * 渲染卡片，用户确认/编辑后经 IPC ai:confirmTool 回传主进程。
+   */
+  REQUEST_CONFIRM = 'requestConfirm',
+  /**
+   * 取消确认（主进程主动取消，如超时）。渲染进程据此关闭卡片。
+   * data: { confirmId }
+   */
+  CANCEL_CONFIRM = 'cancelConfirm',
+}
+
 export enum NotificationAppLifecycleCommand {
   /**
    * 应用生命周期状态变更 - 统一的状态变更通知
@@ -275,6 +295,7 @@ export interface NotificationCommandMap {
   [NotificationModule.MEDIA_VIEWER]: NotificationMediaViewerCommand
   [NotificationModule.DATABASE_NOTIFICATION]: NotificationNotificationCommand
   [NotificationModule.CALL]: NotificationCallCommand
+  [NotificationModule.MCP_CONFIRM]: NotificationMcpConfirmCommand
 }
 
 export interface INotificationPayload<M extends NotificationModule> {

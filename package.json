@@ -94,6 +94,7 @@
     "@beaver-im/beaver-ui": "file:packages/beaver-ui",
     "@beaver-im/js-sdk": "^1.0.2",
     "@koa/router": "^15.7.0",
+    "@modelcontextprotocol/sdk": "^1.30.0",
     "better-sqlite3": "^13.0.3",
     "browser-md5-file": "^1.1.1",
     "drizzle-orm": "^0.45.2",
@@ -107,7 +108,8 @@
     "marked": "^18.0.13",
     "node-machine-id": "^1.1.12",
     "uuid": "^14.0.2",
-    "ws": "^8.21.3"
+    "ws": "^8.21.3",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^9.5.1",

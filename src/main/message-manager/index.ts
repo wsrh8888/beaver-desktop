@@ -87,6 +87,11 @@ class MessageManager {
       await dataSyncManager.autoSync()
       this.isDataSyncing = false
 
+      // ws 连通且数据同步完成后，上报本机 MCP 能力清单（builtin + 用户配的 server）。
+      // 失败只告警不阻断，服务端收不到 manifest 时 LLM 不会下发本机工具。
+      const { getMcpManager } = await import('mainModule/mcp')
+      void getMcpManager().then(m => m.reportCapabilities())
+
       // 处理队列中的所有消息
       this.processMessageQueue()
 
