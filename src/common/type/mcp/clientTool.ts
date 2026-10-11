@@ -30,6 +30,8 @@ export interface IClientToolPayload {
   args?: Record<string, any>
   /** 本机空间 id（客户端 spaceId）。空=云端轻会话。 */
   workspaceId?: string
+  /** 本机空间绝对路径。桌面优先用本地登记的 path。 */
+  workspacePath?: string
   /** 该空间所在电脑的设备 id。 */
   deviceId?: string
 }

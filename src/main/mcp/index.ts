@@ -34,6 +34,7 @@ import { getMcpServers } from '@beaver-im/beaver/main'
 import type { IMcpServerManifest, IMcpToolSchema } from 'commonModule/type/mcp'
 import { reportCapabilitiesApi } from 'mainModule/api/mcp'
 import Logger from 'mainModule/utils/logger'
+import { runWithToolRoot } from './toolRoot'
 import { BUILTIN_TOOL_META, createBuiltinServer } from './tools'
 import { TOOL_META as WINDOW_TOOL_META, createWindowServer } from './tools/window'
 
@@ -115,12 +116,12 @@ class McpManager {
    * 按 server+tool 调用。
    * 返回 { ok, data, error }，对齐 IHostToolResult（data.text = MCP text content）。
    */
-  async callTool(server: string, tool: string, args: Record<string, any>): Promise<{ ok: boolean, data?: Record<string, any>, error?: string }> {
+  async callTool(server: string, tool: string, args: Record<string, any>, root = ''): Promise<{ ok: boolean, data?: Record<string, any>, error?: string }> {
     const entry = this.entries.get(server)
     if (!entry)
       return { ok: false, error: `unknown mcp server: ${server || '(empty)'}` }
     try {
-      const result = await entry.client.callTool({ name: tool, arguments: args })
+      const result = await runWithToolRoot(root, () => entry.client.callTool({ name: tool, arguments: args }))
       const text = extractText(result)
       return { ok: true, data: { text } }
     }

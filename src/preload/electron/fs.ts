@@ -23,7 +23,11 @@ import type {
   FsSystemPathName,
   IFsModule,
   IFsMkdirResult,
+  IFsDirEntry,
   IFsOpenDirectoryResult,
+  IFsTextFileResult,
+  IFsWriteTextFileResult,
+  IFsDataUrlResult,
 } from 'commonModule/type/preload/fs'
 import { FsCommand } from 'commonModule/type/ipc/command'
 import { IEvent } from 'commonModule/type/ipc/event'
@@ -50,5 +54,17 @@ export const fsModule: IFsModule = {
     defaultPath?: string
   }): Promise<IFsOpenDirectoryResult | null> => {
     return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, FsCommand.SHOW_OPEN_DIRECTORY, options || {})
+  },
+  readDir: (dirPath: string): Promise<IFsDirEntry[]> => {
+    return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, FsCommand.READ_DIR, { path: dirPath })
+  },
+  readTextFile: (filePath: string): Promise<IFsTextFileResult> => {
+    return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, FsCommand.READ_TEXT_FILE, { path: filePath })
+  },
+  writeTextFile: (filePath: string, content: string): Promise<IFsWriteTextFileResult> => {
+    return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, FsCommand.WRITE_TEXT_FILE, { path: filePath, content })
+  },
+  readFileDataUrl: (filePath: string): Promise<IFsDataUrlResult> => {
+    return ipcRenderManager.invoke(IEvent.RenderToMainSyncMsg, FsCommand.READ_FILE_DATA_URL, { path: filePath })
   },
 }

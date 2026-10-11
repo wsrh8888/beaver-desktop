@@ -13,7 +13,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import { assertRoot } from 'mainModule/tools/shared'
+import { requireToolRoot } from '../toolRoot'
 import { symbolSearch, outline } from 'mainModule/tools/analyze'
 
 /** 本组工具元信息。均只读，不需确认。 */
@@ -25,11 +25,11 @@ export function registerAnalyzeTools(server: McpServer): void {
     description: '按符号名搜索定义位置（函数/类/接口/类型/const 等）。只命中声明行，比 grep 更精确锁定定义。',
     inputSchema: {
       name: z.string().describe('符号名'),
-      path: z.string().default('.').describe('搜索起点（文件或目录）'),
+      path: z.string().default('.').describe('搜索起点：相对工作目录，或本机绝对路径'),
       include: z.string().optional().describe('文件名 glob 过滤，如 *.ts'),
     },
   }, async (args) => {
-    const root = assertRoot(String((args as any).__root || ''))
+    const root = requireToolRoot()
     const entries = await symbolSearch(root, args as any)
     return { content: [{ type: 'text', text: entries.length ? entries.join('\n') : '(no matches)' }] }
   })
@@ -37,10 +37,10 @@ export function registerAnalyzeTools(server: McpServer): void {
   server.registerTool('outline', {
     description: '查看一个文件的符号大纲（函数/类/接口/类型等声明 + 行号），快速理解结构。',
     inputSchema: {
-      path: z.string().describe('相对于工作目录的文件路径'),
+      path: z.string().describe('相对工作目录的路径，或本机绝对路径'),
     },
   }, async (args) => {
-    const root = assertRoot(String((args as any).__root || ''))
+    const root = requireToolRoot()
     const text = await outline(root, args as any)
     return { content: [{ type: 'text', text }] }
   })

@@ -48,6 +48,14 @@ class FsHandler {
         return this.basename(data?.path)
       case FsCommand.SHOW_OPEN_DIRECTORY:
         return this.showOpenDirectory(event, data)
+      case FsCommand.READ_DIR:
+        return this.readDir(data?.path)
+      case FsCommand.READ_TEXT_FILE:
+        return this.readTextFile(data?.path)
+      case FsCommand.WRITE_TEXT_FILE:
+        return this.writeTextFile(data?.path, data?.content)
+      case FsCommand.READ_FILE_DATA_URL:
+        return this.readFileDataUrl(data?.path)
       default:
         logger.error({ text: '收到未知的文件系统命令', data: { command } })
         return null
@@ -124,6 +132,83 @@ class FsHandler {
     return {
       path: selected,
       name: path.basename(selected),
+    }
+  }
+
+  private mimeOf(filePath: string) {
+    const ext = path.extname(filePath).toLowerCase()
+    const map: Record<string, string> = {
+      '.png': 'image/png',
+      '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.gif': 'image/gif',
+      '.webp': 'image/webp',
+      '.svg': 'image/svg+xml',
+      '.ico': 'image/x-icon',
+      '.bmp': 'image/bmp',
+    }
+    return map[ext] || 'application/octet-stream'
+  }
+
+  private async readTextFile(filePath: unknown) {
+    if (typeof filePath !== 'string' || !filePath.trim())
+      return { success: false, error: '文件路径无效' }
+    try {
+      const content = await fs.promises.readFile(filePath, 'utf8')
+      return { success: true, content }
+    }
+    catch (error: any) {
+      logger.error({ text: '读取文本文件失败', data: { filePath, error: error?.message } })
+      return { success: false, error: error?.message || '读取失败' }
+    }
+  }
+
+  private async writeTextFile(filePath: unknown, content: unknown) {
+    if (typeof filePath !== 'string' || !filePath.trim())
+      return { success: false, error: '文件路径无效' }
+    if (typeof content !== 'string')
+      return { success: false, error: '内容无效' }
+    try {
+      await fs.promises.writeFile(filePath, content, 'utf8')
+      return { success: true }
+    }
+    catch (error: any) {
+      logger.error({ text: '写入文本文件失败', data: { filePath, error: error?.message } })
+      return { success: false, error: error?.message || '写入失败' }
+    }
+  }
+
+  private async readFileDataUrl(filePath: unknown) {
+    if (typeof filePath !== 'string' || !filePath.trim())
+      return { success: false, error: '文件路径无效' }
+    try {
+      const buffer = await fs.promises.readFile(filePath)
+      const mime = this.mimeOf(filePath)
+      const dataUrl = `data:${mime};base64,${buffer.toString('base64')}`
+      return { success: true, dataUrl }
+    }
+    catch (error: any) {
+      logger.error({ text: '读取文件 data URL 失败', data: { filePath, error: error?.message } })
+      return { success: false, error: error?.message || '读取失败' }
+    }
+  }
+
+  private async readDir(dirPath: unknown) {
+    if (typeof dirPath !== 'string' || !dirPath.trim())
+      return []
+    try {
+      const entries = await fs.promises.readdir(dirPath, { withFileTypes: true })
+      return entries
+        .map(entry => ({ name: entry.name, directory: entry.isDirectory() }))
+        .sort((a, b) => {
+          if (a.directory !== b.directory)
+            return a.directory ? -1 : 1
+          return a.name.localeCompare(b.name)
+        })
+    }
+    catch (error: any) {
+      logger.error({ text: '读取目录失败', data: { dirPath, error: error?.message } })
+      return []
     }
   }
 }

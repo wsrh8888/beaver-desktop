@@ -50,6 +50,28 @@ export interface IFsOpenDirectoryResult {
   name: string
 }
 
+export interface IFsDirEntry {
+  name: string
+  directory: boolean
+}
+
+export interface IFsTextFileResult {
+  success: boolean
+  content?: string
+  error?: string
+}
+
+export interface IFsWriteTextFileResult {
+  success: boolean
+  error?: string
+}
+
+export interface IFsDataUrlResult {
+  success: boolean
+  dataUrl?: string
+  error?: string
+}
+
 /**
  * @description: 通用文件系统模块（不承载业务语义）
  */
@@ -63,4 +85,8 @@ export interface IFsModule {
     title?: string
     defaultPath?: string
   }) => Promise<IFsOpenDirectoryResult | null>
+  readDir: (dirPath: string) => Promise<IFsDirEntry[]>
+  readTextFile: (filePath: string) => Promise<IFsTextFileResult>
+  writeTextFile: (filePath: string, content: string) => Promise<IFsWriteTextFileResult>
+  readFileDataUrl: (filePath: string) => Promise<IFsDataUrlResult>
 }

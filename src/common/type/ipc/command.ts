@@ -324,4 +324,12 @@ export enum FsCommand {
   BASENAME = 'fs:basename',
   /** 系统目录选择器 */
   SHOW_OPEN_DIRECTORY = 'fs:showOpenDirectory',
+  /** 列出目录下一层 */
+  READ_DIR = 'fs:readDir',
+  /** 读取 UTF-8 文本文件 */
+  READ_TEXT_FILE = 'fs:readTextFile',
+  /** 写入 UTF-8 文本文件 */
+  WRITE_TEXT_FILE = 'fs:writeTextFile',
+  /** 读取二进制文件为 data URL（图片预览等） */
+  READ_FILE_DATA_URL = 'fs:readFileDataUrl',
 }

@@ -13,7 +13,7 @@
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
-import { assertRoot } from 'mainModule/tools/shared'
+import { requireToolRoot } from '../toolRoot'
 import { gitStatus, gitDiff } from 'mainModule/tools/git'
 
 /** 本组工具元信息。均只读，不需确认。 */
@@ -25,7 +25,7 @@ export function registerGitTools(server: McpServer): void {
     description: '查看工作目录 git 仓库状态（git status --short --branch）。',
     inputSchema: {},
   }, async (args) => {
-    const root = assertRoot(String((args as any).__root || ''))
+    const root = requireToolRoot()
     const text = await gitStatus(root)
     return { content: [{ type: 'text', text }] }
   })
@@ -37,7 +37,7 @@ export function registerGitTools(server: McpServer): void {
       path: z.string().optional().describe('限定路径（相对工作目录）'),
     },
   }, async (args) => {
-    const root = assertRoot(String((args as any).__root || ''))
+    const root = requireToolRoot()
     const text = await gitDiff(root, args as any)
     return { content: [{ type: 'text', text }] }
   })

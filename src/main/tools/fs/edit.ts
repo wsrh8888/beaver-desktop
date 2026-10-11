@@ -12,7 +12,7 @@
  */
 
 import fs from 'node:fs'
-import { resolveInRoot } from '../shared/root'
+import { resolveWriteInRoot } from '../shared/root'
 import { writeFile } from './write'
 
 export async function strReplace(root: string, args: Record<string, any>): Promise<void> {
@@ -21,7 +21,7 @@ export async function strReplace(root: string, args: Record<string, any>): Promi
   const next = String(args.new ?? '')
   if (!old)
     throw new Error('old string is empty')
-  const file = resolveInRoot(root, input)
+  const file = resolveWriteInRoot(root, input)
   const stat = await fs.promises.stat(file)
   if (!stat.isFile())
     throw new Error(`not a file: ${input}`)

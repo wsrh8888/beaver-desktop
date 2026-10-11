@@ -12,10 +12,10 @@
 
 import fs from 'node:fs'
 import path from 'node:path'
-import { resolveInRoot } from '../shared/root'
+import { resolveWriteInRoot } from '../shared/root'
 
 export async function writeFile(root: string, input: string, content: string): Promise<void> {
-  const file = resolveInRoot(root, input)
+  const file = resolveWriteInRoot(root, input)
   await fs.promises.mkdir(path.dirname(file), { recursive: true })
   await fs.promises.writeFile(file, content, 'utf8')
 }
