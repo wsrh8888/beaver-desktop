@@ -33,7 +33,7 @@ export interface IChatMessageStreamBody {
   delta: string
   seq: number
   done: boolean
-  /** Agent 事件名：delta/lg/host/done/error；普通聊天流式可空 */
+  /** Agent 事件名：delta/lg/client_tool/done/error；普通聊天流式可空 */
   event?: string
   /** Agent 事件载荷 JSON 字符串 */
   dataJson?: string

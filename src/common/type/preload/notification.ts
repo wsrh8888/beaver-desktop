@@ -74,7 +74,7 @@ export enum NotificationModule {
   CALL = 'ws:call',
   /**
    * MCP 工具确认通知（主进程 → AI 渲染进程）
-   * 服务端下发 requiresConfirm 工具的 host 事件后，主进程把工具入参 + schema
+   * 服务端下发 requiresConfirm 工具的 client_tool 事件后，主进程把工具入参 + schema
    * 发给 AI 渲染进程渲染确认卡片，用户确认/编辑后经 IPC 回传主进程续跑。
    */
   MCP_CONFIRM = 'mcp:confirm',

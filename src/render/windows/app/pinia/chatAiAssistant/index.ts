@@ -189,7 +189,7 @@ export const useChatAiAssistantStore = defineStore('useChatAiAssistantStore', {
         return true
       }
 
-      // lg / host 等事件：侧栏第一期忽略，但仍视为已消费
+      // lg / client_tool 等事件：侧栏第一期忽略，但仍视为已消费
       return true
     },
 

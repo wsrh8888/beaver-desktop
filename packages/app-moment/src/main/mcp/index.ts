@@ -12,7 +12,6 @@ import { registerMcpServer } from '@beaver-im/beaver/main'
 import { createMomentServer } from './server'
 
 export { createMomentServer } from './server'
-export { MOMENT_TOOLS } from './tools'
 
 /**
  * 工具级元信息：哪些工具调用前需要用户在 AI 聊天框确认参数。

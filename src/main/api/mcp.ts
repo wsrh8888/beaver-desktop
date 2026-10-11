@@ -6,7 +6,7 @@
  * beaver-desktop-header-v2
  */
 
-import type { IReportCapabilitiesReq, IReportCapabilitiesRes, ISubmitHostResultReq } from 'commonModule/type/mcp'
+import type { IReportCapabilitiesReq, IReportCapabilitiesRes, ISubmitClientToolResultReq } from 'commonModule/type/mcp'
 import { getBaseUrl } from 'commonModule/config'
 import ajax from 'mainModule/utils/request/request'
 
@@ -26,10 +26,10 @@ export const reportCapabilitiesApi = (data: IReportCapabilitiesReq) => {
 /**
  * 本机工具执行完，把结果交回正在等待的 sendMessage。
  */
-export const submitHostResultApi = (data: ISubmitHostResultReq) => {
+export const submitClientToolResultApi = (data: ISubmitClientToolResultReq) => {
   return ajax({
     method: 'POST',
-    url: `${getBaseUrl()}/api/agent/v1/message/submitHostResult`,
+    url: `${getBaseUrl()}/api/agent/v1/message/submitClientToolResult`,
     data,
   })
 }

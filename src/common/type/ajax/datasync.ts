@@ -372,5 +372,5 @@ export interface IAgentConversationVersionItem {
   updatedAt: number // 更新时间毫秒
   preview: string // 最新消息预览
   module: string // 入口模块
-  workspace: string // cloud=云端轻会话；local=本机空间（可远程控盘）
+  workspaceId: string // 本机空间 id；空=云端轻会话，有值=本机空间（可远程控盘）
 }
