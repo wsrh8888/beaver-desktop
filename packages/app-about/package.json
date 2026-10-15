@@ -29,7 +29,7 @@
     "package": "pnpm run build_main && pnpm run build_render"
   },
   "dependencies": {
-    "@beaver-im/beaver": "file:../beaver",
+    "@beaver-im/beaver": "workspace:*",
     "@beaver-im/beaver-ui": "file:../beaver-ui",
     "@beaver-im/beaver-biz": "file:../beaver-biz"
   },

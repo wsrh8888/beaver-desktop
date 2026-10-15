@@ -7,6 +7,7 @@
     "skipLibCheck": true,
     "jsx": "preserve",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "types": [],
     "paths": {
       "@beaver-im/beaver": ["./src/common/index.ts"],
       "@beaver-im/beaver/*": ["./src/*"],

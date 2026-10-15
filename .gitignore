@@ -34,3 +34,4 @@ config.json
 config.json
 package-lock.json
 BEAVER_CACHE/*
+.pnpm-store*

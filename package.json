@@ -10,11 +10,13 @@
   "main": "dist-electron/main.js",
   "scripts": {
     "dev": "turbo run dev:desktop --filter=beaver",
-    "dev:desktop": "chcp 65001 && vite",
-    "build-renderer": "vue-tsc --noEmit && vite build",
-    "build-electron": "electron-builder build --publish never --dir",
-    "package": "turbo run build --filter=@beaver-im/beaver --filter=@beaver-im/app-* && pnpm run build-renderer && pnpm run build-electron",
-    "package:packages": "turbo run build --filter=@beaver-im/beaver --filter=@beaver-im/app-*",
+    "dev:desktop": "vite",
+    "dev:desktop:win": "chcp 65001 && vite",
+    "build:packages": "turbo run build --filter=@beaver-im/beaver --filter=@beaver-im/app-*",
+    "build:renderer": "vue-tsc --noEmit && vite build --mode renderer",
+    "build:main": "vite build --mode main",
+    "package:mac": "pnpm run build:packages && pnpm run build:renderer && pnpm run build:main && electron-builder build --mac --publish never",
+    "package:win": "pnpm run build:packages && pnpm run build:renderer && pnpm run build:main && electron-builder build --win --publish never",
     "package-install": "build\\installer\\index.bat",
     "lint": "eslint . --fix",
     "prepare": "husky",
@@ -37,6 +39,47 @@
     },
     "directories": {
       "output": "release"
+    },
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "zip",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "icon": "resource/logo.png",
+      "category": "public.app-category.social-networking",
+      "identity": null,
+      "protocols": {
+        "name": "Beaver OAuth Protocol",
+        "schemes": [
+          "beaver"
+        ]
+      }
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        }
+      ]
     },
     "win": {
       "target": [
@@ -77,21 +120,20 @@
     ]
   },
   "dependencies": {
-    "@beaver-im/app-about": "file:packages/app-about",
-    "@beaver-im/app-ai": "link:../beaver-agent/agent_electron",
-    "@beaver-im/app-audio": "file:packages/app-audio",
-    "@beaver-im/app-call": "file:packages/app-call",
-    "@beaver-im/app-circle": "file:packages/app-circle",
-    "@beaver-im/app-image": "file:packages/app-image",
-    "@beaver-im/app-moment": "file:packages/app-moment",
-    "@beaver-im/app-search": "file:packages/app-search",
-    "@beaver-im/app-settings": "file:packages/app-settings",
-    "@beaver-im/app-updater": "file:packages/app-updater",
-    "@beaver-im/app-video": "file:packages/app-video",
-    "@beaver-im/app-workbench": "file:packages/app-workbench",
-    "@beaver-im/beaver": "file:packages/beaver",
-    "@beaver-im/beaver-biz": "file:packages/beaver-biz",
-    "@beaver-im/beaver-ui": "file:packages/beaver-ui",
+    "@beaver-im/app-about": "workspace:*",
+    "@beaver-im/app-audio": "workspace:*",
+    "@beaver-im/app-call": "workspace:*",
+    "@beaver-im/app-circle": "workspace:*",
+    "@beaver-im/app-image": "workspace:*",
+    "@beaver-im/app-moment": "workspace:*",
+    "@beaver-im/app-search": "workspace:*",
+    "@beaver-im/app-settings": "workspace:*",
+    "@beaver-im/app-updater": "workspace:*",
+    "@beaver-im/app-video": "workspace:*",
+    "@beaver-im/app-workbench": "workspace:*",
+    "@beaver-im/beaver": "workspace:*",
+    "@beaver-im/beaver-biz": "workspace:*",
+    "@beaver-im/beaver-ui": "workspace:*",
     "@beaver-im/js-sdk": "^1.0.2",
     "@koa/router": "^15.7.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
@@ -120,7 +162,6 @@
     "@types/koa": "^3.0.3",
     "@types/koa-bodyparser": "^4.3.13",
     "@types/koa__cors": "^5.0.1",
-    "@types/koa__router": "^15.0.0",
     "@types/lodash-es": "^4.17.12",
     "@types/node": "^22.20.3",
     "@types/postcss-pxtorem": "^6.1.0",
@@ -142,7 +183,7 @@
     "postcss-pxtorem": "^6.1.0",
     "systeminformation": "^5.33.10",
     "turbo": "^2.11.2",
-    "typescript": "^7.0.2",
+    "typescript": "~5.9.3",
     "vite": "^8.3.0",
     "vite-plugin-electron": "^1.1.2",
     "vite-plugin-electron-renderer": "^1.0.0",

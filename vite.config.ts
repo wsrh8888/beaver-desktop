@@ -14,7 +14,7 @@ import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron'
 import electronRenderer from 'vite-plugin-electron-renderer'
 import svgLoader from 'vite-svg-loader'
-import { createAliases, externalOf, htmlInputs, linkedPackageRoots, packageHtmlDev, projectRoot } from './vite.apps'
+import { createAliases, externalOf, htmlInputs, linkedPackageRoots, packageHtmlDev, projectRoot } from './vite.apps.ts'
 
 const alias = createAliases()
 const pages = htmlInputs()

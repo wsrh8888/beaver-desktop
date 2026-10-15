@@ -104,6 +104,8 @@ export function linkedPackageRoots(): string[] {
   return roots
 }
 
-export function externalOf(id: string) {
-  return EXTERNAL.some(name => id === name || id.startsWith(`${name}/`))
-}
+/** Vite 8 / Rolldown 的 external 只接受 string | RegExp，不能用函数 */
+export const externalOf: (string | RegExp)[] = [
+  ...EXTERNAL,
+  new RegExp(`^(?:${EXTERNAL.map(n => n.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})/`),
+]
