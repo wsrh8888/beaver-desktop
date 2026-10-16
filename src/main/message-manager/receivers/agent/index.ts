@@ -40,6 +40,16 @@ class AgentReceiver {
     if (!requestId)
       return
 
+    const targetId = (payload.deviceId || '').trim()
+    const localId = process.custom?.DEVICE_ID || ''
+    if (targetId && localId && targetId !== localId) {
+      logger.info({
+        text: '本机工具发给其他电脑，跳过',
+        data: { requestId, targetId, localId },
+      })
+      return
+    }
+
     logger.info({
       text: '收到本机工具',
       data: {
