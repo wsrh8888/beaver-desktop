@@ -70,6 +70,10 @@ export interface IGroupMember {
    */
   avatar: string
   /**
+   * @description: 用户类型：1普通用户 2推送机器人 3数字伙伴
+   */
+  userType?: number
+  /**
    * @description: 成员角色：0普通成员 1管理员 2群主
    */
   role: number

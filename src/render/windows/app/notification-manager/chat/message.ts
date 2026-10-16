@@ -120,8 +120,10 @@ class DatabaseChatMessageEventManager {
     if (aiHandled)
       return
 
-    // Agent 成帧事件（带 event）不进 IM 消息流草稿，避免与侧栏同 ID 时污染聊天区
-    if (data.event)
+    // 工具调用等成帧不进气泡。delta / done / error 要留在当前会话里，
+    // 数字伙伴没有侧栏任务时，回复只能从这里显示。
+    const event = data.event || ''
+    if (event && event !== 'delta' && event !== 'done' && event !== 'error')
       return
 
     const messageStore = useMessageStore()
@@ -129,9 +131,9 @@ class DatabaseChatMessageEventManager {
       conversationId,
       streamId,
       senderId: data.senderId || '',
-      delta: data.delta || '',
+      delta: event === 'done' ? '' : (data.delta || ''),
       seq: Number(data.seq) || 0,
-      done: Boolean(data.done),
+      done: Boolean(data.done) || event === 'done',
     })
   }
 }

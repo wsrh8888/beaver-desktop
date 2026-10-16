@@ -157,7 +157,11 @@ export const useMessageStore = defineStore('useMessageStore', {
         // 后端返回的是时间正序的数据（最旧的在前）
         // 需要反转为时间倒序存储（最新的在数组末尾）
         const reversedList = [...result.list].reverse()
-        this.chatHistory.set(conversationId, reversedList)
+        // 加载期间用户可能已经发出去一条，不能用这次查询结果把它盖掉
+        const current = this.chatHistory.get(conversationId) || []
+        const loadedIds = new Set(reversedList.map(item => item.messageId))
+        const pending = current.filter(item => item.messageId && !loadedIds.has(item.messageId))
+        this.chatHistory.set(conversationId, [...reversedList, ...pending])
 
         // 更新序列号范围
         const seqs = result.list.map(m => m.seq)

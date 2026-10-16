@@ -104,6 +104,8 @@ export interface ICardMsg {
 export interface IMessageMsg {
   type: number
   targetMsgId?: string
+  /** 群消息里 @ 到的用户 ID。服务端据此决定要不要叫醒数字伙伴 */
+  atUserIds?: string[]
   textMsg?: ITextMsg | null
   imageMsg?: IImageMsg | null
   videoMsg?: IVideoMsg | null

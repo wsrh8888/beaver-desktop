@@ -21,6 +21,19 @@
 
 <template>
   <div class="editor-container">
+    <div v-if="mentionOpen && mentionList.length" class="mention-panel">
+      <button
+        v-for="(member, index) in mentionList"
+        :key="member.userId"
+        type="button"
+        class="mention-item"
+        :class="{ active: index === mentionIndex }"
+        @mousedown.prevent="pickMention(member)"
+      >
+        <span class="mention-name">{{ member.nickName || member.userId }}</span>
+        <span v-if="member.userType === 3" class="mention-tag">数字伙伴</span>
+      </button>
+    </div>
     <div class="input-row">
       <div ref="inputRef" class="message-input" contenteditable="true" @input="onInput" @keydown="onKeydown"
         @focus="onFocus" @blur="onBlur" @paste="onPaste" />
@@ -37,6 +50,10 @@ import { getFilesFromClipboardEvent } from 'renderModule/utils/clipboard'
 import { uploadFile } from 'renderModule/utils/upload'
 import { useMessageViewStore } from 'renderModule/windows/app/pinia/view/message/index'
 import { useConversationStore } from 'renderModule/windows/app/pinia/conversation/conversation'
+import { useGroupStore } from 'renderModule/windows/app/pinia/group/group'
+import { useGroupMemberStore } from 'renderModule/windows/app/pinia/group/group-member'
+import { useUserStore } from 'renderModule/windows/app/pinia/user/user'
+import type { IGroupMember } from 'commonModule/type/ajax/group'
 import { ChatCore } from 'renderModule/core/message/index'
 import { MessageType } from 'commonModule/type/ajax/chat'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
@@ -45,6 +62,42 @@ import { CacheType } from 'commonModule/type/cache/cache'
 import Logger from 'renderModule/utils/logger'
 
 const logger = new Logger('ChatEditor')
+
+function messageText(msg: IMessageMsg): string {
+  if (msg.textMsg?.content)
+    return msg.textMsg.content
+  if (msg.replyMsg?.replyMsg?.textMsg?.content)
+    return msg.replyMsg.replyMsg.textMsg.content
+  return ''
+}
+
+function mentionUserIds(text: string, members: { userId: string, nickName: string, status: number }[]) {
+  const names = members
+    .filter(member => member.status === 1 && member.nickName.trim())
+    .sort((a, b) => b.nickName.length - a.nickName.length)
+  let rest = text
+  const ids: string[] = []
+  for (const member of names) {
+    const token = `@${member.nickName.trim()}`
+    if (!rest.includes(token))
+      continue
+    ids.push(member.userId)
+    rest = rest.split(token).join(' ')
+  }
+  return ids
+}
+
+function mentionQueryAtCaret(root: HTMLElement): string | null {
+  const selection = window.getSelection()
+  if (!selection || selection.rangeCount === 0 || !selection.isCollapsed)
+    return null
+  const range = selection.getRangeAt(0)
+  if (!root.contains(range.startContainer) || range.startContainer.nodeType !== Node.TEXT_NODE)
+    return null
+  const before = (range.startContainer.textContent || '').slice(0, range.startOffset)
+  const matched = before.match(/@([^\s@]*)$/)
+  return matched ? matched[1] : null
+}
 
 function formatKeyEvent(event: KeyboardEvent): string | null {
   if (['Control', 'Alt', 'Shift', 'Meta'].includes(event.key)) {
@@ -65,9 +118,31 @@ export default defineComponent({
   setup() {
     const messageViewStore = useMessageViewStore()
     const conversationStore = useConversationStore()
+    const groupStore = useGroupStore()
+    const groupMemberStore = useGroupMemberStore()
+    const userStore = useUserStore()
     const inputRef = ref<HTMLDivElement | null>(null)
     const inputValue = ref('')
     const sendMessageKey = ref('')
+    const mentionOpen = ref(false)
+    const mentionQuery = ref('')
+    const mentionIndex = ref(0)
+    const mentionMembers = ref<IGroupMember[]>([])
+
+    const mentionList = computed(() => {
+      const keyword = mentionQuery.value.trim().toLowerCase()
+      const selfId = userStore.getUserId
+      return mentionMembers.value
+        .filter((member) => {
+          if (member.status !== 1 || member.userId === selfId)
+            return false
+          if (!keyword)
+            return true
+          const name = (member.nickName || member.userId).toLowerCase()
+          return name.includes(keyword)
+        })
+        .slice(0, 8)
+    })
 
     const hasContent = computed(() => {
       // 有文字或有图片节点（innerHTML 非空）均视为有内容
@@ -104,12 +179,78 @@ export default defineComponent({
       }
     })
 
+    const closeMention = () => {
+      mentionOpen.value = false
+      mentionQuery.value = ''
+      mentionIndex.value = 0
+    }
+
+    watch(() => messageViewStore.currentChatId, () => {
+      closeMention()
+    })
+
+    const refreshMention = async () => {
+      const conversationId = messageViewStore.currentChatId
+      if (!conversationId || !inputRef.value) {
+        closeMention()
+        return
+      }
+      const conversationInfo = conversationStore.getConversationInfo(conversationId)
+      if (conversationInfo?.chatType !== 2) {
+        closeMention()
+        return
+      }
+      const query = mentionQueryAtCaret(inputRef.value)
+      if (query === null) {
+        closeMention()
+        return
+      }
+      const groupId = groupStore.getGroupIdByConversationId(conversationId)
+      if (!groupId) {
+        closeMention()
+        return
+      }
+      await groupMemberStore.init(groupId)
+      mentionMembers.value = groupMemberStore.getMembersByGroupId(groupId)
+      mentionQuery.value = query
+      mentionIndex.value = 0
+      mentionOpen.value = true
+    }
+
+    const pickMention = (member: IGroupMember) => {
+      const root = inputRef.value
+      const selection = window.getSelection()
+      if (!root || !selection || selection.rangeCount === 0)
+        return
+      const range = selection.getRangeAt(0)
+      const node = range.startContainer
+      if (node.nodeType !== Node.TEXT_NODE)
+        return
+      const text = node.textContent || ''
+      const before = text.slice(0, range.startOffset)
+      const matched = before.match(/@([^\s@]*)$/)
+      if (!matched)
+        return
+      const name = member.nickName || member.userId
+      const token = `@${name} `
+      const start = range.startOffset - matched[0].length
+      node.textContent = text.slice(0, start) + token + text.slice(range.startOffset)
+      const next = document.createRange()
+      next.setStart(node, start + token.length)
+      next.collapse(true)
+      selection.removeAllRanges()
+      selection.addRange(next)
+      closeMention()
+      onInput()
+    }
+
     const onInput = () => {
       if (!inputRef.value || !messageViewStore.currentChatId) return
       inputValue.value = inputRef.value.textContent || ''
       messageViewStore.updateDraft(messageViewStore.currentChatId, {
         html: inputRef.value.innerHTML
       })
+      void refreshMention()
     }
 
     const clear = () => {
@@ -132,6 +273,14 @@ export default defineComponent({
       const conversationInfo = conversationStore.getConversationInfo(conversationId)
       const chatType = conversationInfo?.chatType === 2 ? 'group' : 'private'
       const replyTo = messageViewStore.replyingTo
+      let groupMembers: { userId: string, nickName: string, status: number }[] = []
+      if (chatType === 'group') {
+        const groupId = groupStore.getGroupIdByConversationId(conversationId)
+        if (groupId) {
+          await groupMemberStore.init(groupId)
+          groupMembers = groupMemberStore.getMembersByGroupId(groupId)
+        }
+      }
 
       for (let i = 0; i < basicMessages.length; i++) {
         let msg = basicMessages[i]
@@ -147,6 +296,12 @@ export default defineComponent({
           }
         }
 
+        if (chatType === 'group') {
+          const ids = mentionUserIds(messageText(msg), groupMembers)
+          if (ids.length)
+            msg = { ...msg, atUserIds: ids }
+        }
+
         await ChatCore.sendMessage(conversationId, msg, chatType)
       }
 
@@ -156,6 +311,29 @@ export default defineComponent({
 
     // 统一处理键盘事件
     const onKeydown = async (e: KeyboardEvent) => {
+      if (mentionOpen.value && mentionList.value.length) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          mentionIndex.value = (mentionIndex.value + 1) % mentionList.value.length
+          return
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          mentionIndex.value = (mentionIndex.value - 1 + mentionList.value.length) % mentionList.value.length
+          return
+        }
+        if (e.key === 'Enter' || e.key === 'Tab') {
+          e.preventDefault()
+          pickMention(mentionList.value[mentionIndex.value])
+          return
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault()
+          closeMention()
+          return
+        }
+      }
+
       if (formatKeyEvent(e) === sendMessageKey.value) {
         e.preventDefault()
         if (hasContent.value) {
@@ -295,6 +473,10 @@ export default defineComponent({
       inputRef,
       inputValue,
       hasContent,
+      mentionOpen,
+      mentionList,
+      mentionIndex,
+      pickMention,
       onInput,
       onKeydown,
       onFocus,
@@ -314,7 +496,49 @@ export default defineComponent({
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  position: relative;
+  overflow: visible;
+
+  .mention-panel {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 100%;
+    z-index: 20;
+    max-height: 240px;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid #ebeef5;
+    border-radius: 6px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+
+    .mention-item {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+
+      .mention-name {
+        font-size: 14px;
+        color: #2d3436;
+      }
+
+      .mention-tag {
+        margin-left: 8px;
+        font-size: 12px;
+        color: #ff7d45;
+      }
+    }
+
+    .mention-item.active,
+    .mention-item:hover {
+      background: #f7f8fa;
+    }
+  }
 }
 
 .input-row {

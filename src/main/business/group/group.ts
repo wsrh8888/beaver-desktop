@@ -28,12 +28,16 @@ import dbServiceGroup  from 'mainModule/database/services/group/group'
 import dBServiceGroupJoinRequest  from 'mainModule/database/services/group/group-join-request'
 import dBServiceGroupMember  from 'mainModule/database/services/group/group-member'
 import dBServiceUser  from 'mainModule/database/services/user/user'
+import dBServiceUserSyncStatus from 'mainModule/database/services/user/sync-status'
+import { userSyncApi } from 'mainModule/api/user'
 
 import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { BaseBusiness } from '../base/base'
 
 /** 群状态：1正常 2冻结 3解散 */
 const GROUP_STATUS_ACTIVE = 1
+/** 推送机器人不出现在群成员列表。普通用户和数字伙伴都要显示。 */
+const USER_TYPE_BOT = 2
 
 /**
  * 群组同步队列项
@@ -157,26 +161,11 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
     // 调用服务层获取群组成员（纯数据库查询）
     const members = await dBServiceGroupMember.getGroupMembers({ groupId })
 
-    // 业务逻辑：获取成员的用户信息
     const userIds = members.map((m: any) => m.userId).filter((id: string) => id)
+    await this.ensureLocalUsers(userIds)
     const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds })
     const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
-    
-    // 业务逻辑：格式化数据（不返回 bot/robot，仅普通用户）
-    const list = members
-      .filter((member: any) => userInfoMap.get(member.userId)?.userType === 1)
-      .map((member: any) => {
-        const userInfo = userInfoMap.get(member.userId)
-        return {
-          userId: member.userId,
-          nickName: userInfo?.nickName || '',
-          avatar: userInfo?.avatar || '',
-          role: member.role || 0,
-          status: member.status || 1,
-          joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
-          version: member.version || 0,
-        }
-      })
+    const list = this.formatMembers(members, userInfoMap, false)
 
     return {
       list,
@@ -197,31 +186,82 @@ class GroupBusiness extends BaseBusiness<GroupSyncItem> {
       allMembers.push(...members)
     }
 
-    // 业务逻辑：获取所有成员的用户信息
     const userIds = allMembers.map((m: any) => m.userId).filter((id: string) => id)
+    await this.ensureLocalUsers(userIds)
     const userInfos = await dBServiceUser.getUsersBasicInfo({ userIds })
     const userInfoMap = new Map(userInfos.map(u => [u.userId, u]))
+    const list = this.formatMembers(allMembers, userInfoMap, true)
 
-    // 业务逻辑：格式化数据（不返回 bot/robot，仅普通用户）
-    const list = allMembers
-      .filter((member: any) => userInfoMap.get(member.userId)?.userType === 1)
+    return {
+      list,
+      count: list.length,
+    }
+  }
+
+  /**
+   * 推送机器人不进成员列表。数字伙伴和还没拉到资料的成员都保留。
+   */
+  private formatMembers(members: any[], userInfoMap: Map<string, any>, withGroupId: boolean) {
+    return members
+      .filter((member: any) => userInfoMap.get(member.userId)?.userType !== USER_TYPE_BOT)
       .map((member: any) => {
         const userInfo = userInfoMap.get(member.userId)
         return {
           userId: member.userId,
-          groupId: member.groupId,
+          ...(withGroupId ? { groupId: member.groupId } : {}),
           nickName: userInfo?.nickName || '',
           avatar: userInfo?.avatar || '',
+          userType: userInfo?.userType || 1,
           role: member.role || 0,
           status: member.status || 1,
           joinTime: member.joinTime ? new Date(member.joinTime * 1000).toISOString() : '',
           version: member.version || 0,
         }
       })
+  }
 
-    return {
-      list,
-      count: list.length,
+  /**
+   * 群成员里的数字伙伴可能还没进本地用户表，先补拉再展示。
+   */
+  private async ensureLocalUsers(userIds: string[]) {
+    if (userIds.length === 0)
+      return
+    const localUsers = await dBServiceUser.getUsersBasicInfo({ userIds })
+    const localIdSet = new Set(localUsers.map(user => user.userId))
+    const missingIds = userIds.filter(id => !localIdSet.has(id))
+    if (missingIds.length === 0)
+      return
+    try {
+      const syncRes = await userSyncApi({
+        userVersions: missingIds.map(userId => ({ userId, version: 0 })),
+      })
+      const users = syncRes.result?.users || []
+      if (users.length === 0)
+        return
+      await dBServiceUser.batchCreate({
+        usersData: users.map(user => ({
+          userId: user.userId,
+          nickName: user.nickName,
+          avatar: user.avatar,
+          abstract: user.abstract,
+          phone: user.phone,
+          email: user.email,
+          gender: user.gender,
+          userType: user.userType,
+          status: user.status,
+          version: user.version,
+          updatedAt: user.updatedAt,
+        })),
+      })
+      await dBServiceUserSyncStatus.batchUpsertUserSyncStatus(
+        users.map(user => ({
+          userId: user.userId,
+          userVersion: user.version,
+        })),
+      )
+    }
+    catch (error) {
+      this.logger.error({ text: '补拉群成员资料失败', data: { missingIds, error: (error as Error)?.message } })
     }
   }
 

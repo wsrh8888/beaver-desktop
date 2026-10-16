@@ -105,8 +105,14 @@ export default defineComponent({
           source: props.targetValue.source, // 来源可以根据实际情况调整
         })
         if (result.code === 0) {
-          logger.info({ text: '发送好友申请成功', data: { friendId: props.targetValue.id } })
-          Message.success('好友申请已发送，等待对方验证')
+          if (result.result?.direct) {
+            logger.info({ text: '数字伙伴已直接加为好友', data: { friendId: props.targetValue.id } })
+            Message.success('已添加，现在可以聊天')
+          }
+          else {
+            logger.info({ text: '发送好友申请成功', data: { friendId: props.targetValue.id } })
+            Message.success('好友申请已发送，等待对方验证')
+          }
           emit('close')
         }
         else {

@@ -96,6 +96,7 @@
             </div>
             <div class="group-details-info__member-name">
               {{ member.nickName || member.userId }}
+              <span v-if="member.userType === 3" class="group-details-info__member-tag">数字伙伴</span>
             </div>
           </div>
         </div>
@@ -692,6 +693,13 @@ export default defineComponent({
     white-space: nowrap;
     padding: 0 2px;
     box-sizing: border-box;
+
+    .group-details-info__member-tag {
+      display: block;
+      font-size: 10px;
+      color: #ff7d45;
+      line-height: 14px;
+    }
   }
 
   .group-details-info__show-more {

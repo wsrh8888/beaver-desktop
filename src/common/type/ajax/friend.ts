@@ -85,7 +85,10 @@ export interface IAddFriendReq {
   source?: string // 添加好友来源：email(邮箱搜索)/qrcode(扫码)
 }
 
-export interface IAddFriendRes {}
+export interface IAddFriendRes {
+  /** 对方是数字伙伴时为 true，已经直接成为好友 */
+  direct?: boolean
+}
 
 export interface ISearchReq {
   phone: string

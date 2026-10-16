@@ -26,7 +26,10 @@ export interface IAddFriendReq {
   source?: string
 }
 
-export interface IAddFriendRes {}
+export interface IAddFriendRes {
+  /** 对方是数字伙伴时为 true，已经直接成为好友 */
+  direct?: boolean
+}
 
 export interface IResSearchUserInfo {
   userId: string

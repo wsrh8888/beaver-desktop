@@ -76,11 +76,6 @@ export const useGroupMemberStore = defineStore('groupMemberStore', {
      * @param {string} groupId - 群组ID（不是conversationId）
      */
     async init(groupId: string) {
-      // 如果已经加载过，直接返回
-      if (this.memberMap.has(groupId)) {
-        return
-      }
-
       try {
         const result = await electron.database.group.getGroupMembers({ groupId })
         if (result?.list) {

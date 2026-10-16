@@ -247,7 +247,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
             userId: message.sendUserId || '',
             avatar: senderDetail?.avatar || '',
             nickName: senderDetail?.nickName || (message.sendUserId ? '用户' : '系统消息'),
-            userType: message.sendUserId ? senderDetail!.userType : 1,
+            userType: senderDetail?.userType ?? 1,
           },
           // 按照你的要求简写：
           created_at: message.createdAt ? new Date(Number(message.createdAt) * 1000) : new Date(),
@@ -301,7 +301,7 @@ class MessageBusiness extends BaseBusiness<MessageSyncItem> {
             userId: m.sendUserId || '',
             avatar: sender?.avatar || '',
             nickName: sender?.nickName || (m.sendUserId ? '用户' : '系统消息'),
-            userType: m.sendUserId ? sender!.userType : 1,
+            userType: sender?.userType ?? 1,
           },
           created_at: m.createdAt ? new Date(Number(m.createdAt) * 1000) : new Date(),
           status: 0,
