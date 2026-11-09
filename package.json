@@ -124,6 +124,7 @@
     "@beaver-im/app-audio": "workspace:*",
     "@beaver-im/app-call": "workspace:*",
     "@beaver-im/app-circle": "workspace:*",
+    "@beaver-im/app-doc": "workspace:*",
     "@beaver-im/app-image": "workspace:*",
     "@beaver-im/app-moment": "workspace:*",
     "@beaver-im/app-search": "workspace:*",

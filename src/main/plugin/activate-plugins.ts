@@ -30,6 +30,7 @@ const logger = new Logger('PluginLoader')
 const PLUGIN_LOADERS = {
   circle: () => import('@beaver-im/app-circle/main'),
   moment: () => import('@beaver-im/app-moment/main'),
+  doc: () => import('@beaver-im/app-doc/main'),
   ai: () => import('@beaver-im/app-ai/main'),
   workbench: () => import('@beaver-im/app-workbench/main'),
   video: () => import('@beaver-im/app-video/main'),
