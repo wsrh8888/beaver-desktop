@@ -9,7 +9,7 @@
 
 import type { IMainActivateContext } from '@beaver-im/beaver'
 import { SettingsCommand } from '../common/type/ipc/command'
-import { registerIpcHandler } from '@beaver-im/beaver/main'
+import { registerIpcHandler, registerPostLoginHook } from '@beaver-im/beaver/main'
 import settingsHandler from './ipc/render-to-main/settings'
 
 /**
@@ -20,5 +20,8 @@ import settingsHandler from './ipc/render-to-main/settings'
 export async function activate(_ctx: IMainActivateContext): Promise<void> {
   registerIpcHandler(Object.values(SettingsCommand), (event, command, data) =>
     settingsHandler.handle(event, command as any, data),
+  )
+  registerPostLoginHook(() =>
+    settingsHandler.handle(void 0 as any, SettingsCommand.SETTINGS_INIT, {}),
   )
 }

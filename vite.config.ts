@@ -14,18 +14,19 @@ import { defineConfig } from 'vite'
 import electron from 'vite-plugin-electron'
 import electronRenderer from 'vite-plugin-electron-renderer'
 import svgLoader from 'vite-svg-loader'
-import { createAliases, externalOf, htmlInputs, linkedPackageRoots, packageHtmlDev, projectRoot } from './vite.apps.ts'
+import { discoverPlugins, pluginDiscovery, type ViteAlias } from './build/plugin/discovery.ts'
+import { createAliases, externalOf, htmlInputs, packageHtmlDev, projectRoot } from './vite.apps.ts'
 
-const alias = createAliases()
 const pages = htmlInputs()
 
 /** preload 多入口共用 outDir：仅第一个 emptyOutDir */
-function preload(name: string, entry: string, conditions: string[], emptyOutDir = false) {
+function preload(name: string, entry: string, conditions: string[], alias: ViteAlias[], discoveryPlugins: ReturnType<typeof pluginDiscovery>, emptyOutDir = false) {
   return {
     onstart({ reload }: { reload: () => void }) {
       reload()
     },
     vite: {
+      plugins: [discoveryPlugins],
       resolve: { alias, conditions },
       build: {
         outDir: 'dist-electron/preload',
@@ -48,8 +49,13 @@ function preload(name: string, entry: string, conditions: string[], emptyOutDir 
 
 export default defineConfig(({ command }) => {
   const conditions = command === 'serve' ? ['development'] : []
+  const discovery = discoverPlugins(command)
+  const discoveryPlugins = pluginDiscovery(discovery)
+  const alias = [...createAliases(), ...discovery.aliases]
+
   return {
   plugins: [
+    discoveryPlugins,
     packageHtmlDev(),
     vue(),
     svgLoader({ defaultImport: 'url' }),
@@ -57,6 +63,7 @@ export default defineConfig(({ command }) => {
       {
         entry: path.resolve(projectRoot, 'src/main/main.ts'),
         vite: {
+          plugins: [discoveryPlugins],
           build: {
             outDir: 'dist-electron',
             emptyOutDir: false,
@@ -72,8 +79,8 @@ export default defineConfig(({ command }) => {
           resolve: { alias, conditions },
         },
       },
-      preload('index', path.resolve(projectRoot, 'src/preload/electron/index.ts'), conditions, true),
-      preload('bridge', path.resolve(projectRoot, 'src/preload/bridge/index.ts'), conditions),
+      preload('index', path.resolve(projectRoot, 'src/preload/electron/index.ts'), conditions, alias, discoveryPlugins, true),
+      preload('bridge', path.resolve(projectRoot, 'src/preload/bridge/index.ts'), conditions, alias, discoveryPlugins),
     ]),
     electronRenderer(),
   ],
@@ -87,7 +94,7 @@ export default defineConfig(({ command }) => {
     host: '127.0.0.1',
     strictPort: false,
     fs: {
-      allow: [path.resolve(projectRoot, '..'), ...linkedPackageRoots()],
+      allow: [path.resolve(projectRoot, '..'), ...discovery.roots],
     },
   },
   build: {

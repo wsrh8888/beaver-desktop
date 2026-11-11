@@ -10,15 +10,6 @@
 import type { Application } from '../app/application'
 import type { IStore } from '../mainStore'
 
-/** 远程/可下载插件元信息 */
-export interface IPluginInfo {
-  name: string
-  description: string
-  version: string
-  url: string
-  inject: number
-}
-
 /** 插件清单（宿主按名单加载） */
 export interface IPluginManifest {
   id: string
@@ -38,15 +29,30 @@ export interface IMainActivateContext {
   }
 }
 
-/** 主进程插件模块约定 */
+/** 主进程插件模块约定：唯一允许的导出形状 */
 export interface IMainPluginModule {
   manifest: IPluginManifest
-  activate?: (ctx: IMainActivateContext) => void | Promise<void>
-  deactivate?: () => void | Promise<void>
+  activate: (ctx: IMainActivateContext) => void | Promise<void>
   application?: Application
+  extraApplications?: Record<string, Application>
 }
 
 /** 插件可自注册的同步模块 */
 export interface IDataSyncModule {
   checkAndSync: () => Promise<void>
 }
+
+/** 平台注入给插件 preload 工厂的调用口：事件通道归宿主，插件只认 command */
+export interface IPluginInvoke {
+  invoke: <T = unknown>(command: string, data?: unknown) => Promise<T>
+  on: (channel: string, callback: (event: unknown, ...args: any[]) => void) => void
+  off: (channel: string, callback: (event: unknown, ...args: any[]) => void) => void
+}
+
+/** 插件通过 contextBridge 暴露的方法集合 */
+export interface IPluginApi {
+  [method: string]: (...args: any[]) => unknown
+}
+
+/** 每个插件 preload 入口的唯一导出 */
+export type IPluginPreloadFactory = (ipc: IPluginInvoke) => IPluginApi

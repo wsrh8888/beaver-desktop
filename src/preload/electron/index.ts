@@ -22,9 +22,7 @@
 import type { ElectronAPP } from 'commonModule/type/preload'
 
 import { contextBridge } from 'electron'
-import { createAgentModule } from '@beaver-im/app-ai/preload'
-import { createSettingsModule } from '@beaver-im/app-settings/preload'
-import { createWorkbenchModule } from '@beaver-im/app-workbench/preload'
+import { pluginPreloadFactories } from 'virtual:beaver-plugin-preloads'
 import { IEvent } from 'commonModule/type/ipc/event'
 import ipcRenderManager from 'preloadModule/utils/ipcRender'
 

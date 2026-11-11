@@ -17,7 +17,7 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import { z } from 'zod'
 import Logger from 'mainModule/utils/logger'
-import { getPluginApplication } from 'mainModule/plugin/activate-plugins'
+import { getPluginApplication, getPluginWindowNames } from 'mainModule/plugin/activate-plugins'
 
 const logger = new Logger('mcp-window')
 
@@ -31,12 +31,6 @@ export const TOOL_META: Record<string, { requiresConfirm?: boolean }> = {
   open_window: { requiresConfirm: true },
 }
 
-/** 可开窗口入口（与 activate-plugins 的 PLUGIN_LOADERS 对齐） */
-const WINDOW_NAMES = [
-  'circle', 'moment', 'ai', 'workbench', 'video', 'image', 'settings',
-  'audio', 'updater', 'about', 'search', 'call', 'verify', 'call-incoming',
-] as const
-
 export function createWindowServer(): McpServer {
   const server = new McpServer(
     { name: SERVER_NAME, version: '1.0.0' },
@@ -46,14 +40,14 @@ export function createWindowServer(): McpServer {
   server.registerTool('open_window', {
     description: '打开一个 beaver 能力包窗口。如发朋友圈可打开 moment 窗口，改设置打开 settings 窗口。',
     inputSchema: {
-      name: z.enum(WINDOW_NAMES).describe(`窗口名，可选：${WINDOW_NAMES.join(', ')}`),
+      name: z.string().describe('窗口名，可用 list_windows 查询当前已启用的窗口'),
     },
   }, async (args) => {
     const target = String(args.name || '')
     const app = getPluginApplication(target)
     if (!app) {
       return {
-        content: [{ type: 'text', text: `未知窗口: ${target || '(empty)'}。可用：${WINDOW_NAMES.join(', ')}` }],
+        content: [{ type: 'text', text: `窗口不可用或插件未启用: ${target || '(empty)'}。可用：${getPluginWindowNames().join(', ')}` }],
         isError: true,
       }
     }
@@ -71,11 +65,10 @@ export function createWindowServer(): McpServer {
   })
 
   server.registerTool('list_windows', {
-    description: '列出 beaver 支持的所有窗口入口名。',
+    description: '列出当前已启用插件实际注册的窗口入口名。',
     inputSchema: {},
   }, async () => {
-    const available = WINDOW_NAMES.filter(n => getPluginApplication(n))
-    return { content: [{ type: 'text', text: `可用窗口：${available.join(', ')}` }] }
+    return { content: [{ type: 'text', text: `可用窗口：${getPluginWindowNames().join(', ')}` }] }
   })
 
   return server

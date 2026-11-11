@@ -20,7 +20,7 @@
  */
 
 import { AuthCommand } from 'commonModule/type/ipc/command'
-import { SettingsCommand, settingsHandler as settings } from '@beaver-im/app-settings/main'
+import { runPostLoginHooks } from '@beaver-im/beaver/main'
 import { BrowserWindow } from 'electron'
 import AppApplication from 'mainModule/application/app'
 import LoginApplication from 'mainModule/application/login'
@@ -78,8 +78,8 @@ class AuthHandler {
         })
         await dbManager.init(userInfo?.userId)
 
-        // 初始化设置模块
-        await settings.handle(void 0 as any, SettingsCommand.SETTINGS_INIT, {})
+        // 插件自注册的登录后初始化
+        await runPostLoginHooks()
 
         logger.info({ text: '用户缓存初始化完成' })
       }

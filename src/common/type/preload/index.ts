@@ -33,10 +33,7 @@ import type { IWebSocketModule } from './websocket'
 import type { IWindowModule } from './window'
 import type { ICallModule } from './call'
 import type { IKeyboardModule } from './keyboard'
-import type { ISettingsModule } from '@beaver-im/app-settings/common/type/preload/settings'
-import type { IWorkbenchModule } from '@beaver-im/app-workbench/common/type/preload/workbench'
 import type { IFsModule } from './fs'
-import type { IAgentHostModule } from '@beaver-im/app-ai/common/type/preload/agent'
 
 /**
  * @description: Electron preload接口
@@ -113,22 +110,13 @@ export interface ElectronAPP {
   keyboard: IKeyboardModule
 
   /**
-   * @description: 用户设置（主进程 store）
-   */
-  settings: ISettingsModule
-
-  /**
-   * @description: 工作台内嵌 WebContentsView
-   */
-  workbench: IWorkbenchModule
-
-  /**
    * @description: 通用文件系统（与业务解耦）
    */
   fs: IFsModule
 
   /**
-   * @description: AI 本机工具（文件 / shell 在主进程执行）
+   * 插件注入的命名空间。启用哪些插件由构建期清单决定，宿主不声明具体插件名。
+   * 渲染层用 renderModule/utils/pluginApi 按 id 取，插件未启用时为 undefined。
    */
-  agent: IAgentHostModule
+  [pluginId: string]: unknown
 }

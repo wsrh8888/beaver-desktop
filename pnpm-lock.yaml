@@ -17,6 +17,9 @@ importers:
       '@beaver-im/app-about':
         specifier: workspace:*
         version: link:packages/app-about
+      '@beaver-im/app-ai':
+        specifier: link:../beaver-agent/agent_electron
+        version: link:../beaver-agent/agent_electron
       '@beaver-im/app-audio':
         specifier: workspace:*
         version: link:packages/app-audio

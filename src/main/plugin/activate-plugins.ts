@@ -8,56 +8,24 @@
  */
 
 /**
- * 官方能力包加载表（编译期显式 import，供 Vite 打异步 chunk；不可用字符串变量动态 import）。
+ * 插件装配：加载表由构建期发现（build/plugin/catalog.ts → virtual:beaver-plugin-mains）生成。
  *
- * 加包步骤：
- * 1. packages/app-xxx（exports 至少 ./main；窗口 html 放包根 <window>.html）
- * 2. 根 package.json file: 依赖
- * 3. 本文件 PLUGIN_LOADERS 加一行
- *
- * 包 main 约定导出（兼容旧名）：
- * - activate / manifest / application
- * - 或 {id}Manifest / {id}Application
- * - 多窗：extraApplications: { 'verify': app } 或旧名 verifyApplication / callIncomingApplication
+ * 宿主不列举任何业务包名：enabled=false 或可选包缺失时，加载表里根本没有对应条目，
+ * 编译期即完成剪枝，不存在「运行时 try/catch 假装能跳过」。
+ * 插件只实现平台契约 IMainPluginModule：manifest / activate / application / extraApplications。
  */
 import type { IMainActivateContext, IMainPluginModule } from '@beaver-im/beaver'
 import { getDirname, Logger, store } from '@beaver-im/beaver/main'
 import type { BrowserWindow } from 'electron'
+import { pluginLoaders } from 'virtual:beaver-plugin-mains'
 
 const logger = new Logger('PluginLoader')
-
-/** Vite 要求静态路径；加包只改这一张表 */
-const PLUGIN_LOADERS = {
-  circle: () => import('@beaver-im/app-circle/main'),
-  moment: () => import('@beaver-im/app-moment/main'),
-  doc: () => import('@beaver-im/app-doc/main'),
-  ai: () => import('@beaver-im/app-ai/main'),
-  workbench: () => import('@beaver-im/app-workbench/main'),
-  video: () => import('@beaver-im/app-video/main'),
-  image: () => import('@beaver-im/app-image/main'),
-  settings: () => import('@beaver-im/app-settings/main'),
-  audio: () => import('@beaver-im/app-audio/main'),
-  updater: () => import('@beaver-im/app-updater/main'),
-  about: () => import('@beaver-im/app-about/main'),
-  search: () => import('@beaver-im/app-search/main'),
-  call: () => import('@beaver-im/app-call/main'),
-} as const
-
-export type PluginId = keyof typeof PLUGIN_LOADERS
-
-/** 开窗入口名：含一包多窗的副入口 */
-export type WindowAppName = PluginId | 'verify' | 'call-incoming'
 
 export interface IWindowApplication {
   createBrowserWindow: () => BrowserWindow
 }
 
-type PluginMainModule = IMainPluginModule & {
-  extraApplications?: Record<string, IWindowApplication>
-  [key: string]: unknown
-}
-
-const applications = new Map<WindowAppName, IWindowApplication>()
+const applications = new Map<string, IWindowApplication>()
 let activated = false
 
 function createActivateContext(): IMainActivateContext {
@@ -74,74 +42,47 @@ function asWindowApp(value: unknown): IWindowApplication | null {
   return null
 }
 
-/** 归一化各包 main 导出（标准名 + 历史命名 + 多窗 extras） */
-function normalizePlugin(id: PluginId, mod: PluginMainModule): {
-  plugin: IMainPluginModule
-  extras: Record<string, IWindowApplication>
-} {
-  const manifest = (mod.manifest ?? mod[`${id}Manifest`]) as IMainPluginModule['manifest']
-  const application = (mod.application ?? mod[`${id}Application`]) as IMainPluginModule['application']
-  const extras: Record<string, IWindowApplication> = { ...(mod.extraApplications ?? {}) }
-
-  // 兼容尚未改为 extraApplications 的双窗包
-  const verify = asWindowApp(mod.verifyApplication)
-  if (verify)
-    extras.verify = verify
-  const callIncoming = asWindowApp(mod.callIncomingApplication)
-  if (callIncoming)
-    extras['call-incoming'] = callIncoming
-
-  return {
-    plugin: {
-      manifest,
-      activate: mod.activate,
-      application,
-    },
-    extras,
-  }
+/** 实际已激活的窗口名，供 MCP 等消费方派生，禁止硬编码窗口清单 */
+export function getPluginWindowNames(): string[] {
+  return [...applications.keys()]
 }
 
-/**
- * 启动早期按规范 activate 官方能力包（须在 bindMain 之后、message/IPC 之前）。
- */
+/** 启动早期按平台契约 activate 已装配的插件（须在 bindMain 之后、message/IPC 之前） */
 export async function activatePlugins(): Promise<void> {
   if (activated)
     return
 
   const ctx = createActivateContext()
 
-  for (const id of Object.keys(PLUGIN_LOADERS) as PluginId[]) {
+  for (const [id, load] of Object.entries(pluginLoaders)) {
     try {
-      const mod = await PLUGIN_LOADERS[id]() as PluginMainModule
-      const { plugin, extras } = normalizePlugin(id, mod)
+      const mod = await load() as IMainPluginModule
+      if (mod.manifest.id !== id)
+        throw new Error(`manifest.id=${mod.manifest.id} 与清单 id=${id} 不一致`)
 
-      if (plugin.activate)
-        await plugin.activate(ctx)
+      await mod.activate(ctx)
 
-      const mainApp = asWindowApp(plugin.application)
+      const mainApp = asWindowApp(mod.application)
       if (mainApp)
         applications.set(id, mainApp)
 
-      for (const [name, app] of Object.entries(extras)) {
+      for (const [name, app] of Object.entries(mod.extraApplications ?? {})) {
         const win = asWindowApp(app)
         if (win)
-          applications.set(name as WindowAppName, win)
+          applications.set(name, win)
       }
 
-      logger.info({ text: '插件已激活', data: { id: plugin.manifest?.id ?? id } })
+      logger.info({ text: '插件已激活', data: { id } })
     }
     catch (error: any) {
-      logger.warn({
-        text: '插件激活失败，已跳过',
-        data: { id, message: error?.message },
-      })
+      logger.warn({ text: '插件运行时激活失败，已隔离', data: { id, message: error?.message } })
     }
   }
 
   activated = true
 }
 
-/** 取已激活插件的窗口入口；未激活或失败时返回 null */
+/** 取已激活插件的窗口入口；插件未启用或激活失败时返回 null */
 export function getPluginApplication(id: string): IWindowApplication | null {
-  return applications.get(id as WindowAppName) ?? null
+  return applications.get(id) ?? null
 }

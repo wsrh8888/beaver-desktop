@@ -121,6 +121,7 @@
   },
   "dependencies": {
     "@beaver-im/app-about": "workspace:*",
+    "@beaver-im/app-ai": "link:../beaver-agent/agent_electron",
     "@beaver-im/app-audio": "workspace:*",
     "@beaver-im/app-call": "workspace:*",
     "@beaver-im/app-circle": "workspace:*",
