@@ -7,158 +7,189 @@
   beaver-desktop-header-v2
 -->
 <script setup lang="ts">
-import type { IPermItem } from '@packageCommon/type/ajax/doc'
-import { deletePermissionApi, listPermissionsApi, setPermissionApi } from '@packageRender/api/doc'
-import { ref, watch } from 'vue'
+import { onMounted, ref } from 'vue'
+import { useDocStore } from '../store/doc'
 
-const props = defineProps<{
-  resourceType: string // space | doc
-  resourceId: string
-}>()
+const emit = defineEmits<{ (e: 'close'): void }>()
 
-const emit = defineEmits<{
-  (e: 'close'): void
-}>()
-
-const ROLES = ['manager', 'editor', 'commenter', 'viewer']
-const perms = ref<IPermItem[]>([])
-const newPrincipalId = ref('')
+const store = useDocStore()
+const tab = ref<'members' | 'link'>('members')
+const principalId = ref('')
 const newRole = ref('viewer')
+const copied = ref(false)
 
-async function load() {
-  if (!props.resourceId)
-    return
-  const res = await listPermissionsApi({ resourceType: props.resourceType, resourceId: props.resourceId })
-  perms.value = res.result?.permissions || []
-}
+const scope = ref('anyone')
+const linkRole = ref('viewer')
+const password = ref('')
+const expiresAt = ref('')
+const allowDownload = ref(true)
+const allowCopy = ref(true)
+const allowComment = ref(false)
+const watermark = ref(false)
+
+onMounted(async () => {
+  await Promise.all([store.loadPermissions(), store.loadCollaborators(), store.loadShareLink()])
+  const link = store.shareLink
+  if (link) {
+    scope.value = link.scope || 'anyone'
+    linkRole.value = link.role || 'viewer'
+    expiresAt.value = link.expiresAt || ''
+    allowDownload.value = link.allowDownload
+    allowCopy.value = link.allowCopy
+    allowComment.value = link.allowComment
+    watermark.value = link.watermark
+  }
+})
 
 async function addPerm() {
-  if (!newPrincipalId.value)
+  if (!principalId.value.trim())
     return
-  await setPermissionApi({
-    resourceType: props.resourceType,
-    resourceId: props.resourceId,
-    principalType: 'user',
-    principalId: newPrincipalId.value,
-    role: newRole.value,
-  })
-  newPrincipalId.value = ''
-  await load()
+  await store.addPermission(principalId.value.trim(), newRole.value)
+  principalId.value = ''
 }
 
-async function removePerm(p: IPermItem) {
-  await deletePermissionApi({
-    resourceType: p.resourceType,
-    resourceId: p.resourceId,
-    principalType: p.principalType,
-    principalId: p.principalId,
+async function saveLink() {
+  await store.saveShareLink({
+    scope: scope.value,
+    role: linkRole.value,
+    password: password.value || undefined,
+    expiresAt: expiresAt.value || undefined,
+    allowDownload: allowDownload.value,
+    allowCopy: allowCopy.value,
+    allowComment: allowComment.value,
+    watermark: watermark.value,
   })
-  await load()
+  password.value = ''
 }
 
-watch(() => props.resourceId, load)
-load()
+async function copyLink() {
+  if (!store.shareLink?.url)
+    return
+  try {
+    await navigator.clipboard.writeText(store.shareLink.url)
+    copied.value = true
+    window.setTimeout(() => copied.value = false, 1800)
+  }
+  catch { /* 剪贴板不可用时忽略 */ }
+}
 </script>
 
 <template>
-  <div class="share-mask" @click.self="emit('close')">
-    <div class="share-dialog">
-      <div class="share-dialog__header">
-        <span>分享与权限</span>
-        <button class="share-dialog__close" @click="emit('close')">×</button>
+  <div class="db-mask" @click.self="emit('close')">
+    <div class="db-dialog share">
+      <div class="db-dialog__head">
+        <strong>分享与协作权限</strong>
+        <button class="db-btn db-btn--ghost" @click="emit('close')">×</button>
       </div>
 
-      <div class="share-dialog__add">
-        <input v-model="newPrincipalId" placeholder="用户 ID" />
-        <select v-model="newRole">
-          <option v-for="r in ROLES" :key="r" :value="r">{{ r }}</option>
-        </select>
-        <button @click="addPerm">添加</button>
+      <div class="share__tabs">
+        <button :class="{ 'is-active': tab === 'members' }" @click="tab = 'members'">成员权限</button>
+        <button :class="{ 'is-active': tab === 'link' }" @click="tab = 'link'">分享链接</button>
       </div>
 
-      <ul class="share-dialog__list">
-        <li v-for="p in perms" :key="`${p.principalType}:${p.principalId}`" class="share-dialog__item">
-          <span>{{ p.principalId }}</span>
-          <span class="share-dialog__role">{{ p.role }}</span>
-          <button @click="removePerm(p)">移除</button>
-        </li>
-        <li v-if="!perms.length" class="share-dialog__hint">暂无共享成员</li>
-      </ul>
+      <div class="db-dialog__body">
+        <template v-if="tab === 'members'">
+          <div class="db-section__title">添加协作者</div>
+          <div class="db-row">
+            <input v-model="principalId" class="db-input" placeholder="用户 ID" @keydown.enter="addPerm">
+            <select v-model="newRole" class="db-select" style="width: 96px">
+              <option value="manager">管理者</option>
+              <option value="editor">可编辑</option>
+              <option value="commenter">可评论</option>
+              <option value="viewer">可阅读</option>
+            </select>
+            <button class="db-btn db-btn--primary" @click="addPerm">添加</button>
+          </div>
+
+          <div class="db-section__title" style="margin-top: 14px">显式授权</div>
+          <div class="db-list">
+            <div v-for="p in store.permissions" :key="`${p.principalType}:${p.principalId}`" class="db-item">
+              <span>{{ p.principalId }}</span>
+              <span class="db-chip">{{ p.role }}</span>
+              <button class="db-btn db-btn--danger" @click="store.removePermission(p)">移除</button>
+            </div>
+            <div v-if="!store.permissions.length" class="db-empty">暂无显式授权成员</div>
+          </div>
+
+          <div class="db-section__title" style="margin-top: 14px">有效协作者（含归属人与空间继承）</div>
+          <div class="db-list">
+            <div v-for="c in store.collaborators" :key="`${c.userId}:${c.source}`" class="db-item">
+              <span>{{ c.userId }}</span>
+              <span class="db-chip">{{ c.role }}</span>
+              <small>{{ c.source }}</small>
+            </div>
+            <div v-if="!store.collaborators.length" class="db-empty">暂无协作者</div>
+          </div>
+        </template>
+
+        <template v-else>
+          <div class="db-row">
+            <label class="share__label">可见范围</label>
+            <select v-model="scope" class="db-select">
+              <option value="anyone">任何人（有链接）</option>
+              <option value="org">组织内成员</option>
+              <option value="invited">仅受邀成员</option>
+            </select>
+          </div>
+          <div class="db-row">
+            <label class="share__label">链接权限</label>
+            <select v-model="linkRole" class="db-select">
+              <option value="viewer">可阅读</option>
+              <option value="commenter">可评论</option>
+              <option value="editor">可编辑</option>
+            </select>
+          </div>
+          <div class="db-row">
+            <label class="share__label">访问密码</label>
+            <input v-model="password" class="db-input" type="password" placeholder="留空表示不设密码">
+          </div>
+          <div class="db-row">
+            <label class="share__label">过期时间</label>
+            <input v-model="expiresAt" class="db-input" placeholder="2006-01-02 15:04:05（留空长期有效）">
+          </div>
+          <div class="share__switches">
+            <label><input v-model="allowDownload" type="checkbox"> 允许下载</label>
+            <label><input v-model="allowCopy" type="checkbox"> 允许复制</label>
+            <label><input v-model="allowComment" type="checkbox"> 允许评论</label>
+            <label><input v-model="watermark" type="checkbox"> 显示水印</label>
+          </div>
+
+          <button class="db-btn db-btn--primary" style="width: 100%; margin-top: 12px" @click="saveLink">
+            {{ store.shareLink ? '更新链接设置' : '生成分享链接' }}
+          </button>
+
+          <div v-if="store.shareLink" class="share__link">
+            <input class="db-input" :value="store.shareLink.url" readonly>
+            <button class="db-btn" @click="copyLink">{{ copied ? '已复制' : '复制' }}</button>
+            <button class="db-btn db-btn--danger" @click="store.revokeShareLink()">撤销</button>
+          </div>
+          <div v-if="store.shareLink" class="share__stat">
+            访问 {{ store.shareLink.viewCount }} 次 ·
+            {{ store.shareLink.hasPassword ? '已设密码' : '无密码' }} ·
+            {{ store.shareLink.expiresAt || '长期有效' }}
+          </div>
+        </template>
+      </div>
+
+      <div class="db-dialog__foot">
+        <button class="db-btn" @click="emit('close')">完成</button>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped>
-.share-mask {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.35);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
+.share { width: 520px; }
+.share__tabs { display: flex; gap: 4px; padding: 8px 12px 0; border-bottom: 1px solid #e8eaed; }
+.share__tabs button {
+  padding: 6px 12px; font-size: 12px; border: none; background: transparent;
+  border-bottom: 2px solid transparent; cursor: pointer;
 }
-.share-dialog {
-  width: 420px;
-  max-height: 80vh;
-  background: #fff;
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-}
-.share-dialog__header {
-  display: flex;
-  justify-content: space-between;
-  padding: 14px 16px;
-  font-weight: 600;
-  border-bottom: 1px solid #ececec;
-}
-.share-dialog__close {
-  border: none;
-  background: none;
-  font-size: 18px;
-  cursor: pointer;
-}
-.share-dialog__add {
-  display: flex;
-  gap: 8px;
-  padding: 12px 16px;
-}
-.share-dialog__add input {
-  flex: 1;
-  padding: 6px 8px;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-}
-.share-dialog__add select,
-.share-dialog__add button {
-  padding: 6px 8px;
-  border: 1px solid #d0d7de;
-  border-radius: 6px;
-  background: #fff;
-  cursor: pointer;
-}
-.share-dialog__list {
-  list-style: none;
-  margin: 0;
-  padding: 0 16px 16px;
-  overflow: auto;
-}
-.share-dialog__item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid #f5f5f5;
-}
-.share-dialog__role {
-  color: #1a73e8;
-  font-size: 12px;
-  flex: 1;
-}
-.share-dialog__hint {
-  color: #9aa0a6;
-  font-size: 12px;
-}
+.share__tabs button.is-active { color: #3370ff; border-bottom-color: #3370ff; font-weight: 600; }
+.share__label { width: 72px; flex: none; font-size: 12px; color: #8f959e; }
+.share__switches { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; font-size: 12px; }
+.share__switches label { display: flex; align-items: center; gap: 5px; }
+.share__switches input { width: auto; }
+.share__link { display: flex; gap: 6px; margin-top: 12px; }
+.share__stat { margin-top: 8px; font-size: 11px; color: #8f959e; }
 </style>

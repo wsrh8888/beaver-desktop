@@ -30,7 +30,16 @@ declare module 'virtual:beaver-plugin-preloads' {
     off: (channel: string, callback: (event: unknown, ...args: any[]) => void) => void
   }
 
-  export type ResolvedPreloadFactory = (ipc: IResolvedInvoke) => Record<string, (...args: any[]) => unknown>
+  export type ResolvedPreloadFactory = (ipc: IResolvedInvoke) => Record<string, unknown>
 
+  /** key 是清单里声明的命名空间，直接展开到 electron.<namespace> */
   export const pluginPreloadFactories: Record<string, ResolvedPreloadFactory>
+}
+
+declare module 'virtual:beaver-plugin-renderer' {
+  /**
+   * key 是插件 id。未启用 / 不存在的插件不会出现在表里，取值方必须判空。
+   * 具体形状由插件自己声明，宿主不 import 任何业务包的 UI 类型。
+   */
+  export const pluginRenderers: Record<string, Record<string, unknown>>
 }

@@ -7,134 +7,102 @@
   beaver-desktop-header-v2
 -->
 <script setup lang="ts">
-import type { IRevisionItem } from '@packageCommon/type/ajax/doc'
-import { listRevisionsApi, rollbackRevisionApi } from '@packageRender/api/doc'
 import { ref, watch } from 'vue'
+import { useDocStore } from '../store/doc'
 
 const props = defineProps<{
-  docId: string
   readOnly?: boolean
+  baseRevision?: string
+  targetRevision?: string
 }>()
 
 const emit = defineEmits<{
-  (e: 'rolled-back'): void
+  (e: 'update:baseRevision', value: string): void
+  (e: 'update:targetRevision', value: string): void
+  (e: 'compare'): void
+  (e: 'rolled-back', revisionId: string): void
 }>()
 
-const revisions = ref<IRevisionItem[]>([])
-const loading = ref(false)
+const store = useDocStore()
+const labelDraft = ref<Record<string, string>>({})
 
-async function load() {
-  if (!props.docId) {
-    revisions.value = []
-    return
-  }
-  loading.value = true
-  try {
-    const res = await listRevisionsApi({ docId: props.docId, page: 1, pageSize: 50 })
-    revisions.value = res.result?.revisions || []
-  }
-  finally {
-    loading.value = false
-  }
+function load() {
+  void store.loadRevisions()
 }
 
-async function rollback(rev: IRevisionItem) {
-  if (props.readOnly)
+async function saveLabel(revisionId: string) {
+  const label = labelDraft.value[revisionId]?.trim()
+  if (!label)
     return
-  const res = await rollbackRevisionApi({ docId: props.docId, revisionId: rev.revisionId })
-  if (res.code === 0) {
-    emit('rolled-back')
-    await load()
-  }
+  await store.labelRevision(revisionId, label)
+  load()
 }
 
-watch(() => props.docId, load)
-load()
+watch(() => store.currentDocId, load, { immediate: true })
 </script>
 
 <template>
-  <div class="history-panel">
-    <div class="history-panel__header">版本历史</div>
-    <ul class="history-panel__list">
-      <li v-for="r in revisions" :key="r.revisionId" class="history-panel__item">
-        <div class="history-panel__meta">
-          <span class="history-panel__ver">v{{ r.version }}</span>
-          <span class="history-panel__time">{{ r.createdAt }}</span>
-        </div>
-        <div v-if="r.label" class="history-panel__label">{{ r.label }}</div>
-        <button
-          class="history-panel__rollback"
-          :disabled="readOnly"
-          @click="rollback(r)"
+  <div class="hp">
+    <div class="db-section">
+      <div class="db-section__title">版本对比</div>
+      <div class="db-row">
+        <select
+          class="db-select"
+          :value="baseRevision"
+          @change="emit('update:baseRevision', ($event.target as HTMLSelectElement).value)"
         >
-          回滚
-        </button>
-      </li>
-      <li v-if="!loading && !revisions.length" class="history-panel__hint">
-        暂无历史版本
-      </li>
-    </ul>
+          <option value="">基准版本</option>
+          <option v-for="r in store.revisions" :key="r.revisionId" :value="r.revisionId">v{{ r.version }}</option>
+        </select>
+        <span>→</span>
+        <select
+          class="db-select"
+          :value="targetRevision"
+          @change="emit('update:targetRevision', ($event.target as HTMLSelectElement).value)"
+        >
+          <option value="">目标版本</option>
+          <option v-for="r in store.revisions" :key="r.revisionId" :value="r.revisionId">v{{ r.version }}</option>
+        </select>
+      </div>
+      <button class="db-btn db-btn--primary" style="width: 100%" @click="emit('compare')">对比差异</button>
+    </div>
+
+    <div class="hp__list">
+      <div v-for="r in store.revisions" :key="r.revisionId" class="hp__item">
+        <div class="hp__head">
+          <strong>v{{ r.version }}</strong>
+          <span class="hp__time">{{ r.createdAt }}</span>
+        </div>
+        <div class="hp__meta">由 {{ r.createdBy || '系统自动保存' }} 生成</div>
+        <div v-if="r.label" class="db-chip">{{ r.label }}</div>
+        <div class="db-row hp__label-row">
+          <input
+            v-model="labelDraft[r.revisionId]"
+            class="db-input"
+            placeholder="命名此版本"
+            @keydown.enter="saveLabel(r.revisionId)"
+          >
+          <button class="db-btn" :disabled="readOnly" @click="saveLabel(r.revisionId)">命名</button>
+        </div>
+        <div class="hp__actions">
+          <button class="db-btn" @click="emit('update:baseRevision', r.revisionId)">设为基准</button>
+          <button class="db-btn" @click="emit('update:targetRevision', r.revisionId)">设为目标</button>
+          <button class="db-btn db-btn--danger" :disabled="readOnly" @click="emit('rolled-back', r.revisionId)">回滚</button>
+        </div>
+      </div>
+      <div v-if="!store.revisions.length" class="db-empty">暂无历史版本，编辑内容后会自动生成</div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.history-panel {
-  width: 240px;
-  height: 100%;
-  border-left: 1px solid #ececec;
-  background: #fff;
-  display: flex;
-  flex-direction: column;
-}
-.history-panel__header {
-  padding: 12px;
-  font-weight: 600;
-  border-bottom: 1px solid #ececec;
-}
-.history-panel__list {
-  list-style: none;
-  margin: 0;
-  padding: 8px;
-  overflow: auto;
-}
-.history-panel__item {
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #f0f0f0;
-  margin-bottom: 8px;
-}
-.history-panel__meta {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-}
-.history-panel__ver {
-  font-weight: 600;
-  color: #1a73e8;
-}
-.history-panel__time {
-  color: #9aa0a6;
-  font-size: 11px;
-}
-.history-panel__label {
-  font-size: 12px;
-  color: #444;
-  margin: 4px 0;
-}
-.history-panel__rollback {
-  font-size: 12px;
-  border: 1px solid #d0d7de;
-  border-radius: 4px;
-  background: #fff;
-  cursor: pointer;
-  padding: 2px 8px;
-}
-.history-panel__rollback:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-.history-panel__hint {
-  color: #9aa0a6;
-  font-size: 12px;
-}
+.hp { display: flex; flex-direction: column; }
+.hp__list { padding: 8px 10px; }
+.hp__item { border: 1px solid #e8eaed; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
+.hp__head { display: flex; justify-content: space-between; align-items: center; font-size: 12px; }
+.hp__time { color: #8f959e; font-size: 11px; }
+.hp__meta { color: #8f959e; font-size: 11px; margin: 4px 0 6px; }
+.hp__label-row { margin: 8px 0 6px; }
+.hp__actions { display: flex; gap: 4px; }
+.hp__actions .db-btn { flex: 1; padding: 4px 2px; font-size: 11px; }
 </style>

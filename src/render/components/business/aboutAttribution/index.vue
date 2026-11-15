@@ -106,7 +106,12 @@
 
 <script lang="ts">
 import BeaverButton from 'renderModule/components/ui/button/index.vue'
+import { getPluginApi } from 'renderModule/utils/pluginApi'
 import { computed, defineComponent } from 'vue'
+
+interface IWorkbenchApi {
+  openExternal: (data: { url: string }) => Promise<unknown>
+}
 
 const SERVER_REPO_URL = 'https://github.com/wsrh8888/beaver-server'
 const LICENSE_DOC_URL = 'https://wsrh8888.github.io/beaver-docs/community/license.html'

@@ -9,8 +9,11 @@
     "jsx": "preserve",
     "lib": ["ES2020", "DOM", "DOM.Iterable"],
     "paths": {
+      "@packageCommon": ["./src/common/index.ts"],
       "@packageCommon/*": ["./src/common/*"],
+      "@packageMain": ["./src/main/index.ts"],
       "@packageMain/*": ["./src/main/*"],
+      "@packageRender": ["./src/renderer/index.ts"],
       "@packageRender/*": ["./src/renderer/*"]
     }
   },

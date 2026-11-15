@@ -115,8 +115,9 @@ export interface ElectronAPP {
   fs: IFsModule
 
   /**
-   * 插件注入的命名空间。启用哪些插件由构建期清单决定，宿主不声明具体插件名。
-   * 渲染层用 renderModule/utils/pluginApi 按 id 取，插件未启用时为 undefined。
+   * 插件注入的命名空间。启用哪些插件、叫什么名字由 build/plugin/catalog.ts 在构建期决定，
+   * 宿主类型不声明任何具体插件。渲染层用 renderModule/utils/pluginApi 按命名空间取；
+   * 插件未启用时取到 undefined，由调用方决定降级行为。
    */
-  [pluginId: string]: unknown
+  [namespace: string]: unknown
 }

@@ -59,7 +59,13 @@ import { MessageType } from 'commonModule/type/ajax/chat'
 import type { IMessageMsg } from 'commonModule/type/ws/message-types'
 import { parseEditorDOM } from 'renderModule/utils/message/index'
 import { CacheType } from 'commonModule/type/cache/cache'
+import { requirePluginApi } from 'renderModule/utils/pluginApi'
 import Logger from 'renderModule/utils/logger'
+
+/** 宿主只描述自己用到的形状，不 import 任何业务包类型 */
+interface ISettingsReader {
+  get: () => Promise<{ keyboard: { sendMessage: string } }>
+}
 
 const logger = new Logger('ChatEditor')
 
@@ -459,7 +465,7 @@ export default defineComponent({
     }
 
     onMounted(async () => {
-      const settings = await electron.settings.get()
+      const settings = await requirePluginApi<ISettingsReader>('settings').get()
       sendMessageKey.value = settings.keyboard.sendMessage
       const draft = messageViewStore.getDraft(messageViewStore.currentChatId || '')
       if (inputRef.value) {

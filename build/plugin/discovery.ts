@@ -12,9 +12,11 @@
  *
  * 清单是唯一事实来源：enabled=false 或可选包缺失时，生成的代码里完全不出现该包，
  * Rolldown 因而没有可解析的 import，达到「编译期剪枝」而不是「运行时 try/catch 兜底」。
+ *
+ * 包的存在性与能力校验都直接读 package.json，不用 require.resolve(pkg/package.json)：
+ * workspace 包的 exports 不暴露 ./package.json，用 Node 解析会抛 ERR_PACKAGE_PATH_NOT_EXPORTED。
  */
 import fs from 'node:fs'
-import { createRequire } from 'node:module'
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import type { Plugin } from 'vite'
@@ -24,9 +26,9 @@ export type ViteAlias = { find: string | RegExp, replacement: string }
 
 export const VIRTUAL_MAINS = 'virtual:beaver-plugin-mains'
 export const VIRTUAL_PRELOADS = 'virtual:beaver-plugin-preloads'
+export const VIRTUAL_RENDERERS = 'virtual:beaver-plugin-renderer'
 
 const RESOLVED_PREFIX = '\0virtual:'
-const require = createRequire(import.meta.url)
 const hostRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..')
 
 export interface IPluginDiscovery {
@@ -35,6 +37,7 @@ export interface IPluginDiscovery {
   roots: string[]
   mainsCode: string
   preloadsCode: string
+  renderersCode: string
 }
 
 function escapeRegExp(value: string): string {
@@ -98,11 +101,38 @@ function aliasesFromExports(
   return aliases
 }
 
+/**
+ * 定位已安装包目录。workspace 包在 node_modules 里是 pnpm 软链，逐级向上找；
+ * 全程只依赖文件系统，不受 exports 限制影响。
+ */
+function findInstalledPackageRoot(packageName: string): string | null {
+  let dir = hostRoot
+  while (true) {
+    const candidate = path.resolve(dir, 'node_modules', packageName)
+    if (fs.existsSync(path.resolve(candidate, 'package.json')))
+      return fs.realpathSync(candidate)
+    const parent = path.dirname(dir)
+    if (parent === dir)
+      return null
+    dir = parent
+  }
+}
+
 function readPackageExports(root: string): Record<string, unknown> {
   const pkg = JSON.parse(fs.readFileSync(path.resolve(root, 'package.json'), 'utf8'))
   if (!pkg.exports)
     throw new Error(`[plugin-discovery] ${root} 缺少 package.json exports`)
   return pkg.exports as Record<string, unknown>
+}
+
+/** 清单声明的能力必须在包里真实存在。缺了直接构建失败，不留运行时兜底。 */
+function assertSubpath(entry: IPluginCatalogEntry, exportsMap: Record<string, unknown>, subpath: string): void {
+  if (!(subpath in exportsMap)) {
+    throw new Error(
+      `[plugin-discovery] 插件 ${entry.id} (${entry.package}) 未导出 ${subpath}，`
+      + '请在包的 package.json exports 中补齐，或从清单移除对应能力声明',
+    )
+  }
 }
 
 function buildMainsCode(entries: readonly IPluginCatalogEntry[]): string {
@@ -118,9 +148,20 @@ function buildPreloadsCode(entries: readonly IPluginCatalogEntry[]): string {
     .map(entry => `import { createPreloadModule as p_${entry.id} } from ${JSON.stringify(`${entry.package}/preload`)}`)
     .join('\n')
   const factories = withPreload
-    .map(entry => `  ${JSON.stringify(entry.id)}: p_${entry.id},`)
+    .map(entry => `  ${JSON.stringify(entry.preload)}: p_${entry.id},`)
     .join('\n')
   return `${imports}\n\nexport const pluginPreloadFactories = {\n${factories}\n}\n`
+}
+
+function buildRenderersCode(entries: readonly IPluginCatalogEntry[]): string {
+  const withRenderer = entries.filter(entry => entry.renderer)
+  const imports = withRenderer
+    .map(entry => `import * as r_${entry.id} from ${JSON.stringify(`${entry.package}/renderer`)}`)
+    .join('\n')
+  const modules = withRenderer
+    .map(entry => `  ${JSON.stringify(entry.id)}: r_${entry.id},`)
+    .join('\n')
+  return `${imports}\n\nexport const pluginRenderers = {\n${modules}\n}\n`
 }
 
 export function discoverPlugins(command: 'serve' | 'build'): IPluginDiscovery {
@@ -133,27 +174,30 @@ export function discoverPlugins(command: 'serve' | 'build'): IPluginDiscovery {
     if (!entry.enabled)
       continue
 
-    if (entry.root) {
-      const root = path.resolve(hostRoot, entry.root)
-      if (!fs.existsSync(path.resolve(root, 'package.json'))) {
-        if (entry.optional)
-          continue
-        throw new Error(`[plugin-discovery] 必要插件 ${entry.id} 的目录不存在：${root}`)
-      }
-      aliases.push(...aliasesFromExports(entry.package, root, readPackageExports(root), condition))
-      roots.push(root)
-      entries.push(entry)
-      continue
-    }
+    const root = entry.root
+      ? (() => {
+          const candidate = path.resolve(hostRoot, entry.root!)
+          return fs.existsSync(path.resolve(candidate, 'package.json')) ? candidate : null
+        })()
+      : findInstalledPackageRoot(entry.package)
 
-    try {
-      require.resolve(`${entry.package}/package.json`)
-    }
-    catch {
+    if (!root) {
       if (entry.optional)
         continue
-      throw new Error(`[plugin-discovery] 必要插件 ${entry.id} 未安装：${entry.package}`)
+      throw new Error(`[plugin-discovery] 必要插件 ${entry.id} 不存在：${entry.package}`)
     }
+
+    const exportsMap = readPackageExports(root)
+    assertSubpath(entry, exportsMap, './main')
+    if (entry.preload)
+      assertSubpath(entry, exportsMap, './preload')
+    if (entry.renderer)
+      assertSubpath(entry, exportsMap, './renderer')
+
+    // 仓库外包不在 node_modules 里，靠 exports 展开成 alias；workspace 包交给 Vite 正常解析
+    if (entry.root)
+      aliases.push(...aliasesFromExports(entry.package, root, exportsMap, condition))
+    roots.push(root)
     entries.push(entry)
   }
 
@@ -163,6 +207,7 @@ export function discoverPlugins(command: 'serve' | 'build'): IPluginDiscovery {
     roots,
     mainsCode: buildMainsCode(entries),
     preloadsCode: buildPreloadsCode(entries),
+    renderersCode: buildRenderersCode(entries),
   }
 }
 
@@ -170,7 +215,7 @@ export function pluginDiscovery(state: IPluginDiscovery): Plugin {
   return {
     name: 'beaver-plugin-discovery',
     resolveId(id) {
-      if (id === VIRTUAL_MAINS || id === VIRTUAL_PRELOADS)
+      if (id === VIRTUAL_MAINS || id === VIRTUAL_PRELOADS || id === VIRTUAL_RENDERERS)
         return `${RESOLVED_PREFIX}${id}`
     },
     load(id) {
@@ -178,6 +223,8 @@ export function pluginDiscovery(state: IPluginDiscovery): Plugin {
         return state.mainsCode
       if (id === `${RESOLVED_PREFIX}${VIRTUAL_PRELOADS}`)
         return state.preloadsCode
+      if (id === `${RESOLVED_PREFIX}${VIRTUAL_RENDERERS}`)
+        return state.renderersCode
     },
   }
 }

@@ -12,6 +12,7 @@
  *
  * 主进程走 @beaver-im/beaver/main；渲染进程走 @beaver-im/beaver/renderer + beaver-ui。
  * 领域类型在 common/type/ajax/doc；ajax 在 renderer/api/doc。
- * 协同：TipTap(ProseMirror) + Yjs + y-websocket provider 连 doc_sync_ws(/api/doc_sync/v1/ws)。
+ * 协同：TipTap(ProseMirror) + Yjs(Y.XmlFragment) + y-websocket provider 连 /api/doc/v1/ws。
+ * 房间名由服务端按 docId@epoch 权威生成；版本回滚递增 epoch，客户端须重建 provider。
  */
 export {}

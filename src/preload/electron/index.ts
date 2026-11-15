@@ -43,9 +43,8 @@ import { callModule } from './call'
 import { fsModule } from './fs'
 
 /**
- * 业务包只描述自己的命令。事件通道留在宿主。
- * 这份 preload 被每个子窗口共用，所以 agent 不限于 AI 窗口。
- * 工作台内嵌网页走 bridge.mjs，不挂这些能力。
+ * 平台注入给插件的统一调用口：事件通道留在宿主，业务包只描述自己的 command。
+ * 这份 preload 被每个子窗口共用；工作台内嵌网页走 bridge.mjs，不挂这些能力。
  */
 const ipc = {
   invoke: <T = unknown>(command: string, data?: unknown) => {
@@ -59,12 +58,21 @@ const ipc = {
   },
 }
 
+/**
+ * 构建期清单决定有哪些插件：这里不出现任何业务包名字，也不引用它们的工厂。
+ * 每个工厂返回自己的方法集合，按清单声明的命名空间挂到 electron 上。
+ */
+const pluginApis = Object.fromEntries(
+  Object.entries(pluginPreloadFactories).map(([namespace, factory]) => [namespace, factory(ipc)]),
+)
+
 const electronAPI: ElectronAPP = {
+  // 插件命名空间先展开；宿主能力后写，保证平台 API 不会被插件覆盖
+  ...pluginApis,
   logger: loggerModule,
   window: windowModule,
   call: callModule,
   keyboard: keyboardModule,
-  settings: createSettingsModule(ipc),
   app: appModule,
   clipboard: clipboardModule,
   storage: storageModule,
@@ -75,9 +83,7 @@ const electronAPI: ElectronAPP = {
   notification: notificationModule,
   auth: authModule,
   datasync: datasyncModule,
-  workbench: createWorkbenchModule(ipc),
   fs: fsModule,
-  agent: createAgentModule(ipc),
 }
 
 contextBridge.exposeInMainWorld('electron', electronAPI)
