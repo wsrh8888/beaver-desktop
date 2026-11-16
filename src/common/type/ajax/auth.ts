@@ -47,7 +47,7 @@ export interface IEmailPasswordLoginRes {
 
 // OAuth 授权码登录（PC 客户端 SDK 登录后换取 IM Token）
 export interface IOAuthCodeLoginReq {
-  appId: string
+  oauthId: string
   code: string
   deviceId?: string
 }

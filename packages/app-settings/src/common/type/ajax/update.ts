@@ -9,7 +9,7 @@
 
 /** 获取最新版本请求 */
 export interface IGetLatestVersionReq {
-  appId: string
+  oauthId: string
   platformId: number
   archId: number
 }

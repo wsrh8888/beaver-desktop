@@ -8,14 +8,13 @@
  */
 
 /**
- * 宿主兼容出口：实现已迁到 @beaver-im/beaver
+ * 宿主出口：实现已迁到 @beaver-im/beaver
  */
 export {
   baseUrl,
-  openAppId,
+  oauthId,
   logId,
   getBaseUrl,
-  getOpenAppId,
   getLogId,
   getCurrentConfig,
 } from '@beaver-im/beaver'

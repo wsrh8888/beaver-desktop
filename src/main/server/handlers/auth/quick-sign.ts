@@ -33,16 +33,16 @@ const logger = new Logger('quick-sign')
  */
 export default async function quickSignHandler(ctx: Context): Promise<void> {
     logger.info({ text: 'quickSignHandler 开始' })
-  const appId = ctx.query.appid as string
+  const oauthId = ctx.query.appid as string
 
   // 参数校验
-  if (!appId) {
+  if (!oauthId) {
     response(ctx, null, '缺少 appid 参数')
     return
   }
 
   // 调用 Logic 层
-  const [result, error] = await getQuickSign(appId)
+  const [result, error] = await getQuickSign(oauthId)
 
   if (error) {
     response(ctx, null, error)

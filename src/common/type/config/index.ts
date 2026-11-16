@@ -31,7 +31,7 @@ export interface DatabaseConfig {
 
 export interface IConfig {
   baseUrl: string
-  openAppId: string
+  oauthId: string
   env: string
   /** 原始日志 Bucket，对应 log */
   logId: string

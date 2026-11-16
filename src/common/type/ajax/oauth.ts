@@ -24,7 +24,7 @@
 
 // H5 免登获取 authCode 请求（对应后端 GetH5AuthCodeReq）
 export interface IGetH5AuthCodeReq {
-  appId: string
+  oauthId: string
 }
 
 // H5 免登获取 authCode 响应（对应后端 GetH5AuthCodeRes）

@@ -42,10 +42,10 @@ export interface IQuickSignRes {
 
 /**
  * 获取快捷登录签名（调用服务端生成 authCode）
- * @param appId - 应用ID
+ * @param oauthId - 应用ID
  * @returns [result, error] - 成功返回数据，失败返回错误信息
  */
-export async function getQuickSign(appId: string): Promise<[IQuickSignRes | null, string | null]> {
+export async function getQuickSign(oauthId: string): Promise<[IQuickSignRes | null, string | null]> {
     logger.info({ text: 'getQuickSign 开始' })
   // 检查是否已登录
   const userInfo = store.get('userInfo')
@@ -62,7 +62,7 @@ export async function getQuickSign(appId: string): Promise<[IQuickSignRes | null
   }
 
   // 调用服务端接口生成 authCode
-  const res = await getH5AuthCodeApi({ appId })
+  const res = await getH5AuthCodeApi({ oauthId })
   
   if (res.code !== 0 || !res.result?.authCode) {
     return [null, res.msg || '生成 authCode 失败']

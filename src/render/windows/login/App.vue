@@ -26,7 +26,7 @@
     <section class="login-page__main">
       <beaver-login
         class="login-page__sdk"
-        :app-id="openAppId"
+        :oauth-id="oauthId"
         :api-base="currentConfig.baseUrl"
         @login="handleLogin"
       />
@@ -40,7 +40,7 @@ const logger = new Logger('App')
 
 import BeaverSDK from '@beaver-im/js-sdk'
 import type { ISdkLoginEvent } from '@beaver-im/js-sdk'
-import { openAppId } from 'commonModule/config'
+import { oauthId } from 'commonModule/config'
 import Message from 'renderModule/components/ui/message'
 import { oauthCodeLoginApi } from 'renderModule/api/auth'
 import { defineComponent, onMounted } from 'vue'
@@ -75,7 +75,7 @@ export default defineComponent({
     logger.info({ text: 'handleLogin 开始' })
       const event = parseLoginEvent(payload)
       if (!event || event.code === 0 ) {
-        const res = await oauthCodeLoginApi({ appId: openAppId, code: event.result.authCode })
+        const res = await oauthCodeLoginApi({ oauthId: oauthId, code: event.result.authCode })
         if (res.code === 0) {
           electron.storage.setAsync('userInfo', {
             userId: res.result.userId,
@@ -91,7 +91,7 @@ export default defineComponent({
     }
 
     return {
-      openAppId,
+      oauthId,
       currentConfig: getCurrentConfig(),
       handleLogin,
     }

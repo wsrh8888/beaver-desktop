@@ -55,7 +55,7 @@ export const useUpdateStore = defineStore('update', {
     async checkUpdate() {
       try {
         const response = await getLatestVersionApi({
-          appId: '87c9dc499cc34f32896a4537e66cf65e',
+          oauthId: '87c9dc499cc34f32896a4537e66cf65e',
           platformId: 1,
           archId: 1,
         })

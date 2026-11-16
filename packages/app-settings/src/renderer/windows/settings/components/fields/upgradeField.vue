@@ -60,7 +60,7 @@ export default defineComponent({
     logger.info({ text: 'handleCheckUpdate 开始' })
       isChecking.value = true
       const res = await getLatestVersionApi({
-        appId: UPDATE_APP_ID,
+        oauthId: UPDATE_APP_ID,
         platformId: 1,
         archId: 1,
       })
