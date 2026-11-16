@@ -20,8 +20,7 @@
     "package:win": "pnpm run build:ai && pnpm run build:packages && pnpm run build:renderer && pnpm run build:main && electron-builder build --win --publish never",
     "package-install": "build\\installer\\index.bat",
     "lint": "eslint . --fix",
-    "prepare": "husky",
-    "add-copyright-header": "node build/scripts/add-copyright-header.mjs"
+    "prepare": "husky"
   },
   "copyright": "Copyright ? 2025 Beaver. All Rights Reserved.",
   "build": {
@@ -137,7 +136,7 @@
     "@beaver-im/beaver": "workspace:*",
     "@beaver-im/beaver-biz": "workspace:*",
     "@beaver-im/beaver-ui": "workspace:*",
-    "@beaver-im/js-sdk": "^1.0.2",
+    "@beaver-im/js-sdk": "^1.1.1",
     "@koa/router": "^15.7.0",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "better-sqlite3": "^13.0.3",

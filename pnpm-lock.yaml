@@ -18,8 +18,8 @@ importers:
         specifier: workspace:*
         version: link:packages/app-about
       '@beaver-im/app-ai':
-        specifier: link:../beaver-agent/agent_electron
-        version: link:../beaver-agent/agent_electron
+        specifier: link:../beaver-desktop-package/beaver-ai
+        version: link:../beaver-desktop-package/beaver-ai
       '@beaver-im/app-audio':
         specifier: workspace:*
         version: link:packages/app-audio
@@ -63,8 +63,8 @@ importers:
         specifier: workspace:*
         version: link:packages/beaver-ui
       '@beaver-im/js-sdk':
-        specifier: ^1.0.2
-        version: 1.0.2(typescript@5.9.3)
+        specifier: 1.1.1
+        version: 1.1.1(typescript@5.9.3)
       '@koa/router':
         specifier: ^15.7.0
         version: 15.7.0(koa@3.2.1)
@@ -692,8 +692,8 @@ packages:
     peerDependencies:
       vue: ^3.5.0
 
-  '@beaver-im/js-sdk@1.0.2':
-    resolution: {integrity: sha512-54khJHBJ/tkLIuDEm3LnFHEBrxbGI2TFoOieLmUjAmkoH4ogU3GiDrJhrG+5tNF1+qLwix1XAGmrETJkA1r/6A==}
+  '@beaver-im/js-sdk@1.1.1':
+    resolution: {integrity: sha512-QI72/76XRqL9w/KTRzw+ePtaLOMmlIF6lfkVuNlgt4SpJ0S67yWUb9MOsXkeoKyx8YaH77rk2b12MsrCHI64Bw==}
 
   '@bufbuild/protobuf@1.10.1':
     resolution: {integrity: sha512-wJ8ReQbHxsAfXhrf9ixl0aYbZorRuOWpBNzm8pL8ftmSxQx/wnJD5Eg861NwJU/czy2VXFIebCeZnZrI9rktIQ==}
@@ -5219,7 +5219,7 @@ snapshots:
       '@beaver-im/beaver': link:packages/beaver
       vue: 3.5.42(typescript@7.0.2)
 
-  '@beaver-im/js-sdk@1.0.2(typescript@5.9.3)':
+  '@beaver-im/js-sdk@1.1.1(typescript@5.9.3)':
     dependencies:
       axios: 1.20.0
       crypto-js: 4.2.0
