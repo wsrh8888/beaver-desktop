@@ -56,7 +56,7 @@ export const phoneLoginApi = (data: IPhoneLoginReq) => {
   return ajax<IPhoneLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/phone_login`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/phone_login`,
   })
 }
 
@@ -67,7 +67,7 @@ export const emailPasswordLoginApi = (data: IEmailPasswordLoginReq) => {
   return ajax<IEmailPasswordLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/email_password_login`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/email_password_login`,
   })
 }
 
@@ -78,7 +78,7 @@ export const oauthCodeLoginApi = (data: IOAuthCodeLoginReq) => {
   return ajax<IOAuthCodeLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/oauth_code_login`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/oauth_code_login`,
   })
 }
 
@@ -88,7 +88,7 @@ export const oauthCodeLoginApi = (data: IOAuthCodeLoginReq) => {
 export const authenticationApi = () => {
   return ajax({
     method: 'GET',
-    url: `${baseUrl}/api/auth/auth_public/v1/authentication`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/authentication`,
   })
 }
 
@@ -99,7 +99,7 @@ export const phoneRegisterApi = (data: IPhoneRegisterReq) => {
   return ajax<IPhoneRegisterRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/phone_register`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/phone_register`,
   })
 }
 
@@ -110,7 +110,7 @@ export const emailRegisterApi = (data: IEmailRegisterReq) => {
   return ajax<IEmailRegisterRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/email_register`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/email_register`,
   })
 }
 
@@ -121,7 +121,7 @@ export const logoutApi = (data: ILogoutReq) => {
   return ajax<ILogoutRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth/v1/logout`,
+    url: `${baseUrl}/beaver/api/auth/auth/v1/logout`,
   })
 }
 
@@ -132,7 +132,7 @@ export const getPhoneCodeApi = (data: IGetPhoneCodeReq) => {
   return ajax<IGetPhoneCodeRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/phonecode`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/phonecode`,
   })
 }
 
@@ -143,7 +143,7 @@ export const getEmailCodeApi = (data: IGetEmailCodeReq) => {
   return ajax<IGetEmailCodeRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/emailcode`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/emailcode`,
   })
 }
 
@@ -154,7 +154,7 @@ export const emailLoginApi = (data: IEmailLoginReq) => {
   return ajax<IEmailLoginRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/email_login`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/email_login`,
   })
 }
 
@@ -165,7 +165,7 @@ export const resetPasswordApi = (data: IResetPasswordReq) => {
   return ajax<IResetPasswordRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth_public/v1/reset_password`,
+    url: `${baseUrl}/beaver/api/auth/auth_public/v1/reset_password`,
   })
 }
 
@@ -176,7 +176,7 @@ export const updatePasswordApi = (data: IUpdatePasswordReq) => {
   return ajax<IUpdatePasswordRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth/v1/update_password`,
+    url: `${baseUrl}/beaver/api/auth/auth/v1/update_password`,
   })
 }
 
@@ -186,7 +186,7 @@ export const updatePasswordApi = (data: IUpdatePasswordReq) => {
 export const getDevicesApi = () => {
   return ajax<IGetDevicesRes>({
     method: 'GET',
-    url: `${baseUrl}/api/auth/auth/v1/devices`,
+    url: `${baseUrl}/beaver/api/auth/auth/v1/devices`,
   })
 }
 
@@ -197,6 +197,6 @@ export const kickDeviceApi = (data: IKickDeviceReq) => {
   return ajax<IKickDeviceRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/auth/auth/v1/kick_device`,
+    url: `${baseUrl}/beaver/api/auth/auth/v1/kick_device`,
   })
 }

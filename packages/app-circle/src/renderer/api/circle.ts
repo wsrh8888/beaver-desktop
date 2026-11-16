@@ -67,7 +67,7 @@ export const getMyCircleListApi = (data: IGetMyCircleListReq) => {
   return ajax<IGetMyCircleListRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/mine`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/mine`,
   })
 }
 
@@ -75,7 +75,7 @@ export const searchCircleApi = (data: ISearchCircleReq) => {
   return ajax<ISearchCircleRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/search`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/search`,
   })
 }
 
@@ -83,7 +83,7 @@ export const getCircleDetailApi = (data: IGetCircleDetailReq) => {
   return ajax<IGetCircleDetailRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/detail`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/detail`,
   })
 }
 
@@ -91,7 +91,7 @@ export const createCircleApi = (data: ICreateCircleReq) => {
   return ajax<ICreateCircleRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/create`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/create`,
   })
 }
 
@@ -99,7 +99,7 @@ export const updateCircleApi = (data: IUpdateCircleReq) => {
   return ajax<IUpdateCircleRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/update`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/update`,
   })
 }
 
@@ -107,7 +107,7 @@ export const joinCircleApi = (data: IJoinCircleReq) => {
   return ajax<IJoinCircleRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/join`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/join`,
   })
 }
 
@@ -115,7 +115,7 @@ export const quitCircleApi = (data: IQuitCircleReq) => {
   return ajax<IQuitCircleRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/quit`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/quit`,
   })
 }
 
@@ -123,7 +123,7 @@ export const deleteCircleApi = (data: IDeleteCircleReq) => {
   return ajax<IDeleteCircleRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/delete`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/delete`,
   })
 }
 
@@ -131,7 +131,7 @@ export const getCircleMembersApi = (data: IGetCircleMembersReq) => {
   return ajax<IGetCircleMembersRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/members`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/members`,
   })
 }
 
@@ -139,7 +139,7 @@ export const inviteCircleMembersApi = (data: IInviteCircleMembersReq) => {
   return ajax<IInviteCircleMembersRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/invite`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/invite`,
   })
 }
 
@@ -147,7 +147,7 @@ export const removeCircleMembersApi = (data: IRemoveCircleMembersReq) => {
   return ajax<IRemoveCircleMembersRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/member_remove`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/member_remove`,
   })
 }
 
@@ -155,7 +155,7 @@ export const getPostListApi = (data: IGetPostListReq) => {
   return ajax<IGetPostListRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/post/list`,
+    url: `${getBaseUrl()}/beaver-social/api/post/post/v1/list`,
   })
 }
 
@@ -163,7 +163,7 @@ export const getPostDetailApi = (data: IGetPostDetailReq) => {
   return ajax<IGetPostDetailRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/post/detail`,
+    url: `${getBaseUrl()}/beaver-social/api/post/post/v1/detail`,
   })
 }
 
@@ -171,7 +171,7 @@ export const createPostApi = (data: ICreatePostReq) => {
   return ajax<ICreatePostRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/post/create`,
+    url: `${getBaseUrl()}/beaver-social/api/post/post/v1/create`,
   })
 }
 
@@ -179,7 +179,7 @@ export const likePostApi = (data: ILikePostReq) => {
   return ajax<ILikePostRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/post/like`,
+    url: `${getBaseUrl()}/beaver-social/api/post/post/v1/like`,
   })
 }
 
@@ -187,7 +187,7 @@ export const getPostLikesApi = (data: IGetPostLikesReq) => {
   return ajax<IGetPostLikesRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/post/likes`,
+    url: `${getBaseUrl()}/beaver-social/api/post/post/v1/likes`,
   })
 }
 
@@ -195,7 +195,7 @@ export const createCommentApi = (data: ICreateCommentReq) => {
   return ajax<ICreateCommentRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/comment/create`,
+    url: `${getBaseUrl()}/beaver-social/api/comment/comment/v1/create`,
   })
 }
 
@@ -203,7 +203,7 @@ export const getCommentListApi = (data: IGetCommentListReq) => {
   return ajax<IGetCommentListRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/comment/list`,
+    url: `${getBaseUrl()}/beaver-social/api/comment/comment/v1/list`,
   })
 }
 
@@ -211,7 +211,7 @@ export const deleteCommentApi = (data: IDeleteCommentReq) => {
   return ajax<IDeleteCommentRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/comment/delete`,
+    url: `${getBaseUrl()}/beaver-social/api/comment/comment/v1/delete`,
   })
 }
 
@@ -219,6 +219,6 @@ export const resolveCircleInviteApi = (data: IResolveCircleInviteReq) => {
   return ajax<IResolveCircleInviteRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/invite_code`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/invite_code`,
   })
 }

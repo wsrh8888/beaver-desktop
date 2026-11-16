@@ -65,7 +65,7 @@ export const datasyncGetSyncAllUsersApi = (data: IGetSyncAllUsersReq) => {
   return ajax<IGetSyncAllUsersRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncAllUsers`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncAllUsers`,
   })
 }
 
@@ -76,7 +76,7 @@ export const datasyncGetSyncGroupInfoApi = (data: IGetSyncGroupInfoReq) => {
   return ajax<IGetSyncGroupInfoRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncGroupInfo`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncGroupInfo`,
   })
 }
 
@@ -87,7 +87,7 @@ export const datasyncGetSyncGroupMembersApi = (data: IGetSyncGroupMembersReq) =>
   return ajax<IGetSyncGroupMembersRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncGroupMembers`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncGroupMembers`,
   })
 }
 
@@ -98,7 +98,7 @@ export const datasyncGetSyncGroupRequestsApi = (data: IGetSyncGroupRequestsReq) 
   return ajax<IGetSyncGroupRequestsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncGroupRequests`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncGroupRequests`,
   })
 }
 
@@ -109,7 +109,7 @@ export const datasyncGetSyncChatMessagesApi = (data: IGetSyncChatMessagesReq) =>
   return ajax<IGetSyncChatMessagesRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncChatMessages`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncChatMessages`,
   })
 }
 
@@ -120,7 +120,7 @@ export const datasyncGetSyncChatConversationsApi = (data: IGetSyncChatConversati
   return ajax<IGetSyncChatConversationsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncChatConversations`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncChatConversations`,
   })
 }
 
@@ -131,7 +131,7 @@ export const datasyncGetSyncChatUserConversationsApi = (data: IGetSyncChatUserCo
   return ajax<IGetSyncChatUserConversationsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncChatUserConversations`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncChatUserConversations`,
   })
 }
 
@@ -142,7 +142,7 @@ export const datasyncGetSyncFriendsApi = (data: IGetSyncFriendsReq) => {
   return ajax<IGetSyncFriendsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncFriends`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncFriends`,
   })
 }
 
@@ -153,7 +153,7 @@ export const datasyncGetSyncFriendVerifiesApi = (data: IGetSyncFriendVerifiesReq
   return ajax<IGetSyncFriendVerifiesRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncFriendVerifies`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncFriendVerifies`,
   })
 }
 
@@ -164,7 +164,7 @@ export const datasyncGetSyncEmojisApi = (data: IGetSyncEmojisReq) => {
   return ajax<IGetSyncEmojisRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncEmojis`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncEmojis`,
   })
 }
 
@@ -175,7 +175,7 @@ export const datasyncGetSyncEmojiCollectsApi = (data: IGetSyncEmojiCollectsReq) 
   return ajax<IGetSyncEmojiCollectsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncEmojiCollects`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncEmojiCollects`,
   })
 }
 
@@ -186,7 +186,7 @@ export const datasyncGetSyncNotificationEventsApi = (data: IGetSyncNotificationE
   return ajax<IGetSyncNotificationEventsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncNotificationEvents`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncNotificationEvents`,
   })
 }
 
@@ -197,7 +197,7 @@ export const datasyncGetSyncNotificationInboxesApi = (data: IGetSyncNotification
   return ajax<IGetSyncNotificationInboxesRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncNotificationInboxes`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncNotificationInboxes`,
   })
 }
 
@@ -208,7 +208,7 @@ export const datasyncGetSyncNotificationReadCursorsApi = (data: IGetSyncNotifica
   return ajax<IGetSyncNotificationReadCursorsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncNotificationReadCursors`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncNotificationReadCursors`,
   })
 }
 
@@ -219,7 +219,7 @@ export const datasyncGetSyncDeletedMessagesApi = (data: IGetSyncDeletedMessagesR
   return ajax<IGetSyncDeletedMessagesRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncDeletedMessages`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncDeletedMessages`,
   })
 }
 
@@ -230,7 +230,7 @@ export const datasyncGetSyncMessageMediasApi = (data: IGetSyncMessageMediasReq) 
   return ajax<IGetSyncMessageMediasRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncMessageMedias`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncMessageMedias`,
   })
 }
 
@@ -241,6 +241,6 @@ export const datasyncGetSyncAgentConversationsApi = (data: IGetSyncAgentConversa
   return ajax<IGetSyncAgentConversationsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncAgentConversations`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncAgentConversations`,
   })
 }

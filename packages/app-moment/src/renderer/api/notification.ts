@@ -18,6 +18,6 @@ export const markReadByCategoryApi = (data: IMarkReadByCategoryReq) => {
   return ajax<IMarkReadByCategoryRes>({
     data,
     method: 'POST',
-    url: `${getBaseUrl()}/api/notification/v1/markReadByCategory`,
+    url: `${getBaseUrl()}/beaver/api/notification/read/v1/markReadByCategory`,
   })
 }

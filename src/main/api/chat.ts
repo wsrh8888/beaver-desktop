@@ -37,7 +37,7 @@ export const chatSyncApi = (data: IChatSyncReq) => {
   return ajax<IChatSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/chat/v1/sync`,
+    url: `${getBaseUrl()}/beaver/api/chat/chat/v1/sync`,
   })
 }
 
@@ -48,7 +48,7 @@ export const getConversationsListByIdsApi = (data: IGetConversationsListByIdsReq
   return ajax<IGetConversationsListByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/chat/v1/getConversationsListByIds`,
+    url: `${getBaseUrl()}/beaver/api/chat/chat/v1/getConversationsListByIds`,
   })
 }
 
@@ -59,6 +59,6 @@ export const getUserConversationSettingsListByIdsApi = (data: IGetUserConversati
   return ajax<IGetUserConversationSettingsListByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/chat/v1/getUserConversationSettingsListByIds`,
+    url: `${getBaseUrl()}/beaver/api/chat/chat/v1/getUserConversationSettingsListByIds`,
   })
 }

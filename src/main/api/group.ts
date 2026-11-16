@@ -39,7 +39,7 @@ export const groupSyncApi = (data: IGroupSyncReq) => {
   return ajax<IGroupSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/group/v1/sync`,
+    url: `${getBaseUrl()}/beaver/api/group/group/v1/sync`,
   })
 }
 
@@ -50,7 +50,7 @@ export const groupMemberSyncApi = (data: IGroupMemberSyncReq) => {
   return ajax<IGroupMemberSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/group/v1/member_sync`,
+    url: `${getBaseUrl()}/beaver/api/group/group/v1/member_sync`,
   })
 }
 
@@ -61,7 +61,7 @@ export const groupJoinRequestSyncApi = (data: IGroupJoinRequestSyncReq) => {
   return ajax<IGroupJoinRequestSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/group/v1/join_request_sync`,
+    url: `${getBaseUrl()}/beaver/api/group/group/v1/join_request_sync`,
   })
 }
 
@@ -72,6 +72,6 @@ export const searchGroupsApi = (data: IGroupSearchReq) => {
   return ajax<IGroupSearchRes>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/group/v1/search`,
+    url: `${getBaseUrl()}/beaver/api/group/group/v1/search`,
   })
 }

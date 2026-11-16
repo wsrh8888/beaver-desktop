@@ -31,7 +31,7 @@ export const createMomentApi = (data: ICreateMomentReq) => {
   return ajax<ICreateMomentRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/moment/v1/create`,
+    url: `${getBaseUrl()}/beaver-social/api/moment/feed/v1/create`,
   })
 }
 
@@ -40,7 +40,7 @@ export const getMomentListApi = (data: IGetMomentListReq) => {
   return ajax<IGetMomentListRes>({
     method: 'POST',
     data: { page: data.page, limit: data.limit },
-    url: `${getBaseUrl()}/api/moment/v1/list`,
+    url: `${getBaseUrl()}/beaver-social/api/moment/feed/v1/list`,
   })
 }
 
@@ -49,7 +49,7 @@ export const likeMomentApi = (data: ILikeMomentReq) => {
   return ajax<ILikeMomentRes>({
     method: 'POST',
     data: { momentId: data.momentId, status: data.status },
-    url: `${getBaseUrl()}/api/moment/v1/like`,
+    url: `${getBaseUrl()}/beaver-social/api/moment/like/v1/set`,
   })
 }
 
@@ -63,7 +63,7 @@ export const createMomentCommentApi = (data: ICreateMomentCommentReq) => {
       parentId: data.parentId,
       replyToCommentId: data.replyToCommentId,
     },
-    url: `${getBaseUrl()}/api/moment/v1/comment/create`,
+    url: `${getBaseUrl()}/beaver-social/api/moment/comment/v1/create`,
   })
 }
 
@@ -72,6 +72,6 @@ export const getMomentDetailApi = (data: IGetMomentDetailReq) => {
   return ajax<IGetMomentDetailRes>({
     method: 'POST',
     data: { momentId: data.momentId },
-    url: `${getBaseUrl()}/api/moment/v1/detail`,
+    url: `${getBaseUrl()}/beaver-social/api/moment/feed/v1/detail`,
   })
 }

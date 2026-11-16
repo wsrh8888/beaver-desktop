@@ -71,7 +71,7 @@ export const createGroupApi = (data: IGroupCreateReq) => {
   return ajax<IGroupCreateRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/create`,
+    url: `${baseUrl}/beaver/api/group/group/v1/create`,
   })
 }
 
@@ -82,7 +82,7 @@ export const deleteGroupApi = (data: IGroupDeleteReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/delete`,
+    url: `${baseUrl}/beaver/api/group/group/v1/delete`,
   })
 }
 
@@ -93,7 +93,7 @@ export const removeGroupMemberApi = (data: IGroupMemberRemoveReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/member_remove`,
+    url: `${baseUrl}/beaver/api/group/group/v1/member_remove`,
   })
 }
 
@@ -104,7 +104,7 @@ export const addGroupMemberApi = (data: IGroupMemberAddReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/member_add`,
+    url: `${baseUrl}/beaver/api/group/group/v1/member_add`,
   })
 }
 
@@ -115,7 +115,7 @@ export const getGroupListApi = (data: IGetGroupListReq) => {
   return ajax<IGroupListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/mine`,
+    url: `${baseUrl}/beaver/api/group/group/v1/mine`,
   })
 }
 
@@ -126,7 +126,7 @@ export const updateGroupInfoApi = (data: IUpdateGroupInfoReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/update`,
+    url: `${baseUrl}/beaver/api/group/group/v1/update`,
   })
 }
 
@@ -137,7 +137,7 @@ export const getGroupMembersApi = (data: IGetGroupMembersReq) => {
   return ajax<IGroupMemberListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/members`,
+    url: `${baseUrl}/beaver/api/group/group/v1/members`,
   })
 }
 
@@ -148,7 +148,7 @@ export const updateMemberRoleApi = (data: IUpdateMemberRoleReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/member_role`,
+    url: `${baseUrl}/beaver/api/group/group/v1/member_role`,
   })
 }
 
@@ -159,7 +159,7 @@ export const joinGroupApi = (data: IGroupJoinReq) => {
   return ajax<IGroupJoinRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/join`,
+    url: `${baseUrl}/beaver/api/group/group/v1/join`,
   })
 }
 
@@ -170,7 +170,7 @@ export const inviteGroupMemberApi = (data: IGroupInviteReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/invite`,
+    url: `${baseUrl}/beaver/api/group/group/v1/invite`,
   })
 }
 
@@ -181,7 +181,7 @@ export const quitGroupApi = (data: IGroupQuitReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/quit`,
+    url: `${baseUrl}/beaver/api/group/group/v1/quit`,
   })
 }
 
@@ -192,7 +192,7 @@ export const transferGroupOwnerApi = (data: ITransferOwnerReq) => {
   return ajax<Record<string, never>>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/transfer`,
+    url: `${baseUrl}/beaver/api/group/group/v1/transfer`,
   })
 }
 
@@ -203,7 +203,7 @@ export const getGroupInfoApi = (data: IGroupInfoReq) => {
   return ajax<IGroupInfoRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/info`,
+    url: `${baseUrl}/beaver/api/group/group/v1/info`,
   })
 }
 
@@ -214,7 +214,7 @@ export const searchGroupApi = (data: ISearchGroupReq) => {
   return ajax<IGroupSearchRes>({
     method: 'GET',
     params: data,
-    url: `${baseUrl}/api/group/v1/search`,
+    url: `${baseUrl}/beaver/api/group/group/v1/search`,
   })
 }
 
@@ -225,7 +225,7 @@ export const getGroupJoinRequestListApi = (data: IGroupJoinRequestListReq) => {
   return ajax<IGroupJoinRequestListRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/join_request_list`,
+    url: `${baseUrl}/beaver/api/group/group/v1/join_request_list`,
   })
 }
 
@@ -236,7 +236,7 @@ export const handleGroupJoinRequestApi = (data: IGroupJoinRequestHandleReq) => {
   return ajax<IGroupJoinRequestHandleRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/join_request_handle`,
+    url: `${baseUrl}/beaver/api/group/group/v1/join_request_handle`,
   })
 }
 
@@ -245,7 +245,7 @@ export const createBotApi = (data: ICreateBotReq) => {
   return ajax<ICreateBotRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/create_bot`,
+    url: `${baseUrl}/beaver/api/group/group/v1/create_bot`,
   })
 }
 
@@ -254,7 +254,7 @@ export const listBotsApi = (data: IListBotsReq) => {
   return ajax<IListBotsRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/list_bots`,
+    url: `${baseUrl}/beaver/api/group/group/v1/list_bots`,
   })
 }
 
@@ -263,7 +263,7 @@ export const getBotDetailApi = (data: IGetBotDetailReq) => {
   return ajax<IGetBotDetailRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/bot_detail`,
+    url: `${baseUrl}/beaver/api/group/group/v1/bot_detail`,
   })
 }
 
@@ -272,7 +272,7 @@ export const updateBotApi = (data: IUpdateBotReq) => {
   return ajax<IUpdateBotRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/update_bot`,
+    url: `${baseUrl}/beaver/api/group/group/v1/update_bot`,
   })
 }
 
@@ -281,7 +281,7 @@ export const deleteBotApi = (data: IDeleteBotReq) => {
   return ajax<IDeleteBotRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/delete_bot`,
+    url: `${baseUrl}/beaver/api/group/group/v1/delete_bot`,
   })
 }
 
@@ -290,7 +290,7 @@ export const resetBotSecretApi = (data: IResetBotSecretReq) => {
   return ajax<IResetBotSecretRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/group/v1/reset_bot_secret`,
+    url: `${baseUrl}/beaver/api/group/group/v1/reset_bot_secret`,
   })
 }
 
@@ -298,6 +298,6 @@ export const resolveGroupInviteApi = (data: IResolveGroupInviteReq) => {
   return ajax<IResolveGroupInviteRes>({
     method: 'GET',
     params: data,
-    url: `${baseUrl}/api/group/v1/invite_code`,
+    url: `${baseUrl}/beaver/api/group/group/v1/invite_code`,
   })
 }

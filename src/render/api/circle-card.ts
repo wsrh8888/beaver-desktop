@@ -25,7 +25,7 @@ export function getCircleDetailApi(data: { circleId: string }) {
   }>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/detail`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/detail`,
   })
 }
 
@@ -33,7 +33,7 @@ export function joinCircleApi(data: { circleId?: string, inviteCode?: string }) 
   return ajax<{ status: number, circleId?: string }>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/join`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/join`,
   })
 }
 
@@ -50,6 +50,6 @@ export function resolveCircleInviteApi(data: { code: string }) {
   }>({
     method: 'GET',
     params: data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/invite_code`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/invite_code`,
   })
 }

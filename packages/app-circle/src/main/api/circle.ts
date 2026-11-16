@@ -27,7 +27,7 @@ export const circleSyncApi = (data: ICircleSyncReq): Promise<IAjaxResponse<ICirc
   return ajax<IAjaxResponse<ICircleSyncRes>>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/circle/v1/circle/sync`,
+    url: `${getBaseUrl()}/beaver-social/api/circle/circle/v1/sync`,
   })
 }
 
@@ -36,6 +36,6 @@ export const datasyncGetSyncCircleInfoApi = (data: IGetSyncCircleInfoReq) => {
   return ajax<IGetSyncCircleInfoRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/datasync/v1/getSyncCircleInfo`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncCircleInfo`,
   })
 }

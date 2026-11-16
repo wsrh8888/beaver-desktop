@@ -38,7 +38,7 @@ import ajax from 'renderModule/utils/request/ajax'
 export const getUserInfoApi = () => {
   return ajax<IUserInfoRes>({
     method: 'GET',
-    url: `${baseUrl}/api/user/v1/user_info`,
+    url: `${baseUrl}/beaver/api/user/profile/v1/user_info`,
   })
 }
 /**
@@ -48,7 +48,7 @@ export const updateInfoApi = (data: IUpdateInfoReq) => {
   return ajax<IUpdateInfoRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/user/v1/update_info`,
+    url: `${baseUrl}/beaver/api/user/profile/v1/update_info`,
   })
 }
 
@@ -59,7 +59,7 @@ export const updateEmailApi = (data: IUpdateEmailReq) => {
   return ajax<IUpdateEmailRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/user/v1/update_email`,
+    url: `${baseUrl}/beaver/api/user/profile/v1/update_email`,
   })
 }
 
@@ -70,7 +70,7 @@ export const updateEmailApi = (data: IUpdateEmailReq) => {
 export const getUserSettingsApi = () => {
   return ajax<IUserSettingsRes>({
     method: 'GET',
-    url: `${baseUrl}/api/user/v1/settings`,
+    url: `${baseUrl}/beaver/api/user/profile/v1/settings`,
   })
 }
 
@@ -81,6 +81,6 @@ export const updateUserSettingsApi = (data: IUpdateUserSettingsReq) => {
   return ajax<IUpdateUserSettingsRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/api/user/v1/update_settings`,
+    url: `${baseUrl}/beaver/api/user/profile/v1/update_settings`,
   })
 }

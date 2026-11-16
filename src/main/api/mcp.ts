@@ -18,7 +18,7 @@ import ajax from 'mainModule/utils/request/request'
 export const reportCapabilitiesApi = (data: IReportCapabilitiesReq) => {
   return ajax<IReportCapabilitiesRes>({
     method: 'POST',
-    url: `${getBaseUrl()}/api/agent/v1/message/reportCapabilities`,
+    url: `${getBaseUrl()}/beaver-ai/api/ai/message/v1/report_capabilities`,
     data,
   })
 }
@@ -29,7 +29,7 @@ export const reportCapabilitiesApi = (data: IReportCapabilitiesReq) => {
 export const submitClientToolResultApi = (data: ISubmitClientToolResultReq) => {
   return ajax({
     method: 'POST',
-    url: `${getBaseUrl()}/api/agent/v1/message/submitClientToolResult`,
+    url: `${getBaseUrl()}/beaver-ai/api/ai/message/v1/submit_client_tool_result`,
     data,
   })
 }

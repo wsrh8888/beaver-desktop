@@ -37,7 +37,7 @@ export const getCallTokenApi = (data: IGetCallTokenReq) => {
   return ajax<IGetCallTokenRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/call/v1/token`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/token`,
   })
 }
 
@@ -48,7 +48,7 @@ export const hangupCallApi = (data: IHangupCallReq) => {
   return ajax<IHangupCallRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/call/v1/hangup`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/hangup`,
   })
 }
 
@@ -59,6 +59,6 @@ export const inviteCallMemberApi = (data: IInviteCallMemberReq) => {
   return ajax<IInviteCallMemberRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/call/v1/invite`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/invite`,
   })
 }

@@ -35,9 +35,7 @@
     "src/**/*.d.ts",
     "packages/*/src/**/*.ts",
     "packages/*/src/**/*.vue",
-    "packages/*/src/**/*.d.ts",
-    "../beaver-agent/agent_electron/src/**/*.ts",
-    "../beaver-agent/agent_electron/src/**/*.vue"
+    "packages/*/src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",

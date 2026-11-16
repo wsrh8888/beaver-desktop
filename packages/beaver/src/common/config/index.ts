@@ -9,6 +9,13 @@
 
 import type { IConfig, IConfigs } from '../type/config'
 
+/**
+ * 环境配置。
+ *
+ * baseUrl 只是网关 origin（协议 + 域名 + 端口），不含任何路径段：
+ * 具体接口路径写在每个 url 里（`/beaver/api/...`、`/beaver-social/api/...` 等）。
+ * 网关按路径第 2 段做 team 分流，所以 team 必须由调用方自己带，不能塞进 base。
+ */
 const config: IConfigs = {
   dev: {
     baseUrl: 'http://127.0.0.1:20800',
@@ -17,13 +24,13 @@ const config: IConfigs = {
     logId: 'b2c3d4e5-f6a7-4789-b012-456789abcdef',
   },
   test: {
-    baseUrl: 'https://server-test.wsrh8888.com/beaver',
+    baseUrl: 'https://server-test.wsrh8888.com',
     openAppId: 'oauth_2db39e38',
     env: 'test',
     logId: 'b2c3d4e5-f6a7-4789-b012-456789abcdef',
   },
   prod: {
-    baseUrl: 'https://server.wsrh8888.com/beaver',
+    baseUrl: 'https://server.wsrh8888.com',
     openAppId: 'oauth_2db39e38',
     env: 'prod',
     logId: 'b2c3d4e5-f6a7-4789-b012-456789abcdef',

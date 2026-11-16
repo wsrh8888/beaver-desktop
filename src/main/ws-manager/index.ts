@@ -119,7 +119,7 @@ class WsManager {
     const userInfo = store.get('userInfo')
     const token = userInfo?.token
     const userId = userInfo?.userId
-    const wsUrl = `${getCurrentConfig().baseUrl}/api/ws/v1/ws`
+    const wsUrl = `${getCurrentConfig().baseUrl}/beaver/api/ws/socket/v1/ws`
 
     // 防止重复连接
     if (this.isConnected || this.status === 'connecting') {

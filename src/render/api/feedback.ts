@@ -30,6 +30,6 @@ export const submitFeedbackApi = (data: ISubmitFeedbackReq) => {
   return ajax<ISubmitFeedbackRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/platform/feedback/v1/submit_feedback`,
+    url: `${baseUrl}/beaver/api/platform/feedback/v1/submit_feedback`,
   })
 }

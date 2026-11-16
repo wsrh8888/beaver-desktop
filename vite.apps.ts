@@ -34,7 +34,7 @@ export function createAliases(): ViteAlias[] {
   ]
 }
 
-/** 宿主要编的窗口 html。app-ai 在仓库外，窗口走它自己的 dist，不进宿主 */
+/** 宿主要编的窗口 html。app-ai 是独立仓（beaver-desktop-package/beaver-ai），窗口走它自己的 dist，不进宿主 */
 export function htmlInputs(): Record<string, string> {
   return {
     app: root('app.html'),

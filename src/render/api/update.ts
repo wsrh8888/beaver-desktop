@@ -35,7 +35,7 @@ export const reportVersionApi = (data: IReportVersionReq) => {
   return ajax<IReportVersionRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/platform/update_public/v1/report`,
+    url: `${baseUrl}/beaver/api/platform/update_public/v1/report`,
   })
 }
 
@@ -46,6 +46,6 @@ export const getLatestVersionApi = (data: IGetLatestVersionReq) => {
   return ajax<IGetLatestVersionRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/platform/update_public/v1/latest`,
+    url: `${baseUrl}/beaver/api/platform/update_public/v1/latest`,
   })
 }

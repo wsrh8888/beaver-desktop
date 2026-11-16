@@ -47,7 +47,7 @@ export const uploadFileApi = async (file: File, fileKey?: string): Promise<IFile
 const uploadFileApiWithTarget = async (file: File, fileKey?: string, target: 'local' | 'qiniu' = 'local'): Promise<IFileUploadResult> => {
     logger.info({ text: 'uploadFileApiWithTarget 开始' })
   // 根据目标选择URL
-  const uploadPath = target === 'qiniu' ? '/api/file/v1/uploadQiniu' : '/api/file/v1/uploadLocal'
+  const uploadPath = target === 'qiniu' ? '/beaver/api/file/file/v1/uploadQiniu' : '/beaver/api/file/file/v1/uploadLocal'
   let uploadUrl = `${baseUrl}${uploadPath}`
 
   if (fileKey) {

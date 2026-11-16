@@ -37,3 +37,6 @@ export function createSettingsModule(ipc: IPreloadInvoke): ISettingsModule {
     },
   }
 }
+
+/** 平台契约名：宿主插件加载器按 createPreloadModule 装配 preload 命名空间 */
+export { createSettingsModule as createPreloadModule }

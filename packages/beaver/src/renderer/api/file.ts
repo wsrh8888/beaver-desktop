@@ -24,7 +24,7 @@ export interface IFileUploadResult {
 export async function uploadFileApi(file: File, fileKey?: string): Promise<IFileUploadResult> {
   logger.info({ text: 'uploadFileApi 开始' })
 
-  let uploadUrl = `${getBaseUrl()}/api/file/v1/uploadLocal`
+  let uploadUrl = `${getBaseUrl()}/beaver/api/file/file/v1/uploadLocal`
   if (fileKey)
     uploadUrl += `?fileKey=${encodeURIComponent(fileKey)}`
 

@@ -10,11 +10,16 @@
 import type * as T from '@packageCommon/type/ajax/doc'
 import { ajax, getBaseUrl } from '@beaver-im/beaver/renderer'
 
-const base = () => `${getBaseUrl()}/api/doc/v1`
+const base = () => `${getBaseUrl()}/beaver-doc/api/doc`
 
-/** 统一 POST：userId 由 ajax 请求层注入 Beaver-User-Id header，业务入参只带领域字段。 */
+/**
+ * 统一 POST：入参只有领域字段，身份由网关验票后写入 Beaver-User-Id 头，客户端不自行拼身份头。
+ * path 按 `/{group}/{action}` 传，这里补上 go-zero 的 `/v1/` 段：
+ * `/space/create` → `/beaver-doc/api/doc/space/v1/create`。
+ */
 function post<Req, Res>(path: string, data: Req) {
-  return ajax<Res>({ method: 'POST', data, url: `${base()}${path}` })
+  const [group, action] = path.replace(/^\//, '').split('/')
+  return ajax<Res>({ method: 'POST', data, url: `${base()}/${group}/v1/${action}` })
 }
 
 // ==================== 空间 space ====================

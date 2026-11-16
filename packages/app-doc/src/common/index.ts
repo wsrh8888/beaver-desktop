@@ -14,8 +14,8 @@
  */
 export * from './type/ajax/doc'
 
-/** 文档协同 WS 路径（网关按 /api/doc/ 段名路由；WS 升级与 HTTP 同入口）。 */
-export const DOC_SYNC_WS_PATH = '/api/doc/v1/ws'
+/** 文档协同 WS 路径（网关按路径第 2 段 team（beaver-doc）分流；WS 升级与 HTTP 同入口）。 */
+export const DOC_SYNC_WS_PATH = '/beaver-doc/api/doc/ws/v1/connect'
 
 /**
  * TipTap Collaboration 使用的 Yjs 根类型名。

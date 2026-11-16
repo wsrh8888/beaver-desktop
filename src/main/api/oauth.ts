@@ -30,6 +30,6 @@ export const getH5AuthCodeApi = (data: IGetH5AuthCodeReq) => {
   return ajax<IGetH5AuthCodeRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/open/oauth/v1/h5_authcode`,
+    url: `${getBaseUrl()}/beaver-open/api/open/oauth/v1/h5_authcode`,
   })
 }

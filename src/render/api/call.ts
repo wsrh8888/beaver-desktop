@@ -46,7 +46,7 @@ export const startCallApi = (data: IStartCallReq) => {
   return ajax<IStartCallRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/call/v1/start`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/start`,
   })
 }
 
@@ -57,7 +57,7 @@ export const getCallTokenApi = (data: IGetCallTokenReq) => {
   return ajax<IGetCallTokenRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/call/v1/token`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/token`,
   })
 }
 
@@ -68,7 +68,7 @@ export const hangupCallApi = (data: IHangupCallReq) => {
   return ajax<IHangupCallRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/call/v1/hangup`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/hangup`,
   })
 }
 
@@ -79,7 +79,7 @@ export const getCallHistoryApi = (params: IGetCallHistoryReq) => {
   return ajax<IGetCallHistoryRes>({
     method: 'GET',
     params,
-    url: `${baseUrl}/api/call/v1/history`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/history`,
   })
 }
 
@@ -90,7 +90,7 @@ export const addCallMemberApi = (data: IAddCallMemberReq) => {
   return ajax<IAddCallMemberRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/call/v1/add_member`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/add_member`,
   })
 }
 
@@ -101,7 +101,7 @@ export const getParticipantsApi = (params: IGetCallParticipantsReq) => {
   return ajax<IGetCallParticipantsRes>({
     method: 'GET',
     params,
-    url: `${baseUrl}/api/call/v1/participants`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/participants`,
   })
 }
 
@@ -112,6 +112,6 @@ export const inviteCallMemberApi = (data: IInviteCallMemberReq) => {
   return ajax<IInviteCallMemberRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/api/call/v1/invite`,
+    url: `${baseUrl}/beaver-call/api/call/call/v1/invite`,
   })
 }

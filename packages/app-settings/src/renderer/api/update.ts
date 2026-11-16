@@ -20,6 +20,6 @@ export const getLatestVersionApi = (data: IGetLatestVersionReq) => {
   return ajax<IGetLatestVersionRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/api/platform/update_public/v1/latest`,
+    url: `${getBaseUrl()}/beaver/api/platform/update_public/v1/latest`,
   })
 }
