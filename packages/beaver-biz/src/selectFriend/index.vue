@@ -115,7 +115,7 @@ import { Logger } from '@beaver-im/beaver/renderer'
 const logger = new Logger('index')
 
 import type { IFriendPickItem } from '../types'
-import { CacheType } from '@beaver-im/beaver-ui/cache'
+import { CacheType } from '@beaver-im/beaver-ui'
 import searchIcon from '../assets/search.svg'
 import BeaverButton from '@beaver-im/beaver-ui/button/index.vue'
 import BeaverDialog from '@beaver-im/beaver-ui/dialog/dialog.vue'
