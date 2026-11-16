@@ -100,7 +100,7 @@ export const useWorkbenchStore = defineStore('useWorkbenchStore', {
     openApp(app: IWorkbenchAppItem) {
       const entry = resolveWorkbenchEntry(app, 'pc')
       if (!entry) {
-        logger.error({ text: '打开应用失败：应用入口无效', data: { oauthId: app.workbenchAppId, name: app.name, entryConfig: app.entryConfig } })
+        logger.error({ text: '打开应用失败：应用入口无效', data: { appId: app.workbenchAppId, name: app.name, entryConfig: app.entryConfig } })
         Message.error('应用入口无效')
         return
       }
@@ -109,18 +109,18 @@ export const useWorkbenchStore = defineStore('useWorkbenchStore', {
       if (Number(app.appType) === 0 || Number(app.entryConfig?.type) === 0) {
         const handler = INTERNAL_ROUTE_HANDLERS[entry]
         if (!handler) {
-          logger.error({ text: '打开应用失败：未知内部应用', data: { oauthId: app.workbenchAppId, name: app.name, entry } })
+          logger.error({ text: '打开应用失败：未知内部应用', data: { appId: app.workbenchAppId, name: app.name, entry } })
           Message.error(`未知内部应用：${entry}`)
           return
         }
-        logger.info({ text: '打开内部应用', data: { oauthId: app.workbenchAppId, name: app.name, entry } })
+        logger.info({ text: '打开内部应用', data: { appId: app.workbenchAppId, name: app.name, entry } })
         handler()
         return
       }
 
       // openMode: 1 = 系统浏览器打开，不创建内嵌 Tab
       if (Number(app.openMode) === 1) {
-        logger.info({ text: '使用系统浏览器打开应用', data: { oauthId: app.workbenchAppId, name: app.name, entry } })
+        logger.info({ text: '使用系统浏览器打开应用', data: { appId: app.workbenchAppId, name: app.name, entry } })
         void electron.workbench.openExternal({ url: entry })
         return
       }
@@ -128,7 +128,7 @@ export const useWorkbenchStore = defineStore('useWorkbenchStore', {
       const existing = this.tabs.find(tab => tab.id === app.workbenchAppId)
       if (existing) {
         this.activeTabId = existing.id
-        logger.info({ text: '切换到已打开的应用标签', data: { oauthId: app.workbenchAppId } })
+        logger.info({ text: '切换到已打开的应用标签', data: { appId: app.workbenchAppId } })
       }
       else {
         this.tabs.push({
@@ -138,7 +138,7 @@ export const useWorkbenchStore = defineStore('useWorkbenchStore', {
           app,
         })
         this.activeTabId = app.workbenchAppId
-        logger.info({ text: '新建应用标签', data: { oauthId: app.workbenchAppId, name: app.name, entry } })
+        logger.info({ text: '新建应用标签', data: { appId: app.workbenchAppId, name: app.name, entry } })
       }
     },
     closeTab(tabId: string) {

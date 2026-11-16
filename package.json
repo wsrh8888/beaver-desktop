@@ -31,7 +31,7 @@
     ],
     "asar": true,
     "extends": null,
-    "oauthId": "com.beaver",
+    "appId": "com.beaver",
     "productName": "beaver",
     "artifactName": "beaver-${version}.${ext}",
     "electronDownload": {

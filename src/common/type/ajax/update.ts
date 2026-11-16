@@ -29,7 +29,7 @@ export enum UpdateType {
 // 上报版本信息请求
 export interface IReportVersionReq {
   deviceId: string // 客户端生成的设备唯一标识符
-  oauthId: string // 应用ID
+  appId: string // 客户端应用标识（对应 platform 服务的 appId，与 OAuth 的 oauthId 不是一回事）
   platformId: number // 平台ID：1=Windows, 2=MacOS, 3=iOS, 4=Android, 5=HarmonyOS
   archId: number // 架构ID：0=h5, 1=WinX64, 2=WinArm64, 3=MacIntel, 4=MacApple, 5=iOS, 6=Android, 7=HarmonyOS
   version: string // 版本号
@@ -42,7 +42,7 @@ export interface IReportVersionRes {
 
 // 获取最新版本请求
 export interface IGetLatestVersionReq {
-  oauthId: string // 应用ID
+  appId: string // 客户端应用标识（对应 platform 服务的 appId，与 OAuth 的 oauthId 不是一回事）
   platformId: number // 平台ID：1=Windows, 2=MacOS, 3=iOS, 4=Android, 5=HarmonyOS
   archId: number // 架构ID：1=WinX64, 2=WinArm64, 3=MacIntel, 4=MacApple, 5=iOS, 6=Android, 7=HarmonyOS
 }
