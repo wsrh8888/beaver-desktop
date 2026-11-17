@@ -20,7 +20,7 @@ import { ajax, getBaseUrl } from '@beaver-im/beaver/renderer'
 export const getDevicesApi = () => {
   return ajax<IGetDevicesRes>({
     method: 'GET',
-    url: `${getBaseUrl()}/beaver/api/auth/auth/v1/devices`,
+    url: `${getBaseUrl()}/beaver/api/account/auth/v1/devices`,
   })
 }
 
@@ -31,6 +31,6 @@ export const kickDeviceApi = (data: IKickDeviceReq) => {
   return ajax<IKickDeviceRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/auth/auth/v1/kick_device`,
+    url: `${getBaseUrl()}/beaver/api/account/auth/v1/kick_device`,
   })
 }

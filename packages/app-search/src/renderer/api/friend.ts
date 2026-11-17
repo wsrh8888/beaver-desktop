@@ -30,7 +30,7 @@ export const getSearchFriendApi = (data: ISearchUser) => {
   return ajax<IResSearchUserInfo>({
     method: 'GET',
     params: data, // 使用 params 而不是 data，因为是 GET 请求
-    url: `${baseUrl}/beaver/api/friend/friend/v1/search`,
+    url: `${baseUrl}/beaver/api/relation/friend/v1/search`,
   })
 }
 
@@ -41,6 +41,6 @@ export const applyAddFriendApi = (data: IAddFriendReq) => {
   return ajax<IAddFriendRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/beaver/api/friend/friend/v1/add_friend`,
+    url: `${baseUrl}/beaver/api/relation/friend/v1/add_friend`,
   })
 }

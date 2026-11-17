@@ -16,6 +16,6 @@ import { ajax, getBaseUrl } from '@beaver-im/beaver/main'
 export const getUserSettingsApi = () => {
   return ajax<IUserSettingsRes>({
     method: 'GET',
-    url: `${getBaseUrl()}/beaver/api/user/profile/v1/settings`,
+    url: `${getBaseUrl()}/beaver/api/account/user/v1/settings`,
   })
 }

@@ -30,7 +30,7 @@ export const searchGroupApi = (data: ISearchGroupReq) => {
   return ajax<IGroupSearchRes>({
     method: 'GET',
     params: data,
-    url: `${baseUrl}/beaver/api/group/group/v1/search`,
+    url: `${baseUrl}/beaver/api/relation/group/v1/search`,
   })
 }
 
@@ -41,6 +41,6 @@ export const joinGroupApi = (data: IGroupJoinReq) => {
   return ajax<IGroupJoinRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/group/group/v1/join`,
+    url: `${baseUrl}/beaver/api/relation/group/v1/join`,
   })
 }

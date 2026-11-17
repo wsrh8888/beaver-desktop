@@ -30,7 +30,7 @@ export const userSyncApi = (data: IUserSyncReq) => {
   return ajax<IUserSyncRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/user/profile/v1/sync`,
+    url: `${getBaseUrl()}/beaver/api/account/user/v1/sync`,
   })
 }
 
@@ -40,6 +40,6 @@ export const userSyncApi = (data: IUserSyncReq) => {
 export const getUserSettingsApi = () => {
   return ajax<IUserSettingsRes>({
     method: 'GET',
-    url: `${getBaseUrl()}/beaver/api/user/profile/v1/settings`,
+    url: `${getBaseUrl()}/beaver/api/account/user/v1/settings`,
   })
 }

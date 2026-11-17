@@ -58,7 +58,7 @@ import ajax from 'renderModule/utils/request/ajax'
 export const getRecentChatListApi = (params: IRecentChatListReq) => {
   return ajax<IRecentChatRes>({
     method: 'GET',
-    url: `${baseUrl}/beaver/api/chat/chat/v1/getRecentChatList`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/getRecentChatList`,
     params, // GET请求使用params传递查询参数
   })
 }
@@ -69,7 +69,7 @@ export const getcreateConversationApi = (data: ICreateConversationReq) => {
   return ajax<IRecentChatRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/createConversation`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/createConversation`,
   })
 }
 
@@ -80,7 +80,7 @@ export const getRecentChatInfoApi = (data: IConversationInfoReq) => {
   return ajax<IConversationInfoRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/getConversationInfo`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/getConversationInfo`,
   })
 }
 /**
@@ -90,7 +90,7 @@ export const getChatHistoryApi = (data: IChatHistoryReq) => {
   return ajax<IChatHistoryRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/getChatHistory`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/getChatHistory`,
   })
 }
 
@@ -101,7 +101,7 @@ export const sendMsgApi = (data: ISendMsgReq) => {
   return ajax<ISendMsgRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/sendMsg`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/sendMsg`,
   })
 }
 
@@ -112,7 +112,7 @@ export const deleteRecentApi = (data: IDeleteRecentReq) => {
   return ajax<IDeleteRecentRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/deleteRecentChat`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/deleteRecentChat`,
   })
 }
 
@@ -123,7 +123,7 @@ export const pinnedChatApi = (data: IPinnedChatReq) => {
   return ajax<IPinnedChatRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/pinnedChat`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/pinnedChat`,
   })
 }
 
@@ -134,7 +134,7 @@ export const recallMessageApi = (data: IRecallMessageReq) => {
   return ajax<IRecallMessageRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/recall`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/recall`,
   })
 }
 
@@ -145,7 +145,7 @@ export const forwardMessageApi = (data: IForwardMessageReq) => {
   return ajax<IForwardMessageRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/forward`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/forward`,
   })
 }
 
@@ -155,7 +155,7 @@ export const forwardMessageApi = (data: IForwardMessageReq) => {
 export const getForwardDetailsApi = (params: IGetForwardDetailsReq) => {
   return ajax<IGetForwardDetailsRes>({
     method: 'GET',
-    url: `${baseUrl}/beaver/api/chat/chat/v1/getForwardDetails`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/getForwardDetails`,
     params,
   })
 }
@@ -167,7 +167,7 @@ export const deleteMessagesApi = (data: IDeleteMessagesReq) => {
   return ajax<IDeleteMessagesRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/deleteMessages`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/deleteMessages`,
   })
 }
 
@@ -186,7 +186,7 @@ export const updateReadSeqApi = (data: IUpdateReadSeqReq) => {
   return ajax<IUpdateReadSeqRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/updateReadSeq`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/updateReadSeq`,
   })
 }
 
@@ -197,7 +197,7 @@ export const muteChatApi = (data: IMuteChatReq) => {
   return ajax<IMuteChatRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/muteChat`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/muteChat`,
   })
 }
 
@@ -208,7 +208,7 @@ export const hideChatApi = (data: IHideChatReq) => {
   return ajax<IHideChatRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/hideChat`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/hideChat`,
   })
 }
 
@@ -219,6 +219,6 @@ export const markMessageMediaApi = (data: IMarkMessageMediaReq) => {
   return ajax<IMarkMessageMediaRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/chat/chat/v1/markMessageMedia`,
+    url: `${baseUrl}/beaver/api/message/chat/v1/markMessageMedia`,
   })
 }

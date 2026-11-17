@@ -35,7 +35,7 @@ export const getFriendsListByIdsApi = (data: IGetFriendsListByIdsReq) => {
   return ajax<IGetFriendsListByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/friend/friend/v1/getFriendsListByIds`,
+    url: `${getBaseUrl()}/beaver/api/relation/friend/v1/getFriendsListByIds`,
   })
 }
 
@@ -48,6 +48,6 @@ export const getFriendVerifiesListByIdsApi = (data: IGetFriendVerifiesListByIdsR
     data: {
       verifyIds: data.verifyIds,
     },
-    url: `${getBaseUrl()}/beaver/api/friend/friend/v1/getFriendVerifiesListByIds`,
+    url: `${getBaseUrl()}/beaver/api/relation/friend/v1/getFriendVerifiesListByIds`,
   })
 }

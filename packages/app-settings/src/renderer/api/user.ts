@@ -20,6 +20,6 @@ export const updateUserSettingsApi = (data: IUpdateUserSettingsReq) => {
   return ajax<IUpdateUserSettingsRes>({
     data,
     method: 'POST',
-    url: `${getBaseUrl()}/beaver/api/user/profile/v1/update_settings`,
+    url: `${getBaseUrl()}/beaver/api/account/user/v1/update_settings`,
   })
 }
