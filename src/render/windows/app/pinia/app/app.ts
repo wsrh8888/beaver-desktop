@@ -102,27 +102,32 @@ export const useAppStore = defineStore('useAppStore', {
       const notificationStore = useNotificationStore()
       const messageMediaStore = useMessageMediaStore()
 
-      try {
-        logger.info({ text: '开始加载/刷新各模块数据' })
-        const promises = [
-          userStore.init(),
-          contactStore.init(),
-          friendStore.init(),
-          conversationStore.init(),
-          groupStore.init(),
-          circleStore.init(),
-          updateStore.init(),
-          emojiStore.init(),
-          notificationStore.init(),
-          messageMediaStore.init(),
-        ]
-        await Promise.all(promises)
-        logger.info({ text: '各模块数据加载完成' })
+      const modules = [
+        { name: 'user', init: () => userStore.init() },
+        { name: 'contact', init: () => contactStore.init() },
+        { name: 'friend', init: () => friendStore.init() },
+        { name: 'conversation', init: () => conversationStore.init() },
+        { name: 'group', init: () => groupStore.init() },
+        { name: 'circle', init: () => circleStore.init() },
+        { name: 'update', init: () => updateStore.init() },
+        { name: 'emoji', init: () => emojiStore.init() },
+        { name: 'notification', init: () => notificationStore.init() },
+        { name: 'messageMedia', init: () => messageMediaStore.init() },
+      ]
+
+      logger.info({ text: '开始加载/刷新各模块数据', data: { total: modules.length } })
+      // 各模块相互独立：单个模块失败（如未启用的可选插件）不能阻塞其余模块与整体初始化。
+      const results = await Promise.allSettled(modules.map(m => m.init()))
+      const failed = results.flatMap((r, i) =>
+        r.status === 'rejected' ? [{ name: modules[i].name, reason: r.reason }] : [],
+      )
+      for (const { name, reason } of failed) {
+        logger.error({ text: '模块数据加载失败', data: { module: name, error: (reason as Error)?.message } })
       }
-      catch (error) {
-        logger.error({ text: '加载各模块数据失败', data: { error: (error as Error)?.message } })
-        throw error
-      }
+      logger.info({
+        text: '各模块数据加载完成',
+        data: { total: modules.length, succeeded: modules.length - failed.length, failed: failed.length },
+      })
     },
 
     /**

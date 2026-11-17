@@ -252,12 +252,16 @@ export default defineComponent({
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 90;
     opacity: 0;
+    /* 隐藏时必须让遮罩退出窗口区域计算：它从 .app__no_drag 继承 no-drag，
+       铺满全屏会扣掉标题栏(40px)的 drag 区，导致聊天页窗口拖不动。
+       仅 opacity:0 + pointer-events:none 不够，visibility 才会退出。 */
+    visibility: hidden;
     pointer-events: none;
-    transition: opacity 0.3s;
   }
 
   .group-details__overlay--active {
     opacity: 1;
+    visibility: visible;
     pointer-events: auto;
   }
 }

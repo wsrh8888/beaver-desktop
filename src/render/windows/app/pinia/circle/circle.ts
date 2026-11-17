@@ -47,8 +47,16 @@ export const useCircleStore = defineStore('circleStore', {
     },
 
     async init() {
+      // circle 是可选插件（app-circle）注入的能力；未启用时 `circle` 为 undefined。
+      // 降级为空列表而不是抛错，避免拖垮依赖它的初始化流程。
+      const circleApi = (electron.database as Record<string, any>).circle
+      if (!circleApi) {
+        logger.info({ text: 'circle 插件未启用，跳过圈子数据加载' })
+        this._circleList = []
+        return
+      }
       logger.info({ text: 'init 开始' })
-      const result = await electron.database.circle.getCircleList()
+      const result = await circleApi.getCircleList()
       this._circleList = (result?.list || []).map(item => ({
         circleId: item.circleId,
         conversationId: `circle_${item.circleId}`,

@@ -22,7 +22,18 @@
   user-select: none;
 }
 
+/* Electron 窗口：根元素撑满视口且禁止根级滚动。
+   之前只有 #app 用 100vh，html/body 未约束高度：body 内 block 的基线间隙会
+   让 body 比视口高几像素，进而在添加好友等小窗口出现不该有的滚动条。
+   统一用 100% 高度链 + overflow:hidden，各业务内容区自行决定内部滚动。 */
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
 #app {
-    width: 100%;
-    height: 100vh;
+  width: 100%;
+  height: 100%;
 }

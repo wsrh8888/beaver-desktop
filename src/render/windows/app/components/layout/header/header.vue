@@ -87,6 +87,9 @@ export default defineComponent({
 
   .window-controls {
     display: flex;
+    /* -webkit-app-region 会继承：父级 .title-bar 是 drag，
+       这里不显式取消，三个窗口按钮就会变成拖动区，点击被吞掉。 */
+    -webkit-app-region: no-drag;
   }
 
   .window-control-button {

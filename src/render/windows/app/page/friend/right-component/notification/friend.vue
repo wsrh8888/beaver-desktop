@@ -43,6 +43,7 @@
 
 <script lang="ts">
 import { valiFrienddAPi } from 'renderModule/api/friend'
+import { Message } from '@beaver-im/beaver-ui'
 import { useFriendVerifyStore } from 'renderModule/windows/app/pinia/friend/friend_verify'
 import { computed, defineComponent, onMounted } from 'vue'
 import NotificationItem from './item.vue'
@@ -109,21 +110,30 @@ export default defineComponent({
       const status = action === 'approve' ? 1 : 2
 
       try {
-        await valiFrienddAPi({
+        const res = await valiFrienddAPi({
           verifyId: item.id,
           status,
         })
 
-        // API调用成功后，立即更新本地store中的状态
-        const verifyItem = friendVerifyStore.friendVerifyList.find(v => v.verifyId === item.id)
+        // ajax 对业务错误码（code!==0）不抛异常，必须显式判断，
+        // 否则后端拒绝（如 verifyId 为空）时前端仍会误显示「已同意」。
+        if (res?.code !== 0) {
+          logger.error({ text: '处理好友申请被拒绝', data: { verifyId: item.id, code: res?.code, msg: res?.msg } })
+          Message.error(res?.msg || '操作失败，请重试')
+          return
+        }
+
+        // 后端确认成功后，才更新本地状态
+        const verifyItem = friendVerifyStore.friendVerifyList.find(v => (v as any).id === item.id || v.verifyId === item.id)
         if (verifyItem) {
           verifyItem.status = status
         }
+        Message.success(action === 'approve' ? '已同意好友申请' : '已拒绝好友申请')
         logger.info({ text: '好友验证列表已更新', data: { list: friendVerifyStore.friendVerifyList } })
         logger.info({ text: '处理好友申请项', data: { item } })
       } catch (error) {
         logger.error({ text: '处理好友申请失败', data: { error } })
-        // 可以在这里显示错误提示给用户
+        Message.error('操作失败，请重试')
       }
     }
 
