@@ -37,7 +37,7 @@ export const getNotificationEventsByIdsApi = (data: IGetNotificationEventsByIdsR
   return ajax<IGetNotificationEventsByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/notification/event/v1/getEventsByIds`,
+    url: `${getBaseUrl()}/beaver/api/notification/event/v1/get_events_by_ids`,
   })
 }
 
@@ -48,7 +48,7 @@ export const getNotificationInboxByIdsApi = (data: IGetNotificationInboxByIdsReq
   return ajax<IGetNotificationInboxByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/notification/inbox/v1/getInboxByIds`,
+    url: `${getBaseUrl()}/beaver/api/notification/inbox/v1/get_inbox_by_ids`,
   })
 }
 
@@ -59,6 +59,6 @@ export const getNotificationReadCursorsApi = (data: IGetNotificationReadCursorsR
   return ajax<IGetNotificationReadCursorsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/notification/read/v1/getReadCursors`,
+    url: `${getBaseUrl()}/beaver/api/notification/read/v1/get_read_cursors`,
   })
 }

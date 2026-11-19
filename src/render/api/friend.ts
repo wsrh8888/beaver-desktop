@@ -137,6 +137,6 @@ export const searchValidInfoApi = (data: ISearchValidInfoReq) => {
   return ajax<ISearchValidInfoRes>({
     method: 'POST',
     data,
-    url: `${baseUrl}/beaver/api/relation/friend/v1/searchValidInfo`,
+    url: `${baseUrl}/beaver/api/relation/friend/v1/search_valid_info`,
   })
 }

@@ -45,7 +45,7 @@ export const PLUGIN_CATALOG: readonly IPluginCatalogEntry[] = [
     package: '@beaver-im/app-ai',
     enabled: true,
     optional: true,
-    root: '../beaver-desktop-package/beaver-ai',
+    root: '../beaver-desktop-package/beaver-desktop-ai',
     preload: 'agent',
   },
   { id: 'workbench', package: '@beaver-im/app-workbench', enabled: true, preload: 'workbench' },

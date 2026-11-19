@@ -150,3 +150,93 @@ export interface ISendAgentMessageRes {
   messageId: string
   status: string
 }
+
+/** Agent 话题（会话内的上下文边界；新建话题 = 清空上下文） */
+export interface IAgentTopicItem {
+  topicId: string
+  conversationId: string
+  title: string
+  updatedAt: number
+  version: number
+}
+
+export interface IListAgentTopicsReq {
+  conversationId: string
+}
+
+export interface IListAgentTopicsRes {
+  list: IAgentTopicItem[]
+}
+
+/** Agent 历史消息（对齐 agent_api 的 AgentMessageItem） */
+export interface IAgentMessageItem {
+  /** 库内自增主键：只作分页游标（beforeId） */
+  id: number
+  messageId: string
+  topicId: string
+  conversationId: string
+  userId: string
+  role: 'user' | 'assistant'
+  msgType: number
+  msg: { type?: number, textMsg?: { content: string } }
+  parts: IAgentMessagePart[]
+  preview: string
+  clientMsgId: string
+  status: number
+  llmMetaJson: string
+  createdAt: number
+  version: number
+}
+
+export interface IListAgentMessagesReq {
+  topicId: string
+  beforeId?: number
+  afterVersion?: number
+  limit?: number
+}
+
+export interface IListAgentMessagesRes {
+  list: IAgentMessageItem[]
+}
+
+/**
+ * AI 面板里渲染的一条对话消息（前端视图模型，与 IAgentMessageItem 解耦）。
+ * 通用件 aiPanel 与各场景容器共用，所以放 common 而不是某个 store 里。
+ */
+export interface IAiChatMessage {
+  id: string
+  role: 'user' | 'assistant'
+  content: string
+  /** 正在流式输出：气泡尾部显示打字点 */
+  streaming?: boolean
+  timestamp: number
+  /**
+   * 分页游标 = 服务端那条消息的自增主键。
+   * 只有从服务端拉下来的才有；本地乐观插入的用户气泡和服务端占位气泡没有，
+   * 所以加载更多时要从「第一条带游标的消息」取。
+   */
+  cursor?: number
+}
+
+/**
+ * Agent 请求用户在本机确认的动作（代发消息、删文件等）。
+ * 服务端挂起等回传；这里只是前端拿着的一张待办卡片。
+ *
+ * 文案与语气由发起方（agent）决定，卡片只负责画：
+ * 同一个组件既能问「发送」，也能问「删除」，不必按动作各写一张卡。
+ */
+export interface IAgentConfirmRequest {
+  requestId: string
+  /** 动作名，如「以你的名义发送」「删除这个文件」 */
+  title: string
+  /** 正文预览（如待发出的消息原文、待删除项） */
+  content: string
+  /** 主按钮文案：发送 / 删除 / 允许 */
+  confirmText: string
+  /** 次按钮文案 */
+  cancelText: string
+  /** danger 用于删除等不可逆动作 */
+  tone: 'default' | 'danger'
+  /** 过期时间戳；到点自动判否，与服务端超时对齐 */
+  expiresAt: number
+}

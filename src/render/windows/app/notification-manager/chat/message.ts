@@ -19,10 +19,10 @@
  * beaver-desktop-header-v2
  */
 
+import { aiPanelNotificationRouter } from 'renderModule/components/business/aiPanel/notification-manager'
 import Logger from 'renderModule/utils/logger'
-import { useChatAiAssistantStore } from '../../pinia/chatAiAssistant'
-import { useMessageStore } from '../../pinia/message/message'
 import { useConversationStore } from '../../pinia/conversation/conversation'
+import { useMessageStore } from '../../pinia/message/message'
 import { useMessageViewStore } from '../../pinia/view/message'
 
 const logger = new Logger('DatabaseChatMessageEventManager')
@@ -109,7 +109,7 @@ class DatabaseChatMessageEventManager {
     })
 
     // 会话 AI 侧栏 pending 优先（conversationId 已与 IM 会话 ID 对齐）
-    const aiHandled = useChatAiAssistantStore().applyStream({
+    const aiHandled = aiPanelNotificationRouter.handleStream({
       conversationId,
       streamId,
       delta: data.delta || '',

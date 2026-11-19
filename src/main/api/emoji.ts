@@ -75,7 +75,7 @@ export const getEmojisByIdsApi = (data: { ids: string[] }) => {
   return ajax({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/getEmojisByUuids`,
+    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/get_emojis_by_uuids`,
   })
 }
 
@@ -84,7 +84,7 @@ export const getEmojiCollectsByIdsApi = (data: { ids: string[] }) => {
   return ajax<EmojiCollectsResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/collects-by-ids`,
+    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/collects_by_ids`,
   })
 }
 
@@ -93,7 +93,7 @@ export const getEmojiPackageCollectsByIdsApi = (data: { ids: string[] }) => {
   return ajax<EmojiPackageCollectsResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/package-collects-by-ids`,
+    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/package_collects_by_ids`,
   })
 }
 
@@ -102,7 +102,7 @@ export const getEmojiPackagesByIdsApi = (data: { ids: string[] }) => {
   return ajax<EmojiPackagesResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/packages-by-ids`,
+    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/packages_by_ids`,
   })
 }
 
@@ -111,7 +111,7 @@ export const getEmojiPackageContentsByPackageIdsApi = (data: { packageIds: strin
   return ajax<EmojiPackageContentsResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/package-contents-by-package-ids`,
+    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/package_contents_by_package_ids`,
   })
 }
 
@@ -120,6 +120,6 @@ export const getEmojiPackageContentsByRelationIdsApi = (data: { relationIds: str
   return ajax<EmojiPackageContentsResponse>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/package-contents-by-relation-ids`,
+    url: `${getBaseUrl()}/beaver/api/asset/emoji/v1/package_contents_by_relation_ids`,
   })
 }

@@ -219,14 +219,14 @@ export enum NotificationNotificationCommand {
 
 export enum NotificationMcpConfirmCommand {
   /**
-   * 请求用户确认工具调用。
-   * data: { confirmId, server, tool, description, args, schema }
-   * 渲染卡片，用户确认/编辑后经 IPC ai:confirmTool 回传主进程。
+   * 请求用户确认本机动作（代发消息、删文件等）。
+   * data: { requestId, conversationId, title, content, confirmText, cancelText, tone, expiresAt }
+   * 渲染进程据此在 AI 侧栏输入区上方渲染确认卡，用户表态后直接回传服务端。
    */
   REQUEST_CONFIRM = 'requestConfirm',
   /**
-   * 取消确认（主进程主动取消，如超时）。渲染进程据此关闭卡片。
-   * data: { confirmId }
+   * 取消确认（主进程主动取消，如超时）。渲染进程据此收起卡片。
+   * data: { requestId, conversationId }
    */
   CANCEL_CONFIRM = 'cancelConfirm',
 }

@@ -41,7 +41,7 @@ export const markReadByEventApi = (data: IMarkReadByEventReq) => {
   return ajax<IMarkReadByEventRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/beaver/api/notification/read/v1/markReadByEvent`,
+    url: `${baseUrl}/beaver/api/notification/read/v1/mark_read_by_event`,
   })
 }
 
@@ -52,7 +52,7 @@ export const deleteNotificationApi = (data: IDeleteNotificationReq) => {
   return ajax<IDeleteNotificationRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/beaver/api/notification/inbox/v1/deleteNotification`,
+    url: `${baseUrl}/beaver/api/notification/inbox/v1/delete_notification`,
   })
 }
 
@@ -63,7 +63,7 @@ export const markReadByCategoryApi = (data: IMarkReadByCategoryReq) => {
   return ajax<IMarkReadByCategoryRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/beaver/api/notification/read/v1/markReadByCategory`,
+    url: `${baseUrl}/beaver/api/notification/read/v1/mark_read_by_category`,
   })
 }
 
@@ -74,7 +74,7 @@ export const markReadByCursorApi = (data: IMarkReadByCursorReq) => {
   return ajax<IMarkReadByCursorRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/beaver/api/notification/read/v1/markReadByCursor`,
+    url: `${baseUrl}/beaver/api/notification/read/v1/mark_read_by_cursor`,
   })
 }
 
@@ -85,6 +85,6 @@ export const getUnreadSummaryApi = (data: IGetUnreadSummaryReq) => {
   return ajax<IGetUnreadSummaryRes>({
     data,
     method: 'POST',
-    url: `${baseUrl}/beaver/api/notification/read/v1/getUnreadSummary`,
+    url: `${baseUrl}/beaver/api/notification/read/v1/get_unread_summary`,
   })
 }

@@ -48,7 +48,7 @@ export const getConversationsListByIdsApi = (data: IGetConversationsListByIdsReq
   return ajax<IGetConversationsListByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/message/chat/v1/getConversationsListByIds`,
+    url: `${getBaseUrl()}/beaver/api/message/chat/v1/get_conversations_list_by_ids`,
   })
 }
 
@@ -59,6 +59,6 @@ export const getUserConversationSettingsListByIdsApi = (data: IGetUserConversati
   return ajax<IGetUserConversationSettingsListByIdsRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/message/chat/v1/getUserConversationSettingsListByIds`,
+    url: `${getBaseUrl()}/beaver/api/message/chat/v1/get_user_conversation_settings_list_by_ids`,
   })
 }

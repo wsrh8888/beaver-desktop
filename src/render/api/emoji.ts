@@ -114,7 +114,7 @@ export const addEmojiApi = (data: IAddEmojiReq) => {
 export const updateFavoriteEmojiApi = (data: IUpdateFavoriteEmojiReq) => {
   return ajax<ICommonRes>({
     method: 'POST',
-    url: `${baseUrl}/beaver/api/asset/emoji/v1/favoriteEmoji`,
+    url: `${baseUrl}/beaver/api/asset/emoji/v1/favorite_emoji`,
     data,
   })
 }
@@ -125,7 +125,7 @@ export const updateFavoriteEmojiApi = (data: IUpdateFavoriteEmojiReq) => {
 export const getEmojisListApi = (data: IGetEmojisListReq) => {
   return ajax<IGetEmojisListRes>({
     method: 'POST',
-    url: `${baseUrl}/beaver/api/asset/emoji/v1/favoriteList`,
+    url: `${baseUrl}/beaver/api/asset/emoji/v1/favorite_list`,
     data,
   })
 }
@@ -136,7 +136,7 @@ export const getEmojisListApi = (data: IGetEmojisListReq) => {
 export const getEmojiPackagesApi = (data: IGetEmojiPackagesReq) => {
   return ajax<IGetEmojiPackagesRes>({
     method: 'POST',
-    url: `${baseUrl}/beaver/api/asset/emoji/v1/packageList`,
+    url: `${baseUrl}/beaver/api/asset/emoji/v1/package_list`,
     data,
   })
 }
@@ -147,7 +147,7 @@ export const getEmojiPackagesApi = (data: IGetEmojiPackagesReq) => {
 export const getEmojiPackageDetailApi = (data: IGetEmojiPackageDetailReq) => {
   return ajax<IGetEmojiPackageDetailRes>({
     method: 'POST',
-    url: `${baseUrl}/beaver/api/asset/emoji/v1/packageInfo`,
+    url: `${baseUrl}/beaver/api/asset/emoji/v1/package_info`,
     data,
   })
 }
@@ -158,7 +158,7 @@ export const getEmojiPackageDetailApi = (data: IGetEmojiPackageDetailReq) => {
 export const updateFavoriteEmojiPackageApi = (data: IUpdateFavoriteEmojiPackageReq) => {
   return ajax<ICommonRes>({
     method: 'POST',
-    url: `${baseUrl}/beaver/api/asset/emoji/v1/packageFavorite`,
+    url: `${baseUrl}/beaver/api/asset/emoji/v1/package_favorite`,
     data,
   })
 }
@@ -169,7 +169,7 @@ export const updateFavoriteEmojiPackageApi = (data: IUpdateFavoriteEmojiPackageR
 export const getUserFavoritePackagesApi = (data: IGetUserFavoritePackagesReq) => {
   return ajax<IGetUserFavoritePackagesRes>({
     method: 'POST',
-    url: `${baseUrl}/beaver/api/asset/emoji/v1/favoritePackageList`,
+    url: `${baseUrl}/beaver/api/asset/emoji/v1/favorite_package_list`,
     data,
   })
 }
@@ -180,7 +180,7 @@ export const getUserFavoritePackagesApi = (data: IGetUserFavoritePackagesReq) =>
 export const getEmojisByIdsApi = (data: IGetEmojisByIdsReq) => {
   return ajax<IGetEmojisByIdsRes>({
     method: 'POST',
-    url: `${baseUrl}/beaver/api/asset/emoji/v1/emojis-by-ids`,
+    url: `${baseUrl}/beaver/api/asset/emoji/v1/emojis_by_ids`,
     data,
   })
 }

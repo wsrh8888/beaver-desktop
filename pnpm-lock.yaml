@@ -18,8 +18,8 @@ importers:
         specifier: workspace:*
         version: link:packages/app-about
       '@beaver-im/app-ai':
-        specifier: link:../beaver-desktop-package/beaver-ai
-        version: link:../beaver-desktop-package/beaver-ai
+        specifier: link:../beaver-desktop-package/beaver-desktop-ai
+        version: link:../beaver-desktop-package/beaver-desktop-ai
       '@beaver-im/app-audio':
         specifier: workspace:*
         version: link:packages/app-audio

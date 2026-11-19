@@ -57,9 +57,15 @@
       @close="hideDetails"
       @quit="handleCircleQuit"
     />
-    <AiAssistantComponent
+    <AiPanelComponent
       v-if="currentDetailType === 'ai'"
       :visible="currentDetailType === 'ai'"
+      module="chat"
+      :ref-id="currentChatId || ''"
+      :subtitle="aiSubtitle"
+      title="AI 助手"
+      empty-title="和这个会话聊聊"
+      empty-desc="我可以帮你总结内容、起草回复、梳理要点"
       @close="hideDetails"
     />
     <CirclePostDetail
@@ -84,7 +90,7 @@ import { computed, defineComponent, ref, watch } from 'vue'
 import { CircleDetails as CircleDetailsComponent, CirclePostDetail, CircleRight, parseCircleId } from '@beaver-im/app-circle/renderer'
 import { useConversationStore } from '../../pinia/conversation/conversation'
 import { useMessageViewStore } from '../../pinia/view/message'
-import AiAssistantComponent from './detail-components/aiAssistant/index.vue'
+import AiPanelComponent from 'renderModule/components/business/aiPanel/index.vue'
 import GroupAssistantOverlay from './detail-components/groupAssistant/index.vue'
 import GroupDetailsComponent from './detail-components/groupDetails/index.vue'
 import MergedForwardViewer from './detail-components/MergedForwardViewer.vue'
@@ -107,7 +113,7 @@ export default defineComponent({
     GroupDetailsComponent,
     PrivateDetailsComponent,
     CircleDetailsComponent,
-    AiAssistantComponent,
+    AiPanelComponent,
     CirclePostDetail,
     CircleRight,
     MergedForwardViewer,
@@ -145,6 +151,15 @@ export default defineComponent({
         return 'circle'
 
       return 'chat'
+    })
+
+    /** AI 面板副标题：告诉用户「在就谁提问」，面板本身不认识会话概念 */
+    const aiSubtitle = computed(() => {
+      const id = currentChatId.value
+      if (!id)
+        return ''
+      const info = conversationStore.getConversationInfo(id)
+      return info?.nickName ? `就「${info.nickName}」提问` : ''
     })
 
     const handleShowDetails = (type: DetailType) => {
@@ -212,6 +227,7 @@ export default defineComponent({
       currentDetailType,
       activePost,
       circleRightRef,
+      aiSubtitle,
       handleShowDetails,
       hideDetails,
       handleShowPostDetail,

@@ -12,7 +12,7 @@
     "dev": "turbo run dev:desktop --filter=beaver",
     "dev:desktop": "vite",
     "dev:desktop:win": "chcp 65001 && vite",
-    "build:ai": "npm --prefix ../beaver-desktop-package/beaver-ai run build",
+    "build:ai": "npm --prefix ../beaver-desktop-package/beaver-desktop-ai run build",
     "build:packages": "turbo run build --filter=@beaver-im/beaver --filter=@beaver-im/app-*",
     "build:renderer": "vue-tsc --noEmit && vite build --mode renderer",
     "build:main": "vite build --mode main",
@@ -121,7 +121,7 @@
   },
   "dependencies": {
     "@beaver-im/app-about": "workspace:*",
-    "@beaver-im/app-ai": "link:../beaver-desktop-package/beaver-ai",
+    "@beaver-im/app-ai": "link:../beaver-desktop-package/beaver-desktop-ai",
     "@beaver-im/app-audio": "workspace:*",
     "@beaver-im/app-call": "workspace:*",
     "@beaver-im/app-circle": "workspace:*",

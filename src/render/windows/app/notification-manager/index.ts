@@ -28,6 +28,7 @@ import { circleNotificationRouter } from './circle/index'
 import { emojiNotificationRouter } from './emoji/index'
 import { friendNotificationRouter } from './friend/index'
 import { groupNotificationRouter } from './group/index'
+import { mcpNotificationRouter } from './mcp/index'
 import { notificationNotificationRouter } from './notification/index'
 import { userNotificationRouter } from './user/index'
 import Logger from 'renderModule/utils/logger'
@@ -49,6 +50,7 @@ class NotificationManager {
     electron.notification.on(NotificationModule.DATABASE_NOTIFICATION, params => notificationNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.DATABASE_USER, params => userNotificationRouter.handleNotification(params))
     electron.notification.on(NotificationModule.CALL, params => callNotificationRouter.handleNotification(params))
+    electron.notification.on(NotificationModule.MCP_CONFIRM, (params: any) => mcpNotificationRouter.handleNotification(params))
   }
 
   off() {
@@ -62,6 +64,7 @@ class NotificationManager {
     electron.notification.off(NotificationModule.DATABASE_NOTIFICATION, params => notificationNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.DATABASE_USER, params => userNotificationRouter.handleNotification(params))
     electron.notification.off(NotificationModule.CALL, params => callNotificationRouter.handleNotification(params))
+    electron.notification.off(NotificationModule.MCP_CONFIRM, (params: any) => mcpNotificationRouter.handleNotification(params))
   }
 }
 

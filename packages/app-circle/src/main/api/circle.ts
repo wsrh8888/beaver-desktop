@@ -36,6 +36,6 @@ export const datasyncGetSyncCircleInfoApi = (data: IGetSyncCircleInfoReq) => {
   return ajax<IGetSyncCircleInfoRes>({
     method: 'POST',
     data,
-    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/getSyncCircleInfo`,
+    url: `${getBaseUrl()}/beaver/api/datasync/sync/v1/get_sync_circle_info`,
   })
 }

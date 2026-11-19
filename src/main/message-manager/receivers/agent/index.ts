@@ -14,17 +14,27 @@
  * 工作目录在服务端 agent_workspaces，这里不解析。
  * 云端会话服务端不绑 ClientSession，不会走到这里。
  *
- * 全程在主进程完成，不再转发渲染进程，不再经 IPC 往返。
+ * 真 MCP 工具全程在主进程执行，不经 IPC 往返。
+ * 例外是 beaver/confirm_send（agent 代发消息）：它不是工具，需要人点确认，
+ * 所以转成 MCP_CONFIRM 通知交给 AI 侧栏，在输入区上方渲染确认卡
+ * （卡片只管形态，标题与按钮文案由 args 带，以后换删除等动作不用改这里），
+ * 用户点击后由渲染进程直接回传结果（同样走 submit_client_tool_result）。
  * 跟 chat/friend/group 等 receiver 同惯例：一种 ws 消息类型一个子目录。
  */
 import path from 'node:path'
 import type { IClientToolPayload } from 'commonModule/type/mcp'
+import { NotificationMcpConfirmCommand, NotificationModule } from 'commonModule/type/preload/notification'
+import { BrowserWindow } from 'electron'
+import { sendMainNotification } from 'mainModule/ipc/main-to-render'
 import { submitClientToolResultApi } from 'mainModule/api/mcp'
 import { getMcpManager } from 'mainModule/mcp'
 import { store } from 'mainModule/store'
 import Logger from 'mainModule/utils/logger'
 
 const SPACE_KEY = 'ai_space_snapshot'
+
+/** 确认卡的有效期：与服务端 request_client_tool 的 120s 超时对齐。 */
+const CONFIRM_TTL_MS = 120_000
 
 const logger = new Logger('agent-receiver')
 
@@ -62,6 +72,14 @@ class AgentReceiver {
       },
     })
 
+    // agent 代发消息的硬确认：不是真 MCP 工具，交给 AI 侧栏渲染确认卡。
+    // 用户在卡片上点主按钮才回传 approved=true，agent 才会真正把消息发出去；
+    // 拒绝、超时、窗口不在，一律不发。
+    if (payload.server === 'beaver' && payload.tool === 'confirm_send') {
+      await this.requestConfirmSend(requestId, payload, conversationId)
+      return
+    }
+
     if (payload.server && payload.tool) {
       const manager = await getMcpManager()
       const root = resolveToolRoot(payload)
@@ -70,6 +88,36 @@ class AgentReceiver {
     else {
       await this.submitResult(requestId, { ok: false, error: '缺少 server 或 tool' })
     }
+  }
+
+  /**
+   * 需要人点头的本机动作：把待办推给 AI 侧栏，由渲染进程在输入区上方渲染确认卡。
+   * 标题与按钮文案优先取 agent 传来的 args，缺省按代发语义兜底——
+   * 卡片本身不认识「发送」还是「删除」，这里也不判断，一律原样下发。
+   * 卡片点击后由渲染进程直接回传结果，这里只负责下发；没有窗口时立即判否，
+   * 不让服务端干等满 120 秒。
+   */
+  private async requestConfirmSend(requestId: string, payload: IClientToolPayload, conversationId: string): Promise<void> {
+    const args = payload.args || {}
+    const content = String(args.content || '')
+    logger.info({ text: '下发确认卡', data: { requestId, conversationId, length: content.length } })
+
+    if (BrowserWindow.getAllWindows().length === 0) {
+      logger.warn({ text: '无窗口可展示确认卡，直接判否', data: { requestId } })
+      await this.submitResult(requestId, { ok: true, data: { approved: false } })
+      return
+    }
+
+    sendMainNotification('*', NotificationModule.MCP_CONFIRM, NotificationMcpConfirmCommand.REQUEST_CONFIRM, {
+      requestId,
+      conversationId,
+      title: String(args.title || '以你的名义发送'),
+      content,
+      confirmText: String(args.confirmText || '发送'),
+      cancelText: String(args.cancelText || '取消'),
+      tone: args.tone === 'danger' ? 'danger' : 'default',
+      expiresAt: Date.now() + CONFIRM_TTL_MS,
+    })
   }
 
   private parsePayload(dataJson: string): IClientToolPayload {

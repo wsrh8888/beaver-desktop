@@ -20,9 +20,14 @@
  */
 
 import type {
+  IListAgentMessagesReq,
+  IListAgentMessagesRes,
+  IListAgentTopicsReq,
+  IListAgentTopicsRes,
   ISendAgentMessageReq,
   ISendAgentMessageRes,
 } from 'commonModule/type/ajax/agent'
+import type { ISubmitClientToolResultReq } from 'commonModule/type/mcp/clientTool'
 import { baseUrl } from 'commonModule/config'
 import ajax from 'renderModule/utils/request/ajax'
 import Logger from 'renderModule/utils/logger'
@@ -36,6 +41,39 @@ export const sendAgentMessageApi = (data: ISendAgentMessageReq) => {
   return ajax<ISendAgentMessageRes>({
     method: 'POST',
     url: `${baseUrl}/beaver-ai/api/ai/message/v1/send_message`,
+    data,
+  })
+}
+
+/**
+ * @description: 列某会话下的话题（话题 = AI 上下文边界）
+ */
+export const listAgentTopicsApi = (data: IListAgentTopicsReq) => {
+  return ajax<IListAgentTopicsRes>({
+    method: 'POST',
+    url: `${baseUrl}/beaver-ai/api/ai/sync/v1/list_topics`,
+    data,
+  })
+}
+
+/**
+ * @description: 拉某话题的历史消息（服务端单一数据源，天然跨端）
+ */
+export const listAgentMessagesApi = (data: IListAgentMessagesReq) => {
+  return ajax<IListAgentMessagesRes>({
+    method: 'POST',
+    url: `${baseUrl}/beaver-ai/api/ai/message/v1/list_messages`,
+    data,
+  })
+}
+
+/**
+ * @description: 回传本机工具结果（代发确认卡点击后走这里，叫醒服务端挂起的调用）
+ */
+export const submitAgentToolResultApi = (data: ISubmitClientToolResultReq) => {
+  return ajax({
+    method: 'POST',
+    url: `${baseUrl}/beaver-ai/api/ai/message/v1/submit_client_tool_result`,
     data,
   })
 }
